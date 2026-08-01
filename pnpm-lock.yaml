@@ -47,7 +47,11 @@ importers:
         specifier: latest
         version: 0.34.52
 
-  packages/game-engine: {}
+  packages/game-engine:
+    dependencies:
+      '@ravens/contracts':
+        specifier: workspace:*
+        version: link:../contracts
 
   packages/ui: {}
 

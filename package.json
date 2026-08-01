@@ -6,7 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b --pretty false",
+    "typecheck": "pnpm -r --if-present typecheck",
     "build": "pnpm -r --if-present build",
     "lint": "pnpm typecheck",
     "test:e2e": "playwright test"
