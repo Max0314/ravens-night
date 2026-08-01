@@ -1,0 +1,36 @@
+import { Panel, SeatRing } from "@ravens/ui";
+import { useEffect, useState } from "react";
+import { getRoom, type RoomView } from "../api.js";
+
+const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string }> = {
+  ROLE_REVEAL: { eyebrow: "保持安静", title: "身份正在揭晓", detail: "请只看自己的手机" },
+  FIRST_NIGHT: { eyebrow: "首夜", title: "村庄已经沉睡", detail: "系统正在依次唤醒角色" },
+  OTHER_NIGHT: { eyebrow: "夜晚", title: "请闭眼并保持安静", detail: "需要行动时手机会提示" },
+  DAY_DISCUSSION: { eyebrow: "白天", title: "自由讨论", detail: "分享线索，也可以暂时隐瞒身份" },
+  NOMINATION: { eyebrow: "白天", title: "提名仍在继续", detail: "请在自己的手机上发起提名" },
+  VOTING: { eyebrow: "公开投票", title: "请看向被提名者", detail: "所有人在手机上同时举手" },
+  GAME_OVER: { eyebrow: "终局", title: "钟声停止", detail: "今夜的身份即将全部揭晓" },
+};
+
+export function Display({ code }: { code: string }) {
+  const [room, setRoom] = useState<RoomView>();
+  useEffect(() => {
+    let active = true;
+    const refresh = () => void getRoom(code).then((next) => { if (active) setRoom(next); }).catch(() => undefined);
+    refresh(); const timer = window.setInterval(refresh, 1_200);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [code]);
+
+  const game = room?.game;
+  const players = room?.participants.filter((participant) => participant.mode === "PLAYER") ?? [];
+  const seats = game?.seats ?? players.map((participant) => ({ seat: participant.seat!, nickname: participant.nickname, alive: true, connected: participant.connected, ghostVoteAvailable: true }));
+  const copy = phaseCopy[game?.phase ?? "ROLE_REVEAL"] ?? phaseCopy.ROLE_REVEAL!;
+  const nominee = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nomineeSeat) : undefined;
+  const lastEvent = game?.events.at(-1)?.message ?? `${players.length}/${room?.playerCount ?? "?"} 位玩家已入座`;
+
+  return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
+    <header className="display__header"><span>鸦钟夜话 · {code}</span><span>{game ? `第 ${game.day || 1} 天` : "等待开局"}</span></header>
+    <section className="display__town"><SeatRing seats={seats} /><div className="display__center"><p>{copy.eyebrow}</p><h1>{game?.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? `${nominee.seat}号 ${nominee.nickname}` : copy.title}</h1><small>{game?.phase === "VOTING" && game.nomination ? `已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></div></section>
+    <Panel className="display__notice">{lastEvent}</Panel>
+  </main>;
+}

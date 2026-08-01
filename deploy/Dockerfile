@@ -8,9 +8,11 @@ RUN pnpm install --frozen-lockfile && pnpm build
 
 FROM node:24-alpine AS runtime
 ENV NODE_ENV=production
+ENV STATIC_DIR=/app/public
 WORKDIR /app
 RUN addgroup -S ravens && adduser -S ravens -G ravens
 COPY --from=build --chown=ravens:ravens /app/apps/server/dist ./dist
+COPY --from=build --chown=ravens:ravens /app/apps/web/dist ./public
 USER ravens
 EXPOSE 3000
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/index.cjs"]

@@ -1,0 +1,52 @@
+export interface RoomParticipant { id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean }
+export interface GameView {
+  phase: "ROLE_REVEAL" | "FIRST_NIGHT" | "DAY_DISCUSSION" | "NOMINATION" | "VOTING" | "OTHER_NIGHT" | "GAME_OVER";
+  day: number;
+  seats: Array<{ seat: number; nickname: string; connected: boolean; alive: boolean; ghostVoteAvailable: boolean }>;
+  events: Array<{ seq: number; message: string }>;
+  readyCount: number;
+  aliveCount: number;
+  nomination?: { nominatorSeat: number; nomineeSeat: number; votesReceived: number; votesRaised: number; threshold: number };
+  onBlock?: { seat: number; votes: number };
+  winner?: "GOOD" | "EVIL";
+  winReason?: string;
+}
+export interface RoomView { code: string; state: string; playerCount: number; participants: RoomParticipant[]; game?: GameView }
+export interface PrivateView {
+  participant: { id: string; nickname: string; seat: number };
+  state: string;
+  role?: { roleId: string; alignment: "GOOD" | "EVIL"; type: string; name: string; summary: string; beginnerTip: string };
+  roleConfirmed?: boolean;
+  messages: string[];
+  game?: GameView;
+  action?: { kind: "CONFIRM_ROLE" | "SELECT_ONE" | "SELECT_TWO" | "VOTE" | "DAY" | "SLAYER"; legalSeats: number[]; minTargets: number; maxTargets: number; prompt: string };
+}
+
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, { ...init, headers: { "content-type": "application/json", ...init?.headers } });
+  const body = await response.json() as T & { error?: string };
+  if (!response.ok) throw new Error(body.error ?? "请求失败，请稍后重试");
+  return body;
+}
+
+export function getAuthSession() { return request<{ authorized: boolean }>("/api/auth/session"); }
+export function login(accessPassword: string) { return request<{ authorized: boolean }>("/api/auth/login", { method: "POST", body: JSON.stringify({ accessPassword }) }); }
+
+export function createRoom(playerCount: number, organizerName: string) {
+  return request<{ code: string; organizerToken: string }>("/api/rooms", { method: "POST", body: JSON.stringify({ playerCount, organizerName }) });
+}
+
+export function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPLAY") {
+  return request<{ id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; token: string }>(`/api/rooms/${code}/join`, { method: "POST", body: JSON.stringify({ nickname, mode }) });
+}
+
+export function getRoom(code: string) { return request<RoomView>(`/api/rooms/${code}`); }
+export function startRoom(code: string, organizerToken: string) { return request<RoomView>(`/api/rooms/${code}/start`, { method: "POST", body: JSON.stringify({ organizerToken }) }); }
+export function completeTutorial(code: string, token: string) { return request<RoomView>(`/api/rooms/${code}/tutorial/complete`, { method: "POST", body: JSON.stringify({ token }) }); }
+export function getPrivateView(code: string, token: string) { return request<PrivateView>(`/api/rooms/${code}/me?token=${encodeURIComponent(token)}`); }
+export function confirmRole(code: string, token: string) { return request<PrivateView>(`/api/rooms/${code}/role/confirm`, { method: "POST", body: JSON.stringify({ token }) }); }
+export function submitGameAction(code: string, token: string, targetSeats: number[]) { return request<PrivateView>(`/api/rooms/${code}/action`, { method: "POST", body: JSON.stringify({ token, targetSeats }) }); }
+export function nominate(code: string, token: string, nomineeSeat: number) { return request<PrivateView>(`/api/rooms/${code}/nominate`, { method: "POST", body: JSON.stringify({ token, nomineeSeat }) }); }
+export function castVote(code: string, token: string, raised: boolean) { return request<PrivateView>(`/api/rooms/${code}/vote`, { method: "POST", body: JSON.stringify({ token, raised }) }); }
+export function readyToEndDay(code: string, token: string) { return request<PrivateView>(`/api/rooms/${code}/day/ready`, { method: "POST", body: JSON.stringify({ token }) }); }
+export function useDayAbility(code: string, token: string, targetSeat: number) { return request<PrivateView>(`/api/rooms/${code}/day/ability`, { method: "POST", body: JSON.stringify({ token, targetSeat }) }); }

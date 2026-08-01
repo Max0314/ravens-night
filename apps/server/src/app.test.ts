@@ -13,6 +13,20 @@ describe("HTTP application", () => {
     expect(response.json()).toEqual({ ok: true, service: "ravens-night" });
   });
 
+  test("an access password protects public room APIs with a signed session cookie", async () => {
+    const app = buildApp({ accessPassword: "correct-horse-battery-staple" });
+    apps.push(app);
+    const denied = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "Max" } });
+    expect(denied.statusCode).toBe(401);
+    const wrong = await app.inject({ method: "POST", url: "/api/auth/login", payload: { accessPassword: "wrong" } });
+    expect(wrong.statusCode).toBe(401);
+    const login = await app.inject({ method: "POST", url: "/api/auth/login", payload: { accessPassword: "correct-horse-battery-staple" } });
+    expect(login.statusCode).toBe(200);
+    const cookie = login.headers["set-cookie"];
+    const created = await app.inject({ method: "POST", url: "/api/rooms", headers: { cookie: Array.isArray(cookie) ? cookie[0]! : cookie! }, payload: { playerCount: 5, organizerName: "Max" } });
+    expect(created.statusCode).toBe(201);
+  });
+
   test("five guests can join one invitation-only room", async () => {
     const app = buildApp();
     apps.push(app);
@@ -26,5 +40,32 @@ describe("HTTP application", () => {
       expect(joined.statusCode).toBe(201);
       expect(joined.json()).toMatchObject({ nickname, seat: nicknames.indexOf(nickname) + 1 });
     }
+  });
+
+  test("the organizer starts one synchronized tutorial and each player receives a private role", async () => {
+    const app = buildApp();
+    apps.push(app);
+    const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "Max" } });
+    const room = created.json<{ code: string; organizerToken: string }>();
+    const tokens: string[] = [];
+    for (const nickname of ["一", "二", "三", "四", "五"]) {
+      const joined = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname, mode: "PLAYER" } });
+      tokens.push(joined.json<{ token: string }>().token);
+    }
+    const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, payload: { organizerToken: room.organizerToken } });
+    expect(started.statusCode).toBe(200);
+    for (const token of tokens) {
+      const completed = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/tutorial/complete`, payload: { token } });
+      expect(completed.statusCode).toBe(200);
+    }
+    const mine = await app.inject({ method: "GET", url: `/api/rooms/${room.code}/me?token=${tokens[0]}` });
+    expect(mine.json()).toMatchObject({ state: "RUNNING", role: { alignment: expect.any(String), name: expect.any(String) } });
+
+    for (const token of tokens) {
+      const confirmed = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/role/confirm`, payload: { token } });
+      expect(confirmed.statusCode).toBe(200);
+    }
+    const publicGame = await app.inject({ method: "GET", url: `/api/rooms/${room.code}` });
+    expect(["FIRST_NIGHT", "DAY_DISCUSSION"]).toContain(publicGame.json().game.phase);
   });
 });

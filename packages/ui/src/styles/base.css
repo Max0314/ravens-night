@@ -1,0 +1,66 @@
+:root {
+  color-scheme: dark;
+  --rn-night: #080b12;
+  --rn-navy: #121a28;
+  --rn-gold: #b58b43;
+  --rn-gold-light: #e2bd78;
+  --rn-parchment: #eee4cd;
+  --rn-blood: #8f303b;
+  --rn-mist: #a9afb9;
+  --rn-border: rgba(181, 139, 67, 0.44);
+  --rn-shadow: 0 22px 70px rgba(0, 0, 0, 0.46);
+  font-family: "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  background: var(--rn-night);
+  color: var(--rn-parchment);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--rn-night); }
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--rn-gold-light); outline-offset: 3px; }
+
+.rn-button {
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 0.72rem 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+.rn-button:hover { transform: translateY(-1px); }
+.rn-button--gold { color: #16120d; background: linear-gradient(135deg, #d8b36f, #9d7437); box-shadow: 0 8px 22px rgba(181,139,67,.18); }
+.rn-button--quiet { color: var(--rn-parchment); background: rgba(255,255,255,.035); border-color: var(--rn-border); }
+.rn-button--danger { color: #fff0ed; background: var(--rn-blood); border-color: #c15d68; }
+
+.rn-panel {
+  border: 1px solid var(--rn-border);
+  background: linear-gradient(145deg, rgba(18,26,40,.94), rgba(8,11,18,.96));
+  box-shadow: var(--rn-shadow);
+}
+
+.rn-role-card { width: min(100%, 380px); min-height: 610px; overflow: hidden; border: 1px solid var(--rn-gold); border-radius: 18px; background: linear-gradient(160deg,#111723,#090c12); box-shadow: var(--rn-shadow); }
+.rn-role-card__portrait-wrap { position: relative; height: 340px; overflow: hidden; }
+.rn-role-card__portrait { width: 100%; height: 100%; display: block; background-size: 300% 200%; background-repeat: no-repeat; }
+.rn-role-card__fade { position: absolute; inset: auto 0 0; height: 38%; background: linear-gradient(transparent, #0c111b); }
+.rn-role-card__copy { padding: 0 24px 24px; }
+.rn-role-card__alignment { color: var(--rn-gold-light); font-size: .76rem; letter-spacing: .16em; margin: 0 0 .3rem; }
+.rn-role-card h2 { margin: 0 0 1rem; font-family: "Noto Serif SC", "Songti SC", serif; font-size: 2.2rem; font-weight: 600; }
+.rn-role-card__ability { border-left: 2px solid var(--rn-gold); padding-left: 14px; line-height: 1.75; color: #ddd5c4; }
+.rn-role-card__tip { color: var(--rn-mist); font-size: .9rem; line-height: 1.6; }
+.rn-role-card--covered { display: grid; place-items: center; align-content: center; gap: 1rem; text-align: center; }
+.rn-role-card__seal { width: 86px; height: 86px; display: grid; place-items: center; border: 1px solid var(--rn-gold); border-radius: 50%; color: var(--rn-gold-light); font-size: 2.3rem; box-shadow: 0 0 36px rgba(181,139,67,.14); }
+
+.rn-seat-ring { position: relative; width: min(72vw, 760px); aspect-ratio: 1; margin: 0 auto; padding: 0; list-style: none; }
+.rn-seat { --angle: calc(360deg / var(--seat-count) * var(--seat-index)); position: absolute; left: 50%; top: 50%; width: 108px; min-height: 64px; display: grid; place-items: center; gap: 2px; transform: translate(-50%,-50%) rotate(var(--angle)) translateY(-280px) rotate(calc(-1 * var(--angle))); border: 1px solid var(--rn-border); border-radius: 50%; background: #111722; box-shadow: 0 8px 24px rgba(0,0,0,.32); }
+.rn-seat__number { color: var(--rn-gold-light); font-size: .75rem; }.rn-seat__name { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rn-seat--dead { opacity: .43; filter: grayscale(.9); }.rn-seat--dead .rn-seat__name { text-decoration: line-through; }.rn-seat--offline { border-style: dashed; }
+.rn-countdown { font-family: ui-monospace, "SFMono-Regular", monospace; font-variant-numeric: tabular-nums; color: var(--rn-gold-light); }
+
+@media (max-width: 720px) {
+  .rn-role-card { min-height: 570px; border-radius: 14px; }
+  .rn-role-card__portrait-wrap { height: 300px; }
+  .rn-seat-ring { width: 92vw; }
+  .rn-seat { width: 74px; min-height: 52px; transform: translate(-50%,-50%) rotate(var(--angle)) translateY(-38vw) rotate(calc(-1 * var(--angle))); font-size: .78rem; }
+}
