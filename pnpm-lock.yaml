@@ -39,7 +39,11 @@ importers:
 
   apps/web: {}
 
-  packages/content: {}
+  packages/content:
+    dependencies:
+      '@ravens/game-engine':
+        specifier: workspace:*
+        version: link:../game-engine
 
   packages/contracts:
     dependencies:
