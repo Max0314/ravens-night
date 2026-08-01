@@ -94,6 +94,16 @@ export function buildApp(options: { accessPassword?: string } = {}) {
     }
   });
 
+  app.post<{ Params: { code: string }; Body: { organizerToken?: string } }>("/api/rooms/:code/reset", async (request, reply) => {
+    try {
+      rooms.reset(request.params.code, signedCookie(request, "ravens_organizer") ?? request.body?.organizerToken ?? "");
+      await persist(request.params.code);
+      return rooms.publicView(request.params.code);
+    } catch (error) {
+      return reply.code(400).send({ error: error instanceof Error ? error.message : "Unable to reset room" });
+    }
+  });
+
   app.post<{ Params: { code: string }; Body: { token?: string } }>("/api/rooms/:code/tutorial/complete", async (request, reply) => {
     try {
       const token = playerToken(request, request.body?.token);

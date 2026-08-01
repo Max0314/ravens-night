@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { castVote, completeTutorial, confirmRole, createRoom, getAuthSession, getPrivateView, getRoom, joinRoom, login, nominate, readyToEndDay, startRoom, submitGameAction, useDayAbility, type PrivateView, type RoomView } from "./api.js";
+import { castVote, completeTutorial, confirmRole, createRoom, getAuthSession, getPrivateView, getRoom, joinRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, type PrivateView, type RoomView } from "./api.js";
 import { GuideOverlay, type GuideMode } from "./components/GuideOverlay.js";
 import { Create } from "./pages/Create.js";
 import { Display } from "./pages/Display.js";
@@ -16,6 +16,7 @@ interface StoredSession { roomCode: string; mode: "PLAYER" | "DISPLAY"; organize
 const SESSION_KEY = "ravens_room_session";
 
 export function App() {
+  const invitedRoomCode = readInvitedRoomCode();
   const [screen, setScreen] = useState<Screen>("LOADING");
   const [room, setRoom] = useState<RoomView>();
   const [busy, setBusy] = useState(false);
@@ -40,7 +41,16 @@ export function App() {
   useEffect(() => {
     if (screen !== "GAME" || !room) return;
     let active = true;
-    const refresh = () => void getPrivateView(room.code).then((view) => { if (active) setPrivateView(view); }).catch(() => undefined);
+    const refresh = () => void getPrivateView(room.code).then(async (view) => {
+      if (!active) return;
+      if (view.state === "LOBBY") {
+        setPrivateView(undefined);
+        setRoom(await getRoom(room.code));
+        setScreen("LOBBY");
+        return;
+      }
+      setPrivateView(view);
+    }).catch(() => undefined);
     refresh();
     const timer = window.setInterval(refresh, 1_200);
     return () => { active = false; window.clearInterval(timer); };
@@ -74,7 +84,8 @@ export function App() {
 
   async function restoreSession() {
     const stored = readSession();
-    if (!stored) { setScreen("HOME"); return; }
+    if (invitedRoomCode && stored?.roomCode !== invitedRoomCode) { setScreen("JOIN"); return; }
+    if (!stored) { setScreen(invitedRoomCode ? "JOIN" : "HOME"); return; }
     try {
       const current = await getRoom(stored.roomCode);
       setRoom(current); setIsOrganizer(stored.organizer);
@@ -82,7 +93,7 @@ export function App() {
       if (current.state === "LOBBY") { setScreen("LOBBY"); return; }
       if (current.state === "TUTORIAL") { setScreen("TUTORIAL"); return; }
       setPrivateView(await getPrivateView(current.code)); setScreen("GAME");
-    } catch { sessionStorage.removeItem(SESSION_KEY); setScreen("HOME"); }
+    } catch { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); setScreen(invitedRoomCode ? "JOIN" : "HOME"); }
   }
 
   const withGuide = (page: ReactNode) => <>{page}{guide ? <GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /> : null}</>;
@@ -90,7 +101,7 @@ export function App() {
   if (screen === "LOADING") return <main className="app-loading" aria-label="正在进入钟楼"><span>☾</span></main>;
   if (screen === "LOGIN") return <Login onSubmit={submitLogin} busy={busy} {...(error ? { error } : {})} />;
   if (screen === "CREATE") return <Create onBack={() => setScreen("HOME")} onSubmit={submitCreate} busy={busy} {...(error ? { error } : {})} />;
-  if (screen === "JOIN") return <Join onBack={() => setScreen("HOME")} onSubmit={submitJoin} busy={busy} {...(error ? { error } : {})} />;
+  if (screen === "JOIN") return <Join initialCode={invitedRoomCode} onBack={() => setScreen("HOME")} onSubmit={submitJoin} busy={busy} {...(error ? { error } : {})} />;
   async function beginTutorial() { if (!room || !isOrganizer) return; setBusy(true); try { setRoom(await startRoom(room.code)); setScreen("TUTORIAL"); } catch (caught) { setError(caught instanceof Error ? caught.message : "无法开始"); } finally { setBusy(false); } }
   async function finishTutorial() { if (!room) return; setBusy(true); try { const updated = await completeTutorial(room.code); setRoom(updated); setScreen("GAME"); setPrivateView(await getPrivateView(room.code)); } catch (caught) { setError(caught instanceof Error ? caught.message : "无法完成教学"); } finally { setBusy(false); } }
 
@@ -102,15 +113,37 @@ export function App() {
     finally { setBusy(false); }
   }
 
+  async function restartGame() {
+    if (!room || !isOrganizer) return;
+    setBusy(true); setError(undefined);
+    try {
+      setRoom(await resetRoom(room.code));
+      setPrivateView(undefined);
+      setScreen("LOBBY");
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "无法重新开局"); }
+    finally { setBusy(false); }
+  }
+
   if (screen === "LOBBY" && room) return withGuide(<Lobby room={room} onBegin={beginTutorial} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} canBegin={isOrganizer} busy={busy} {...(error ? { error } : {})} />);
   if (screen === "TUTORIAL") return <Tutorial onDone={finishTutorial} />;
-  if (screen === "GAME") return withGuide(<PlayerGame {...(privateView ? { view: privateView } : {})} busy={busy} {...(error ? { error } : {})} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats))} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(readyToEndDay)} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onOpenGuide={setGuide} />);
+  if (screen === "GAME") return withGuide(<PlayerGame {...(privateView ? { view: privateView } : {})} busy={busy} canRestart={isOrganizer} {...(error ? { error } : {})} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats))} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(readyToEndDay)} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
   if (screen === "DISPLAY") return <Display code={room?.code ?? "------"} />;
   return withGuide(<Home onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} />);
 }
 
-function saveSession(session: StoredSession): void { sessionStorage.setItem(SESSION_KEY, JSON.stringify(session)); }
+function saveSession(session: StoredSession): void { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); sessionStorage.removeItem(SESSION_KEY); }
 function readSession(): StoredSession | undefined {
-  try { const value = sessionStorage.getItem(SESSION_KEY); return value ? JSON.parse(value) as StoredSession : undefined; }
+  try {
+    const value = localStorage.getItem(SESSION_KEY) ?? sessionStorage.getItem(SESSION_KEY);
+    if (!value) return undefined;
+    const session = JSON.parse(value) as StoredSession;
+    localStorage.setItem(SESSION_KEY, value);
+    sessionStorage.removeItem(SESSION_KEY);
+    return session;
+  }
   catch { return undefined; }
+}
+
+function readInvitedRoomCode(): string {
+  return new URLSearchParams(window.location.search).get("room")?.toUpperCase().replace(/[^A-Z2-9]/g, "").slice(0, 6) ?? "";
 }

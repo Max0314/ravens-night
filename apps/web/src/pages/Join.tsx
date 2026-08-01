@@ -3,8 +3,8 @@ import { useState, type FormEvent } from "react";
 
 export interface JoinValues { code: string; nickname: string; mode: "PLAYER" | "DISPLAY" }
 
-export function Join({ onBack, onSubmit, busy, error }: { onBack: () => void; onSubmit: (values: JoinValues) => void; busy: boolean; error?: string }) {
-  const [code, setCode] = useState("");
+export function Join({ initialCode = "", onBack, onSubmit, busy, error }: { initialCode?: string; onBack: () => void; onSubmit: (values: JoinValues) => void; busy: boolean; error?: string }) {
+  const [code, setCode] = useState(initialCode);
   const [nickname, setNickname] = useState("");
   const [mode, setMode] = useState<"PLAYER" | "DISPLAY">("PLAYER");
   function submit(event: FormEvent) { event.preventDefault(); onSubmit({ code: code.toUpperCase().replace(/[^A-Z2-9]/g, ""), nickname: mode === "DISPLAY" ? "公共大屏" : nickname, mode }); }

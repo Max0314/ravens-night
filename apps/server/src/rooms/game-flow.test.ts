@@ -92,3 +92,21 @@ test("a serialized room snapshot restores the same private game state", () => {
   expect(restored.publicView(room.code)).toEqual(service.publicView(room.code));
   expect(restored.privateView(room.code, players[0]!.token)).toEqual(service.privateView(room.code, players[0]!.token));
 });
+
+test("the organizer can reset a table without making seated players rejoin", () => {
+  const service = new RoomService();
+  const created = service.create(5, "创建者");
+  const seated = ["一", "二", "三", "四", "五"].map((nickname) => service.join(created.room.code, nickname, "PLAYER"));
+  service.startTutorial(created.room.code, created.organizerToken);
+  for (const player of seated) service.completeTutorial(created.room.code, player.token);
+
+  expect(() => service.reset(created.room.code, "wrong-token")).toThrow(/authorization/i);
+  service.reset(created.room.code, created.organizerToken);
+  const reset = service.publicView(created.room.code);
+  expect(reset.state).toBe("LOBBY");
+  expect(reset.participants).toHaveLength(5);
+  expect(reset.game).toBeUndefined();
+
+  service.startTutorial(created.room.code, created.organizerToken);
+  expect(service.publicView(created.room.code).state).toBe("TUTORIAL");
+});

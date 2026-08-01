@@ -13,6 +13,8 @@ interface PlayerGameProps {
   onVote: (raised: boolean) => void;
   onReady: () => void;
   onUseAbility: (seat: number) => void;
+  onRestart: () => void;
+  canRestart: boolean;
   onOpenGuide: (mode: GuideMode) => void;
 }
 
@@ -21,7 +23,7 @@ const phaseNames: Record<string, string> = {
   DAY_DISCUSSION: "自由讨论", NOMINATION: "提名阶段", VOTING: "公开投票", GAME_OVER: "终局",
 };
 
-export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, onNominate, onVote, onReady, onUseAbility, onOpenGuide }: PlayerGameProps) {
+export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, onNominate, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide }: PlayerGameProps) {
   const [selected, setSelected] = useState<number[]>([]);
   const game = view?.game;
   const role = view?.role;
@@ -38,7 +40,7 @@ export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, o
 
   if (game.phase === "GAME_OVER") return <main className={`ending ending--${game.winner?.toLowerCase()}`}>
     <p>钟声停止</p><h1>{game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜"}</h1>
-    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的身份</h2><p>{role.name} · {role.summary}</p></Panel><GameGuideLinks onOpen={onOpenGuide} />
+    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的身份</h2><p>{role.name} · {role.summary}</p></Panel>{canRestart ? <Button onClick={onRestart} disabled={busy}>{busy ? "正在重置房间…" : "同一批人再来一局"}</Button> : <p className="ending__waiting">想再玩一局？等待房间创建者重开即可，无需重新加入。</p>}<GameGuideLinks onOpen={onOpenGuide} />
   </main>;
 
   const action = view.action;

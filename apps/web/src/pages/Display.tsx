@@ -1,6 +1,7 @@
 import { Panel, SeatRing } from "@ravens/ui";
 import { useEffect, useState } from "react";
 import { getRoom, type RoomView } from "../api.js";
+import { invitationQr } from "../invite.js";
 
 const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string }> = {
   ROLE_REVEAL: { eyebrow: "保持安静", title: "身份正在揭晓", detail: "请只看自己的手机" },
@@ -15,12 +16,14 @@ const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string
 export function Display({ code }: { code: string }) {
   const [room, setRoom] = useState<RoomView>();
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
+  const [qr, setQr] = useState<string>();
   useEffect(() => {
     let active = true;
     const refresh = () => void getRoom(code).then((next) => { if (active) setRoom(next); }).catch(() => undefined);
     refresh(); const timer = window.setInterval(refresh, 1_200);
     return () => { active = false; window.clearInterval(timer); };
   }, [code]);
+  useEffect(() => { let active = true; void invitationQr(code, 320).then((value) => { if (active) setQr(value); }).catch(() => undefined); return () => { active = false; }; }, [code]);
   useEffect(() => {
     const update = () => setFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", update);
@@ -36,7 +39,7 @@ export function Display({ code }: { code: string }) {
 
   return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
     <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span>{game ? `第 ${game.day || 1} 天` : "等待开局"}</span><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
-    <section className="display__town"><SeatRing seats={seats} /><div className="display__center"><p>{copy.eyebrow}</p><h1>{game?.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? `${nominee.seat}号 ${nominee.nickname}` : copy.title}</h1><small>{game?.phase === "VOTING" && game.nomination ? `已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></div></section>
+    <section className="display__town"><SeatRing seats={seats} /><div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>手机进入房间；本设备只显示公开信息</small></div> : <><p>{copy.eyebrow}</p><h1>{game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? `${nominee.seat}号 ${nominee.nickname}` : copy.title}</h1><small>{game.phase === "VOTING" && game.nomination ? `已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></>}</div></section>
     <Panel className="display__notice">{lastEvent}</Panel>
   </main>;
 }

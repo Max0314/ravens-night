@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { App } from "./App.js";
 
-afterEach(() => { cleanup(); sessionStorage.clear(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); window.history.replaceState({}, "", "/"); vi.unstubAllGlobals(); });
 
 test("the first screen gives an authorized newcomer one clear way to join", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
@@ -36,6 +36,14 @@ test("joining from a television has a distinct public-display choice", async () 
   fireEvent.click(screen.getByRole("button", { name: /电视公共大屏/ }));
   expect(screen.queryByLabelText("你的昵称")).not.toBeInTheDocument();
   expect(screen.getByText("电脑连接电视 · 只显示公开城镇信息")).toBeVisible();
+});
+
+test("a scanned invitation opens the join form with its room code filled in", async () => {
+  window.history.replaceState({}, "", "/?room=C8TME8");
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
+  render(<App />);
+  expect(await screen.findByRole("heading", { name: "进入村庄" })).toBeVisible();
+  expect(screen.getByLabelText("六位邀请码")).toHaveValue("C8TME8");
 });
 
 test("an unauthorized visitor sees the access-password login", async () => {

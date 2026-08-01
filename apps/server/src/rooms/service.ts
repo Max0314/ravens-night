@@ -163,6 +163,16 @@ export class RoomService {
     this.changed(room);
   }
 
+  reset(codeInput: string, organizerToken: string): void {
+    const room = this.find(codeInput);
+    if (room.organizerTokenHash !== hashOpaqueToken(organizerToken)) throw new Error("Organizer authorization failed");
+    room.state = "LOBBY";
+    room.assignments = [];
+    delete room.game;
+    for (const participant of room.participants) participant.tutorialComplete = false;
+    this.changed(room);
+  }
+
   completeTutorial(codeInput: string, playerToken: string): void {
     const room = this.find(codeInput);
     if (room.state !== "TUTORIAL") throw new Error("Tutorial is not active");

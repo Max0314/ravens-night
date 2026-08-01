@@ -43,6 +43,7 @@ export function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPL
 
 export function getRoom(code: string) { return request<RoomView>(`/api/rooms/${code}`); }
 export function startRoom(code: string) { return request<RoomView>(`/api/rooms/${code}/start`, { method: "POST", body: "{}" }); }
+export function resetRoom(code: string) { return request<RoomView>(`/api/rooms/${code}/reset`, { method: "POST", body: "{}" }); }
 export function completeTutorial(code: string) { return request<RoomView>(`/api/rooms/${code}/tutorial/complete`, { method: "POST", body: "{}" }); }
 export function getPrivateView(code: string) { return request<PrivateView>(`/api/rooms/${code}/me`); }
 export function confirmRole(code: string) { return request<PrivateView>(`/api/rooms/${code}/role/confirm`, { method: "POST", body: "{}" }); }
