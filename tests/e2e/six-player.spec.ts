@@ -46,6 +46,15 @@ async function joinPlayer(client: TestClient, code: string): Promise<void> {
   await expect(client.page.getByText(client.nickname, { exact: true })).toBeVisible();
 }
 
+async function joinFromScannedInvite(client: TestClient, code: string): Promise<void> {
+  await client.page.goto(`/?room=${code}`);
+  const roomCode = client.page.getByRole("textbox", { name: "六位邀请码" });
+  await expect(roomCode).toHaveValue(code);
+  await client.page.getByRole("textbox", { name: "你的昵称" }).fill(client.nickname);
+  await client.page.getByRole("button", { name: "进入房间", exact: true }).click();
+  await expect(client.page.getByText(client.nickname, { exact: true })).toBeVisible();
+}
+
 async function joinDisplay(client: TestClient, code: string): Promise<void> {
   await client.page.getByRole("button", { name: "加入一局", exact: true }).click();
   await client.page.getByRole("textbox", { name: "六位邀请码" }).fill(code);
@@ -53,6 +62,7 @@ async function joinDisplay(client: TestClient, code: string): Promise<void> {
   await client.page.getByRole("button", { name: "进入房间", exact: true }).click();
   await expect(client.page.getByText(`鸦钟夜话 · ${code}`)).toBeVisible();
   await expect(client.page.getByRole("button", { name: "进入全屏", exact: true })).toBeVisible();
+  await expect(client.page.getByRole("img", { name: `加入房间 ${code} 的二维码` })).toBeVisible();
 }
 
 async function json<T>(response: APIResponse): Promise<T> {
@@ -102,12 +112,15 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     for (let index = 2; index <= 6; index += 1) {
       const client = await newClient(browser, `玩家${index}`, { width: 390, height: 844 });
       players.push(client);
-      await joinPlayer(client, code);
+      if (index === 2) await joinFromScannedInvite(client, code);
+      else await joinPlayer(client, code);
     }
 
     const display = await newClient(browser, "电视大屏", { width: 1920, height: 1080 });
     await joinDisplay(display, code);
     await expect(organizer.page.getByText("6/6 位玩家已入座")).toBeVisible({ timeout: 8_000 });
+    await players[5]!.page.reload();
+    await expect(players[5]!.page.getByText("6/6 位玩家已入座")).toBeVisible();
 
     const start = organizer.page.getByRole("button", { name: "开始新手教学", exact: true });
     await expect(start).toBeEnabled();
@@ -170,6 +183,13 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     expect(views[0]?.game?.winner).toBe("GOOD");
     await expect(display.page.getByText("善良获胜")).toBeVisible({ timeout: 8_000 });
     await expect(display.page.getByText(/身份揭晓/)).toBeVisible();
+
+    const rematch = organizer.page.getByRole("button", { name: "同一批人再来一局", exact: true });
+    await expect(rematch).toBeVisible({ timeout: 8_000 });
+    await rematch.click();
+    await expect(organizer.page.getByText("6/6 位玩家已入座")).toBeVisible();
+    await expect(players[1]!.page.getByText("6/6 位玩家已入座")).toBeVisible({ timeout: 8_000 });
+    await expect(display.page.getByRole("heading", { name: "6/6 位已入座" })).toBeVisible({ timeout: 8_000 });
 
     const consoleErrors = [...players, display].flatMap((client) => client.consoleErrors);
     expect(consoleErrors).toEqual([]);
