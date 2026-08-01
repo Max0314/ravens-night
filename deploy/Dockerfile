@@ -1,4 +1,4 @@
-FROM node:24-alpine AS build
+FROM node:24.17.0-alpine3.23 AS build
 WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig*.json vitest.config.ts ./
@@ -6,7 +6,7 @@ COPY apps ./apps
 COPY packages ./packages
 RUN pnpm install --frozen-lockfile && pnpm build
 
-FROM node:24-alpine AS runtime
+FROM node:24.17.0-alpine3.23 AS runtime
 ENV NODE_ENV=production
 ENV STATIC_DIR=/app/public
 WORKDIR /app
