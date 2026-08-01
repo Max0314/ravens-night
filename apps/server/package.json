@@ -8,8 +8,12 @@
   },
   "dependencies": {
     "@ravens/contracts": "workspace:*",
+    "@ravens/game-engine": "workspace:*",
     "@node-rs/argon2": "latest",
     "drizzle-orm": "latest",
+    "fastify": "latest",
+    "@fastify/cookie": "latest",
+    "@fastify/websocket": "latest",
     "pg": "latest"
   },
   "devDependencies": {
