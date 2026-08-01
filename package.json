@@ -12,6 +12,7 @@
     "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/node": "latest",
     "esbuild": "^0.28.1",
     "typescript": "latest",
