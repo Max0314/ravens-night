@@ -1,6 +1,7 @@
 import { Button, Panel, RoleCard } from "@ravens/ui";
 import { useEffect, useState } from "react";
 import type { PrivateView } from "../api.js";
+import type { GuideMode } from "../components/GuideOverlay.js";
 
 interface PlayerGameProps {
   view?: PrivateView;
@@ -12,6 +13,7 @@ interface PlayerGameProps {
   onVote: (raised: boolean) => void;
   onReady: () => void;
   onUseAbility: (seat: number) => void;
+  onOpenGuide: (mode: GuideMode) => void;
 }
 
 const phaseNames: Record<string, string> = {
@@ -19,7 +21,7 @@ const phaseNames: Record<string, string> = {
   DAY_DISCUSSION: "自由讨论", NOMINATION: "提名阶段", VOTING: "公开投票", GAME_OVER: "终局",
 };
 
-export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, onNominate, onVote, onReady, onUseAbility }: PlayerGameProps) {
+export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, onNominate, onVote, onReady, onUseAbility, onOpenGuide }: PlayerGameProps) {
   const [selected, setSelected] = useState<number[]>([]);
   const game = view?.game;
   const role = view?.role;
@@ -31,17 +33,19 @@ export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, o
     <p className="privacy-warning">只有你能看到 · 请勿向外展示屏幕</p>
     <RoleCard name={role.name} alignment={`${role.alignment === "GOOD" ? "善良" : "邪恶"} · ${role.type === "TOWNSFOLK" ? "镇民" : role.type === "OUTSIDER" ? "外来者" : role.type === "MINION" ? "爪牙" : "恶魔"}`} ability={role.summary} beginnerTip={role.beginnerTip} {...roleArt(role.roleId)} />
     <Button onClick={onConfirmRole} disabled={busy || view.roleConfirmed}>{view.roleConfirmed ? "等待其他玩家确认…" : "我记住了身份"}</Button>
+    <GameGuideLinks onOpen={onOpenGuide} />
   </main>;
 
   if (game.phase === "GAME_OVER") return <main className={`ending ending--${game.winner?.toLowerCase()}`}>
     <p>钟声停止</p><h1>{game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜"}</h1>
-    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的身份</h2><p>{role.name} · {role.summary}</p></Panel>
+    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的身份</h2><p>{role.name} · {role.summary}</p></Panel><GameGuideLinks onOpen={onOpenGuide} />
   </main>;
 
   const action = view.action;
   const isNight = game.phase === "FIRST_NIGHT" || game.phase === "OTHER_NIGHT";
   if (isNight) return <main className="game-page game-page--night">
     <GameHeader phase={phaseNames[game.phase]!} day={game.day} role={role.name} />
+    <RoleCompass role={role} task={action?.prompt ?? "当前无需操作。保持安静并等待手机出现新的行动提示。"} onOpen={onOpenGuide} />
     {action?.kind === "SELECT_ONE" || action?.kind === "SELECT_TWO" ? <Panel className="action-panel">
       <p className="eyebrow">轮到你行动</p><h1>{action.prompt}</h1><p>选择会直接提交给系统，其他玩家和公共大屏都看不到。</p>
       <SeatChoices seats={game.seats} legalSeats={action.legalSeats} selected={selected} max={action.maxTargets} onChange={setSelected} />
@@ -52,6 +56,7 @@ export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, o
 
   return <main className="game-page game-page--day">
     <GameHeader phase={phaseNames[game.phase] ?? game.phase} day={game.day} role={role.name} />
+    <RoleCompass role={role} task={dayTask(view)} onOpen={onOpenGuide} />
     {game.phase === "VOTING" && game.nomination ? <Panel className="vote-panel">
       <p className="eyebrow">提名投票</p><h1>{seatName(game.seats, game.nomination.nomineeSeat)}</h1>
       <p>{seatName(game.seats, game.nomination.nominatorSeat)} 发起提名 · 过半需要 {game.nomination.threshold} 票</p>
@@ -70,6 +75,23 @@ export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, o
 }
 
 function GameHeader({ phase, day, role }: { phase: string; day: number; role: string }) { return <header className="game-header"><div><span>第 {day || 1} 天</span><strong>{phase}</strong></div><div className="role-chip">{role}</div></header>; }
+
+function RoleCompass({ role, task, onOpen }: { role: NonNullable<PrivateView["role"]>; task: string; onOpen: (mode: GuideMode) => void }) {
+  return <section className="role-compass" aria-label="当前任务"><div><span>你是 {role.name}</span><strong>{task}</strong></div><GameGuideLinks onOpen={onOpen} /></section>;
+}
+
+function GameGuideLinks({ onOpen }: { onOpen: (mode: GuideMode) => void }) {
+  return <div className="game-guide-links"><button type="button" onClick={() => onOpen("mine")}>我的角色</button><button type="button" onClick={() => onOpen("tutorial")}>教程</button><button type="button" onClick={() => onOpen("roles")}>角色表</button></div>;
+}
+
+function dayTask(view: PrivateView): string {
+  const game = view.game;
+  if (!game) return "等待游戏开始。";
+  if (game.phase === "VOTING") return view.action?.kind === "VOTE" ? "现在投票：选择举手赞成或放下手。" : "你的票已记录，等待所有人完成投票。";
+  if (view.action?.kind === "SLAYER") return "你可以发动一次猎魔人能力，也可以继续面对面讨论。";
+  if (!game.seats.find((seat) => seat.seat === view.participant.seat)?.alive) return "你已经死亡：仍可参与讨论；投票时谨慎使用唯一幽灵票。";
+  return "面对面讨论你的线索；可以提名一名存活玩家，或在讨论结束后确认日落。";
+}
 
 function Waiting({ title, detail, compact = false }: { title: string; detail: string; compact?: boolean }) { return <section className={compact ? "inline-waiting" : "night-page"}><Panel className="night-action"><h1>{title}</h1><p>{detail}</p><div className="waiting-orbit"><span /></div></Panel></section>; }
 

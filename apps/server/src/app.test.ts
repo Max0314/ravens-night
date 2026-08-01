@@ -68,4 +68,26 @@ describe("HTTP application", () => {
     const publicGame = await app.inject({ method: "GET", url: `/api/rooms/${room.code}` });
     expect(["FIRST_NIGHT", "DAY_DISCUSSION"]).toContain(publicGame.json().game.phase);
   });
+
+  test("signed device cookies restore organizer and player identity without exposing tokens in URLs", async () => {
+    const app = buildApp();
+    apps.push(app);
+    const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "创建者" } });
+    const room = created.json<{ code: string }>();
+    const organizerCookie = String(created.headers["set-cookie"]).split(";")[0]!;
+    const playerCookies: string[] = [];
+    for (const nickname of ["一", "二", "三", "四", "五"]) {
+      const joined = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname, mode: "PLAYER" } });
+      playerCookies.push(String(joined.headers["set-cookie"]).split(";")[0]!);
+    }
+    const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, headers: { cookie: organizerCookie }, payload: {} });
+    expect(started.statusCode).toBe(200);
+    for (const cookie of playerCookies) {
+      const completed = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/tutorial/complete`, headers: { cookie }, payload: {} });
+      expect(completed.statusCode).toBe(200);
+    }
+    const mine = await app.inject({ method: "GET", url: `/api/rooms/${room.code}/me`, headers: { cookie: playerCookies[0]! } });
+    expect(mine.statusCode).toBe(200);
+    expect(mine.json()).toMatchObject({ participant: { nickname: "一", seat: 1 }, role: { name: expect.any(String) } });
+  });
 });

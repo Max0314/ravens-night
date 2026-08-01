@@ -16,8 +16,8 @@ export function Join({ onBack, onSubmit, busy, error }: { onBack: () => void; on
         <form onSubmit={submit}>
           <label>六位邀请码<input aria-label="六位邀请码" inputMode="text" autoCapitalize="characters" maxLength={6} value={code} onChange={(event) => setCode(event.target.value)} placeholder="7K3MQ8" required /></label>
           <div className="mode-choice" role="group" aria-label="加入方式">
-            <button type="button" className={mode === "PLAYER" ? "is-active" : ""} onClick={() => setMode("PLAYER")}>手机玩家<small>身份与操作仅自己可见</small></button>
-            <button type="button" className={mode === "DISPLAY" ? "is-active" : ""} onClick={() => setMode("DISPLAY")}>公共大屏<small>只显示公开城镇信息</small></button>
+            <button type="button" className={mode === "PLAYER" ? "is-active" : ""} onClick={() => setMode("PLAYER")}><span>📱</span>手机玩家<small>每人一台手机 · 身份与操作仅自己可见</small></button>
+            <button type="button" className={mode === "DISPLAY" ? "is-active" : ""} onClick={() => setMode("DISPLAY")}><span>▣</span>电视公共大屏<small>电脑连接电视 · 只显示公开城镇信息</small></button>
           </div>
           {mode === "PLAYER" ? <label>你的昵称<input maxLength={24} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="大家认识的名字" required /></label> : null}
           {error ? <p className="form-error" role="alert">{error}</p> : null}

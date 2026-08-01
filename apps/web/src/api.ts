@@ -8,6 +8,7 @@ export interface GameView {
   aliveCount: number;
   nomination?: { nominatorSeat: number; nomineeSeat: number; votesReceived: number; votesRaised: number; threshold: number };
   onBlock?: { seat: number; votes: number };
+  executionTied?: boolean;
   winner?: "GOOD" | "EVIL";
   winReason?: string;
 }
@@ -41,12 +42,12 @@ export function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPL
 }
 
 export function getRoom(code: string) { return request<RoomView>(`/api/rooms/${code}`); }
-export function startRoom(code: string, organizerToken: string) { return request<RoomView>(`/api/rooms/${code}/start`, { method: "POST", body: JSON.stringify({ organizerToken }) }); }
-export function completeTutorial(code: string, token: string) { return request<RoomView>(`/api/rooms/${code}/tutorial/complete`, { method: "POST", body: JSON.stringify({ token }) }); }
-export function getPrivateView(code: string, token: string) { return request<PrivateView>(`/api/rooms/${code}/me?token=${encodeURIComponent(token)}`); }
-export function confirmRole(code: string, token: string) { return request<PrivateView>(`/api/rooms/${code}/role/confirm`, { method: "POST", body: JSON.stringify({ token }) }); }
-export function submitGameAction(code: string, token: string, targetSeats: number[]) { return request<PrivateView>(`/api/rooms/${code}/action`, { method: "POST", body: JSON.stringify({ token, targetSeats }) }); }
-export function nominate(code: string, token: string, nomineeSeat: number) { return request<PrivateView>(`/api/rooms/${code}/nominate`, { method: "POST", body: JSON.stringify({ token, nomineeSeat }) }); }
-export function castVote(code: string, token: string, raised: boolean) { return request<PrivateView>(`/api/rooms/${code}/vote`, { method: "POST", body: JSON.stringify({ token, raised }) }); }
-export function readyToEndDay(code: string, token: string) { return request<PrivateView>(`/api/rooms/${code}/day/ready`, { method: "POST", body: JSON.stringify({ token }) }); }
-export function useDayAbility(code: string, token: string, targetSeat: number) { return request<PrivateView>(`/api/rooms/${code}/day/ability`, { method: "POST", body: JSON.stringify({ token, targetSeat }) }); }
+export function startRoom(code: string) { return request<RoomView>(`/api/rooms/${code}/start`, { method: "POST", body: "{}" }); }
+export function completeTutorial(code: string) { return request<RoomView>(`/api/rooms/${code}/tutorial/complete`, { method: "POST", body: "{}" }); }
+export function getPrivateView(code: string) { return request<PrivateView>(`/api/rooms/${code}/me`); }
+export function confirmRole(code: string) { return request<PrivateView>(`/api/rooms/${code}/role/confirm`, { method: "POST", body: "{}" }); }
+export function submitGameAction(code: string, targetSeats: number[]) { return request<PrivateView>(`/api/rooms/${code}/action`, { method: "POST", body: JSON.stringify({ targetSeats }) }); }
+export function nominate(code: string, nomineeSeat: number) { return request<PrivateView>(`/api/rooms/${code}/nominate`, { method: "POST", body: JSON.stringify({ nomineeSeat }) }); }
+export function castVote(code: string, raised: boolean) { return request<PrivateView>(`/api/rooms/${code}/vote`, { method: "POST", body: JSON.stringify({ raised }) }); }
+export function readyToEndDay(code: string) { return request<PrivateView>(`/api/rooms/${code}/day/ready`, { method: "POST", body: "{}" }); }
+export function useDayAbility(code: string, targetSeat: number) { return request<PrivateView>(`/api/rooms/${code}/day/ability`, { method: "POST", body: JSON.stringify({ targetSeat }) }); }
