@@ -34,6 +34,7 @@ export interface RoomRecord {
   state: "LOBBY" | "TUTORIAL" | "RUNNING" | "GAME_OVER";
   organizerTokenHash: string;
   assignments: RoleAssignment[];
+  gameNumber: number;
   revision: number;
   game?: GameRuntime;
 }
@@ -87,6 +88,7 @@ export class RoomService {
       state: "LOBBY",
       organizerTokenHash: hashOpaqueToken(organizerToken),
       assignments: [],
+      gameNumber: 0,
       revision: 1,
     };
     this.#rooms.set(code, room);
@@ -155,7 +157,7 @@ export class RoomService {
         virginSpentSeats: snapshot.game.virginSpentSeats ?? [],
         executionTied: snapshot.game.executionTied ?? false,
       } : undefined;
-      this.#rooms.set(code, structuredClone({ ...snapshot, ...(game ? { game } : {}), code, revision: snapshot.revision || 1 }));
+      this.#rooms.set(code, structuredClone({ ...snapshot, ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 }));
     }
   }
 
@@ -185,7 +187,8 @@ export class RoomService {
     const organizerHash = hashOpaqueToken(organizerToken);
     if (room.organizerTokenHash !== organizerHash && players.find((participant) => participant.seat === 1)?.tokenHash !== organizerHash) throw new Error("Organizer authorization failed");
     if (players.length !== room.playerCount) throw new Error("All players must join before starting");
-    room.assignments = setupGameRoles(room.playerCount, `${room.id}:${room.code}`);
+    room.gameNumber = (room.gameNumber ?? 0) + 1;
+    room.assignments = setupGameRoles(room.playerCount, `${room.id}:${room.code}:game-${room.gameNumber}`);
     room.state = "TUTORIAL";
     this.changed(room);
   }
@@ -270,6 +273,23 @@ export class RoomService {
       game.lastExecutedRoleId = nominator.roleId;
       if (!this.evaluateWin(room, seat, true)) this.beginOtherNight(room);
     }
+    this.changed(room);
+  }
+
+  cancelNomination(codeInput: string, playerToken: string): void {
+    const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
+    const game = this.requireGame(room);
+    if (game.phase !== "VOTING" || !game.nomination) throw new Error("There is no nomination to cancel");
+    if (game.nomination.nominatorSeat !== participant.seat) throw new Error("Only the nominator may cancel this nomination");
+    if (Object.keys(game.voteSubmissions).length > 0) throw new Error("The nomination cannot be cancelled after voting begins");
+
+    const { nominatorSeat, nomineeSeat } = game.nomination;
+    game.nominatedBySeats = game.nominatedBySeats.filter((seat) => seat !== nominatorSeat);
+    game.nominatedSeats = game.nominatedSeats.filter((seat) => seat !== nomineeSeat);
+    game.voteSubmissions = {};
+    delete game.nomination;
+    game.phase = "NOMINATION";
+    this.event(game, `${this.nickname(room, nominatorSeat)} 取消了对 ${this.nickname(room, nomineeSeat)} 的提名。`);
     this.changed(room);
   }
 
@@ -358,6 +378,7 @@ export class RoomService {
       participant: { id: participant.id, nickname: participant.nickname, seat: participant.seat },
       state: room.state,
       messages: room.game?.messages[participant.seat!] ?? [],
+      ...(room.game?.phase === "VOTING" && room.game.voteSubmissions[participant.seat!] !== undefined ? { voteRaised: room.game.voteSubmissions[participant.seat!] } : {}),
       ...(room.game ? { game: this.publicGame(room), roleConfirmed: room.game.confirmedRoleSeats.includes(participant.seat!), ...(this.privateAction(room, participant.seat!) ? { action: this.privateAction(room, participant.seat!) } : {}) } : {}),
       ...(assignment && visibleRole && (room.state === "RUNNING" || room.state === "GAME_OVER")
         ? { role: { roleId: visibleRole.id, alignment: assignment.alignment, type: visibleRole.type, name: visibleRole.name, summary: visibleRole.summary, beginnerTip: visibleRole.beginnerTip, ...(revealActualRole && assignment.roleId !== assignment.perceivedRoleId ? { perceivedAs: roleById(assignment.perceivedRoleId).name } : {}) } }
@@ -459,7 +480,7 @@ export class RoomService {
       const requirement = this.nightRequirement(room, seat);
       if (requirement) return { kind: requirement.count === 2 ? "SELECT_TWO" : "SELECT_ONE", legalSeats: requirement.legalSeats, minTargets: requirement.count, maxTargets: requirement.count, prompt: requirement.prompt };
     }
-    if (game.phase === "VOTING" && game.voteSubmissions[seat] === undefined) return { kind: "VOTE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: "是否对本次提名举手" };
+    if (game.phase === "VOTING") return { kind: "VOTE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: "是否对本次提名举手；结算前可以切换" };
     if ((game.phase === "DAY_DISCUSSION" || game.phase === "NOMINATION") && game.aliveSeats.includes(seat)) {
       if (this.assignment(room, seat).perceivedRoleId === "slayer" && !game.usedAbilitySeats.includes(seat)) return { kind: "SLAYER", legalSeats: game.aliveSeats.filter((candidate) => candidate !== seat), minTargets: 1, maxTargets: 1, prompt: "你可以公开选择一人发动猎魔人能力（整局一次）" };
       return { kind: "DAY", legalSeats: game.aliveSeats, minTargets: 0, maxTargets: 1, prompt: "讨论、提名，或确认结束今天" };

@@ -151,6 +151,11 @@ export function buildApp(options: { accessPassword?: string } = {}) {
     catch (error) { return reply.code(400).send({ error: error instanceof Error ? error.message : "Unable to nominate" }); }
   });
 
+  app.post<{ Params: { code: string }; Body: { token?: string } }>("/api/rooms/:code/nomination/cancel", async (request, reply) => {
+    try { const token = playerToken(request, request.body?.token); rooms.cancelNomination(request.params.code, token); await persist(request.params.code); return rooms.privateView(request.params.code, token); }
+    catch (error) { return reply.code(400).send({ error: error instanceof Error ? error.message : "Unable to cancel nomination" }); }
+  });
+
   app.post<{ Params: { code: string }; Body: { token?: string; raised: boolean } }>("/api/rooms/:code/vote", async (request, reply) => {
     try { const token = playerToken(request, request.body?.token); rooms.vote(request.params.code, token, request.body.raised); await persist(request.params.code); return rooms.privateView(request.params.code, token); }
     catch (error) { return reply.code(400).send({ error: error instanceof Error ? error.message : "Unable to vote" }); }

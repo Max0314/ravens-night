@@ -7,6 +7,7 @@ import { Home } from "./pages/Home.js";
 import { Lobby } from "./pages/Lobby.js";
 import { PlayerGame } from "./pages/PlayerGame.js";
 import { Tutorial } from "./pages/Tutorial.js";
+import type { PrivateView } from "./api.js";
 
 afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); window.history.replaceState({}, "", "/"); vi.unstubAllGlobals(); });
 
@@ -84,7 +85,67 @@ test("tutorial and game waiting screens always provide a safe return", () => {
   unmount();
 
   const gameBack = vi.fn();
-  render(<PlayerGame busy={false} canRestart={false} onBack={gameBack} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
+  render(<PlayerGame busy={false} canRestart={false} onBack={gameBack} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
   fireEvent.click(screen.getByRole("button", { name: "← 返回首页" }));
   expect(gameBack).toHaveBeenCalledOnce();
 });
+
+test("a nomination is confirmed before submission and may be abandoned", () => {
+  const onNominate = vi.fn();
+  render(<PlayerGame view={playerView("DAY_DISCUSSION")} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={onNominate} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
+
+  fireEvent.click(screen.getByRole("button", { name: /被提名人.*提名/ }));
+  expect(screen.getByText("确认提名 被提名人（2号）？")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "暂不提名" }));
+  expect(screen.queryByText("确认提名 被提名人（2号）？")).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: /被提名人.*提名/ }));
+  fireEvent.click(screen.getByRole("button", { name: "确认提名" }));
+  expect(onNominate).toHaveBeenCalledWith(2);
+});
+
+test("the nominator can cancel before voting and a voter can switch their hand", () => {
+  const onCancelNomination = vi.fn();
+  const onVote = vi.fn();
+  const initial = playerView("VOTING");
+  const { rerender } = render(<PlayerGame view={initial} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={onCancelNomination} onVote={onVote} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
+
+  fireEvent.click(screen.getByRole("button", { name: "取消本次提名" }));
+  expect(onCancelNomination).toHaveBeenCalledOnce();
+
+  const raised = playerView("VOTING");
+  raised.voteRaised = true;
+  raised.game!.nomination!.votesReceived = 1;
+  rerender(<PlayerGame view={raised} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={onCancelNomination} onVote={onVote} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
+  expect(screen.getByRole("button", { name: "举手赞成" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.queryByRole("button", { name: "取消本次提名" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "放下手" }));
+  expect(onVote).toHaveBeenCalledWith(false);
+});
+
+function playerView(phase: "DAY_DISCUSSION" | "VOTING"): PrivateView {
+  const seats = [
+    { seat: 1, nickname: "提名人", connected: true, alive: true, ghostVoteAvailable: true },
+    { seat: 2, nickname: "被提名人", connected: true, alive: true, ghostVoteAvailable: true },
+    { seat: 3, nickname: "三号", connected: true, alive: true, ghostVoteAvailable: true },
+    { seat: 4, nickname: "四号", connected: true, alive: true, ghostVoteAvailable: true },
+    { seat: 5, nickname: "五号", connected: true, alive: true, ghostVoteAvailable: true },
+  ];
+  return {
+    participant: { id: "p1", nickname: "提名人", seat: 1 },
+    state: "RUNNING",
+    role: { roleId: "chef", alignment: "GOOD", type: "TOWNSFOLK", name: "厨师", summary: "测试能力", beginnerTip: "测试提示" },
+    roleConfirmed: true,
+    messages: ["你的身份是厨师。"],
+    game: {
+      phase,
+      day: 1,
+      seats,
+      events: [],
+      readyCount: 0,
+      aliveCount: 5,
+      ...(phase === "VOTING" ? { nomination: { nominatorSeat: 1, nomineeSeat: 2, votesReceived: 0, votesRaised: 0, threshold: 3 } } : {}),
+    },
+    action: { kind: phase === "VOTING" ? "VOTE" : "DAY", legalSeats: seats.map((seat) => seat.seat), minTargets: 0, maxTargets: phase === "VOTING" ? 0 : 1, prompt: "测试操作" },
+  };
+}

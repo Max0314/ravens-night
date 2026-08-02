@@ -125,6 +125,38 @@ test("a complete nomination vote returns to nominations and can end the day", ()
   expect(["OTHER_NIGHT", "GAME_OVER"]).toContain(service.publicView(room.code).game?.phase);
 });
 
+test("a nominator may cancel before voting starts and reuse the nomination", () => {
+  const { service, room, players } = runningRoom();
+  reachFirstDay(service, room.code, players);
+  const nomineeIndex = players.findIndex((player, index) => index > 0 && service.privateView(room.code, player.token).role?.roleId !== "virgin");
+  expect(nomineeIndex).toBeGreaterThan(0);
+
+  service.nominate(room.code, players[0]!.token, nomineeIndex + 1);
+  expect(service.publicView(room.code).game?.phase).toBe("VOTING");
+  expect(() => service.cancelNomination(room.code, players[1]!.token)).toThrow(/Only the nominator/i);
+  service.cancelNomination(room.code, players[0]!.token);
+  expect(service.publicView(room.code).game?.phase).toBe("NOMINATION");
+  expect(() => service.nominate(room.code, players[0]!.token, nomineeIndex + 1)).not.toThrow();
+});
+
+test("a voter may switch between raised and lowered until the final ballot arrives", () => {
+  const { service, room, players } = runningRoom();
+  reachFirstDay(service, room.code, players);
+  const nomineeIndex = players.findIndex((player, index) => index > 0 && service.privateView(room.code, player.token).role?.roleId !== "virgin");
+  service.nominate(room.code, players[0]!.token, nomineeIndex + 1);
+
+  service.vote(room.code, players[0]!.token, true);
+  expect(service.privateView(room.code, players[0]!.token)).toMatchObject({ voteRaised: true, action: { kind: "VOTE" } });
+  expect(service.publicView(room.code).game?.nomination).toMatchObject({ votesReceived: 1, votesRaised: 1 });
+  service.vote(room.code, players[0]!.token, false);
+  expect(service.privateView(room.code, players[0]!.token)).toMatchObject({ voteRaised: false, action: { kind: "VOTE" } });
+  expect(service.publicView(room.code).game?.nomination).toMatchObject({ votesReceived: 1, votesRaised: 0 });
+  expect(() => service.cancelNomination(room.code, players[0]!.token)).toThrow(/after voting begins/i);
+
+  for (const player of players.slice(1)) service.vote(room.code, player.token, false);
+  expect(service.publicView(room.code).game?.phase).toBe("NOMINATION");
+});
+
 test("a read-only public display may join after the game starts", () => {
   const { service, room } = runningRoom();
   const display = service.join(room.code, "客厅大屏", "DISPLAY");
@@ -147,6 +179,7 @@ test("the organizer can reset a table without making seated players rejoin", () 
   const created = service.create(5, "创建者");
   const seated = ["一", "二", "三", "四", "五"].map((nickname) => service.join(created.room.code, nickname, "PLAYER"));
   service.startTutorial(created.room.code, created.organizerToken);
+  const firstSetup = service.snapshot(created.room.code);
   for (const player of seated) service.completeTutorial(created.room.code, player.token);
 
   expect(() => service.reset(created.room.code, "wrong-token")).toThrow(/authorization/i);
@@ -158,4 +191,17 @@ test("the organizer can reset a table without making seated players rejoin", () 
 
   service.startTutorial(created.room.code, created.organizerToken);
   expect(service.publicView(created.room.code).state).toBe("TUTORIAL");
+  const secondSetup = service.snapshot(created.room.code);
+  expect(secondSetup.gameNumber).toBe(firstSetup.gameNumber + 1);
+  expect(secondSetup.assignments).not.toEqual(firstSetup.assignments);
 });
+
+function reachFirstDay(service: RoomService, code: string, players: Array<{ token: string }>) {
+  for (const player of players) service.confirmRole(code, player.token);
+  for (const player of players) {
+    const action = service.privateView(code, player.token).action;
+    if (action?.kind === "SELECT_ONE") service.submitAction(code, player.token, [action.legalSeats[0]!]);
+    if (action?.kind === "SELECT_TWO") service.submitAction(code, player.token, action.legalSeats.slice(0, 2));
+  }
+  expect(service.publicView(code).game?.phase).toBe("DAY_DISCUSSION");
+}

@@ -12,6 +12,7 @@ interface PlayerGameProps {
   onConfirmRole: () => void;
   onSubmitAction: (seats: number[]) => void;
   onNominate: (seat: number) => void;
+  onCancelNomination: () => void;
   onVote: (raised: boolean) => void;
   onReady: () => void;
   onUseAbility: (seat: number) => void;
@@ -25,11 +26,12 @@ const phaseNames: Record<string, string> = {
   DAY_DISCUSSION: "自由讨论", NOMINATION: "提名阶段", VOTING: "公开投票", GAME_OVER: "终局",
 };
 
-export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide }: PlayerGameProps) {
+export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onCancelNomination, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide }: PlayerGameProps) {
   const [selected, setSelected] = useState<number[]>([]);
+  const [pendingNominee, setPendingNominee] = useState<number>();
   const game = view?.game;
   const role = view?.role;
-  useEffect(() => setSelected([]), [game?.phase, view?.action?.kind]);
+  useEffect(() => { setSelected([]); setPendingNominee(undefined); }, [game?.phase, view?.action?.kind]);
 
   if (!view || !role || !game) return <main className="game-page"><button className="screen-back" type="button" onClick={onBack}>← 返回首页</button><Waiting title="等待所有玩家" detail="大家完成教学后，身份会同时揭晓。" compact /></main>;
 
@@ -67,13 +69,15 @@ export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitA
     {game.phase === "VOTING" && game.nomination ? <Panel className="vote-panel">
       <p className="eyebrow">提名投票</p><h1>{seatName(game.seats, game.nomination.nomineeSeat)}</h1>
       <p>{seatName(game.seats, game.nomination.nominatorSeat)} 发起提名 · 过半需要 {game.nomination.threshold} 票</p>
-      {action?.kind === "VOTE" ? <div className="vote-actions"><Button onClick={() => onVote(true)} disabled={busy}>举手赞成</Button><Button variant="quiet" onClick={() => onVote(false)} disabled={busy}>放下手</Button></div> : <p className="muted">你的票已记录，等待其他玩家。</p>}
+      <p className="vote-current">{view.voteRaised === undefined ? "请选择你的投票" : view.voteRaised ? "你当前：已举手赞成" : "你当前：未举手"} · 全员完成前可随时切换</p>
+      <div className="vote-actions"><Button className={view.voteRaised === true ? "is-active" : ""} aria-pressed={view.voteRaised === true} onClick={() => onVote(true)} disabled={busy}>举手赞成</Button><Button className={view.voteRaised === false ? "is-active" : ""} aria-pressed={view.voteRaised === false} variant="quiet" onClick={() => onVote(false)} disabled={busy}>放下手</Button></div>
+      {game.nomination.nominatorSeat === view.participant.seat && game.nomination.votesReceived === 0 ? <Button className="cancel-nomination" variant="quiet" onClick={onCancelNomination} disabled={busy}>取消本次提名</Button> : null}
       <small>{game.nomination.votesReceived}/{game.seats.length} 位已投票</small>
     </Panel> : <Panel className="day-panel">
       <p className="eyebrow">第 {game.day} 天</p><h1>{game.phase === "NOMINATION" ? "还可以继续提名" : "自由讨论"}</h1>
       <p>分享线索、提出怀疑，也可以暂时隐瞒身份。每人每天只能提名一次，每人每天也只能被提名一次。</p>
       {action?.kind === "SLAYER" ? <div className="slayer-action"><strong>猎魔人的一次机会</strong><p>{action.prompt}</p><SeatChoices seats={game.seats} legalSeats={action.legalSeats} selected={selected} max={1} onChange={setSelected} /><Button variant="danger" disabled={busy || selected.length !== 1} onClick={() => onUseAbility(selected[0]!)}>公开射击所选玩家</Button></div> : null}
-      <div className="nominee-grid">{game.seats.filter((seat) => seat.alive).map((seat) => <button key={seat.seat} type="button" disabled={busy || seat.seat === view.participant.seat} onClick={() => onNominate(seat.seat)}><span>{seat.seat}</span>{seat.nickname}<small>提名</small></button>)}</div>
+      {pendingNominee ? <div className="nomination-confirm"><strong>确认提名 {seatName(game.seats, pendingNominee)}？</strong><p>确认后所有玩家将进入投票；无人投票前仍可取消。</p><div><Button onClick={() => onNominate(pendingNominee)} disabled={busy}>确认提名</Button><Button variant="quiet" onClick={() => setPendingNominee(undefined)} disabled={busy}>暂不提名</Button></div></div> : <div className="nominee-grid">{game.seats.filter((seat) => seat.alive).map((seat) => <button key={seat.seat} type="button" disabled={busy || seat.seat === view.participant.seat} onClick={() => setPendingNominee(seat.seat)}><span>{seat.seat}</span>{seat.nickname}<small>提名</small></button>)}</div>}
       {game.onBlock ? <p className="on-block">当前处决候选：{seatName(game.seats, game.onBlock.seat)} · {game.onBlock.votes} 票</p> : null}
       <Button variant="quiet" onClick={onReady} disabled={busy}>我同意结束今天（{game.readyCount}/{game.aliveCount}）</Button>
     </Panel>}
@@ -98,7 +102,7 @@ function EvilFirstNightIntel({ messages }: { messages: string[] }) {
 function dayTask(view: PrivateView): string {
   const game = view.game;
   if (!game) return "等待游戏开始。";
-  if (game.phase === "VOTING") return view.action?.kind === "VOTE" ? "现在投票：选择举手赞成或放下手。" : "你的票已记录，等待所有人完成投票。";
+  if (game.phase === "VOTING") return view.voteRaised === undefined ? "现在投票：选择举手赞成或放下手。" : `你当前${view.voteRaised ? "已举手赞成" : "未举手"}；全员完成前可以切换。`;
   if (view.action?.kind === "SLAYER") return "你可以发动一次猎魔人能力，也可以继续面对面讨论。";
   if (!game.seats.find((seat) => seat.seat === view.participant.seat)?.alive) return "你已经死亡：仍可参与讨论；投票时谨慎使用唯一幽灵票。";
   return "面对面讨论你的线索；可以提名一名存活玩家，或在讨论结束后确认日落。";

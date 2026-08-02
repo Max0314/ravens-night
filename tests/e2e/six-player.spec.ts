@@ -171,6 +171,20 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
 
       await post(players[nominatorIndex]!, `/api/rooms/${code}/nominate`, { nomineeSeat: views[demonIndex]!.participant.seat });
       await expect(display.page.getByText("公开投票")).toBeVisible({ timeout: 8_000 });
+      if (day === 0) {
+        const cancel = players[nominatorIndex]!.page.getByRole("button", { name: "取消本次提名", exact: true });
+        await expect(cancel).toBeVisible({ timeout: 8_000 });
+        await cancel.click();
+        await expect(players[nominatorIndex]!.page.getByText("还可以继续提名")).toBeVisible({ timeout: 8_000 });
+        await post(players[nominatorIndex]!, `/api/rooms/${code}/nominate`, { nomineeSeat: views[demonIndex]!.participant.seat });
+
+        const switchingVoter = players[0]!;
+        await expect(switchingVoter.page.getByRole("button", { name: "举手赞成", exact: true })).toBeVisible({ timeout: 8_000 });
+        await switchingVoter.page.getByRole("button", { name: "举手赞成", exact: true }).click();
+        await expect(switchingVoter.page.getByText(/你当前：已举手赞成/)).toBeVisible();
+        await switchingVoter.page.getByRole("button", { name: "放下手", exact: true }).click();
+        await expect(switchingVoter.page.getByText(/你当前：未举手/)).toBeVisible();
+      }
       for (const client of players) await post(client, `/api/rooms/${code}/vote`, { raised: true });
 
       views = await Promise.all(players.map((client) => privateView(client, code)));
