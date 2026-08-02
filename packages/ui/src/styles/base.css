@@ -15,8 +15,9 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--rn-night); }
-button, input { font: inherit; }
+html { min-width: 320px; background: var(--rn-night); }
+body { margin: 0; min-width: 320px; min-height: 100vh; min-height: 100dvh; overflow-x: hidden; background: var(--rn-night); }
+button, input, select { font: inherit; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--rn-gold-light); outline-offset: 3px; }
 
 .rn-button {
@@ -52,8 +53,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--rn-gold-lig
 .rn-role-card--covered { display: grid; place-items: center; align-content: center; gap: 1rem; text-align: center; }
 .rn-role-card__seal { width: 86px; height: 86px; display: grid; place-items: center; border: 1px solid var(--rn-gold); border-radius: 50%; color: var(--rn-gold-light); font-size: 2.3rem; box-shadow: 0 0 36px rgba(181,139,67,.14); }
 
-.rn-seat-ring { position: relative; width: min(72vw, 760px); aspect-ratio: 1; margin: 0 auto; padding: 0; list-style: none; }
-.rn-seat { --angle: calc(360deg / var(--seat-count) * var(--seat-index)); position: absolute; left: 50%; top: 50%; width: 108px; min-height: 64px; display: grid; place-items: center; gap: 2px; transform: translate(-50%,-50%) rotate(var(--angle)) translateY(-280px) rotate(calc(-1 * var(--angle))); border: 1px solid var(--rn-border); border-radius: 50%; background: #111722; box-shadow: 0 8px 24px rgba(0,0,0,.32); }
+.rn-seat-ring { --rn-seat-radius: min(36vw, 280px); position: relative; width: min(72vw, 760px); aspect-ratio: 1; margin: 0 auto; padding: 0; list-style: none; }
+.rn-seat { --angle: calc(360deg / var(--seat-count) * var(--seat-index)); position: absolute; left: 50%; top: 50%; width: 108px; min-height: 64px; display: grid; place-items: center; gap: 2px; transform: translate(-50%,-50%) rotate(var(--angle)) translateY(calc(-1 * var(--rn-seat-radius))) rotate(calc(-1 * var(--angle))); border: 1px solid var(--rn-border); border-radius: 50%; background: #111722; box-shadow: 0 8px 24px rgba(0,0,0,.32); }
 .rn-seat__number { color: var(--rn-gold-light); font-size: .75rem; }.rn-seat__name { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rn-seat--dead { opacity: .43; filter: grayscale(.9); }.rn-seat--dead .rn-seat__name { text-decoration: line-through; }.rn-seat--offline { border-style: dashed; }
 .rn-countdown { font-family: ui-monospace, "SFMono-Regular", monospace; font-variant-numeric: tabular-nums; color: var(--rn-gold-light); }
@@ -61,6 +62,21 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--rn-gold-lig
 @media (max-width: 720px) {
   .rn-role-card { min-height: 570px; border-radius: 14px; }
   .rn-role-card__portrait-wrap { height: 300px; }
-  .rn-seat-ring { width: 92vw; }
-  .rn-seat { width: 74px; min-height: 52px; transform: translate(-50%,-50%) rotate(var(--angle)) translateY(-38vw) rotate(calc(-1 * var(--angle))); font-size: .78rem; }
+  .rn-seat-ring { --rn-seat-radius: 38vw; width: 92vw; }
+  .rn-seat { width: 74px; min-height: 52px; font-size: .78rem; }
+}
+
+@media (max-width: 380px) {
+  .rn-role-card { min-height: 0; }
+  .rn-role-card__portrait-wrap { height: 250px; }
+  .rn-role-card__copy { padding: 0 18px 20px; }
+  .rn-role-card h2 { font-size: 1.9rem; margin-bottom: .75rem; }
+  .rn-seat-ring { --rn-seat-radius: 34vw; }
+  .rn-seat { width: 70px; min-height: 50px; font-size: .74rem; }
+}
+
+@media (max-width: 820px) and (max-height: 720px) {
+  .rn-role-card { min-height: 0; }
+  .rn-role-card__portrait-wrap { height: 220px; }
+  .rn-role-card__copy { padding-bottom: 18px; }
 }

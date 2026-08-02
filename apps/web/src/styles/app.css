@@ -1,7 +1,7 @@
 @keyframes ember { 0%,100% { opacity:.3; transform:translateY(0) } 50% { opacity:.75; transform:translateY(-8px) } }
 @keyframes orbit { to { transform: rotate(360deg) } }
 
-#root { min-height: 100vh; }
+#root { min-height: 100vh; min-height: 100dvh; }
 h1, h2 { font-family: "Noto Serif SC", "Songti SC", "STSong", serif; font-weight: 500; }
 .app-loading{min-height:100vh;display:grid;place-items:center;background:#080b12;color:var(--rn-gold-light);font-size:3rem}.app-loading span{width:100px;height:100px;display:grid;place-items:center;border:1px solid rgba(181,139,67,.35);border-radius:50%;animation:orbit 8s linear infinite}.login-page{min-height:100vh;display:grid;grid-template-columns:minmax(300px,1fr) minmax(420px,620px);align-items:center;padding:5vw;background:#080b12;overflow:hidden;position:relative}.login-page__art{position:absolute;inset:0 42% 0 0;background:url('/assets/villagers-concept.png') 22% center/cover no-repeat;mask-image:linear-gradient(to right,#000 55%,transparent);opacity:.58}.login-panel{grid-column:2;position:relative;z-index:1;padding:clamp(34px,5vw,62px);border-radius:16px}.login-panel .brand{margin-bottom:52px}.login-panel h1{font-size:clamp(2.5rem,5vw,4.7rem);line-height:1.13;margin:.35em 0}.login-panel>p:not(.eyebrow){color:var(--rn-mist);line-height:1.8}.login-panel form{display:grid;gap:18px;margin-top:34px}.login-panel label{display:grid;gap:9px;color:#d5cfc1}.login-panel input{min-height:54px;border:1px solid rgba(181,139,67,.42);border-radius:6px;background:#080c13;color:var(--rn-parchment);padding:0 14px;font-size:1rem}
 
@@ -28,7 +28,7 @@ h1, h2 { font-family: "Noto Serif SC", "Songti SC", "STSong", serif; font-weight
 
 .tutorial { align-content:center }.tutorial__progress{position:relative;z-index:1;color:var(--rn-gold-light);letter-spacing:.12em}.tutorial__panel{position:relative;width:min(100%,680px);min-height:420px;padding:60px;display:grid;align-content:center;justify-items:center;text-align:center;border-radius:50% 50% 12px 12px}.tutorial__symbol{font-size:3rem;color:var(--rn-gold-light)}.tutorial__panel h1{font-size:clamp(2rem,5vw,3.5rem);margin:20px 0}.tutorial__panel p{max-width:500px;color:#cbc4b5;line-height:1.9;font-size:1.08rem}.tutorial__panel .rn-button{margin-top:20px}
 
-.role-page { min-height:100vh;padding:26px 18px 50px;display:grid;justify-items:center;align-content:start;gap:20px;background:radial-gradient(circle at 50% 24%,rgba(181,139,67,.13),transparent 26%),#080b12}.privacy-warning{color:#9da4ad;font-size:.8rem;letter-spacing:.1em}.role-page>.rn-button{width:min(100%,380px)}
+.role-page { min-height:100vh;min-height:100dvh;padding:calc(20px + env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) calc(42px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));display:grid;justify-items:center;align-content:start;gap:20px;background:radial-gradient(circle at 50% 24%,rgba(181,139,67,.13),transparent 26%),#080b12}.privacy-warning{color:#9da4ad;font-size:.8rem;letter-spacing:.1em;text-align:center}.role-page>.rn-button{width:min(100%,380px)}
 .night-page{min-height:100vh;padding:24px;display:grid;grid-template-rows:auto 1fr;background:radial-gradient(circle at 50% 35%,#121b2a,#080b12 66%)}.night-page>header{display:flex;justify-content:space-between;color:#9ea5ae}.night-action{align-self:center;justify-self:center;width:min(100%,620px);padding:50px;text-align:center;border-radius:50% 50% 14px 14px}.night-action h1{font-size:clamp(2rem,6vw,4rem);margin:0 0 14px}.night-action>p{color:var(--rn-mist);line-height:1.8}.waiting-orbit{width:120px;height:120px;margin:40px auto;border:1px solid rgba(181,139,67,.18);border-radius:50%;animation:orbit 8s linear infinite}.waiting-orbit span{display:block;width:8px;height:8px;border-radius:50%;background:var(--rn-gold-light);box-shadow:0 0 20px var(--rn-gold);transform:translate(54px,-4px)}.context-help{padding:12px;border-top:1px solid var(--rn-border)}
 
 .game-page{min-height:100vh;padding:22px 18px 110px;background:radial-gradient(circle at 50% 15%,rgba(181,139,67,.11),transparent 28%),#080b12}.game-page--night{background:radial-gradient(circle at 50% 25%,#172234,#080b12 62%)}.game-header{max-width:720px;margin:0 auto 24px;display:flex;align-items:center;justify-content:space-between;color:#9ba3ad}.game-header div:first-child{display:grid;gap:3px}.game-header strong{color:var(--rn-parchment);font-family:"Noto Serif SC",serif;font-size:1.4rem}.role-chip{padding:8px 13px;border:1px solid rgba(181,139,67,.34);border-radius:999px;color:#d7bc89;font-size:.82rem}.action-panel,.day-panel,.vote-panel{max-width:660px;margin:0 auto;padding:clamp(26px,6vw,48px);border-radius:18px}.action-panel h1,.day-panel h1,.vote-panel h1{font-size:clamp(2rem,8vw,3.5rem);margin:.35rem 0 1rem}.action-panel>p,.day-panel>p,.vote-panel>p{color:var(--rn-mist);line-height:1.75}.eyebrow{margin:0!important;color:var(--rn-gold-light)!important;text-transform:uppercase;letter-spacing:.16em;font-size:.76rem}.seat-choices{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:26px 0}.seat-choices button,.nominee-grid button{min-height:64px;border:1px solid rgba(181,139,67,.22);border-radius:8px;background:rgba(255,255,255,.025);color:var(--rn-parchment);display:grid;grid-template-columns:28px 1fr;align-items:center;text-align:left;padding:10px;cursor:pointer}.seat-choices button span,.nominee-grid button span{width:25px;height:25px;display:grid;place-items:center;border:1px solid rgba(181,139,67,.4);border-radius:50%;color:#cdb37f;font-size:.73rem}.seat-choices button small{grid-column:2;color:#717a85}.seat-choices button.is-selected{border-color:var(--rn-gold);background:rgba(181,139,67,.12);box-shadow:inset 0 0 28px rgba(181,139,67,.08)}.seat-choices button:disabled{opacity:.32}.action-panel>.rn-button,.day-panel>.rn-button{width:100%}.inline-waiting{max-width:660px;margin:8vh auto 20px}.inline-waiting .night-action{padding:38px 22px}.inline-waiting .waiting-orbit{width:80px;height:80px}.inline-waiting .waiting-orbit span{transform:translate(34px,-4px)}
@@ -55,3 +55,100 @@ h1, h2 { font-family: "Noto Serif SC", "Songti SC", "STSong", serif; font-weight
 @media(max-width:820px){.role-detail{grid-template-columns:1fr}.role-detail__portrait{min-height:340px;box-shadow:inset 0 -25px 40px rgba(3,5,9,.45)}.role-detail__copy{padding:0 20px 24px}.session-status{top:10px;border-radius:10px}.session-status--back{top:auto;bottom:12px}}
 
 @media(prefers-reduced-motion:reduce){.waiting-orbit{animation:none}.home__art{filter:none}}
+
+/* Responsive play surfaces: phones, tablets and wall displays share the same game state. */
+.game-page{
+  min-height:100dvh;
+  padding:calc(18px + env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) calc(94px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));
+}
+.game-header{gap:14px}
+.role-chip{max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.action-panel h1,.day-panel h1,.vote-panel h1{text-wrap:balance}
+.seat-choices button,.nominee-grid button{grid-template-columns:28px minmax(0,1fr)}
+.seat-choices button strong,.nominee-grid button{overflow-wrap:anywhere}
+.game-guide-links button,.guide-sheet__header>button,.guide-tabs button{min-height:44px}
+.game-guide-links button{padding:8px 13px}
+.guide-tutorial,.own-role-guide,.role-compendium{overscroll-behavior:contain}
+.guide-tutorial h1,.own-role-guide h1,.role-compendium__intro h1{text-wrap:balance}
+.guide-tutorial__actions button,.role-compendium__intro button{min-height:44px}
+
+.display{
+  position:relative;
+  min-height:100dvh;
+  padding:clamp(18px,2vw,54px) clamp(20px,3vw,72px);
+}
+.display__header{gap:18px;font-size:clamp(.9rem,1.1vw,1.7rem)}
+.display__town{height:calc(100dvh - clamp(132px,14vh,230px))}
+.display .rn-seat-ring{--rn-seat-radius:min(30vh,30vw);width:min(72vh,72vw)}
+.display .rn-seat{
+  width:clamp(104px,7.2vw,220px);
+  min-height:clamp(62px,4.5vw,126px);
+  padding:clamp(6px,.6vw,14px);
+  font-size:clamp(.86rem,1.05vw,1.65rem);
+}
+.display .rn-seat__number{font-size:clamp(.7rem,.82vw,1.3rem)}
+.display .rn-seat__name{max-width:90%}
+.display__center{max-width:min(46vw,1000px)}
+.display__center p{font-size:clamp(1rem,1.4vw,2.35rem)}
+.display__center h1{font-size:clamp(2.4rem,5vw,8rem);text-wrap:balance}
+.display__center small{font-size:clamp(.75rem,1.15vw,1.85rem);line-height:1.55}
+.display__notice{
+  bottom:max(18px,env(safe-area-inset-bottom));
+  max-width:84vw;
+  padding:clamp(12px,1vw,24px) clamp(20px,2vw,48px);
+  font-size:clamp(.9rem,1vw,1.6rem);
+}
+
+@media(max-width:820px){
+  .login-page{padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+  .home{padding:max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left))}
+  .lobby{padding-right:max(18px,env(safe-area-inset-right));padding-bottom:max(30px,env(safe-area-inset-bottom));padding-left:max(18px,env(safe-area-inset-left))}
+  .display{padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+  .display__town{height:calc(100dvh - 132px)}
+  .display .rn-seat-ring{--rn-seat-radius:30vw;width:min(82vh,88vw)}
+  .display .rn-seat{width:74px;min-height:52px;font-size:.78rem}
+  .display__center{max-width:min(76vw,520px)}
+  .display__center p{font-size:clamp(.86rem,4vw,1.15rem)}
+  .display__center h1{font-size:clamp(2rem,10vw,4rem)}
+  .display__header button{min-height:44px}
+  .guide-sheet{height:100dvh}
+  .guide-sheet__header{padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:10px}
+  .guide-tabs{scrollbar-width:none}
+  .guide-tutorial,.own-role-guide,.role-compendium{padding-bottom:calc(26px + env(safe-area-inset-bottom))}
+  .game-page{padding-top:max(14px,env(safe-area-inset-top))}
+}
+
+@media(max-width:380px){
+  .login-panel{margin-top:4vh;padding:24px 18px}
+  .login-panel .brand{margin-bottom:26px}
+  .login-panel h1{font-size:2.35rem}
+  .home__copy{padding-top:10vh}
+  .home__copy h1{font-size:3rem}
+  .lobby{padding-top:142px}
+  .lobby__heading h1{font-size:1.7rem}
+  .lobby__status{padding:22px 18px}
+  .role-page{gap:14px}
+  .privacy-warning{font-size:.72rem;letter-spacing:.06em}
+  .action-panel,.day-panel,.vote-panel{padding:22px 18px}
+  .action-panel h1,.day-panel h1,.vote-panel h1{font-size:2rem}
+  .guide-sheet__header{padding-left:13px;padding-right:13px}
+  .guide-tabs{padding-left:8px;padding-right:8px}
+  .guide-tutorial,.own-role-guide,.role-compendium{padding-left:14px;padding-right:14px}
+  .guide-tutorial__symbol{font-size:2.7rem}
+  .guide-tutorial h1,.own-role-guide h1,.role-compendium__intro h1{font-size:2rem}
+  .guide-tutorial__actions{width:100%}
+  .guide-tutorial__actions button{min-width:0;flex:1}
+  .role-detail__portrait{min-height:250px}
+  .role-detail__copy{padding-left:16px;padding-right:16px}
+}
+
+@media(max-height:720px) and (max-width:820px){
+  .role-page{padding-top:12px}
+  .privacy-warning{margin:0}
+  .tutorial__panel{min-height:360px;padding-top:28px;padding-bottom:28px}
+  .guide-tutorial__symbol{font-size:2.5rem}
+  .guide-tutorial h1{margin:10px 0}
+  .guide-tutorial>p:not(.guide-step-count){font-size:.96rem;line-height:1.7}
+  .guide-tutorial__actions{margin-top:16px}
+  .role-detail__portrait{min-height:230px}
+}
