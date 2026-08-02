@@ -23,10 +23,14 @@ export interface PrivateView {
   action?: { kind: "CONFIRM_ROLE" | "SELECT_ONE" | "SELECT_TWO" | "VOTE" | "DAY" | "SLAYER"; legalSeats: number[]; minTargets: number; maxTargets: number; prompt: string };
 }
 
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) { super(message); this.name = "ApiError"; }
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers: { "content-type": "application/json", ...init?.headers } });
   const body = await response.json() as T & { error?: string };
-  if (!response.ok) throw new Error(body.error ?? "请求失败，请稍后重试");
+  if (!response.ok) throw new ApiError(body.error ?? "请求失败，请稍后重试", response.status);
   return body;
 }
 

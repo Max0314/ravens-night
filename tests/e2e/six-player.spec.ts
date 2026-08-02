@@ -121,14 +121,19 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     await expect(organizer.page.getByText("6/6 位玩家已入座")).toBeVisible({ timeout: 8_000 });
     await players[5]!.page.reload();
     await expect(players[5]!.page.getByText("6/6 位玩家已入座")).toBeVisible();
+    await players[4]!.context.setOffline(true);
+    await expect(players[4]!.page.getByText(/网络已断开/)).toBeVisible();
+    await players[4]!.context.setOffline(false);
+    await expect(players[4]!.page.getByText(/网络已断开/)).toBeHidden();
+    await expect(players[4]!.page.getByText("6/6 位玩家已入座")).toBeVisible();
 
     const start = organizer.page.getByRole("button", { name: "开始新手教学", exact: true });
     await expect(start).toBeEnabled();
     await start.click();
 
     for (const client of players) {
-      await expect(client.page.getByText("教学 1 / 6")).toBeVisible({ timeout: 8_000 });
-      for (let step = 0; step < 5; step += 1) {
+      await expect(client.page.getByText("教学 1 / 7")).toBeVisible({ timeout: 8_000 });
+      for (let step = 0; step < 6; step += 1) {
         await client.page.getByRole("button", { name: "我明白了", exact: true }).click();
       }
       await client.page.getByRole("button", { name: "查看我的身份", exact: true }).click();
@@ -141,7 +146,9 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     await players[1]!.page.getByRole("button", { name: "我的角色", exact: true }).click();
     await expect(players[1]!.page.getByRole("dialog", { name: "游戏帮助" })).toBeVisible();
     await expect(players[1]!.page.getByText("游玩建议", { exact: true })).toBeVisible();
-    await players[1]!.page.getByRole("button", { name: "关闭游戏帮助", exact: true }).click();
+    await players[1]!.page.goBack();
+    await expect(players[1]!.page.getByRole("dialog", { name: "游戏帮助" })).toBeHidden();
+    await expect(players[1]!.page.getByText(/只有你能看到/)).toBeVisible();
 
     for (const client of players) {
       await client.page.getByRole("button", { name: "我记住了身份", exact: true }).click();

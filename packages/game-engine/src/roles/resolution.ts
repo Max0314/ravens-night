@@ -27,11 +27,12 @@ export interface SpecialWinContext {
   livingCount: number;
   demonAlive: boolean;
   executedToday: boolean;
+  mayorWinEligible?: boolean;
 }
 
 export function resolveSpecialWin(context: SpecialWinContext): { winner: Alignment; reason: string } | undefined {
   if (context.executedRoleId === "saint") return { winner: "EVIL", reason: "saint-executed" };
-  if (context.livingCount === 3 && !context.executedToday && context.livingRoleIds?.includes("mayor")) {
+  if (context.mayorWinEligible && context.livingCount === 3 && !context.executedToday && context.livingRoleIds?.includes("mayor")) {
     return { winner: "GOOD", reason: "mayor-final-three" };
   }
   if (!context.demonAlive) return { winner: "GOOD", reason: "demon-dead" };

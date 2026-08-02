@@ -2,6 +2,7 @@ import { Button, Panel, RoleCard } from "@ravens/ui";
 import { useEffect, useState } from "react";
 import type { PrivateView } from "../api.js";
 import type { GuideMode } from "../components/GuideOverlay.js";
+import { roleArt } from "../role-art.js";
 
 interface PlayerGameProps {
   view?: PrivateView;
@@ -105,14 +106,3 @@ function Clues({ messages }: { messages: string[] }) { return <details className
 function PublicLog({ events }: { events: Array<{ seq: number; message: string }> }) { return <details className="public-log"><summary>村庄记录</summary>{[...events].reverse().map((event) => <p key={event.seq}>{event.message}</p>)}</details>; }
 function seatName(seats: Array<{ seat: number; nickname: string }>, seat: number) { const player = seats.find((candidate) => candidate.seat === seat); return `${seat}号 ${player?.nickname ?? "玩家"}`; }
 function winReason(reason?: string) { return ({ "saint-executed": "圣徒被处决，邪恶达成了特殊胜利。", "mayor-final-three": "三人存活且无人被处决，镇长带领善良获胜。", "demon-dead": "恶魔已经死亡。", "final-two": "仅剩两人存活，邪恶控制了村庄。" } as Record<string, string>)[reason ?? ""] ?? "这一夜的故事已经写完。"; }
-
-function roleArt(roleId: string): { portraitUrl: string; portraitPosition: string } {
-  const cells: Record<string, [number, number, number]> = {
-    washerwoman:[1,0,0], librarian:[1,50,0], investigator:[1,100,0], chef:[1,0,100], empath:[1,50,100], fortune_teller:[1,100,100],
-    undertaker:[2,0,0], monk:[2,50,0], ravenkeeper:[2,100,0], virgin:[2,0,100], slayer:[2,50,100], soldier:[2,100,100],
-    mayor:[3,0,0], butler:[3,50,0], drunk:[3,100,0], recluse:[3,0,100], saint:[3,50,100], poisoner:[3,100,100],
-    spy:[4,0,0], scarlet_woman:[4,50,0], baron:[4,100,0], imp:[4,0,100],
-  };
-  const [sheet, x, y] = cells[roleId] ?? [1, 50, 50];
-  return { portraitUrl: `/assets/role-sheet-${sheet}.webp`, portraitPosition: `${x}% ${y}%` };
-}

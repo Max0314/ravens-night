@@ -2,6 +2,7 @@ import { beginnerRoles } from "@ravens/content";
 import { useEffect, useState } from "react";
 import type { PrivateView } from "../api.js";
 import { roleTypeGuidance, roleTypeNames, tutorialSteps } from "../guide-content.js";
+import { roleArt } from "../role-art.js";
 
 export type GuideMode = "tutorial" | "roles" | "mine";
 
@@ -17,6 +18,7 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
   }, [onClose]);
 
   const selectedRole = beginnerRoles.find((role) => role.id === selectedRoleId);
+  const selectedRoleArt = selectedRole ? roleArt(selectedRole.id) : undefined;
   const tabs: Array<{ id: GuideMode; label: string }> = [
     ...(ownRole ? [{ id: "mine" as const, label: "我的角色" }] : []),
     { id: "tutorial", label: "新手教程" },
@@ -55,15 +57,21 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
       {activeMode === "roles" ? <div className="role-compendium">
         <div className="role-compendium__intro"><div><p>暗流涌动 · 22 个角色</p><h1>{selectedRole ? selectedRole.name : "选择角色查看规则"}</h1></div>{selectedRole ? <button type="button" onClick={() => setSelectedRoleId(undefined)}>返回全部</button> : null}</div>
         {selectedRole ? <article className="role-detail">
-          <p className={`role-alignment role-alignment--${selectedRole.type === "MINION" || selectedRole.type === "DEMON" ? "evil" : "good"}`}>{roleTypeNames[selectedRole.type]} · {roleTypeGuidance[selectedRole.type]}</p>
+          <div className="role-detail__portrait" role="img" aria-label={`${selectedRole.name}角色立绘`} style={{ backgroundImage: `url(${selectedRoleArt!.portraitUrl})`, backgroundPosition: selectedRoleArt!.portraitPosition }} />
+          <div className="role-detail__copy"><p className={`role-alignment role-alignment--${selectedRole.type === "MINION" || selectedRole.type === "DEMON" ? "evil" : "good"}`}>{roleTypeNames[selectedRole.type]} · {roleTypeGuidance[selectedRole.type]}</p>
           <h2>能力</h2><p>{selectedRole.summary}</p>
-          <h2>第一次玩</h2><p>{selectedRole.beginnerTip}</p>
+          <h2>第一次玩</h2><p>{selectedRole.beginnerTip}</p></div>
         </article> : <div className="role-groups">{(["TOWNSFOLK", "OUTSIDER", "MINION", "DEMON"] as const).map((type) => <section key={type}>
           <header><h2>{roleTypeNames[type]}</h2><span>{beginnerRoles.filter((role) => role.type === type).length}</span></header>
           <p>{roleTypeGuidance[type]}</p>
-          <div>{beginnerRoles.filter((role) => role.type === type).map((role) => <button type="button" key={role.id} onClick={() => setSelectedRoleId(role.id)}><strong>{role.name}</strong><small>{role.summary}</small></button>)}</div>
+          <div>{beginnerRoles.filter((role) => role.type === type).map((role) => <RoleIndexButton key={role.id} role={role} onSelect={setSelectedRoleId} />)}</div>
         </section>)}</div>}
       </div> : null}
     </section>
   </div>;
+}
+
+function RoleIndexButton({ role, onSelect }: { role: (typeof beginnerRoles)[number]; onSelect: (roleId: string) => void }) {
+  const art = roleArt(role.id);
+  return <button type="button" onClick={() => onSelect(role.id)}><span className="role-index__portrait" role="img" aria-label={`${role.name}角色缩略立绘`} style={{ backgroundImage: `url(${art.portraitUrl})`, backgroundPosition: art.portraitPosition }} /><span className="role-index__copy"><strong>{role.name}</strong><small>{role.summary}</small></span></button>;
 }

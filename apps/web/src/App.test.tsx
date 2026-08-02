@@ -22,10 +22,13 @@ test("the home screen exposes an interactive tutorial and the complete role comp
   fireEvent.click(screen.getByRole("button", { name: "先看 3 分钟教程" }));
   expect(screen.getByRole("dialog", { name: "游戏帮助" })).toBeVisible();
   expect(screen.getByRole("heading", { name: "两个阵营，一项使命" })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "下一条" }));
+  expect(screen.getByRole("heading", { name: "系统就是隐形说书人" })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "角色表" }));
   expect(screen.getByText("暗流涌动 · 22 个角色")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: /洗衣妇/ }));
   expect(screen.getByRole("heading", { name: "洗衣妇" })).toBeVisible();
+  expect(screen.getByRole("img", { name: "洗衣妇角色立绘" })).toBeVisible();
 });
 
 test("joining from a television has a distinct public-display choice", async () => {

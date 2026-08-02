@@ -94,11 +94,11 @@ function playEvilStrategy(): "GOOD" | "EVIL" {
 }
 
 describe("repeated six-player simulations", () => {
-  test("twelve randomized games can finish with the demon repeatedly executed", () => {
-    for (let game = 0; game < 12; game += 1) expect(playGoodStrategy()).toBe("GOOD");
+  test("one hundred randomized games can finish with the demon repeatedly executed", () => {
+    for (let game = 0; game < 100; game += 1) expect(playGoodStrategy()).toBe("GOOD");
   });
 
-  test("twelve randomized games can finish while evil removes good players", () => {
-    for (let game = 0; game < 12; game += 1) expect(playEvilStrategy()).toBe("EVIL");
+  test("one hundred randomized games can finish while evil removes good players", () => {
+    for (let game = 0; game < 100; game += 1) expect(playEvilStrategy()).toBe("EVIL");
   });
 });

@@ -293,7 +293,7 @@ export class RoomService {
       delete game.lastExecutedRoleId;
       this.event(game, "今天无人被处决。 ");
     }
-    if (this.evaluateWin(room, executed, executed !== undefined)) { this.changed(room); return; }
+    if (this.evaluateWin(room, executed, executed !== undefined, true)) { this.changed(room); return; }
     this.beginOtherNight(room);
     this.changed(room);
   }
@@ -595,7 +595,7 @@ export class RoomService {
     game.aliveSeats = game.aliveSeats.filter((candidate) => candidate !== seat);
   }
 
-  private evaluateWin(room: RoomRecord, executedSeat?: number, executedToday = false): boolean {
+  private evaluateWin(room: RoomRecord, executedSeat?: number, executedToday = false, mayorWinEligible = false): boolean {
     const game = this.requireGame(room);
     const livingAssignments = room.assignments.filter((assignment) => game.aliveSeats.includes(assignment.seat));
     let demonAlive = livingAssignments.some((assignment) => assignment.roleType === "DEMON");
@@ -605,7 +605,7 @@ export class RoomService {
     }
     const executedRoleId = executedSeat === undefined || this.isImpaired(room, executedSeat) ? undefined : this.assignment(room, executedSeat).roleId;
     const livingRoleIds = livingAssignments.filter((assignment) => !this.isImpaired(room, assignment.seat)).map((assignment) => assignment.roleId);
-    const result = resolveSpecialWin({ ...(executedRoleId ? { executedRoleId } : {}), livingRoleIds, livingCount: game.aliveSeats.length, demonAlive, executedToday });
+    const result = resolveSpecialWin({ ...(executedRoleId ? { executedRoleId } : {}), livingRoleIds, livingCount: game.aliveSeats.length, demonAlive, executedToday, mayorWinEligible });
     if (!result) return false;
     game.phase = "GAME_OVER"; game.winner = result.winner; game.winReason = result.reason; room.state = "GAME_OVER";
     this.event(game, `${result.winner === "GOOD" ? "善良" : "邪恶"}阵营获胜。`);
