@@ -13,6 +13,15 @@ const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string
   GAME_OVER: { eyebrow: "终局", title: "钟声停止", detail: "今夜的身份即将全部揭晓" },
 };
 
+function phaseLabel(phase: string | undefined, day: number | undefined): string {
+  if (!phase) return "等待开局";
+  if (phase === "ROLE_REVEAL") return "身份确认";
+  if (phase === "FIRST_NIGHT") return "首夜 · 夜晚";
+  if (phase === "OTHER_NIGHT") return `第 ${Math.max(day ?? 1, 1)} 夜 · 夜晚`;
+  if (phase === "GAME_OVER") return "游戏结束";
+  return `第 ${Math.max(day ?? 1, 1)} 天 · 白天`;
+}
+
 export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: () => void; onRoomClosed: () => void }) {
   const [room, setRoom] = useState<RoomView>();
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
@@ -38,11 +47,15 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   const copy = phaseCopy[game?.phase ?? "ROLE_REVEAL"] ?? phaseCopy.ROLE_REVEAL!;
   const nominee = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nomineeSeat) : undefined;
   const nominator = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nominatorSeat) : undefined;
-  const lastEvent = game?.events.at(-1)?.message ?? `${players.length}/${room?.playerCount ?? "?"} 位玩家已入座`;
+  const publicEvents = game?.events.slice(-3).reverse() ?? [];
+  const isNight = game?.phase === "FIRST_NIGHT" || game?.phase === "OTHER_NIGHT";
 
   return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
-    <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span>{game ? `第 ${game.day || 1} 天` : "等待开局"}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
+    <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
     <section className="display__town"><SeatRing seats={seats} /><div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>手机进入房间；本设备只显示公开信息</small></div> : <><p>{copy.eyebrow}</p><h1>{game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? nominee.nickname : copy.title}</h1><small>{game.phase === "VOTING" && game.nomination && nominee ? `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></>}</div></section>
-    <Panel className="display__notice">{lastEvent}</Panel>
+    {game ? <Panel className="display__village-feed" aria-label="村庄公开信息">
+      <header><div><span aria-hidden="true">⌁</span><strong>村庄公开信息</strong></div><small>所有玩家均可得知</small></header>
+      <ol>{publicEvents.map((event, index) => <li key={event.seq} className={index === 0 ? "is-latest" : ""}><span>{index === 0 ? "最新" : `记录 ${event.seq}`}</span><p>{event.message}</p></li>)}</ol>
+    </Panel> : <Panel className="display__notice">{players.length}/{room?.playerCount ?? "?"} 位玩家已入座</Panel>}
   </main>;
 }

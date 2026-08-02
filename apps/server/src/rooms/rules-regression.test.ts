@@ -103,6 +103,27 @@ test("poison disables soldier immunity", () => {
   expect(service.publicView(room.code).game?.seats.find((seat) => seat.seat === 1)?.alive).toBe(false);
 });
 
+test("a healthy Soldier survives the Imp but a Drunk who believes they are the Soldier dies", () => {
+  const healthy = controlledSixPlayerRoom(["soldier", "monk", "chef", "saint", "poisoner", "imp"]);
+  reachFirstDay(healthy.service, healthy.room.code, healthy.players);
+  for (const player of healthy.players) healthy.service.readyToEndDay(healthy.room.code, player.token);
+  healthy.service.submitAction(healthy.room.code, healthy.players[4]!.token, [3]);
+  healthy.service.submitAction(healthy.room.code, healthy.players[1]!.token, [3]);
+  healthy.service.submitAction(healthy.room.code, healthy.players[5]!.token, [1]);
+  expect(healthy.service.publicView(healthy.room.code).game?.seats.find((seat) => seat.seat === 1)?.alive).toBe(true);
+
+  const drunk = controlledSixPlayerRoom(
+    ["drunk", "monk", "chef", "saint", "poisoner", "imp"],
+    { 1: "soldier" },
+  );
+  reachFirstDay(drunk.service, drunk.room.code, drunk.players);
+  for (const player of drunk.players) drunk.service.readyToEndDay(drunk.room.code, player.token);
+  drunk.service.submitAction(drunk.room.code, drunk.players[4]!.token, [3]);
+  drunk.service.submitAction(drunk.room.code, drunk.players[1]!.token, [3]);
+  drunk.service.submitAction(drunk.room.code, drunk.players[5]!.token, [1]);
+  expect(drunk.service.publicView(drunk.room.code).game?.seats.find((seat) => seat.seat === 1)?.alive).toBe(false);
+});
+
 test("a ravenkeeper killed at night acts before dawn", () => {
   const { service, room, players } = controlledSixPlayerRoom(["ravenkeeper", "monk", "chef", "saint", "poisoner", "imp"]);
   reachFirstDay(service, room.code, players);
@@ -123,4 +144,16 @@ test("a valid virgin trigger immediately executes the nominator and ends the day
   service.nominate(room.code, players[1]!.token, 1);
   expect(service.publicView(room.code).game?.seats.find((seat) => seat.seat === 2)?.alive).toBe(false);
   expect(service.publicView(room.code).game?.phase).toBe("OTHER_NIGHT");
+});
+
+test("a Drunk who believes they are an Investigator does not trigger the Virgin", () => {
+  const { service, room, players } = controlledSixPlayerRoom(
+    ["virgin", "drunk", "chef", "saint", "baron", "imp"],
+    { 2: "investigator" },
+  );
+  reachFirstDay(service, room.code, players);
+  service.nominate(room.code, players[1]!.token, 1);
+  expect(service.publicView(room.code).game?.seats.find((seat) => seat.seat === 2)?.alive).toBe(true);
+  expect(service.publicView(room.code).game?.phase).toBe("VOTING");
+  expect(service.publicView(room.code).game?.events.at(-1)?.message).toBe("二 提名了 一。");
 });

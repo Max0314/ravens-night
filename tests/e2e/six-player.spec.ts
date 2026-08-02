@@ -132,11 +132,9 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     await start.click();
 
     for (const client of players) {
-      await expect(client.page.getByText("教学 1 / 7")).toBeVisible({ timeout: 8_000 });
-      for (let step = 0; step < 6; step += 1) {
-        await client.page.getByRole("button", { name: "我明白了", exact: true }).click();
-      }
-      await client.page.getByRole("button", { name: "查看我的身份", exact: true }).click();
+      await expect(client.page.getByText(/教学 1 \/ \d+/)).toBeVisible({ timeout: 8_000 });
+      await expect(client.page.getByText("跳过后，游戏中仍可随时打开教程和角色表。")).toBeVisible();
+      await client.page.getByRole("button", { name: "跳过教程，查看身份", exact: true }).click();
     }
 
     for (const client of players) {
@@ -157,6 +155,9 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     let views = await settleNight(players, code);
     expect(views[0]?.game?.phase).toBe("DAY_DISCUSSION");
     await expect(display.page.getByRole("heading", { name: "自由讨论" })).toBeVisible({ timeout: 8_000 });
+    await expect(display.page.locator(".display__phase")).toContainText("第 1 天 · 白天");
+    await expect(display.page.getByRole("region", { name: "村庄公开信息" })).toContainText("村庄进入首夜");
+    await expect(display.page.getByRole("region", { name: "村庄公开信息" })).toContainText("第 1 天开始");
 
     const privateRoleNames = views.flatMap((view) => view.role?.name ? [view.role.name] : []);
     const displayText = await display.page.locator("body").innerText();
@@ -196,6 +197,10 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
 
       views = await Promise.all(players.map((client) => privateView(client, code)));
       if (views[0]?.game?.phase === "FIRST_NIGHT" || views[0]?.game?.phase === "OTHER_NIGHT") {
+        if (day === 0) {
+          await expect(display.page.locator(".display__phase")).toContainText("第 1 夜 · 夜晚", { timeout: 8_000 });
+          await expect(display.page.getByRole("region", { name: "村庄公开信息" })).toContainText("夜幕再次降临");
+        }
         views = await settleNight(players, code);
       }
     }
@@ -249,7 +254,7 @@ test("leaving the lobby transfers organizer controls to the next player", async 
     const start = successor.page.getByRole("button", { name: "开始新手教学", exact: true });
     await expect(start).toBeEnabled({ timeout: 8_000 });
     await start.click();
-    await expect(successor.page.getByText("教学 1 / 7")).toBeVisible();
+    await expect(successor.page.getByText(/教学 1 \/ \d+/)).toBeVisible();
   } finally {
     await Promise.all(clients.map((client) => client.context.close()));
   }

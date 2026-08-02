@@ -8,6 +8,8 @@ import { Lobby } from "./pages/Lobby.js";
 import { PlayerGame } from "./pages/PlayerGame.js";
 import { Tutorial } from "./pages/Tutorial.js";
 import type { PrivateView } from "./api.js";
+import { rolePlayGuides } from "./guide-content.js";
+import { beginnerRoles } from "@ravens/content";
 
 afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); window.history.replaceState({}, "", "/"); vi.unstubAllGlobals(); });
 
@@ -34,6 +36,12 @@ test("the home screen exposes an interactive tutorial and the complete role comp
   fireEvent.click(screen.getByRole("button", { name: /洗衣妇/ }));
   expect(screen.getByRole("heading", { name: "洗衣妇" })).toBeVisible();
   expect(screen.getByRole("img", { name: "洗衣妇角色立绘" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "冒充与反制" })).toBeVisible();
+  expect(screen.getByText(/邪恶冒充洗衣妇/)).toBeVisible();
+});
+
+test("every role has a detailed play guide", () => {
+  expect(beginnerRoles.every((role) => Boolean(rolePlayGuides[role.id]))).toBe(true);
 });
 
 test("joining from a television has a distinct public-display choice", async () => {
@@ -88,6 +96,21 @@ test("tutorial and game waiting screens always provide a safe return", () => {
   render(<PlayerGame busy={false} canRestart={false} onBack={gameBack} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
   fireEvent.click(screen.getByRole("button", { name: "← 返回首页" }));
   expect(gameBack).toHaveBeenCalledOnce();
+});
+
+test("the room tutorial can be skipped with one action", () => {
+  const onDone = vi.fn();
+  render(<Tutorial onBack={vi.fn()} onDone={onDone} />);
+  expect(screen.getByText("跳过后，游戏中仍可随时打开教程和角色表。")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "跳过教程，查看身份" }));
+  expect(onDone).toHaveBeenCalledOnce();
+});
+
+test("the expanded tutorial teaches role skills and concrete bluffing examples", () => {
+  render(<Tutorial onBack={vi.fn()} onDone={vi.fn()} />);
+  for (let step = 0; step < 6; step += 1) fireEvent.click(screen.getByRole("button", { name: "我明白了" }));
+  expect(screen.getByRole("heading", { name: "邪恶如何冒充镇民" })).toBeVisible();
+  expect(screen.getByText(/男爵声称.*投毒者/)).toBeVisible();
 });
 
 test("a nomination is confirmed before submission and may be abandoned", () => {

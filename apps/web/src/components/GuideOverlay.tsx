@@ -1,7 +1,7 @@
 import { beginnerRoles } from "@ravens/content";
 import { useEffect, useState } from "react";
 import type { PrivateView } from "../api.js";
-import { roleTypeGuidance, roleTypeNames, tutorialSteps } from "../guide-content.js";
+import { rolePlayGuides, roleTypeGuidance, roleTypeNames, tutorialSteps } from "../guide-content.js";
 import { roleArt } from "../role-art.js";
 
 export type GuideMode = "tutorial" | "roles" | "mine";
@@ -19,6 +19,8 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
 
   const selectedRole = beginnerRoles.find((role) => role.id === selectedRoleId);
   const selectedRoleArt = selectedRole ? roleArt(selectedRole.id) : undefined;
+  const selectedPlayGuide = selectedRole ? rolePlayGuides[selectedRole.id] : undefined;
+  const ownPlayGuide = ownRole ? rolePlayGuides[ownRole.roleId] : undefined;
   const tabs: Array<{ id: GuideMode; label: string }> = [
     ...(ownRole ? [{ id: "mine" as const, label: "我的角色" }] : []),
     { id: "tutorial", label: "新手教程" },
@@ -40,6 +42,7 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
         <h1>{ownRole.name}</h1>
         <p className="own-role-guide__ability">{ownRole.summary}</p>
         <div className="guide-callout"><span>游玩建议</span><p>{ownRole.beginnerTip}</p></div>
+        {ownPlayGuide ? <><div className="guide-callout"><span>规则细节</span><p>{ownPlayGuide.mechanics}</p></div><div className="guide-callout"><span>实战例子</span><p>{ownPlayGuide.example}</p></div><div className="guide-callout guide-callout--quiet"><span>冒充与反制</span><p>{ownPlayGuide.bluff}</p></div></> : null}
         <div className="guide-callout guide-callout--quiet"><span>阵营目标</span><p>{roleTypeGuidance[ownRole.type as keyof typeof roleTypeGuidance]}</p></div>
       </div> : null}
 
@@ -48,6 +51,8 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
         <div className="guide-tutorial__symbol">{tutorialSteps[step]!.symbol}</div>
         <h1>{tutorialSteps[step]!.title}</h1>
         <p>{tutorialSteps[step]!.detail}</p>
+        {tutorialSteps[step]!.points ? <ul className="tutorial__points">{tutorialSteps[step]!.points!.map((point) => <li key={point}>{point}</li>)}</ul> : null}
+        {tutorialSteps[step]!.example ? <aside className="tutorial__example"><span>{tutorialSteps[step]!.example!.label}</span><p>{tutorialSteps[step]!.example!.text}</p></aside> : null}
         <div className="guide-tutorial__actions">
           <button type="button" disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))}>上一条</button>
           <button type="button" onClick={() => step === tutorialSteps.length - 1 ? setActiveMode("roles") : setStep((value) => value + 1)}>{step === tutorialSteps.length - 1 ? "继续看角色表" : "下一条"}</button>
@@ -60,7 +65,8 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
           <div className="role-detail__portrait" role="img" aria-label={`${selectedRole.name}角色立绘`} style={{ backgroundImage: `url(${selectedRoleArt!.portraitUrl})`, backgroundPosition: selectedRoleArt!.portraitPosition }} />
           <div className="role-detail__copy"><p className={`role-alignment role-alignment--${selectedRole.type === "MINION" || selectedRole.type === "DEMON" ? "evil" : "good"}`}>{roleTypeNames[selectedRole.type]} · {roleTypeGuidance[selectedRole.type]}</p>
           <h2>能力</h2><p>{selectedRole.summary}</p>
-          <h2>第一次玩</h2><p>{selectedRole.beginnerTip}</p></div>
+          <h2>第一次玩</h2><p>{selectedRole.beginnerTip}</p>
+          {selectedPlayGuide ? <><h2>规则细节</h2><p>{selectedPlayGuide.mechanics}</p><h2>怎么玩</h2><p>{selectedPlayGuide.play}</p><h2>实战例子</h2><p>{selectedPlayGuide.example}</p><h2>冒充与反制</h2><p>{selectedPlayGuide.bluff}</p></> : null}</div>
         </article> : <div className="role-groups">{(["TOWNSFOLK", "OUTSIDER", "MINION", "DEMON"] as const).map((type) => <section key={type}>
           <header><h2>{roleTypeNames[type]}</h2><span>{beginnerRoles.filter((role) => role.type === type).length}</span></header>
           <p>{roleTypeGuidance[type]}</p>
