@@ -43,6 +43,32 @@ test("a player can leave the lobby and their seat is released", () => {
   expect(service.privateView(room.code, third.token).participant.seat).toBe(2);
 });
 
+test("the next seated player becomes organizer when the organizer leaves", () => {
+  const service = new RoomService();
+  const { room } = service.create(5, "原房主");
+  const owner = service.join(room.code, "原房主", "PLAYER");
+  const successor = service.join(room.code, "接任房主", "PLAYER");
+  for (const nickname of ["三号", "四号", "五号"]) service.join(room.code, nickname, "PLAYER");
+
+  const result = service.leave(room.code, owner.token);
+
+  expect(result).toEqual({ roomDestroyed: false, organizerChanged: true });
+  expect(service.publicView(room.code)).toMatchObject({ organizerId: successor.participant.id, organizerName: "接任房主" });
+  expect(service.privateView(room.code, successor.token).participant.seat).toBe(1);
+  service.join(room.code, "补位玩家", "PLAYER");
+  expect(() => service.startTutorial(room.code, successor.token)).not.toThrow();
+});
+
+test("the room is destroyed when its last player leaves", () => {
+  const service = new RoomService();
+  const { room } = service.create(5, "房主");
+  const owner = service.join(room.code, "房主", "PLAYER");
+  service.join(room.code, "客厅大屏", "DISPLAY");
+
+  expect(service.leave(room.code, owner.token)).toEqual({ roomDestroyed: true, organizerChanged: true });
+  expect(() => service.publicView(room.code)).toThrow(/Room not found/i);
+});
+
 test("a player cannot leave after the game starts", () => {
   const { service, room, players } = runningRoom();
   expect(() => service.leave(room.code, players[0]!.token)).toThrow(/不能中途退出/);

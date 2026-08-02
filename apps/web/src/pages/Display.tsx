@@ -1,6 +1,6 @@
 import { Panel, SeatRing } from "@ravens/ui";
 import { useEffect, useState } from "react";
-import { getRoom, type RoomView } from "../api.js";
+import { ApiError, getRoom, type RoomView } from "../api.js";
 import { invitationQr } from "../invite.js";
 
 const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string }> = {
@@ -13,16 +13,18 @@ const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string
   GAME_OVER: { eyebrow: "终局", title: "钟声停止", detail: "今夜的身份即将全部揭晓" },
 };
 
-export function Display({ code, onBack }: { code: string; onBack: () => void }) {
+export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: () => void; onRoomClosed: () => void }) {
   const [room, setRoom] = useState<RoomView>();
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const [qr, setQr] = useState<string>();
   useEffect(() => {
     let active = true;
-    const refresh = () => void getRoom(code).then((next) => { if (active) setRoom(next); }).catch(() => undefined);
+    const refresh = () => void getRoom(code).then((next) => { if (active) setRoom(next); }).catch((error) => {
+      if (active && error instanceof ApiError && error.status === 404) onRoomClosed();
+    });
     refresh(); const timer = window.setInterval(refresh, 1_200);
     return () => { active = false; window.clearInterval(timer); };
-  }, [code]);
+  }, [code, onRoomClosed]);
   useEffect(() => { let active = true; void invitationQr(code, 320).then((value) => { if (active) setQr(value); }).catch(() => undefined); return () => { active = false; }; }, [code]);
   useEffect(() => {
     const update = () => setFullscreen(Boolean(document.fullscreenElement));
@@ -35,11 +37,12 @@ export function Display({ code, onBack }: { code: string; onBack: () => void }) 
   const seats = game?.seats ?? players.map((participant) => ({ seat: participant.seat!, nickname: participant.nickname, alive: true, connected: participant.connected, ghostVoteAvailable: true }));
   const copy = phaseCopy[game?.phase ?? "ROLE_REVEAL"] ?? phaseCopy.ROLE_REVEAL!;
   const nominee = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nomineeSeat) : undefined;
+  const nominator = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nominatorSeat) : undefined;
   const lastEvent = game?.events.at(-1)?.message ?? `${players.length}/${room?.playerCount ?? "?"} 位玩家已入座`;
 
   return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
     <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span>{game ? `第 ${game.day || 1} 天` : "等待开局"}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
-    <section className="display__town"><SeatRing seats={seats} /><div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>手机进入房间；本设备只显示公开信息</small></div> : <><p>{copy.eyebrow}</p><h1>{game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? `${nominee.seat}号 ${nominee.nickname}` : copy.title}</h1><small>{game.phase === "VOTING" && game.nomination ? `已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></>}</div></section>
+    <section className="display__town"><SeatRing seats={seats} /><div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>手机进入房间；本设备只显示公开信息</small></div> : <><p>{copy.eyebrow}</p><h1>{game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? nominee.nickname : copy.title}</h1><small>{game.phase === "VOTING" && game.nomination && nominee ? `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></>}</div></section>
     <Panel className="display__notice">{lastEvent}</Panel>
   </main>;
 }

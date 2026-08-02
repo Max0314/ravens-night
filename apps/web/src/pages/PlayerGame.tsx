@@ -44,7 +44,7 @@ export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitA
   if (game.phase === "GAME_OVER") return <main className={`ending ending--${game.winner?.toLowerCase()}`}>
     <button className="screen-back" type="button" onClick={onBack}>← 返回首页</button>
     <p>钟声停止</p><h1>{game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜"}</h1>
-    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的身份</h2><p>{role.name} · {role.summary}</p></Panel>{canRestart ? <Button onClick={onRestart} disabled={busy}>{busy ? "正在重置房间…" : "同一批人再来一局"}</Button> : <p className="ending__waiting">想再玩一局？等待房间创建者重开即可，无需重新加入。</p>}<GameGuideLinks onOpen={onOpenGuide} />
+    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的真实身份</h2><p>{role.name} · {role.summary}</p>{role.perceivedAs ? <p>本局游戏中，你一直以为自己是<strong>{role.perceivedAs}</strong>；因此曾收到的信息可能不真实。</p> : null}</Panel><Panel className="ending__reveal"><h2>全员身份揭晓</h2><p>{game.events.at(-1)?.message.replace(/^身份揭晓：/, "")}</p></Panel><PublicLog events={game.events} />{canRestart ? <Button onClick={onRestart} disabled={busy}>{busy ? "正在重置房间…" : "同一批人再来一局"}</Button> : <p className="ending__waiting">想再玩一局？等待当前房主重开即可，无需重新加入。</p>}<GameGuideLinks onOpen={onOpenGuide} />
   </main>;
 
   const action = view.action;
@@ -52,6 +52,7 @@ export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitA
   if (isNight) return <main className="game-page game-page--night">
     <GameHeader phase={phaseNames[game.phase]!} day={game.day} role={role.name} onBack={onBack} />
     <RoleCompass role={role} task={action?.prompt ?? "当前无需操作。保持安静并等待手机出现新的行动提示。"} onOpen={onOpenGuide} />
+    {game.phase === "FIRST_NIGHT" && role.alignment === "EVIL" ? <EvilFirstNightIntel messages={view.messages.slice(1)} /> : null}
     {action?.kind === "SELECT_ONE" || action?.kind === "SELECT_TWO" ? <Panel className="action-panel">
       <p className="eyebrow">轮到你行动</p><h1>{action.prompt}</h1><p>选择会直接提交给系统，其他玩家和公共大屏都看不到。</p>
       <SeatChoices seats={game.seats} legalSeats={action.legalSeats} selected={selected} max={action.maxTargets} onChange={setSelected} />
@@ -90,6 +91,10 @@ function GameGuideLinks({ onOpen }: { onOpen: (mode: GuideMode) => void }) {
   return <div className="game-guide-links"><button type="button" onClick={() => onOpen("mine")}>我的角色</button><button type="button" onClick={() => onOpen("tutorial")}>教程</button><button type="button" onClick={() => onOpen("roles")}>角色表</button></div>;
 }
 
+function EvilFirstNightIntel({ messages }: { messages: string[] }) {
+  return <Panel className="evil-intel"><p className="eyebrow">邪恶阵营首夜情报</p>{messages.map((message) => <p key={message}>{message}</p>)}</Panel>;
+}
+
 function dayTask(view: PrivateView): string {
   const game = view.game;
   if (!game) return "等待游戏开始。";
@@ -107,5 +112,5 @@ function SeatChoices({ seats, legalSeats, selected, max, onChange }: { seats: Pr
 
 function Clues({ messages }: { messages: string[] }) { return <details className="clue-drawer"><summary>我的身份与线索 <span>{messages.length}</span></summary><div>{[...messages].reverse().map((message, index) => <p key={`${index}-${message}`}>{message}</p>)}</div></details>; }
 function PublicLog({ events }: { events: Array<{ seq: number; message: string }> }) { return <details className="public-log"><summary>村庄记录</summary>{[...events].reverse().map((event) => <p key={event.seq}>{event.message}</p>)}</details>; }
-function seatName(seats: Array<{ seat: number; nickname: string }>, seat: number) { const player = seats.find((candidate) => candidate.seat === seat); return `${seat}号 ${player?.nickname ?? "玩家"}`; }
+function seatName(seats: Array<{ seat: number; nickname: string }>, seat: number) { const player = seats.find((candidate) => candidate.seat === seat); return `${player?.nickname ?? "玩家"}（${seat}号）`; }
 function winReason(reason?: string) { return ({ "saint-executed": "圣徒被处决，邪恶达成了特殊胜利。", "mayor-final-three": "三人存活且无人被处决，镇长带领善良获胜。", "demon-dead": "恶魔已经死亡。", "final-two": "仅剩两人存活，邪恶控制了村庄。" } as Record<string, string>)[reason ?? ""] ?? "这一夜的故事已经写完。"; }

@@ -120,16 +120,28 @@ export class RoomService {
     return { participant: structuredClone(participant), token };
   }
 
-  leave(codeInput: string, playerToken: string): void {
+  leave(codeInput: string, playerToken: string): { roomDestroyed: boolean; organizerChanged: boolean } {
     const room = this.find(codeInput);
     const participantIndex = room.participants.findIndex((candidate) => candidate.tokenHash === hashOpaqueToken(playerToken));
     if (participantIndex < 0) throw new Error("Player authorization failed");
     const participant = room.participants[participantIndex]!;
     if (participant.mode === "PLAYER" && room.state !== "LOBBY") throw new Error("游戏已经开始，不能中途退出房间");
 
+    const previousOrganizerId = room.participants.find((candidate) => candidate.mode === "PLAYER" && candidate.seat === 1)?.id;
     room.participants.splice(participantIndex, 1);
-    room.participants.filter((candidate) => candidate.mode === "PLAYER").forEach((candidate, index) => { candidate.seat = index + 1; });
+    const players = room.participants.filter((candidate) => candidate.mode === "PLAYER");
+    if (players.length === 0) {
+      this.#rooms.delete(room.code);
+      return { roomDestroyed: true, organizerChanged: previousOrganizerId === participant.id };
+    }
+    players.forEach((candidate, index) => { candidate.seat = index + 1; });
+    const organizerChanged = previousOrganizerId === participant.id;
+    if (organizerChanged) {
+      room.organizerName = players[0]!.nickname;
+      room.organizerTokenHash = players[0]!.tokenHash;
+    }
     this.changed(room);
+    return { roomDestroyed: false, organizerChanged };
   }
 
   snapshot(codeInput: string): RoomRecord { return structuredClone(this.find(codeInput)); }
@@ -156,10 +168,12 @@ export class RoomService {
 
   publicView(codeInput: string) {
     const room = this.find(codeInput);
+    const organizer = room.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1);
     return {
       code: room.code,
       state: room.state,
       playerCount: room.playerCount,
+      ...(organizer ? { organizerId: organizer.id, organizerName: organizer.nickname } : {}),
       participants: room.participants.map(({ tokenHash: _tokenHash, tutorialComplete: _tutorialComplete, ...participant }) => participant),
       ...(room.game ? { game: this.publicGame(room) } : {}),
     };
@@ -167,8 +181,9 @@ export class RoomService {
 
   startTutorial(codeInput: string, organizerToken: string): void {
     const room = this.find(codeInput);
-    if (room.organizerTokenHash !== hashOpaqueToken(organizerToken)) throw new Error("Organizer authorization failed");
     const players = room.participants.filter((participant) => participant.mode === "PLAYER");
+    const organizerHash = hashOpaqueToken(organizerToken);
+    if (room.organizerTokenHash !== organizerHash && players.find((participant) => participant.seat === 1)?.tokenHash !== organizerHash) throw new Error("Organizer authorization failed");
     if (players.length !== room.playerCount) throw new Error("All players must join before starting");
     room.assignments = setupGameRoles(room.playerCount, `${room.id}:${room.code}`);
     room.state = "TUTORIAL";
@@ -177,7 +192,9 @@ export class RoomService {
 
   reset(codeInput: string, organizerToken: string): void {
     const room = this.find(codeInput);
-    if (room.organizerTokenHash !== hashOpaqueToken(organizerToken)) throw new Error("Organizer authorization failed");
+    const organizerHash = hashOpaqueToken(organizerToken);
+    const organizer = room.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1);
+    if (room.organizerTokenHash !== organizerHash && organizer?.tokenHash !== organizerHash) throw new Error("Organizer authorization failed");
     room.state = "LOBBY";
     room.assignments = [];
     delete room.game;
@@ -334,14 +351,16 @@ export class RoomService {
   privateView(codeInput: string, playerToken: string) {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const assignment = room.assignments.find((candidate) => candidate.seat === participant.seat);
-    const visibleRole = assignment ? roleById(assignment.perceivedRoleId) : undefined;
+    const revealActualRole = room.state === "GAME_OVER";
+    const visibleRoleId = assignment ? (revealActualRole ? assignment.roleId : assignment.perceivedRoleId) : undefined;
+    const visibleRole = visibleRoleId ? roleById(visibleRoleId) : undefined;
     return {
       participant: { id: participant.id, nickname: participant.nickname, seat: participant.seat },
       state: room.state,
       messages: room.game?.messages[participant.seat!] ?? [],
       ...(room.game ? { game: this.publicGame(room), roleConfirmed: room.game.confirmedRoleSeats.includes(participant.seat!), ...(this.privateAction(room, participant.seat!) ? { action: this.privateAction(room, participant.seat!) } : {}) } : {}),
       ...(assignment && visibleRole && (room.state === "RUNNING" || room.state === "GAME_OVER")
-        ? { role: { roleId: assignment.perceivedRoleId, alignment: assignment.alignment, type: visibleRole.type, name: visibleRole.name, summary: visibleRole.summary, beginnerTip: visibleRole.beginnerTip } }
+        ? { role: { roleId: visibleRole.id, alignment: assignment.alignment, type: visibleRole.type, name: visibleRole.name, summary: visibleRole.summary, beginnerTip: visibleRole.beginnerTip, ...(revealActualRole && assignment.roleId !== assignment.perceivedRoleId ? { perceivedAs: roleById(assignment.perceivedRoleId).name } : {}) } }
         : {}),
     };
   }
@@ -362,13 +381,17 @@ export class RoomService {
     const demon = room.assignments.find((candidate) => candidate.roleType === "DEMON");
     const minions = room.assignments.filter((candidate) => candidate.roleType === "MINION");
     if (demon && room.playerCount >= 7) {
-      messages[demon.seat]!.push(`你的爪牙：${minions.map((candidate) => `${candidate.seat}号`).join("、") || "本局没有爪牙"}。`);
+      messages[demon.seat]!.push(`你的爪牙：${minions.map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "本局没有爪牙"}。`);
       const selected = new Set(room.assignments.map((candidate) => candidate.perceivedRoleId));
       const bluffs = ROLE_CATALOG.filter((role) => role.type === "TOWNSFOLK" && !selected.has(role.id)).slice(0, 3).map((role) => role.name);
       messages[demon.seat]!.push(`三个安全伪装：${bluffs.join("、")}。`);
     }
     if (room.playerCount >= 7) {
-      for (const minion of minions) messages[minion.seat]!.push(`恶魔是 ${demon?.seat ?? "?"} 号；其他爪牙：${minions.filter((candidate) => candidate.seat !== minion.seat).map((candidate) => `${candidate.seat}号`).join("、") || "无"}。`);
+      for (const minion of minions) messages[minion.seat]!.push(`恶魔是 ${demon ? this.playerLabel(room, demon.seat) : "未知玩家"}；其他爪牙：${minions.filter((candidate) => candidate.seat !== minion.seat).map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "无"}。`);
+    } else {
+      const teensyvilleNotice = "六人局特殊规则：邪恶玩家不会在首夜得知彼此身份，小恶魔也不会获得三个安全伪装。";
+      if (demon) messages[demon.seat]!.push(teensyvilleNotice);
+      for (const minion of minions) messages[minion.seat]!.push(teensyvilleNotice);
     }
     const goodSeats = room.assignments.filter((assignment) => assignment.alignment === "GOOD").map((assignment) => assignment.seat);
     const redHerringSeat = goodSeats[Math.floor(randomAt(`${room.id}:red-herring`, 0) * goodSeats.length)];
@@ -397,6 +420,11 @@ export class RoomService {
 
   private nickname(room: RoomRecord, seat: number): string {
     return room.participants.find((candidate) => candidate.seat === seat)?.nickname ?? `${seat}号`;
+  }
+
+  private playerLabel(room: RoomRecord, seat: number): string {
+    const participant = room.participants.find((candidate) => candidate.mode === "PLAYER" && candidate.seat === seat);
+    return participant ? `${participant.nickname}（${seat}号）` : `${seat}号玩家`;
   }
 
   private event(game: GameRuntime, message: string): void {
@@ -471,7 +499,7 @@ export class RoomService {
         legal: legalRoleIds,
         impaired: this.isImpaired(room, ravenkeeperSeat),
       });
-      game.messages[ravenkeeperSeat]!.push(`守鸦人信息：${chosenSeat}号是${roleById(shownRoleId).name}。`);
+      game.messages[ravenkeeperSeat]!.push(`守鸦人信息：${this.playerLabel(room, chosenSeat)}是${roleById(shownRoleId).name}。`);
       delete game.pendingRavenkeeperSeat;
       this.finishNight(room);
       return;
@@ -559,14 +587,17 @@ export class RoomService {
         const target = room.assignments.find((candidate) => this.registeredRoleType(room, candidate, game.events.length) === sought && candidate.seat !== assignment.seat);
         const decoy = room.assignments.find((candidate) => candidate.seat !== assignment.seat && candidate.seat !== target?.seat);
         if (target && decoy) {
-          const targetRole = roleById(target.roleId === "drunk" ? target.perceivedRoleId : target.roleId);
+          const actualTargetRole = roleById(target.roleId === "drunk" ? target.perceivedRoleId : target.roleId);
+          const registeredMinionRole = assignment.perceivedRoleId === "investigator" && actualTargetRole.type !== "MINION"
+            ? room.assignments.map((candidate) => roleById(candidate.roleId)).find((role) => role.type === "MINION") ?? ROLE_CATALOG.find((role) => role.type === "MINION")!
+            : actualTargetRole;
           const shownRole = impaired
-            ? ROLE_CATALOG.filter((role) => role.type === sought && role.id !== targetRole.id)[Math.floor(randomAt(infoSeed, game.events.length) * ROLE_CATALOG.filter((role) => role.type === sought && role.id !== targetRole.id).length)] ?? targetRole
-            : targetRole;
-          message = `${roleById(assignment.perceivedRoleId).name}信息：${target.seat}号与${decoy.seat}号中，有一位是${shownRole.name}。`;
+            ? ROLE_CATALOG.filter((role) => role.type === sought && role.id !== registeredMinionRole.id)[Math.floor(randomAt(infoSeed, game.events.length) * ROLE_CATALOG.filter((role) => role.type === sought && role.id !== registeredMinionRole.id).length)] ?? registeredMinionRole
+            : registeredMinionRole;
+          message = `${roleById(assignment.perceivedRoleId).name}信息：${this.playerLabel(room, target.seat)}与${this.playerLabel(room, decoy.seat)}中，有一位是${shownRole.name}。`;
         } else if (assignment.perceivedRoleId === "librarian") message = "图书管理员信息：本局没有外来者。";
       } else if (assignment.roleId === "spy") {
-        message = `魔典：${room.assignments.map((candidate) => `${candidate.seat}号 ${roleById(candidate.roleId).name}`).join("；")}。`;
+        message = `魔典：${room.assignments.map((candidate) => `${this.playerLabel(room, candidate.seat)} ${roleById(candidate.roleId).name}`).join("；")}。`;
       } else if (assignment.perceivedRoleId === "undertaker" && !firstNight && game.lastExecutedRoleId) {
         const truthful = game.lastExecutedRoleId;
         const shown = chooseInformationResult({ seed: infoSeed, eventSeq: game.events.length, truthful, legal: ROLE_CATALOG.map((role) => role.id), impaired });
@@ -621,7 +652,11 @@ export class RoomService {
     if (!result) return false;
     game.phase = "GAME_OVER"; game.winner = result.winner; game.winReason = result.reason; room.state = "GAME_OVER";
     this.event(game, `${result.winner === "GOOD" ? "善良" : "邪恶"}阵营获胜。`);
-    this.event(game, `身份揭晓：${room.assignments.map((assignment) => `${assignment.seat}号 ${roleById(assignment.roleId).name}`).join("；")}。`);
+    this.event(game, `身份揭晓：${room.assignments.map((assignment) => {
+      const actual = roleById(assignment.roleId).name;
+      const mistaken = assignment.roleId !== assignment.perceivedRoleId ? `（本局以为自己是${roleById(assignment.perceivedRoleId).name}）` : "";
+      return `${this.playerLabel(room, assignment.seat)} ${actual}${mistaken}`;
+    }).join("；")}。`);
     return true;
   }
 

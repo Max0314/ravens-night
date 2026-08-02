@@ -78,11 +78,12 @@ export function buildApp(options: { accessPassword?: string } = {}) {
 
   app.delete<{ Params: { code: string }; Body: { token?: string } }>("/api/rooms/:code/leave", async (request, reply) => {
     try {
-      rooms.leave(request.params.code, playerToken(request, request.body?.token));
-      await persist(request.params.code);
+      const result = rooms.leave(request.params.code, playerToken(request, request.body?.token));
+      if (result.roomDestroyed) await repository?.delete(request.params.code);
+      else await persist(request.params.code);
       reply.clearCookie("ravens_player", { path: "/" });
       reply.clearCookie("ravens_organizer", { path: "/" });
-      return { left: true };
+      return { left: true, ...result };
     } catch (error) {
       return reply.code(400).send({ error: error instanceof Error ? error.message : "Unable to leave room" });
     }
@@ -98,7 +99,7 @@ export function buildApp(options: { accessPassword?: string } = {}) {
 
   app.post<{ Params: { code: string }; Body: { organizerToken?: string } }>("/api/rooms/:code/start", async (request, reply) => {
     try {
-      rooms.startTutorial(request.params.code, signedCookie(request, "ravens_organizer") ?? request.body?.organizerToken ?? "");
+      rooms.startTutorial(request.params.code, organizerCredential(request, request.body?.organizerToken));
       await persist(request.params.code);
       return rooms.publicView(request.params.code);
     } catch (error) {
@@ -108,7 +109,7 @@ export function buildApp(options: { accessPassword?: string } = {}) {
 
   app.post<{ Params: { code: string }; Body: { organizerToken?: string } }>("/api/rooms/:code/reset", async (request, reply) => {
     try {
-      rooms.reset(request.params.code, signedCookie(request, "ravens_organizer") ?? request.body?.organizerToken ?? "");
+      rooms.reset(request.params.code, organizerCredential(request, request.body?.organizerToken));
       await persist(request.params.code);
       return rooms.publicView(request.params.code);
     } catch (error) {
@@ -198,4 +199,8 @@ function playerToken(request: FastifyRequest, fallback?: string): string {
   const token = signedCookie(request, "ravens_player") ?? fallback;
   if (!token) throw new Error("Player session is missing");
   return token;
+}
+
+function organizerCredential(request: FastifyRequest, fallback?: string): string {
+  return signedCookie(request, "ravens_player") ?? signedCookie(request, "ravens_organizer") ?? fallback ?? "";
 }

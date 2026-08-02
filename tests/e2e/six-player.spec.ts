@@ -206,3 +206,57 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     await Promise.all(players.map((client) => client.context.close()));
   }
 });
+
+test("leaving the lobby transfers organizer controls to the next player", async ({ browser }) => {
+  const clients: TestClient[] = [];
+  const owner = await newClient(browser, "原房主", { width: 390, height: 844 });
+  clients.push(owner);
+  try {
+    await owner.page.getByRole("button", { name: "创建房间", exact: true }).click();
+    await owner.page.getByRole("textbox", { name: "你的昵称" }).fill(owner.nickname);
+    await owner.page.getByRole("combobox", { name: "玩家人数" }).selectOption("5");
+    await owner.page.getByRole("button", { name: "创建房间", exact: true }).click();
+    const code = (await owner.page.locator(".lobby__heading h1").innerText()).trim();
+
+    for (const nickname of ["接任房主", "三号玩家", "四号玩家", "五号玩家"]) {
+      const client = await newClient(browser, nickname, { width: 390, height: 844 });
+      clients.push(client);
+      await joinPlayer(client, code);
+    }
+
+    await owner.page.getByRole("button", { name: "退出房间", exact: true }).click();
+    await expect(owner.page.getByRole("heading", { name: "今夜，每个人都有秘密" })).toBeVisible();
+    const successor = clients[1]!;
+    await expect(successor.page.locator(".lobby__host")).toContainText("当前房主：接任房主（你）", { timeout: 8_000 });
+
+    const replacement = await newClient(browser, "补位玩家", { width: 390, height: 844 });
+    clients.push(replacement);
+    await joinPlayer(replacement, code);
+    const start = successor.page.getByRole("button", { name: "开始新手教学", exact: true });
+    await expect(start).toBeEnabled({ timeout: 8_000 });
+    await start.click();
+    await expect(successor.page.getByText("教学 1 / 7")).toBeVisible();
+  } finally {
+    await Promise.all(clients.map((client) => client.context.close()));
+  }
+});
+
+test("the last player leaving destroys the room and returns its public display home", async ({ browser }) => {
+  const owner = await newClient(browser, "单人房主", { width: 390, height: 844 });
+  const display = await newClient(browser, "客厅大屏", { width: 1920, height: 1080 });
+  try {
+    await owner.page.getByRole("button", { name: "创建房间", exact: true }).click();
+    await owner.page.getByRole("textbox", { name: "你的昵称" }).fill(owner.nickname);
+    await owner.page.getByRole("combobox", { name: "玩家人数" }).selectOption("5");
+    await owner.page.getByRole("button", { name: "创建房间", exact: true }).click();
+    const code = (await owner.page.locator(".lobby__heading h1").innerText()).trim();
+    await joinDisplay(display, code);
+
+    await owner.page.getByRole("button", { name: "退出房间", exact: true }).click();
+    await expect(owner.page.getByRole("heading", { name: "今夜，每个人都有秘密" })).toBeVisible();
+    await expect(display.page.getByRole("heading", { name: "今夜，每个人都有秘密" })).toBeVisible({ timeout: 8_000 });
+    expect((await owner.context.request.get(`/api/rooms/${code}`)).status()).toBe(404);
+  } finally {
+    await Promise.all([owner.context.close(), display.context.close()]);
+  }
+});

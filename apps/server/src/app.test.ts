@@ -53,9 +53,33 @@ describe("HTTP application", () => {
     const left = await app.inject({ method: "DELETE", url: `/api/rooms/${room.code}/leave`, headers: { cookie: playerCookie }, payload: {} });
 
     expect(left.statusCode).toBe(200);
-    expect(left.json()).toEqual({ left: true });
+    expect(left.json()).toEqual({ left: true, roomDestroyed: true, organizerChanged: true });
     expect(String(left.headers["set-cookie"])).toContain("ravens_player=");
-    expect((await app.inject({ method: "GET", url: `/api/rooms/${room.code}` })).json().participants).toEqual([]);
+    expect((await app.inject({ method: "GET", url: `/api/rooms/${room.code}` })).statusCode).toBe(404);
+  });
+
+  test("the successor can start with their player cookie after the original organizer leaves", async () => {
+    const app = buildApp();
+    apps.push(app);
+    const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "原房主" } });
+    const room = created.json<{ code: string }>();
+    const cookies: string[] = [];
+    for (const nickname of ["原房主", "接任房主", "三号", "四号", "五号"]) {
+      const joined = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname, mode: "PLAYER" } });
+      cookies.push(String(joined.headers["set-cookie"]).split(";")[0]!);
+    }
+
+    const left = await app.inject({ method: "DELETE", url: `/api/rooms/${room.code}/leave`, headers: { cookie: cookies[0]! }, payload: {} });
+    expect(left.json()).toMatchObject({ left: true, roomDestroyed: false, organizerChanged: true });
+    const publicRoom = await app.inject({ method: "GET", url: `/api/rooms/${room.code}` });
+    expect(publicRoom.json()).toMatchObject({ organizerName: "接任房主" });
+    expect(publicRoom.json().participants[0]).toMatchObject({ nickname: "接任房主", seat: 1 });
+
+    const replacement = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname: "补位玩家", mode: "PLAYER" } });
+    expect(replacement.statusCode).toBe(201);
+    const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, headers: { cookie: cookies[1]! }, payload: {} });
+    expect(started.statusCode).toBe(200);
+    expect(started.json()).toMatchObject({ state: "TUTORIAL", organizerName: "接任房主" });
   });
 
   test("the organizer starts one synchronized tutorial and each player receives a private role", async () => {

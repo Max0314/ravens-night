@@ -12,11 +12,11 @@ export interface GameView {
   winner?: "GOOD" | "EVIL";
   winReason?: string;
 }
-export interface RoomView { code: string; state: string; playerCount: number; participants: RoomParticipant[]; game?: GameView }
+export interface RoomView { code: string; state: string; playerCount: number; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView }
 export interface PrivateView {
   participant: { id: string; nickname: string; seat: number };
   state: string;
-  role?: { roleId: string; alignment: "GOOD" | "EVIL"; type: string; name: string; summary: string; beginnerTip: string };
+  role?: { roleId: string; alignment: "GOOD" | "EVIL"; type: string; name: string; summary: string; beginnerTip: string; perceivedAs?: string };
   roleConfirmed?: boolean;
   messages: string[];
   game?: GameView;
@@ -45,7 +45,7 @@ export function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPL
   return request<{ id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; token: string }>(`/api/rooms/${code}/join`, { method: "POST", body: JSON.stringify({ nickname, mode }) });
 }
 
-export function leaveRoom(code: string) { return request<{ left: true }>(`/api/rooms/${code}/leave`, { method: "DELETE", body: "{}" }); }
+export function leaveRoom(code: string) { return request<{ left: true; roomDestroyed: boolean; organizerChanged: boolean }>(`/api/rooms/${code}/leave`, { method: "DELETE", body: "{}" }); }
 
 export function getRoom(code: string) { return request<RoomView>(`/api/rooms/${code}`); }
 export function startRoom(code: string) { return request<RoomView>(`/api/rooms/${code}/start`, { method: "POST", body: "{}" }); }

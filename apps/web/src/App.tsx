@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ApiError, castVote, completeTutorial, confirmRole, createRoom, getAuthSession, getPrivateView, getRoom, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, type PrivateView, type RoomView } from "./api.js";
 import { GuideOverlay, type GuideMode } from "./components/GuideOverlay.js";
 import { Create } from "./pages/Create.js";
@@ -13,7 +13,7 @@ import "./styles/app.css";
 
 type Screen = "LOADING" | "LOGIN" | "HOME" | "CREATE" | "JOIN" | "LOBBY" | "TUTORIAL" | "GAME" | "DISPLAY";
 type ConnectionState = "ONLINE" | "OFFLINE" | "RECONNECTING";
-interface StoredSession { roomCode: string; mode: "PLAYER" | "DISPLAY"; organizer: boolean }
+interface StoredSession { roomCode: string; mode: "PLAYER" | "DISPLAY"; participantId?: string }
 const SESSION_KEY = "ravens_room_session";
 const PROTECTED_SCREENS = new Set<Screen>(["LOBBY", "TUTORIAL", "GAME", "DISPLAY"]);
 
@@ -23,13 +23,14 @@ export function App() {
   const [room, setRoom] = useState<RoomView>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
-  const [isOrganizer, setIsOrganizer] = useState(false);
+  const [participantId, setParticipantId] = useState<string>();
   const [privateView, setPrivateView] = useState<PrivateView>();
   const [guide, setGuide] = useState<GuideMode>();
   const [connectionState, setConnectionState] = useState<ConnectionState>(() => navigator.onLine ? "ONLINE" : "OFFLINE");
   const [backNotice, setBackNotice] = useState(false);
   const guideRef = useRef<GuideMode | undefined>(undefined);
   const backNoticeTimer = useRef<number | undefined>(undefined);
+  const isOrganizer = Boolean(room?.organizerId && participantId === room.organizerId);
 
   useEffect(() => { void initialize(); }, []);
   useEffect(() => { guideRef.current = guide; }, [guide]);
@@ -102,11 +103,11 @@ export function App() {
   async function submitJoin(values: JoinValues) {
     setBusy(true); setError(undefined);
     try {
-      await joinRoom(values.code, values.nickname, values.mode);
+      const joined = await joinRoom(values.code, values.nickname, values.mode);
       const current = await getRoom(values.code);
       setConnectionState("ONLINE");
-      saveSession({ roomCode: current.code, mode: values.mode, organizer: false });
-      setIsOrganizer(false);
+      saveSession({ roomCode: current.code, mode: values.mode, ...(values.mode === "PLAYER" ? { participantId: joined.id } : {}) });
+      setParticipantId(values.mode === "PLAYER" ? joined.id : undefined);
       setRoom(current); setScreen(values.mode === "DISPLAY" ? "DISPLAY" : "LOBBY");
     } catch (caught) { if (isNetworkFailure(caught)) setConnectionState("OFFLINE"); setError(caught instanceof Error ? caught.message : "加入失败"); }
     finally { setBusy(false); }
@@ -114,7 +115,7 @@ export function App() {
 
   async function submitCreate(name: string, count: number) {
     setBusy(true); setError(undefined);
-    try { const created = await createRoom(count, name); await joinRoom(created.code, name, "PLAYER"); const current = await getRoom(created.code); setConnectionState("ONLINE"); saveSession({ roomCode: current.code, mode: "PLAYER", organizer: true }); setIsOrganizer(true); setRoom(current); setScreen("LOBBY"); }
+    try { const created = await createRoom(count, name); const joined = await joinRoom(created.code, name, "PLAYER"); const current = await getRoom(created.code); setConnectionState("ONLINE"); saveSession({ roomCode: current.code, mode: "PLAYER", participantId: joined.id }); setParticipantId(joined.id); setRoom(current); setScreen("LOBBY"); }
     catch (caught) { if (isNetworkFailure(caught)) setConnectionState("OFFLINE"); setError(caught instanceof Error ? caught.message : "创建失败"); }
     finally { setBusy(false); }
   }
@@ -132,11 +133,14 @@ export function App() {
     if (!stored) { setScreen(invitedRoomCode ? "JOIN" : "HOME"); return; }
     try {
       const current = await getRoom(stored.roomCode);
-      setRoom(current); setIsOrganizer(stored.organizer);
-      if (stored.mode === "DISPLAY") { setScreen("DISPLAY"); return; }
+      setRoom(current);
+      if (stored.mode === "DISPLAY") { setParticipantId(undefined); setScreen("DISPLAY"); return; }
+      const mine = await getPrivateView(current.code);
+      setParticipantId(mine.participant.id);
+      saveSession({ roomCode: current.code, mode: "PLAYER", participantId: mine.participant.id });
       if (current.state === "LOBBY") { setScreen("LOBBY"); return; }
       if (current.state === "TUTORIAL") { setScreen("TUTORIAL"); return; }
-      setPrivateView(await getPrivateView(current.code)); setScreen("GAME");
+      setPrivateView(mine); setScreen("GAME");
     } catch (caught) {
       if (caught instanceof ApiError && [401, 403, 404].includes(caught.status)) {
         localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); setScreen(invitedRoomCode ? "JOIN" : "HOME");
@@ -151,6 +155,18 @@ export function App() {
       if (session.authorized) await restoreSession(); else setScreen("LOGIN");
     } catch { setConnectionState("OFFLINE"); setScreen("LOADING"); }
   }
+
+  const handleRoomClosed = useCallback(() => {
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    setGuide(undefined);
+    setPrivateView(undefined);
+    setRoom(undefined);
+    setParticipantId(undefined);
+    setBackNotice(false);
+    setConnectionState("ONLINE");
+    setScreen("HOME");
+  }, []);
 
   const withStatus = (page: ReactNode) => <>{page}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
   const withGuide = (page: ReactNode) => withStatus(<>{page}{guide ? <GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /> : null}</>);
@@ -193,7 +209,7 @@ export function App() {
       setGuide(undefined);
       setPrivateView(undefined);
       setRoom(undefined);
-      setIsOrganizer(false);
+      setParticipantId(undefined);
       setBackNotice(false);
       setConnectionState("ONLINE");
       setScreen("HOME");
@@ -223,7 +239,7 @@ export function App() {
   if (screen === "LOBBY" && room) return withGuide(<Lobby room={room} onBegin={beginTutorial} onLeave={() => void exitRoom()} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} canBegin={isOrganizer} busy={busy} {...(error ? { error } : {})} />);
   if (screen === "TUTORIAL") return withStatus(<Tutorial onBack={returnHome} onDone={finishTutorial} />);
   if (screen === "GAME") return withGuide(<PlayerGame {...(privateView ? { view: privateView } : {})} busy={busy} canRestart={isOrganizer} {...(error ? { error } : {})} onBack={returnHome} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats))} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(readyToEndDay)} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
-  if (screen === "DISPLAY") return withStatus(<Display code={room?.code ?? "------"} onBack={returnHome} />);
+  if (screen === "DISPLAY") return withStatus(<Display code={room?.code ?? "------"} onBack={returnHome} onRoomClosed={handleRoomClosed} />);
   const stored = room ? readSession() : undefined;
   return withGuide(<Home onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy, ...(error ? { error } : {}) } : {})} />);
 }

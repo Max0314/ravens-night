@@ -38,9 +38,33 @@ test("six-player evil players do not receive demon, minion, or bluff setup infor
   const { service, room, players } = controlledSixPlayerRoom(["chef", "empath", "saint", "butler", "poisoner", "imp"]);
   const minionMessages = service.privateView(room.code, players[4]!.token).messages.join(" ");
   const demonMessages = service.privateView(room.code, players[5]!.token).messages.join(" ");
+  expect(minionMessages).toContain("六人局特殊规则");
+  expect(demonMessages).toContain("六人局特殊规则");
   expect(minionMessages).not.toContain("恶魔是");
   expect(demonMessages).not.toContain("你的爪牙");
-  expect(demonMessages).not.toContain("安全伪装");
+  expect(demonMessages).not.toContain("三个安全伪装：");
+});
+
+test("an investigator may see the Recluse as an in-play Minion instead of being told Recluse", () => {
+  const { service, room, players } = controlledSixPlayerRoom(["investigator", "recluse", "saint", "butler", "baron", "imp"]);
+  reachFirstDay(service, room.code, players);
+  const information = service.privateView(room.code, players[0]!.token).messages.find((message) => message.startsWith("调查员信息"));
+  expect(information).toMatch(/调查员信息：.+（\d号）与.+（\d号）中，有一位是男爵。/);
+  expect(information).not.toContain("有一位是隐士");
+});
+
+test("a Drunk's believed role stays secret until the final identity reveal", () => {
+  const { service, room, players } = controlledSixPlayerRoom(
+    ["drunk", "slayer", "saint", "butler", "poisoner", "imp"],
+    { 1: "investigator" },
+  );
+  expect(service.privateView(room.code, players[0]!.token).role).toMatchObject({ roleId: "investigator", name: "调查员" });
+  reachFirstDay(service, room.code, players);
+  service.useDayAbility(room.code, players[1]!.token, 6);
+
+  expect(service.publicView(room.code).game?.phase).toBe("GAME_OVER");
+  expect(service.privateView(room.code, players[0]!.token).role).toMatchObject({ roleId: "drunk", name: "酒鬼", perceivedAs: "调查员" });
+  expect(service.publicView(room.code).game?.events.at(-1)?.message).toContain("酒鬼（本局以为自己是调查员）");
 });
 
 test("a drunk who believes they are an active role receives the same action UI and plausible information", () => {

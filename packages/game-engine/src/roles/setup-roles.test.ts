@@ -13,6 +13,16 @@ describe("role assignment", () => {
     expect(setupGameRoles(10, "repeatable")).toEqual(setupGameRoles(10, "repeatable"));
   });
 
+  test("a six-player Baron setup replaces two Townsfolk with two Outsiders", () => {
+    const assignments = Array.from({ length: 200 }, (_, index) => setupGameRoles(6, `baron-${index}`))
+      .find((set) => set.some((assignment) => assignment.roleId === "baron"));
+    expect(assignments).toBeDefined();
+    expect(assignments?.filter((assignment) => assignment.roleType === "TOWNSFOLK")).toHaveLength(1);
+    expect(assignments?.filter((assignment) => assignment.roleType === "OUTSIDER")).toHaveLength(3);
+    expect(assignments?.filter((assignment) => assignment.roleType === "MINION")).toHaveLength(1);
+    expect(assignments?.filter((assignment) => assignment.roleType === "DEMON")).toHaveLength(1);
+  });
+
   test("a drunk player sees an unused townsfolk role instead of drunk", () => {
     const assignments = Array.from({ length: 200 }, (_, index) => setupGameRoles(8, `drunk-${index}`))
       .find((set) => set.some((assignment) => assignment.roleId === "drunk"));
