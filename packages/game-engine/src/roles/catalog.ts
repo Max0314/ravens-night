@@ -27,7 +27,7 @@ export const ROLE_CATALOG: RoleDefinition[] = [
   { id: "slayer", name: "猎魔人", type: "TOWNSFOLK", summary: "整局一次公开选择玩家，若为恶魔则其死亡。", beginnerTip: "能力公开且仅一次，先听取足够信息再使用。", action: "PUBLIC_SELECT_ONE" },
   { id: "soldier", name: "士兵", type: "TOWNSFOLK", summary: "恶魔的夜间攻击无法杀死你。", beginnerTip: "其他死亡来源仍然有效，不要过早暴露身份。", action: "NONE" },
   { id: "mayor", name: "镇长", type: "TOWNSFOLK", summary: "三人存活且白天无人处决时，善良获胜。", beginnerTip: "恶魔攻击你时可能改为另一名玩家死亡。", action: "NONE" },
-  { id: "butler", name: "管家", type: "OUTSIDER", summary: "每夜选择主人，只有主人投票时你的票才有效。", beginnerTip: "你仍可举手，但系统只在主人举手时计票。", action: "SELECT_ONE", firstNightOrder: 50, otherNightOrder: 50 },
+  { id: "butler", name: "管家", type: "OUTSIDER", summary: "每夜必须选择一名其他玩家作为主人，只有主人投票时你的票才有效。", beginnerTip: "不能跳过选择；你仍可举手，但系统只在主人举手时计票。", action: "SELECT_ONE", firstNightOrder: 50, otherNightOrder: 50 },
   { id: "drunk", name: "酒鬼", type: "OUTSIDER", summary: "你以为自己是某镇民，但实际能力始终无效。", beginnerTip: "界面不会告诉你是酒鬼，你收到的信息可能不可靠。", action: "NONE" },
   { id: "recluse", name: "隐士", type: "OUTSIDER", summary: "你可能被能力登记为邪恶、爪牙或恶魔。", beginnerTip: "矛盾查验不一定说明查验者或你在说谎。", action: "NONE" },
   { id: "saint", name: "圣徒", type: "OUTSIDER", summary: "若你因处决而死，邪恶阵营立即获胜。", beginnerTip: "避免被处决，同时解释为何邪恶可能冒充你。", action: "NONE" },

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { App } from "./App.js";
 import { Home } from "./pages/Home.js";
@@ -42,6 +42,29 @@ test("the home screen exposes an interactive tutorial and the complete role comp
 
 test("every role has a detailed play guide", () => {
   expect(beginnerRoles.every((role) => Boolean(rolePlayGuides[role.id]))).toBe(true);
+  const butlerGuide = rolePlayGuides.butler;
+  expect(butlerGuide).toBeDefined();
+  expect(butlerGuide!.mechanics).toContain("必须选择一名其他玩家");
+  expect(butlerGuide!.mechanics).toContain("不能跳过");
+});
+
+test("evil first-night intelligence prominently shows teammate names and seat numbers", () => {
+  const view = playerView("DAY_DISCUSSION");
+  view.game!.phase = "FIRST_NIGHT";
+  view.game!.day = 0;
+  view.role = { roleId: "poisoner", alignment: "EVIL", type: "MINION", name: "投毒者", summary: "每夜选择一人投毒。", beginnerTip: "隐藏你的身份。" };
+  view.history = [
+    { seq: 1, phase: "ROLE_REVEAL", day: 0, kind: "IDENTITY", text: "你的身份是投毒者。" },
+    { seq: 2, phase: "ROLE_REVEAL", day: 0, kind: "INFORMATION", text: "恶魔是 小陈（6号）；其他爪牙：无。" },
+    { seq: 3, phase: "ROLE_REVEAL", day: 0, kind: "NOTICE", text: "本项目小局规则：邪恶玩家会在首夜得知队友姓名与编号；小恶魔不会获得三个安全伪装。" },
+  ];
+  view.action = { kind: "SELECT_ONE", legalSeats: [1, 2, 3, 4, 5, 6], minTargets: 1, maxTargets: 1, prompt: "选择今晚投毒的玩家" };
+
+  render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
+  const intel = screen.getByText("邪恶阵营首夜情报").parentElement!;
+  expect(intel).toBeVisible();
+  expect(within(intel).getByText("恶魔是 小陈（6号）；其他爪牙：无。")).toBeVisible();
+  expect(within(intel).getByText(/邪恶玩家会在首夜得知队友姓名与编号/)).toBeVisible();
 });
 
 test("joining from a television has a distinct public-display choice", async () => {

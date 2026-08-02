@@ -428,18 +428,21 @@ export class RoomService {
     }
     const demon = room.assignments.find((candidate) => candidate.roleType === "DEMON");
     const minions = room.assignments.filter((candidate) => candidate.roleType === "MINION");
-    if (demon && room.playerCount >= 7) {
+    if (demon) {
       this.privateMessage(game, demon.seat, `你的爪牙：${minions.map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "本局没有爪牙"}。`, "INFORMATION");
+    }
+    for (const minion of minions) {
+      this.privateMessage(game, minion.seat, `恶魔是 ${demon ? this.playerLabel(room, demon.seat) : "未知玩家"}；其他爪牙：${minions.filter((candidate) => candidate.seat !== minion.seat).map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "无"}。`, "INFORMATION");
+    }
+    if (demon && room.playerCount >= 7) {
       const selected = new Set(room.assignments.map((candidate) => candidate.perceivedRoleId));
       const bluffs = ROLE_CATALOG.filter((role) => role.type === "TOWNSFOLK" && !selected.has(role.id)).slice(0, 3).map((role) => role.name);
       this.privateMessage(game, demon.seat, `三个安全伪装：${bluffs.join("、")}。`, "INFORMATION");
     }
-    if (room.playerCount >= 7) {
-      for (const minion of minions) this.privateMessage(game, minion.seat, `恶魔是 ${demon ? this.playerLabel(room, demon.seat) : "未知玩家"}；其他爪牙：${minions.filter((candidate) => candidate.seat !== minion.seat).map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "无"}。`, "INFORMATION");
-    } else {
-      const teensyvilleNotice = "六人局特殊规则：邪恶玩家不会在首夜得知彼此身份，小恶魔也不会获得三个安全伪装。";
-      if (demon) this.privateMessage(game, demon.seat, teensyvilleNotice, "NOTICE");
-      for (const minion of minions) this.privateMessage(game, minion.seat, teensyvilleNotice, "NOTICE");
+    if (room.playerCount < 7) {
+      const smallGameNotice = "本项目小局规则：邪恶玩家会在首夜得知队友姓名与编号；小恶魔不会获得三个安全伪装。";
+      if (demon) this.privateMessage(game, demon.seat, smallGameNotice, "NOTICE");
+      for (const minion of minions) this.privateMessage(game, minion.seat, smallGameNotice, "NOTICE");
     }
     return game;
   }
@@ -561,7 +564,7 @@ export class RoomService {
     const living = [...game.aliveSeats];
     if (roleId === "poisoner") return { count: 1, legalSeats: living, prompt: "选择今晚投毒的玩家" };
     if (roleId === "fortune_teller") return { count: 2, legalSeats: living, prompt: "选择两名不同的玩家进行占卜" };
-    if (roleId === "butler") return { count: 1, legalSeats: living.filter((candidate) => candidate !== seat), prompt: "选择你明天的主人" };
+    if (roleId === "butler") return { count: 1, legalSeats: room.assignments.map((candidate) => candidate.seat).filter((candidate) => candidate !== seat), prompt: "必须选择一名其他玩家作为你明天的主人（可以选择已死亡玩家）" };
     if (game.phase === "OTHER_NIGHT" && roleId === "monk") return { count: 1, legalSeats: living.filter((candidate) => candidate !== seat), prompt: "选择一名玩家免受恶魔攻击" };
     if (game.phase === "OTHER_NIGHT" && roleId === "imp") return { count: 1, legalSeats: living, prompt: "选择今晚袭击的玩家" };
     return undefined;

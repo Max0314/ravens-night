@@ -34,15 +34,54 @@ function reachFirstDay(service: RoomService, code: string, players: Array<{ toke
   expect(service.publicView(code).game?.phase).toBe("DAY_DISCUSSION");
 }
 
-test("six-player evil players do not receive demon, minion, or bluff setup information", () => {
+test("six-player evil players receive teammate names and seat numbers but no demon bluffs", () => {
   const { service, room, players } = controlledSixPlayerRoom(["chef", "empath", "saint", "butler", "poisoner", "imp"]);
-  const minionMessages = service.privateView(room.code, players[4]!.token).messages.join(" ");
-  const demonMessages = service.privateView(room.code, players[5]!.token).messages.join(" ");
-  expect(minionMessages).toContain("六人局特殊规则");
-  expect(demonMessages).toContain("六人局特殊规则");
-  expect(minionMessages).not.toContain("恶魔是");
-  expect(demonMessages).not.toContain("你的爪牙");
+  const minionView = service.privateView(room.code, players[4]!.token);
+  const demonView = service.privateView(room.code, players[5]!.token);
+  const minionMessages = minionView.messages.join(" ");
+  const demonMessages = demonView.messages.join(" ");
+  expect(minionMessages).toContain("恶魔是 六（6号）");
+  expect(demonMessages).toContain("你的爪牙：五（5号）");
+  expect(minionMessages).toContain("邪恶玩家会在首夜得知队友姓名与编号");
+  expect(demonMessages).toContain("邪恶玩家会在首夜得知队友姓名与编号");
   expect(demonMessages).not.toContain("三个安全伪装：");
+  expect(minionView.history).toContainEqual(expect.objectContaining({ phase: "ROLE_REVEAL", kind: "INFORMATION", text: expect.stringContaining("六（6号）") }));
+  expect(demonView.history).toContainEqual(expect.objectContaining({ phase: "ROLE_REVEAL", kind: "INFORMATION", text: expect.stringContaining("五（5号）") }));
+});
+
+test("the Butler must choose exactly one other player", () => {
+  const { service, room, players } = controlledSixPlayerRoom(["chef", "empath", "saint", "butler", "poisoner", "imp"]);
+  for (const player of players) service.confirmRole(room.code, player.token);
+
+  const butlerAction = service.privateView(room.code, players[3]!.token).action;
+  expect(butlerAction).toMatchObject({
+    kind: "SELECT_ONE",
+    minTargets: 1,
+    maxTargets: 1,
+    prompt: expect.stringContaining("必须选择一名其他玩家"),
+  });
+  expect(butlerAction?.legalSeats).not.toContain(4);
+  expect(() => service.submitAction(room.code, players[3]!.token, [])).toThrow(/Invalid number of targets/);
+  service.submitAction(room.code, players[3]!.token, [2]);
+  expect(service.privateView(room.code, players[3]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择二（2号）作为明天的主人。" }));
+});
+
+test("the Butler may choose a dead player as master on a later night", () => {
+  const { service, room, players } = controlledSixPlayerRoom(["chef", "empath", "saint", "butler", "poisoner", "imp"]);
+  for (const player of players) service.confirmRole(room.code, player.token);
+  service.submitAction(room.code, players[3]!.token, [2]);
+  service.submitAction(room.code, players[4]!.token, [2]);
+  for (const player of players) service.readyToEndDay(room.code, player.token);
+  service.submitAction(room.code, players[3]!.token, [2]);
+  service.submitAction(room.code, players[4]!.token, [2]);
+  service.submitAction(room.code, players[5]!.token, [1]);
+  expect(service.publicView(room.code).game?.seats.find((seat) => seat.seat === 1)?.alive).toBe(false);
+  for (const player of players.slice(1)) service.readyToEndDay(room.code, player.token);
+
+  const butlerAction = service.privateView(room.code, players[3]!.token).action;
+  expect(butlerAction?.legalSeats).toContain(1);
+  service.submitAction(room.code, players[3]!.token, [1]);
+  expect(service.privateView(room.code, players[3]!.token).history).toContainEqual(expect.objectContaining({ phase: "OTHER_NIGHT", kind: "ACTION", text: "你选择一（1号）作为明天的主人。" }));
 });
 
 test("an investigator may see the Recluse as an in-play Minion instead of being told Recluse", () => {
