@@ -33,6 +33,10 @@ export function App() {
 
   useEffect(() => { void initialize(); }, []);
   useEffect(() => { guideRef.current = guide; }, [guide]);
+  useEffect(() => {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [screen, privateView?.game?.phase]);
 
   useEffect(() => {
     const offline = () => setConnectionState("OFFLINE");
