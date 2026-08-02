@@ -6,6 +6,7 @@ import { App } from "./App.js";
 import { Home } from "./pages/Home.js";
 import { Lobby } from "./pages/Lobby.js";
 import { PlayerGame } from "./pages/PlayerGame.js";
+import { SeatOrderEditor } from "./pages/Display.js";
 import { Tutorial } from "./pages/Tutorial.js";
 import type { PrivateView } from "./api.js";
 import { rolePlayGuides } from "./guide-content.js";
@@ -75,6 +76,31 @@ test("joining from a television has a distinct public-display choice", async () 
   fireEvent.click(screen.getByRole("button", { name: /电视公共大屏/ }));
   expect(screen.queryByLabelText("你的昵称")).not.toBeInTheDocument();
   expect(screen.getByText("电脑连接电视 · 只显示公开城镇信息")).toBeVisible();
+});
+
+test("the public display reorders seats by drag or keyboard before the game", () => {
+  const onReorder = vi.fn();
+  const players = [
+    { id: "p1", nickname: "原房主", mode: "PLAYER" as const, seat: 1, connected: true },
+    { id: "p2", nickname: "二号", mode: "PLAYER" as const, seat: 2, connected: true },
+    { id: "p3", nickname: "三号", mode: "PLAYER" as const, seat: 3, connected: true },
+  ];
+  render(<SeatOrderEditor players={players} busy={false} onReorder={onReorder} />);
+
+  fireEvent.keyDown(screen.getByLabelText("二号，当前 2 号，可拖动调整座位"), { key: "ArrowLeft" });
+  expect(onReorder).toHaveBeenLastCalledWith(["p2", "p1", "p3"]);
+
+  const transfer = new Map<string, string>();
+  const dataTransfer = {
+    effectAllowed: "none",
+    dropEffect: "none",
+    setData: (type: string, value: string) => transfer.set(type, value),
+    getData: (type: string) => transfer.get(type) ?? "",
+  };
+  fireEvent.dragStart(screen.getByLabelText("三号，当前 3 号，可拖动调整座位"), { dataTransfer });
+  fireEvent.dragOver(screen.getByLabelText("原房主，当前 1 号，可拖动调整座位"), { dataTransfer });
+  fireEvent.drop(screen.getByLabelText("原房主，当前 1 号，可拖动调整座位"), { dataTransfer });
+  expect(onReorder).toHaveBeenLastCalledWith(["p3", "p1", "p2"]);
 });
 
 test("a scanned invitation opens the join form with its room code filled in", async () => {

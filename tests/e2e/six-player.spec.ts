@@ -119,6 +119,11 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     const display = await newClient(browser, "电视大屏", { width: 1920, height: 1080 });
     await joinDisplay(display, code);
     await expect(organizer.page.getByText("6/6 位玩家已入座")).toBeVisible({ timeout: 8_000 });
+    const lastSeat = display.page.locator(".display-seat-editor__seat").filter({ hasText: "玩家6" });
+    const firstSeat = display.page.locator(".display-seat-editor__seat").filter({ hasText: organizer.nickname });
+    await lastSeat.dragTo(firstSeat);
+    await expect(display.page.locator(".display-seat-editor__seat").filter({ hasText: "玩家6" }).locator(".rn-seat__number")).toHaveText("1号");
+    await expect(organizer.page.locator(".rn-seat").filter({ hasText: "玩家6" }).locator(".rn-seat__number")).toHaveText("1", { timeout: 8_000 });
     await players[5]!.page.reload();
     await expect(players[5]!.page.getByText("6/6 位玩家已入座")).toBeVisible();
     await players[4]!.context.setOffline(true);

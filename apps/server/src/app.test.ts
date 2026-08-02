@@ -82,6 +82,30 @@ describe("HTTP application", () => {
     expect(started.json()).toMatchObject({ state: "TUTORIAL", organizerName: "接任房主" });
   });
 
+  test("only a display session may reorder every player before the game starts", async () => {
+    const app = buildApp();
+    apps.push(app);
+    const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "原房主" } });
+    const room = created.json<{ code: string }>();
+    const players: Array<{ id: string; cookie: string }> = [];
+    for (const nickname of ["原房主", "二号", "三号", "四号", "五号"]) {
+      const joined = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname, mode: "PLAYER" } });
+      players.push({ id: joined.json<{ id: string }>().id, cookie: String(joined.headers["set-cookie"]).split(";")[0]! });
+    }
+    const display = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname: "客厅大屏", mode: "DISPLAY" } });
+    const displayCookie = String(display.headers["set-cookie"]).split(";")[0]!;
+    const participantIds = [players[2]!.id, players[0]!.id, players[1]!.id, players[3]!.id, players[4]!.id];
+
+    const denied = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: players[0]!.cookie }, payload: { participantIds } });
+    expect(denied.statusCode).toBe(400);
+    expect(denied.json()).toMatchObject({ error: expect.stringContaining("只有公共大屏") });
+
+    const reordered = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: displayCookie }, payload: { participantIds } });
+    expect(reordered.statusCode).toBe(200);
+    expect(reordered.json()).toMatchObject({ organizerId: players[0]!.id, organizerName: "原房主" });
+    expect(reordered.json().participants.find((participant: { id: string }) => participant.id === players[2]!.id)).toMatchObject({ seat: 1, nickname: "三号" });
+  });
+
   test("the organizer starts one synchronized tutorial and each player receives a private role", async () => {
     const app = buildApp();
     apps.push(app);

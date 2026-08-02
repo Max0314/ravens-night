@@ -59,6 +59,32 @@ test("the next seated player becomes organizer when the organizer leaves", () =>
   expect(() => service.startTutorial(room.code, successor.token)).not.toThrow();
 });
 
+test("a public display can reorder seats without transferring organizer authority", () => {
+  const service = new RoomService();
+  const { room } = service.create(5, "原房主");
+  const owner = service.join(room.code, "原房主", "PLAYER");
+  const second = service.join(room.code, "二号", "PLAYER");
+  const third = service.join(room.code, "三号", "PLAYER");
+  const fourth = service.join(room.code, "四号", "PLAYER");
+  const fifth = service.join(room.code, "五号", "PLAYER");
+  const display = service.join(room.code, "客厅大屏", "DISPLAY");
+
+  const reordered = [third, owner, second, fourth, fifth].map((player) => player.participant.id);
+  service.reorderSeats(room.code, display.token, reordered);
+
+  const publicRoom = service.publicView(room.code);
+  const playersBySeat = publicRoom.participants
+    .filter((participant) => participant.mode === "PLAYER")
+    .sort((left, right) => left.seat! - right.seat!);
+  expect(playersBySeat.map((player) => `${player.seat}:${player.nickname}`)).toEqual(["1:三号", "2:原房主", "3:二号", "4:四号", "5:五号"]);
+  expect(publicRoom).toMatchObject({ organizerId: owner.participant.id, organizerName: "原房主" });
+  expect(service.privateView(room.code, owner.token).participant.seat).toBe(2);
+  expect(() => service.reorderSeats(room.code, owner.token, reordered)).toThrow(/只有公共大屏/);
+  expect(() => service.reorderSeats(room.code, display.token, reordered.slice(0, 4))).toThrow(/当前全部玩家/);
+  expect(() => service.startTutorial(room.code, owner.token)).not.toThrow();
+  expect(() => service.reorderSeats(room.code, display.token, reordered)).toThrow(/开局前/);
+});
+
 test("the room is destroyed when its last player leaves", () => {
   const service = new RoomService();
   const { room } = service.create(5, "房主");

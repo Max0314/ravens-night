@@ -107,6 +107,16 @@ export function buildApp(options: { accessPassword?: string } = {}) {
     }
   });
 
+  app.post<{ Params: { code: string }; Body: { token?: string; participantIds: string[] } }>("/api/rooms/:code/seats", async (request, reply) => {
+    try {
+      rooms.reorderSeats(request.params.code, playerToken(request, request.body?.token), request.body?.participantIds ?? []);
+      await persist(request.params.code);
+      return rooms.publicView(request.params.code);
+    } catch (error) {
+      return reply.code(400).send({ error: error instanceof Error ? error.message : "Unable to reorder seats" });
+    }
+  });
+
   app.post<{ Params: { code: string }; Body: { organizerToken?: string } }>("/api/rooms/:code/reset", async (request, reply) => {
     try {
       rooms.reset(request.params.code, organizerCredential(request, request.body?.organizerToken));
@@ -207,5 +217,5 @@ function playerToken(request: FastifyRequest, fallback?: string): string {
 }
 
 function organizerCredential(request: FastifyRequest, fallback?: string): string {
-  return signedCookie(request, "ravens_player") ?? signedCookie(request, "ravens_organizer") ?? fallback ?? "";
+  return signedCookie(request, "ravens_organizer") ?? signedCookie(request, "ravens_player") ?? fallback ?? "";
 }

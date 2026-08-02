@@ -29,6 +29,7 @@ export interface RoomRecord {
   id: string;
   code: string;
   organizerName: string;
+  organizerParticipantId?: string;
   playerCount: number;
   participants: ParticipantRecord[];
   state: "LOBBY" | "TUTORIAL" | "RUNNING" | "GAME_OVER";
@@ -129,6 +130,10 @@ export class RoomService {
       tutorialComplete: false,
     };
     room.participants.push(participant);
+    if (mode === "PLAYER" && !room.organizerParticipantId && players.length === 0) {
+      room.organizerParticipantId = participant.id;
+      room.organizerName = participant.nickname;
+    }
     this.changed(room);
     return { participant: structuredClone(participant), token };
   }
@@ -140,9 +145,11 @@ export class RoomService {
     const participant = room.participants[participantIndex]!;
     if (participant.mode === "PLAYER" && room.state !== "LOBBY") throw new Error("游戏已经开始，不能中途退出房间");
 
-    const previousOrganizerId = room.participants.find((candidate) => candidate.mode === "PLAYER" && candidate.seat === 1)?.id;
+    const previousOrganizerId = this.organizer(room)?.id;
     room.participants.splice(participantIndex, 1);
-    const players = room.participants.filter((candidate) => candidate.mode === "PLAYER");
+    const players = room.participants
+      .filter((candidate) => candidate.mode === "PLAYER")
+      .sort((left, right) => left.seat! - right.seat!);
     if (players.length === 0) {
       this.#rooms.delete(room.code);
       return { roomDestroyed: true, organizerChanged: previousOrganizerId === participant.id };
@@ -150,6 +157,7 @@ export class RoomService {
     players.forEach((candidate, index) => { candidate.seat = index + 1; });
     const organizerChanged = previousOrganizerId === participant.id;
     if (organizerChanged) {
+      room.organizerParticipantId = players[0]!.id;
       room.organizerName = players[0]!.nickname;
       room.organizerTokenHash = players[0]!.tokenHash;
     }
@@ -159,12 +167,29 @@ export class RoomService {
 
   snapshot(codeInput: string): RoomRecord { return structuredClone(this.find(codeInput)); }
 
+  reorderSeats(codeInput: string, displayToken: string, participantIds: string[]): void {
+    const room = this.find(codeInput);
+    if (room.state !== "LOBBY") throw new Error("座位只能在开局前调整");
+    const display = room.participants.find((candidate) => candidate.tokenHash === hashOpaqueToken(displayToken));
+    if (!display || display.mode !== "DISPLAY") throw new Error("只有公共大屏可以调整座位");
+    const players = room.participants.filter((candidate) => candidate.mode === "PLAYER");
+    const currentIds = new Set(players.map((candidate) => candidate.id));
+    if (participantIds.length !== players.length || new Set(participantIds).size !== participantIds.length || participantIds.some((id) => !currentIds.has(id))) {
+      throw new Error("座位顺序必须包含当前全部玩家且不能重复");
+    }
+    const playersById = new Map(players.map((candidate) => [candidate.id, candidate]));
+    participantIds.forEach((id, index) => { playersById.get(id)!.seat = index + 1; });
+    this.changed(room);
+  }
+
   restore(snapshots: RoomRecord[]): void {
     for (const snapshot of snapshots) {
       const code = normalizeRoomCode(snapshot.code);
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) continue;
       const game = snapshot.game ? this.restoreGame(snapshot.game) : undefined;
-      this.#rooms.set(code, structuredClone({ ...snapshot, ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 }));
+      const organizerParticipantId = snapshot.organizerParticipantId
+        ?? snapshot.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1)?.id;
+      this.#rooms.set(code, structuredClone({ ...snapshot, ...(organizerParticipantId ? { organizerParticipantId } : {}), ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 }));
     }
   }
 
@@ -177,7 +202,7 @@ export class RoomService {
 
   publicView(codeInput: string) {
     const room = this.find(codeInput);
-    const organizer = room.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1);
+    const organizer = this.organizer(room);
     return {
       code: room.code,
       state: room.state,
@@ -192,7 +217,7 @@ export class RoomService {
     const room = this.find(codeInput);
     const players = room.participants.filter((participant) => participant.mode === "PLAYER");
     const organizerHash = hashOpaqueToken(organizerToken);
-    if (room.organizerTokenHash !== organizerHash && players.find((participant) => participant.seat === 1)?.tokenHash !== organizerHash) throw new Error("Organizer authorization failed");
+    if (room.organizerTokenHash !== organizerHash && this.organizer(room)?.tokenHash !== organizerHash) throw new Error("Organizer authorization failed");
     if (players.length !== room.playerCount) throw new Error("All players must join before starting");
     room.gameNumber = (room.gameNumber ?? 0) + 1;
     room.assignments = setupGameRoles(room.playerCount, `${room.id}:${room.code}:game-${room.gameNumber}`);
@@ -203,7 +228,7 @@ export class RoomService {
   reset(codeInput: string, organizerToken: string): void {
     const room = this.find(codeInput);
     const organizerHash = hashOpaqueToken(organizerToken);
-    const organizer = room.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1);
+    const organizer = this.organizer(room);
     if (room.organizerTokenHash !== organizerHash && organizer?.tokenHash !== organizerHash) throw new Error("Organizer authorization failed");
     room.state = "LOBBY";
     room.assignments = [];
@@ -519,11 +544,16 @@ export class RoomService {
 
   private changed(room: RoomRecord): void { room.revision += 1; }
 
+  private organizer(room: RoomRecord): ParticipantRecord | undefined {
+    return room.participants.find((participant) => participant.mode === "PLAYER" && participant.id === room.organizerParticipantId)
+      ?? room.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1);
+  }
+
   private publicGame(room: RoomRecord) {
     const game = this.requireGame(room);
     return {
       phase: game.phase, day: game.day,
-      seats: room.participants.filter((participant) => participant.mode === "PLAYER").map((participant) => ({
+      seats: room.participants.filter((participant) => participant.mode === "PLAYER").sort((left, right) => left.seat! - right.seat!).map((participant) => ({
         seat: participant.seat!, nickname: participant.nickname, connected: participant.connected,
         alive: game.aliveSeats.includes(participant.seat!), ghostVoteAvailable: game.ghostVoteSeats.includes(participant.seat!),
       })),
