@@ -76,6 +76,18 @@ export function buildApp(options: { accessPassword?: string } = {}) {
     },
   );
 
+  app.delete<{ Params: { code: string }; Body: { token?: string } }>("/api/rooms/:code/leave", async (request, reply) => {
+    try {
+      rooms.leave(request.params.code, playerToken(request, request.body?.token));
+      await persist(request.params.code);
+      reply.clearCookie("ravens_player", { path: "/" });
+      reply.clearCookie("ravens_organizer", { path: "/" });
+      return { left: true };
+    } catch (error) {
+      return reply.code(400).send({ error: error instanceof Error ? error.message : "Unable to leave room" });
+    }
+  });
+
   app.get<{ Params: { code: string } }>("/api/rooms/:code", async (request, reply) => {
     try {
       return rooms.publicView(request.params.code);

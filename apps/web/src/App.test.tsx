@@ -3,6 +3,10 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { App } from "./App.js";
+import { Home } from "./pages/Home.js";
+import { Lobby } from "./pages/Lobby.js";
+import { PlayerGame } from "./pages/PlayerGame.js";
+import { Tutorial } from "./pages/Tutorial.js";
 
 afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); window.history.replaceState({}, "", "/"); vi.unstubAllGlobals(); });
 
@@ -54,4 +58,33 @@ test("an unauthorized visitor sees the access-password login", async () => {
   render(<App />);
   expect(await screen.findByRole("heading", { name: "钟楼只为受邀者敲响" })).toBeVisible();
   expect(screen.getByLabelText("访问口令")).toHaveAttribute("type", "password");
+});
+
+test("the lobby provides an explicit way to leave and switch rooms", () => {
+  const onLeave = vi.fn();
+  render(<Lobby room={{ code: "ABC123", state: "LOBBY", playerCount: 6, participants: [{ id: "p1", nickname: "创建者", mode: "PLAYER", seat: 1, connected: true }] }} onBegin={vi.fn()} onLeave={onLeave} onTutorial={vi.fn()} onRoles={vi.fn()} canBegin busy={false} />);
+  fireEvent.click(screen.getByRole("button", { name: "退出房间" }));
+  expect(onLeave).toHaveBeenCalledOnce();
+});
+
+test("the home screen preserves an active game and offers a clear resume action", () => {
+  const onResume = vi.fn();
+  render(<Home onCreate={vi.fn()} onJoin={vi.fn()} onTutorial={vi.fn()} onRoles={vi.fn()} activeRoom={{ code: "ABC123", state: "RUNNING", playerCount: 6, participants: [] }} activeMode="PLAYER" onResume={onResume} />);
+  expect(screen.getByText("本局仍在进行，身份和座位已为你保留")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "退出并更换房间" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "继续当前房间" }));
+  expect(onResume).toHaveBeenCalledOnce();
+});
+
+test("tutorial and game waiting screens always provide a safe return", () => {
+  const tutorialBack = vi.fn();
+  const { unmount } = render(<Tutorial onBack={tutorialBack} onDone={vi.fn()} />);
+  fireEvent.click(screen.getByRole("button", { name: "← 返回首页" }));
+  expect(tutorialBack).toHaveBeenCalledOnce();
+  unmount();
+
+  const gameBack = vi.fn();
+  render(<PlayerGame busy={false} canRestart={false} onBack={gameBack} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
+  fireEvent.click(screen.getByRole("button", { name: "← 返回首页" }));
+  expect(gameBack).toHaveBeenCalledOnce();
 });

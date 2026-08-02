@@ -45,6 +45,8 @@ export function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPL
   return request<{ id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; token: string }>(`/api/rooms/${code}/join`, { method: "POST", body: JSON.stringify({ nickname, mode }) });
 }
 
+export function leaveRoom(code: string) { return request<{ left: true }>(`/api/rooms/${code}/leave`, { method: "DELETE", body: "{}" }); }
+
 export function getRoom(code: string) { return request<RoomView>(`/api/rooms/${code}`); }
 export function startRoom(code: string) { return request<RoomView>(`/api/rooms/${code}/start`, { method: "POST", body: "{}" }); }
 export function resetRoom(code: string) { return request<RoomView>(`/api/rooms/${code}/reset`, { method: "POST", body: "{}" }); }

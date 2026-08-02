@@ -120,6 +120,18 @@ export class RoomService {
     return { participant: structuredClone(participant), token };
   }
 
+  leave(codeInput: string, playerToken: string): void {
+    const room = this.find(codeInput);
+    const participantIndex = room.participants.findIndex((candidate) => candidate.tokenHash === hashOpaqueToken(playerToken));
+    if (participantIndex < 0) throw new Error("Player authorization failed");
+    const participant = room.participants[participantIndex]!;
+    if (participant.mode === "PLAYER" && room.state !== "LOBBY") throw new Error("游戏已经开始，不能中途退出房间");
+
+    room.participants.splice(participantIndex, 1);
+    room.participants.filter((candidate) => candidate.mode === "PLAYER").forEach((candidate, index) => { candidate.seat = index + 1; });
+    this.changed(room);
+  }
+
   snapshot(codeInput: string): RoomRecord { return structuredClone(this.find(codeInput)); }
 
   restore(snapshots: RoomRecord[]): void {

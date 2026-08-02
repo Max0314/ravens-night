@@ -8,6 +8,7 @@ interface PlayerGameProps {
   view?: PrivateView;
   busy: boolean;
   error?: string;
+  onBack: () => void;
   onConfirmRole: () => void;
   onSubmitAction: (seats: number[]) => void;
   onNominate: (seat: number) => void;
@@ -24,15 +25,16 @@ const phaseNames: Record<string, string> = {
   DAY_DISCUSSION: "自由讨论", NOMINATION: "提名阶段", VOTING: "公开投票", GAME_OVER: "终局",
 };
 
-export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, onNominate, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide }: PlayerGameProps) {
+export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide }: PlayerGameProps) {
   const [selected, setSelected] = useState<number[]>([]);
   const game = view?.game;
   const role = view?.role;
   useEffect(() => setSelected([]), [game?.phase, view?.action?.kind]);
 
-  if (!view || !role || !game) return <Waiting title="等待所有玩家" detail="大家完成教学后，身份会同时揭晓。" />;
+  if (!view || !role || !game) return <main className="game-page"><button className="screen-back" type="button" onClick={onBack}>← 返回首页</button><Waiting title="等待所有玩家" detail="大家完成教学后，身份会同时揭晓。" compact /></main>;
 
   if (game.phase === "ROLE_REVEAL") return <main className="role-page">
+    <button className="screen-back" type="button" onClick={onBack}>← 返回首页</button>
     <p className="privacy-warning">只有你能看到 · 请勿向外展示屏幕</p>
     <RoleCard name={role.name} alignment={`${role.alignment === "GOOD" ? "善良" : "邪恶"} · ${role.type === "TOWNSFOLK" ? "镇民" : role.type === "OUTSIDER" ? "外来者" : role.type === "MINION" ? "爪牙" : "恶魔"}`} ability={role.summary} beginnerTip={role.beginnerTip} {...roleArt(role.roleId)} />
     <Button onClick={onConfirmRole} disabled={busy || view.roleConfirmed}>{view.roleConfirmed ? "等待其他玩家确认…" : "我记住了身份"}</Button>
@@ -40,6 +42,7 @@ export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, o
   </main>;
 
   if (game.phase === "GAME_OVER") return <main className={`ending ending--${game.winner?.toLowerCase()}`}>
+    <button className="screen-back" type="button" onClick={onBack}>← 返回首页</button>
     <p>钟声停止</p><h1>{game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜"}</h1>
     <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的身份</h2><p>{role.name} · {role.summary}</p></Panel>{canRestart ? <Button onClick={onRestart} disabled={busy}>{busy ? "正在重置房间…" : "同一批人再来一局"}</Button> : <p className="ending__waiting">想再玩一局？等待房间创建者重开即可，无需重新加入。</p>}<GameGuideLinks onOpen={onOpenGuide} />
   </main>;
@@ -47,7 +50,7 @@ export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, o
   const action = view.action;
   const isNight = game.phase === "FIRST_NIGHT" || game.phase === "OTHER_NIGHT";
   if (isNight) return <main className="game-page game-page--night">
-    <GameHeader phase={phaseNames[game.phase]!} day={game.day} role={role.name} />
+    <GameHeader phase={phaseNames[game.phase]!} day={game.day} role={role.name} onBack={onBack} />
     <RoleCompass role={role} task={action?.prompt ?? "当前无需操作。保持安静并等待手机出现新的行动提示。"} onOpen={onOpenGuide} />
     {action?.kind === "SELECT_ONE" || action?.kind === "SELECT_TWO" ? <Panel className="action-panel">
       <p className="eyebrow">轮到你行动</p><h1>{action.prompt}</h1><p>选择会直接提交给系统，其他玩家和公共大屏都看不到。</p>
@@ -58,7 +61,7 @@ export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, o
   </main>;
 
   return <main className="game-page game-page--day">
-    <GameHeader phase={phaseNames[game.phase] ?? game.phase} day={game.day} role={role.name} />
+    <GameHeader phase={phaseNames[game.phase] ?? game.phase} day={game.day} role={role.name} onBack={onBack} />
     <RoleCompass role={role} task={dayTask(view)} onOpen={onOpenGuide} />
     {game.phase === "VOTING" && game.nomination ? <Panel className="vote-panel">
       <p className="eyebrow">提名投票</p><h1>{seatName(game.seats, game.nomination.nomineeSeat)}</h1>
@@ -77,7 +80,7 @@ export function PlayerGame({ view, busy, error, onConfirmRole, onSubmitAction, o
   </main>;
 }
 
-function GameHeader({ phase, day, role }: { phase: string; day: number; role: string }) { return <header className="game-header"><div><span>第 {day || 1} 天</span><strong>{phase}</strong></div><div className="role-chip">{role}</div></header>; }
+function GameHeader({ phase, day, role, onBack }: { phase: string; day: number; role: string; onBack: () => void }) { return <header className="game-header"><button className="screen-back screen-back--header" type="button" onClick={onBack}>← 首页</button><div className="game-header__phase"><span>第 {day || 1} 天</span><strong>{phase}</strong></div><div className="role-chip">{role}</div></header>; }
 
 function RoleCompass({ role, task, onOpen }: { role: NonNullable<PrivateView["role"]>; task: string; onOpen: (mode: GuideMode) => void }) {
   return <section className="role-compass" aria-label="当前任务"><div><span>你是 {role.name}</span><strong>{task}</strong></div><GameGuideLinks onOpen={onOpen} /></section>;

@@ -25,6 +25,29 @@ test("a room cannot start before every planned player has joined", () => {
   expect(() => service.startTutorial(room.code, organizerToken)).toThrow(/all players/i);
 });
 
+test("a player can leave the lobby and their seat is released", () => {
+  const service = new RoomService();
+  const { room } = service.create(5, "Max");
+  const first = service.join(room.code, "一", "PLAYER");
+  const second = service.join(room.code, "二", "PLAYER");
+  const third = service.join(room.code, "三", "PLAYER");
+
+  service.leave(room.code, second.token);
+
+  expect(service.publicView(room.code).participants).toMatchObject([
+    { nickname: "一", seat: 1 },
+    { nickname: "三", seat: 2 },
+  ]);
+  expect(() => service.privateView(room.code, second.token)).toThrow(/authorization/i);
+  expect(service.privateView(room.code, first.token).participant.seat).toBe(1);
+  expect(service.privateView(room.code, third.token).participant.seat).toBe(2);
+});
+
+test("a player cannot leave after the game starts", () => {
+  const { service, room, players } = runningRoom();
+  expect(() => service.leave(room.code, players[0]!.token)).toThrow(/不能中途退出/);
+});
+
 function runningRoom() {
   const service = new RoomService();
   const { room, organizerToken } = service.create(5, "主持测试");

@@ -42,6 +42,22 @@ describe("HTTP application", () => {
     }
   });
 
+  test("leaving a lobby releases the participant cookie and seat", async () => {
+    const app = buildApp();
+    apps.push(app);
+    const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "Max" } });
+    const room = created.json<{ code: string }>();
+    const joined = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname: "Max", mode: "PLAYER" } });
+    const playerCookie = String(joined.headers["set-cookie"]).split(";")[0]!;
+
+    const left = await app.inject({ method: "DELETE", url: `/api/rooms/${room.code}/leave`, headers: { cookie: playerCookie }, payload: {} });
+
+    expect(left.statusCode).toBe(200);
+    expect(left.json()).toEqual({ left: true });
+    expect(String(left.headers["set-cookie"])).toContain("ravens_player=");
+    expect((await app.inject({ method: "GET", url: `/api/rooms/${room.code}` })).json().participants).toEqual([]);
+  });
+
   test("the organizer starts one synchronized tutorial and each player receives a private role", async () => {
     const app = buildApp();
     apps.push(app);

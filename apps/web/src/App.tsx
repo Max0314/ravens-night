@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ApiError, castVote, completeTutorial, confirmRole, createRoom, getAuthSession, getPrivateView, getRoom, joinRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, type PrivateView, type RoomView } from "./api.js";
+import { ApiError, castVote, completeTutorial, confirmRole, createRoom, getAuthSession, getPrivateView, getRoom, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, type PrivateView, type RoomView } from "./api.js";
 import { GuideOverlay, type GuideMode } from "./components/GuideOverlay.js";
 import { Create } from "./pages/Create.js";
 import { Display } from "./pages/Display.js";
@@ -178,11 +178,50 @@ export function App() {
     finally { setBusy(false); }
   }
 
-  if (screen === "LOBBY" && room) return withGuide(<Lobby room={room} onBegin={beginTutorial} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} canBegin={isOrganizer} busy={busy} {...(error ? { error } : {})} />);
-  if (screen === "TUTORIAL") return withStatus(<Tutorial onDone={finishTutorial} />);
-  if (screen === "GAME") return withGuide(<PlayerGame {...(privateView ? { view: privateView } : {})} busy={busy} canRestart={isOrganizer} {...(error ? { error } : {})} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats))} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(readyToEndDay)} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
-  if (screen === "DISPLAY") return withStatus(<Display code={room?.code ?? "------"} />);
-  return withGuide(<Home onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} />);
+  async function exitRoom() {
+    if (!room) return;
+    setBusy(true); setError(undefined);
+    try {
+      await leaveRoom(room.code);
+      localStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+      window.history.replaceState({}, "", window.location.pathname);
+      setGuide(undefined);
+      setPrivateView(undefined);
+      setRoom(undefined);
+      setIsOrganizer(false);
+      setBackNotice(false);
+      setConnectionState("ONLINE");
+      setScreen("HOME");
+    } catch (caught) {
+      if (isNetworkFailure(caught)) setConnectionState("OFFLINE");
+      setError(caught instanceof Error ? caught.message : "无法退出房间");
+    } finally { setBusy(false); }
+  }
+
+  function returnHome() {
+    setGuide(undefined);
+    setBackNotice(false);
+    setError(undefined);
+    setScreen("HOME");
+  }
+
+  function resumeRoom() {
+    const stored = readSession();
+    if (!room || !stored) return;
+    setError(undefined);
+    if (stored.mode === "DISPLAY") { setScreen("DISPLAY"); return; }
+    if (room.state === "LOBBY") { setScreen("LOBBY"); return; }
+    if (room.state === "TUTORIAL") { setScreen("TUTORIAL"); return; }
+    setScreen("GAME");
+  }
+
+  if (screen === "LOBBY" && room) return withGuide(<Lobby room={room} onBegin={beginTutorial} onLeave={() => void exitRoom()} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} canBegin={isOrganizer} busy={busy} {...(error ? { error } : {})} />);
+  if (screen === "TUTORIAL") return withStatus(<Tutorial onBack={returnHome} onDone={finishTutorial} />);
+  if (screen === "GAME") return withGuide(<PlayerGame {...(privateView ? { view: privateView } : {})} busy={busy} canRestart={isOrganizer} {...(error ? { error } : {})} onBack={returnHome} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats))} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(readyToEndDay)} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
+  if (screen === "DISPLAY") return withStatus(<Display code={room?.code ?? "------"} onBack={returnHome} />);
+  const stored = room ? readSession() : undefined;
+  return withGuide(<Home onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy, ...(error ? { error } : {}) } : {})} />);
 }
 
 function saveSession(session: StoredSession): void { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); sessionStorage.removeItem(SESSION_KEY); }
