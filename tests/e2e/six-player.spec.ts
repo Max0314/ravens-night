@@ -154,6 +154,11 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
 
     let views = await settleNight(players, code);
     expect(views[0]?.game?.phase).toBe("DAY_DISCUSSION");
+    const historyPlayer = players[0]!;
+    await expect(historyPlayer.page.getByText("我的身份与线索记录", { exact: true })).toBeVisible({ timeout: 8_000 });
+    await historyPlayer.page.getByText("我的身份与线索记录", { exact: true }).click();
+    await expect(historyPlayer.page.getByRole("heading", { name: "身份揭晓" })).toBeVisible();
+    await expect(historyPlayer.page.getByText("身份", { exact: true }).first()).toBeVisible();
     await expect(display.page.getByRole("heading", { name: "自由讨论" })).toBeVisible({ timeout: 8_000 });
     await expect(display.page.locator(".display__phase")).toContainText("第 1 天 · 白天");
     await expect(display.page.getByRole("region", { name: "村庄公开信息" })).toContainText("村庄进入首夜");
@@ -209,6 +214,7 @@ test("six isolated phones and one TV can complete a full game", async ({ browser
     expect(views[0]?.game?.winner).toBe("GOOD");
     await expect(display.page.getByText("善良获胜")).toBeVisible({ timeout: 8_000 });
     await expect(display.page.getByText(/身份揭晓/)).toBeVisible();
+    await expect(players[0]!.page.getByText("我的身份与线索记录", { exact: true })).toBeVisible({ timeout: 8_000 });
 
     const rematch = organizer.page.getByRole("button", { name: "同一批人再来一局", exact: true });
     await expect(rematch).toBeVisible({ timeout: 8_000 });

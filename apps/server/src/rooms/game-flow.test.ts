@@ -174,6 +174,19 @@ test("a serialized room snapshot restores the same private game state", () => {
   expect(restored.privateView(room.code, players[0]!.token)).toEqual(service.privateView(room.code, players[0]!.token));
 });
 
+test("a legacy snapshot without structured private history keeps its existing clues", () => {
+  const { service, room, players } = runningRoom();
+  const snapshot = service.snapshot(room.code);
+  const legacyGame = snapshot.game as unknown as { privateHistory?: unknown };
+  delete legacyGame!.privateHistory;
+
+  const restored = new RoomService();
+  restored.restore([snapshot]);
+  const view = restored.privateView(room.code, players[0]!.token);
+  expect(view.history.map((entry) => entry.text)).toEqual(view.messages);
+  expect(view.history[0]).toMatchObject({ phase: "ROLE_REVEAL", day: 0, kind: "IDENTITY" });
+});
+
 test("the organizer can reset a table without making seated players rejoin", () => {
   const service = new RoomService();
   const created = service.create(5, "创建者");

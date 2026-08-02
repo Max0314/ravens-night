@@ -13,6 +13,15 @@ export interface GameView {
   winReason?: string;
 }
 export interface RoomView { code: string; state: string; playerCount: number; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView }
+export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
+export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
+export interface PrivateHistoryEntry {
+  seq: number;
+  phase: PrivateHistoryPhase;
+  day: number;
+  kind: PrivateHistoryKind;
+  text: string;
+}
 export interface PrivateView {
   participant: { id: string; nickname: string; seat: number };
   state: string;
@@ -20,6 +29,7 @@ export interface PrivateView {
   roleConfirmed?: boolean;
   voteRaised?: boolean;
   messages: string[];
+  history: PrivateHistoryEntry[];
   game?: GameView;
   action?: { kind: "CONFIRM_ROLE" | "SELECT_ONE" | "SELECT_TWO" | "VOTE" | "DAY" | "SLAYER"; legalSeats: number[]; minTargets: number; maxTargets: number; prompt: string };
 }

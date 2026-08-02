@@ -40,6 +40,16 @@ export interface RoomRecord {
 }
 
 type RuntimePhase = "ROLE_REVEAL" | "FIRST_NIGHT" | "DAY_DISCUSSION" | "NOMINATION" | "VOTING" | "OTHER_NIGHT" | "GAME_OVER";
+type PrivateHistoryPhase = RuntimePhase | "HISTORY";
+type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
+
+interface PrivateHistoryEntry {
+  seq: number;
+  phase: PrivateHistoryPhase;
+  day: number;
+  kind: PrivateHistoryKind;
+  text: string;
+}
 
 interface GameRuntime {
   phase: RuntimePhase;
@@ -51,6 +61,7 @@ interface GameRuntime {
   nominatedSeats: number[];
   readySeats: number[];
   messages: Record<number, string[]>;
+  privateHistory: Record<number, PrivateHistoryEntry[]>;
   nightSubmissions: Record<number, number[]>;
   voteSubmissions: Record<number, boolean>;
   usedAbilitySeats: number[];
@@ -152,11 +163,7 @@ export class RoomService {
     for (const snapshot of snapshots) {
       const code = normalizeRoomCode(snapshot.code);
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) continue;
-      const game = snapshot.game ? {
-        ...snapshot.game,
-        virginSpentSeats: snapshot.game.virginSpentSeats ?? [],
-        executionTied: snapshot.game.executionTied ?? false,
-      } : undefined;
+      const game = snapshot.game ? this.restoreGame(snapshot.game) : undefined;
       this.#rooms.set(code, structuredClone({ ...snapshot, ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 }));
     }
   }
@@ -234,10 +241,12 @@ export class RoomService {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
     if (game.phase !== "FIRST_NIGHT" && game.phase !== "OTHER_NIGHT") throw new Error("No night action is active");
+    if (game.nightSubmissions[participant.seat!]) throw new Error("Night action already submitted");
     const requirement = this.nightRequirement(room, participant.seat!);
     if (!requirement) throw new Error("This role has no pending action");
     if (targetSeats.length !== requirement.count || new Set(targetSeats).size !== targetSeats.length) throw new Error("Invalid number of targets");
     if (targetSeats.some((seat) => !requirement.legalSeats.includes(seat))) throw new Error("Illegal target");
+    this.privateMessage(game, participant.seat!, this.describeNightAction(room, participant.seat!, targetSeats), "ACTION");
     game.nightSubmissions[participant.seat!] = [...targetSeats];
     this.settleNightIfReady(room);
     this.changed(room);
@@ -356,6 +365,7 @@ export class RoomService {
     if (actor.perceivedRoleId !== "slayer" || game.usedAbilitySeats.includes(seat)) throw new Error("No day ability is available");
     if (!game.aliveSeats.includes(targetSeat)) throw new Error("The target must be alive");
     game.usedAbilitySeats.push(seat);
+    this.privateMessage(game, seat, `你以猎魔人身份公开射击了${this.playerLabel(room, targetSeat)}。`, "ACTION");
     this.event(game, `${this.nickname(room, seat)} 以猎魔人身份射击了 ${this.nickname(room, targetSeat)}。`);
     const target = this.assignment(room, targetSeat);
     const recluseRegistersAsDemon = target.roleId === "recluse"
@@ -378,6 +388,7 @@ export class RoomService {
       participant: { id: participant.id, nickname: participant.nickname, seat: participant.seat },
       state: room.state,
       messages: room.game?.messages[participant.seat!] ?? [],
+      history: room.game?.privateHistory[participant.seat!] ?? [],
       ...(room.game?.phase === "VOTING" && room.game.voteSubmissions[participant.seat!] !== undefined ? { voteRaised: room.game.voteSubmissions[participant.seat!] } : {}),
       ...(room.game ? { game: this.publicGame(room), roleConfirmed: room.game.confirmedRoleSeats.includes(participant.seat!), ...(this.privateAction(room, participant.seat!) ? { action: this.privateAction(room, participant.seat!) } : {}) } : {}),
       ...(assignment && visibleRole && (room.state === "RUNNING" || room.state === "GAME_OVER")
@@ -395,36 +406,60 @@ export class RoomService {
 
   private createGame(room: RoomRecord): GameRuntime {
     const messages: Record<number, string[]> = {};
-    for (const assignment of room.assignments) {
-      const role = roleById(assignment.perceivedRoleId);
-      messages[assignment.seat] = [`你的身份是${role.name}。${role.summary}`];
-    }
-    const demon = room.assignments.find((candidate) => candidate.roleType === "DEMON");
-    const minions = room.assignments.filter((candidate) => candidate.roleType === "MINION");
-    if (demon && room.playerCount >= 7) {
-      messages[demon.seat]!.push(`你的爪牙：${minions.map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "本局没有爪牙"}。`);
-      const selected = new Set(room.assignments.map((candidate) => candidate.perceivedRoleId));
-      const bluffs = ROLE_CATALOG.filter((role) => role.type === "TOWNSFOLK" && !selected.has(role.id)).slice(0, 3).map((role) => role.name);
-      messages[demon.seat]!.push(`三个安全伪装：${bluffs.join("、")}。`);
-    }
-    if (room.playerCount >= 7) {
-      for (const minion of minions) messages[minion.seat]!.push(`恶魔是 ${demon ? this.playerLabel(room, demon.seat) : "未知玩家"}；其他爪牙：${minions.filter((candidate) => candidate.seat !== minion.seat).map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "无"}。`);
-    } else {
-      const teensyvilleNotice = "六人局特殊规则：邪恶玩家不会在首夜得知彼此身份，小恶魔也不会获得三个安全伪装。";
-      if (demon) messages[demon.seat]!.push(teensyvilleNotice);
-      for (const minion of minions) messages[minion.seat]!.push(teensyvilleNotice);
-    }
+    const privateHistory: Record<number, PrivateHistoryEntry[]> = {};
     const goodSeats = room.assignments.filter((assignment) => assignment.alignment === "GOOD").map((assignment) => assignment.seat);
     const redHerringSeat = goodSeats[Math.floor(randomAt(`${room.id}:red-herring`, 0) * goodSeats.length)];
-    return {
+    const game: GameRuntime = {
       phase: "ROLE_REVEAL", day: 0,
       aliveSeats: room.assignments.map((candidate) => candidate.seat),
       ghostVoteSeats: room.assignments.map((candidate) => candidate.seat),
       confirmedRoleSeats: [], nominatedBySeats: [], nominatedSeats: [], readySeats: [],
-      messages, nightSubmissions: {}, voteSubmissions: {}, usedAbilitySeats: [], virginSpentSeats: [],
+      messages, privateHistory,
+      nightSubmissions: {}, voteSubmissions: {}, usedAbilitySeats: [], virginSpentSeats: [],
       executionTied: false,
       ...(redHerringSeat ? { redHerringSeat } : {}),
       events: [{ seq: 1, message: "身份已私密发放，请每位玩家确认。" }],
+    };
+    for (const assignment of room.assignments) {
+      const role = roleById(assignment.perceivedRoleId);
+      messages[assignment.seat] = [];
+      privateHistory[assignment.seat] = [];
+      this.privateMessage(game, assignment.seat, `你的身份是${role.name}。${role.summary}`, "IDENTITY");
+    }
+    const demon = room.assignments.find((candidate) => candidate.roleType === "DEMON");
+    const minions = room.assignments.filter((candidate) => candidate.roleType === "MINION");
+    if (demon && room.playerCount >= 7) {
+      this.privateMessage(game, demon.seat, `你的爪牙：${minions.map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "本局没有爪牙"}。`, "INFORMATION");
+      const selected = new Set(room.assignments.map((candidate) => candidate.perceivedRoleId));
+      const bluffs = ROLE_CATALOG.filter((role) => role.type === "TOWNSFOLK" && !selected.has(role.id)).slice(0, 3).map((role) => role.name);
+      this.privateMessage(game, demon.seat, `三个安全伪装：${bluffs.join("、")}。`, "INFORMATION");
+    }
+    if (room.playerCount >= 7) {
+      for (const minion of minions) this.privateMessage(game, minion.seat, `恶魔是 ${demon ? this.playerLabel(room, demon.seat) : "未知玩家"}；其他爪牙：${minions.filter((candidate) => candidate.seat !== minion.seat).map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "无"}。`, "INFORMATION");
+    } else {
+      const teensyvilleNotice = "六人局特殊规则：邪恶玩家不会在首夜得知彼此身份，小恶魔也不会获得三个安全伪装。";
+      if (demon) this.privateMessage(game, demon.seat, teensyvilleNotice, "NOTICE");
+      for (const minion of minions) this.privateMessage(game, minion.seat, teensyvilleNotice, "NOTICE");
+    }
+    return game;
+  }
+
+  private restoreGame(snapshot: GameRuntime): GameRuntime {
+    const legacy = snapshot as GameRuntime & { privateHistory?: Record<number, PrivateHistoryEntry[]> };
+    const privateHistory = legacy.privateHistory ?? Object.fromEntries(
+      Object.entries(snapshot.messages ?? {}).map(([seat, messages]) => [seat, messages.map((text, index) => ({
+        seq: index + 1,
+        phase: index === 0 || snapshot.phase === "ROLE_REVEAL" || snapshot.phase === "FIRST_NIGHT" ? "ROLE_REVEAL" as const : "HISTORY" as const,
+        day: index === 0 ? 0 : snapshot.day ?? 0,
+        kind: index === 0 ? "IDENTITY" as const : "NOTICE" as const,
+        text,
+      }))]),
+    );
+    return {
+      ...snapshot,
+      privateHistory,
+      virginSpentSeats: snapshot.virginSpentSeats ?? [],
+      executionTied: snapshot.executionTied ?? false,
     };
   }
 
@@ -450,6 +485,33 @@ export class RoomService {
 
   private event(game: GameRuntime, message: string): void {
     game.events.push({ seq: game.events.length + 1, message: message.trim() });
+  }
+
+  private privateMessage(game: GameRuntime, seat: number, text: string, kind: PrivateHistoryKind): void {
+    const message = text.trim();
+    (game.messages[seat] ??= []).push(message);
+    const history = game.privateHistory[seat] ??= [];
+    history.push({
+      seq: (history.at(-1)?.seq ?? 0) + 1,
+      phase: game.phase,
+      day: game.day,
+      kind,
+      text: message,
+    });
+  }
+
+  private describeNightAction(room: RoomRecord, seat: number, targetSeats: number[]): string {
+    const game = this.requireGame(room);
+    const assignment = this.assignment(room, seat);
+    const perceivedRoleId = assignment.roleId === "drunk" ? assignment.perceivedRoleId : assignment.roleId;
+    const targets = targetSeats.map((targetSeat) => this.playerLabel(room, targetSeat));
+    if (game.pendingRavenkeeperSeat === seat) return `你选择查验${targets[0]}的角色。`;
+    if (perceivedRoleId === "poisoner") return `你选择投毒${targets[0]}。`;
+    if (perceivedRoleId === "fortune_teller") return `你选择查验${targets.join("与")}。`;
+    if (perceivedRoleId === "butler") return `你选择${targets[0]}作为明天的主人。`;
+    if (perceivedRoleId === "monk") return `你选择保护${targets[0]}免受恶魔攻击。`;
+    if (perceivedRoleId === "imp") return `你选择袭击${targets[0]}。`;
+    return `你选择了${targets.join("与")}。`;
   }
 
   private changed(room: RoomRecord): void { room.revision += 1; }
@@ -520,7 +582,7 @@ export class RoomService {
         legal: legalRoleIds,
         impaired: this.isImpaired(room, ravenkeeperSeat),
       });
-      game.messages[ravenkeeperSeat]!.push(`守鸦人信息：${this.playerLabel(room, chosenSeat)}是${roleById(shownRoleId).name}。`);
+      this.privateMessage(game, ravenkeeperSeat, `守鸦人信息：${this.playerLabel(room, chosenSeat)}是${roleById(shownRoleId).name}。`, "INFORMATION");
       delete game.pendingRavenkeeperSeat;
       this.finishNight(room);
       return;
@@ -557,7 +619,7 @@ export class RoomService {
         if (result.newDemonSeat !== undefined) {
           const successor = this.assignment(room, result.newDemonSeat);
           successor.roleId = "imp"; successor.perceivedRoleId = "imp"; successor.roleType = "DEMON";
-          game.messages[result.newDemonSeat]!.push("小恶魔自杀后，你已秘密接替成为新的小恶魔。 ");
+          this.privateMessage(game, result.newDemonSeat, "小恶魔自杀后，你已秘密接替成为新的小恶魔。", "ROLE_CHANGE");
         }
         this.event(game, result.deaths.length ? `黎明时发现 ${result.deaths.map((seat) => this.nickname(room, seat)).join("、")} 死亡。` : "黎明到来，昨夜无人死亡。 ");
         const ravenkeeper = result.deaths.find((seat) => this.assignment(room, seat).perceivedRoleId === "ravenkeeper");
@@ -624,7 +686,7 @@ export class RoomService {
         const shown = chooseInformationResult({ seed: infoSeed, eventSeq: game.events.length, truthful, legal: ROLE_CATALOG.map((role) => role.id), impaired });
         message = `送葬信息：今天被处决的是${roleById(shown).name}。`;
       }
-      if (message) game.messages[assignment.seat]!.push(message);
+      if (message) this.privateMessage(game, assignment.seat, message, "INFORMATION");
     }
   }
 
@@ -665,7 +727,7 @@ export class RoomService {
     let demonAlive = livingAssignments.some((assignment) => assignment.roleType === "DEMON");
     if (!demonAlive && game.aliveSeats.length >= 5) {
       const scarlet = livingAssignments.find((assignment) => assignment.roleId === "scarlet_woman" && !this.isImpaired(room, assignment.seat));
-      if (scarlet) { scarlet.roleId = "imp"; scarlet.perceivedRoleId = "imp"; scarlet.roleType = "DEMON"; game.messages[scarlet.seat]!.push("恶魔死亡，你已成为新的小恶魔。 "); demonAlive = true; }
+      if (scarlet) { scarlet.roleId = "imp"; scarlet.perceivedRoleId = "imp"; scarlet.roleType = "DEMON"; this.privateMessage(game, scarlet.seat, "恶魔死亡，你已成为新的小恶魔。", "ROLE_CHANGE"); demonAlive = true; }
     }
     const executedRoleId = executedSeat === undefined || this.isImpaired(room, executedSeat) ? undefined : this.assignment(room, executedSeat).roleId;
     const livingRoleIds = livingAssignments.filter((assignment) => !this.isImpaired(room, assignment.seat)).map((assignment) => assignment.roleId);

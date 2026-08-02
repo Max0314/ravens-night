@@ -146,6 +146,37 @@ test("the nominator can cancel before voting and a voter can switch their hand",
   expect(onVote).toHaveBeenCalledWith(false);
 });
 
+test("private identity, actions, and clues are grouped into a readable timeline", () => {
+  const view = playerView("DAY_DISCUSSION");
+  view.history = [
+    { seq: 1, phase: "ROLE_REVEAL", day: 0, kind: "IDENTITY", text: "你的身份是占卜师。" },
+    { seq: 2, phase: "FIRST_NIGHT", day: 0, kind: "ACTION", text: "你选择查验二号与三号。" },
+    { seq: 3, phase: "FIRST_NIGHT", day: 0, kind: "INFORMATION", text: "占卜结果：是。" },
+  ];
+  render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
+
+  const drawer = screen.getByText("我的身份与线索记录").closest("details");
+  expect(drawer).not.toHaveAttribute("open");
+  fireEvent.click(screen.getByText("我的身份与线索记录"));
+  expect(drawer).toHaveAttribute("open");
+  expect(screen.getByRole("heading", { name: "首夜" })).toBeVisible();
+  expect(screen.getByText("你选择查验二号与三号。")).toBeVisible();
+  expect(screen.getByText("占卜结果：是。")).toBeVisible();
+  expect(screen.getByText("我的行动")).toBeVisible();
+  expect(screen.getByText("收到线索")).toBeVisible();
+});
+
+test("a submitted night action explains when its information will appear", () => {
+  const view = playerView("DAY_DISCUSSION");
+  view.game!.phase = "FIRST_NIGHT";
+  view.game!.day = 0;
+  delete view.action;
+  view.history.push({ seq: 2, phase: "FIRST_NIGHT", day: 0, kind: "ACTION", text: "你选择查验二号与三号。" });
+
+  render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
+  expect(screen.getByText("你的选择已记录。等本夜所有角色完成行动后，结果会出现在下方记录中。")).toBeVisible();
+});
+
 function playerView(phase: "DAY_DISCUSSION" | "VOTING"): PrivateView {
   const seats = [
     { seat: 1, nickname: "提名人", connected: true, alive: true, ghostVoteAvailable: true },
@@ -160,6 +191,7 @@ function playerView(phase: "DAY_DISCUSSION" | "VOTING"): PrivateView {
     role: { roleId: "chef", alignment: "GOOD", type: "TOWNSFOLK", name: "厨师", summary: "测试能力", beginnerTip: "测试提示" },
     roleConfirmed: true,
     messages: ["你的身份是厨师。"],
+    history: [{ seq: 1, phase: "ROLE_REVEAL", day: 0, kind: "IDENTITY", text: "你的身份是厨师。" }],
     game: {
       phase,
       day: 1,

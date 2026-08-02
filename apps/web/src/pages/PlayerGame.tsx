@@ -1,6 +1,6 @@
 import { Button, Panel, RoleCard } from "@ravens/ui";
 import { useEffect, useState } from "react";
-import type { PrivateView } from "../api.js";
+import type { PrivateHistoryEntry, PrivateHistoryKind, PrivateView } from "../api.js";
 import type { GuideMode } from "../components/GuideOverlay.js";
 import { roleArt } from "../role-art.js";
 
@@ -46,21 +46,22 @@ export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitA
   if (game.phase === "GAME_OVER") return <main className={`ending ending--${game.winner?.toLowerCase()}`}>
     <button className="screen-back" type="button" onClick={onBack}>← 返回首页</button>
     <p>钟声停止</p><h1>{game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜"}</h1>
-    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的真实身份</h2><p>{role.name} · {role.summary}</p>{role.perceivedAs ? <p>本局游戏中，你一直以为自己是<strong>{role.perceivedAs}</strong>；因此曾收到的信息可能不真实。</p> : null}</Panel><Panel className="ending__reveal"><h2>全员身份揭晓</h2><p>{game.events.at(-1)?.message.replace(/^身份揭晓：/, "")}</p></Panel><PublicLog events={game.events} />{canRestart ? <Button onClick={onRestart} disabled={busy}>{busy ? "正在重置房间…" : "同一批人再来一局"}</Button> : <p className="ending__waiting">想再玩一局？等待当前房主重开即可，无需重新加入。</p>}<GameGuideLinks onOpen={onOpenGuide} />
+    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的真实身份</h2><p>{role.name} · {role.summary}</p>{role.perceivedAs ? <p>本局游戏中，你一直以为自己是<strong>{role.perceivedAs}</strong>；因此曾收到的信息可能不真实。</p> : null}</Panel><Panel className="ending__reveal"><h2>全员身份揭晓</h2><p>{game.events.at(-1)?.message.replace(/^身份揭晓：/, "")}</p></Panel><Clues history={view.history} messages={view.messages} /><PublicLog events={game.events} />{canRestart ? <Button onClick={onRestart} disabled={busy}>{busy ? "正在重置房间…" : "同一批人再来一局"}</Button> : <p className="ending__waiting">想再玩一局？等待当前房主重开即可，无需重新加入。</p>}<GameGuideLinks onOpen={onOpenGuide} />
   </main>;
 
   const action = view.action;
   const isNight = game.phase === "FIRST_NIGHT" || game.phase === "OTHER_NIGHT";
+  const submittedNightAction = isNight && view.history.some((entry) => entry.phase === game.phase && entry.day === game.day && entry.kind === "ACTION");
   if (isNight) return <main className="game-page game-page--night">
     <GameHeader phase={phaseNames[game.phase]!} day={game.day} role={role.name} onBack={onBack} />
     <RoleCompass role={role} task={action?.prompt ?? "当前无需操作。保持安静并等待手机出现新的行动提示。"} onOpen={onOpenGuide} />
-    {game.phase === "FIRST_NIGHT" && role.alignment === "EVIL" ? <EvilFirstNightIntel messages={view.messages.slice(1)} /> : null}
+    {game.phase === "FIRST_NIGHT" && role.alignment === "EVIL" ? <EvilFirstNightIntel entries={view.history.filter((entry) => entry.phase === "ROLE_REVEAL" && (entry.kind === "INFORMATION" || entry.kind === "NOTICE"))} /> : null}
     {action?.kind === "SELECT_ONE" || action?.kind === "SELECT_TWO" ? <Panel className="action-panel">
       <p className="eyebrow">轮到你行动</p><h1>{action.prompt}</h1><p>选择会直接提交给系统，其他玩家和公共大屏都看不到。</p>
       <SeatChoices seats={game.seats} legalSeats={action.legalSeats} selected={selected} max={action.maxTargets} onChange={setSelected} />
       <Button disabled={busy || selected.length !== action.maxTargets} onClick={() => onSubmitAction(selected)}>{busy ? "正在封存选择…" : `确认选择（${selected.length}/${action.maxTargets}）`}</Button>
-    </Panel> : <Waiting title="村庄已经沉睡" detail="系统正按夜序唤醒其他角色。你可以查看刚收到的线索。" compact />}
-    <Clues messages={view.messages} />{error ? <p className="game-error">{error}</p> : null}
+    </Panel> : <Waiting title="村庄已经沉睡" detail={submittedNightAction ? "你的选择已记录。等本夜所有角色完成行动后，结果会出现在下方记录中。" : "系统正按夜序唤醒其他角色；本夜结算后，新线索会出现在下方记录中。"} compact />}
+    <Clues history={view.history} messages={view.messages} />{error ? <p className="game-error">{error}</p> : null}
   </main>;
 
   return <main className="game-page game-page--day">
@@ -81,7 +82,7 @@ export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitA
       {game.onBlock ? <p className="on-block">当前处决候选：{seatName(game.seats, game.onBlock.seat)} · {game.onBlock.votes} 票</p> : null}
       <Button variant="quiet" onClick={onReady} disabled={busy}>我同意结束今天（{game.readyCount}/{game.aliveCount}）</Button>
     </Panel>}
-    <Clues messages={view.messages} /><PublicLog events={game.events} />{error ? <p className="game-error">{error}</p> : null}
+    <Clues history={view.history} messages={view.messages} /><PublicLog events={game.events} />{error ? <p className="game-error">{error}</p> : null}
   </main>;
 }
 
@@ -95,8 +96,9 @@ function GameGuideLinks({ onOpen }: { onOpen: (mode: GuideMode) => void }) {
   return <div className="game-guide-links"><button type="button" onClick={() => onOpen("mine")}>我的角色</button><button type="button" onClick={() => onOpen("tutorial")}>教程</button><button type="button" onClick={() => onOpen("roles")}>角色表</button></div>;
 }
 
-function EvilFirstNightIntel({ messages }: { messages: string[] }) {
-  return <Panel className="evil-intel"><p className="eyebrow">邪恶阵营首夜情报</p>{messages.map((message) => <p key={message}>{message}</p>)}</Panel>;
+function EvilFirstNightIntel({ entries }: { entries: PrivateHistoryEntry[] }) {
+  if (entries.length === 0) return null;
+  return <Panel className="evil-intel"><p className="eyebrow">邪恶阵营首夜情报</p>{entries.map((entry) => <p key={entry.seq}>{entry.text}</p>)}</Panel>;
 }
 
 function dayTask(view: PrivateView): string {
@@ -114,7 +116,49 @@ function SeatChoices({ seats, legalSeats, selected, max, onChange }: { seats: Pr
   return <div className="seat-choices">{seats.map((seat) => { const legal = legalSeats.includes(seat.seat); const active = selected.includes(seat.seat); return <button type="button" key={seat.seat} disabled={!legal} className={active ? "is-selected" : ""} onClick={() => onChange(active ? selected.filter((value) => value !== seat.seat) : [...(selected.length >= max ? selected.slice(1) : selected), seat.seat])}><span>{seat.seat}</span><strong>{seat.nickname}</strong>{!seat.alive ? <small>已死亡</small> : null}</button>; })}</div>;
 }
 
-function Clues({ messages }: { messages: string[] }) { return <details className="clue-drawer"><summary>我的身份与线索 <span>{messages.length}</span></summary><div>{[...messages].reverse().map((message, index) => <p key={`${index}-${message}`}>{message}</p>)}</div></details>; }
+const historyKindLabels: Record<PrivateHistoryKind, string> = {
+  IDENTITY: "身份",
+  ACTION: "我的行动",
+  INFORMATION: "收到线索",
+  ROLE_CHANGE: "身份变化",
+  NOTICE: "规则提示",
+};
+
+function Clues({ history, messages }: { history: PrivateHistoryEntry[]; messages: string[] }) {
+  const entries = history.length > 0 ? history : messages.map((text, index) => ({ seq: index + 1, phase: "HISTORY" as const, day: 0, kind: "NOTICE" as const, text }));
+  const groups = groupPrivateHistory(entries);
+  const latest = entries.at(-1);
+  return <details className="clue-drawer">
+    <summary><strong>我的身份与线索记录</strong><span>{entries.length}</span>{latest ? <small>最新：{latest.text}</small> : null}</summary>
+    <div className="clue-timeline">{groups.map((group) => <section key={group.key} className="clue-timeline__group">
+      <h3>{group.label}</h3>
+      <ol>{group.entries.map((entry) => <li key={entry.seq} className={`clue-entry clue-entry--${entry.kind.toLowerCase()}`}>
+        <span>{historyKindLabels[entry.kind]}</span><p>{entry.text}</p>
+      </li>)}</ol>
+    </section>)}</div>
+  </details>;
+}
+
+function groupPrivateHistory(entries: PrivateHistoryEntry[]) {
+  const groups = new Map<string, { key: string; label: string; entries: PrivateHistoryEntry[] }>();
+  for (const entry of [...entries].reverse()) {
+    const label = privateHistoryLabel(entry);
+    const key = label;
+    const group = groups.get(key) ?? { key, label, entries: [] };
+    group.entries.push(entry);
+    groups.set(key, group);
+  }
+  return [...groups.values()];
+}
+
+function privateHistoryLabel(entry: PrivateHistoryEntry): string {
+  if (entry.phase === "ROLE_REVEAL") return "身份揭晓";
+  if (entry.phase === "FIRST_NIGHT") return "首夜";
+  if (entry.phase === "OTHER_NIGHT") return `第 ${Math.max(2, entry.day + 1)} 夜`;
+  if (entry.phase === "GAME_OVER") return "终局";
+  if (entry.phase === "HISTORY") return "此前记录";
+  return `第 ${Math.max(1, entry.day)} 天`;
+}
 function PublicLog({ events }: { events: Array<{ seq: number; message: string }> }) { return <details className="public-log"><summary>村庄记录</summary>{[...events].reverse().map((event) => <p key={event.seq}>{event.message}</p>)}</details>; }
 function seatName(seats: Array<{ seat: number; nickname: string }>, seat: number) { const player = seats.find((candidate) => candidate.seat === seat); return `${player?.nickname ?? "玩家"}（${seat}号）`; }
 function winReason(reason?: string) { return ({ "saint-executed": "圣徒被处决，邪恶达成了特殊胜利。", "mayor-final-three": "三人存活且无人被处决，镇长带领善良获胜。", "demon-dead": "恶魔已经死亡。", "final-two": "仅剩两人存活，邪恶控制了村庄。" } as Record<string, string>)[reason ?? ""] ?? "这一夜的故事已经写完。"; }
