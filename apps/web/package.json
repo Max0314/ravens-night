@@ -8,6 +8,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@ravens/content": "workspace:*",
     "@ravens/contracts": "workspace:*",
     "@ravens/ui": "workspace:*",
     "qrcode": "latest",

@@ -1,6 +1,7 @@
 import { Panel, SeatRing } from "@ravens/ui";
-import { useEffect, useState } from "react";
-import { getRoom, type RoomView } from "../api.js";
+import { useEffect, useRef, useState, type CSSProperties, type DragEvent, type KeyboardEvent } from "react";
+import { ApiError, getRoom, reorderRoomSeats, type RoomParticipant, type RoomView } from "../api.js";
+import { invitationQr } from "../invite.js";
 
 const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string }> = {
   ROLE_REVEAL: { eyebrow: "保持安静", title: "身份正在揭晓", detail: "请只看自己的手机" },
@@ -12,25 +13,122 @@ const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string
   GAME_OVER: { eyebrow: "终局", title: "钟声停止", detail: "今夜的身份即将全部揭晓" },
 };
 
-export function Display({ code }: { code: string }) {
+function phaseLabel(phase: string | undefined, day: number | undefined): string {
+  if (!phase) return "等待开局";
+  if (phase === "ROLE_REVEAL") return "身份确认";
+  if (phase === "FIRST_NIGHT") return "首夜 · 夜晚";
+  if (phase === "OTHER_NIGHT") return `第 ${Math.max(day ?? 1, 1)} 夜 · 夜晚`;
+  if (phase === "GAME_OVER") return "游戏结束";
+  return `第 ${Math.max(day ?? 1, 1)} 天 · 白天`;
+}
+
+export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: () => void; onRoomClosed: () => void }) {
   const [room, setRoom] = useState<RoomView>();
+  const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
+  const [qr, setQr] = useState<string>();
+  const [reordering, setReordering] = useState(false);
+  const [seatError, setSeatError] = useState<string>();
+  const [deathNotice, setDeathNotice] = useState<{ seq: number; message: string }>();
+  const reorderPending = useRef(false);
+  const seenDeathSeq = useRef(0);
   useEffect(() => {
     let active = true;
-    const refresh = () => void getRoom(code).then((next) => { if (active) setRoom(next); }).catch(() => undefined);
+    const refresh = () => void getRoom(code).then((next) => { if (active && !reorderPending.current) setRoom(next); }).catch((error) => {
+      if (active && error instanceof ApiError && error.status === 404) onRoomClosed();
+    });
     refresh(); const timer = window.setInterval(refresh, 1_200);
     return () => { active = false; window.clearInterval(timer); };
-  }, [code]);
+  }, [code, onRoomClosed]);
+  useEffect(() => { let active = true; void invitationQr(code, 320).then((value) => { if (active) setQr(value); }).catch(() => undefined); return () => { active = false; }; }, [code]);
+  useEffect(() => {
+    const update = () => setFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", update);
+    return () => document.removeEventListener("fullscreenchange", update);
+  }, []);
+  useEffect(() => {
+    const latest = room?.game?.events.slice().reverse().find((event) => event.message.includes("死亡"));
+    if (!latest || latest.seq <= seenDeathSeq.current) return;
+    seenDeathSeq.current = latest.seq;
+    setDeathNotice(latest);
+    const timer = window.setTimeout(() => setDeathNotice(undefined), 7_000);
+    return () => window.clearTimeout(timer);
+  }, [room?.game?.events]);
 
   const game = room?.game;
-  const players = room?.participants.filter((participant) => participant.mode === "PLAYER") ?? [];
+  const players = [...(room?.participants.filter((participant) => participant.mode === "PLAYER") ?? [])]
+    .sort((left, right) => left.seat! - right.seat!);
   const seats = game?.seats ?? players.map((participant) => ({ seat: participant.seat!, nickname: participant.nickname, alive: true, connected: participant.connected, ghostVoteAvailable: true }));
   const copy = phaseCopy[game?.phase ?? "ROLE_REVEAL"] ?? phaseCopy.ROLE_REVEAL!;
   const nominee = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nomineeSeat) : undefined;
-  const lastEvent = game?.events.at(-1)?.message ?? `${players.length}/${room?.playerCount ?? "?"} 位玩家已入座`;
+  const nominator = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nominatorSeat) : undefined;
+  const publicEvents = game?.events.slice(-3).reverse() ?? [];
+  const isNight = game?.phase === "FIRST_NIGHT" || game?.phase === "OTHER_NIGHT";
+
+  async function applySeatOrder(participantIds: string[]) {
+    if (!room || game || reorderPending.current) return;
+    reorderPending.current = true;
+    setReordering(true);
+    setSeatError(undefined);
+    try { setRoom(await reorderRoomSeats(code, participantIds)); }
+    catch (error) { setSeatError(error instanceof Error ? error.message : "座位调整失败，请重试"); }
+    finally { reorderPending.current = false; setReordering(false); }
+  }
 
   return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
-    <header className="display__header"><span>鸦钟夜话 · {code}</span><span>{game ? `第 ${game.day || 1} 天` : "等待开局"}</span></header>
-    <section className="display__town"><SeatRing seats={seats} /><div className="display__center"><p>{copy.eyebrow}</p><h1>{game?.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? `${nominee.seat}号 ${nominee.nickname}` : copy.title}</h1><small>{game?.phase === "VOTING" && game.nomination ? `已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></div></section>
-    <Panel className="display__notice">{lastEvent}</Panel>
+    {deathNotice ? <section className="death-reveal death-reveal--display" role="status"><div className="death-reveal__moon" aria-hidden="true">☾</div><p>黎明的钟声</p><h2>昨夜有人离开了村庄</h2><strong>{deathNotice.message}</strong></section> : null}
+    <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
+    <section className="display__town">{game ? <SeatRing seats={seats} /> : <SeatOrderEditor players={players} busy={reordering} onReorder={(ids) => void applySeatOrder(ids)} />}<div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>拖动卡片，使编号与线下座位一致</small></div> : <><p>{copy.eyebrow}</p><h1>{game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? nominee.nickname : copy.title}</h1><small>{game.phase === "VOTING" && game.nomination && nominee ? `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></>}</div></section>
+    {game ? <Panel className="display__village-feed" aria-label="村庄公开信息">
+      <header><div><span aria-hidden="true">⌁</span><strong>村庄公开信息</strong></div><small>所有玩家均可得知</small></header>
+      <ol>{publicEvents.map((event, index) => <li key={event.seq} className={index === 0 ? "is-latest" : ""}><span>{index === 0 ? "最新" : `记录 ${event.seq}`}</span><p>{event.message}</p></li>)}</ol>
+    </Panel> : <Panel className={`display__notice${seatError ? " display__notice--error" : ""}`} aria-live="polite">{seatError ?? (reordering ? "正在同步新的座位顺序…" : players.length > 1 ? "开局前可拖动玩家调整座位 · 选中卡片后也可按方向键" : `${players.length}/${room?.playerCount ?? "?"} 位玩家已入座`)}</Panel>}
   </main>;
+}
+
+export function SeatOrderEditor({ players, busy, onReorder }: { players: RoomParticipant[]; busy: boolean; onReorder: (participantIds: string[]) => void }) {
+  const [draggingId, setDraggingId] = useState<string>();
+  const orderedIds = players.map((player) => player.id);
+
+  function move(sourceId: string, targetIndex: number) {
+    const sourceIndex = orderedIds.indexOf(sourceId);
+    if (busy || sourceIndex < 0 || targetIndex < 0 || targetIndex >= orderedIds.length || sourceIndex === targetIndex) return;
+    const next = [...orderedIds];
+    next.splice(sourceIndex, 1);
+    next.splice(targetIndex, 0, sourceId);
+    onReorder(next);
+  }
+
+  function drop(event: DragEvent<HTMLLIElement>, targetIndex: number) {
+    event.preventDefault();
+    const sourceId = event.dataTransfer.getData("text/plain") || draggingId;
+    if (sourceId) move(sourceId, targetIndex);
+    setDraggingId(undefined);
+  }
+
+  function moveWithKeyboard(event: KeyboardEvent<HTMLLIElement>, playerId: string, index: number) {
+    if (!["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(event.key)) return;
+    event.preventDefault();
+    const offset = event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1;
+    move(playerId, index + offset);
+  }
+
+  return <ol className="rn-seat-ring display-seat-editor" aria-label="开局座位顺序" style={{ "--seat-count": Math.max(players.length, 1) } as CSSProperties}>
+    {players.map((player, index) => <li
+      key={player.id}
+      className={`rn-seat display-seat-editor__seat${draggingId === player.id ? " is-dragging" : ""}`}
+      style={{ "--seat-index": index } as CSSProperties}
+      draggable={!busy}
+      tabIndex={0}
+      aria-label={`${player.nickname}，当前 ${index + 1} 号，可拖动调整座位`}
+      onDragStart={(event) => { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", player.id); setDraggingId(player.id); }}
+      onDragEnd={() => setDraggingId(undefined)}
+      onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = "move"; }}
+      onDrop={(event) => drop(event, index)}
+      onKeyDown={(event) => moveWithKeyboard(event, player.id, index)}
+    >
+      <span className="rn-seat__number">{index + 1}号</span>
+      <span className="rn-seat__name">{player.nickname}</span>
+      <small className="display-seat-editor__handle" aria-hidden="true">⠿ 拖动</small>
+    </li>)}
+  </ol>;
 }

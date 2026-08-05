@@ -31,5 +31,9 @@ export class PostgresRoomRepository {
     );
   }
 
+  async delete(code: string): Promise<void> {
+    await this.#pool.query("DELETE FROM room_runtime_snapshots WHERE code = $1", [code]);
+  }
+
   async close(): Promise<void> { await this.#pool.end(); }
 }

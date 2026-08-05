@@ -18,6 +18,7 @@ describe("special wins", () => {
   });
 
   test("the mayor wins for good at three alive with no execution", () => {
-    expect(resolveSpecialWin({ livingRoleIds: ["mayor", "imp", "chef"], livingCount: 3, demonAlive: true, executedToday: false })).toEqual({ winner: "GOOD", reason: "mayor-final-three" });
+    expect(resolveSpecialWin({ livingRoleIds: ["mayor", "imp", "chef"], livingCount: 3, demonAlive: true, executedToday: false, mayorWinEligible: true })).toEqual({ winner: "GOOD", reason: "mayor-final-three" });
+    expect(resolveSpecialWin({ livingRoleIds: ["mayor", "imp", "chef"], livingCount: 3, demonAlive: true, executedToday: false })).toBeUndefined();
   });
 });

@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@playwright/test':
+        specifier: ^1.62.1
+        version: 1.62.1
       '@types/node':
         specifier: latest
         version: 26.1.2
@@ -43,7 +46,7 @@ importers:
         version: link:../../packages/game-engine
       drizzle-orm:
         specifier: latest
-        version: 0.45.2(@types/pg@8.20.0)(pg@8.22.0)
+        version: 0.45.2(@types/pg@8.20.1)(pg@8.22.0)
       fastify:
         specifier: latest
         version: 5.11.0
@@ -53,10 +56,13 @@ importers:
     devDependencies:
       '@types/pg':
         specifier: latest
-        version: 8.20.0
+        version: 8.20.1
 
   apps/web:
     dependencies:
+      '@ravens/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@ravens/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -538,6 +544,11 @@ packages:
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
+  '@playwright/test@1.62.1':
+    resolution: {integrity: sha512-DTcUc8qii+cpHvtOwggMtBRMjKZHXYWdw8syRYu2vtzuq4Wxphqq4NfCs5Zt44L6mA8rfDfj+PHnxFc/FeK6mQ==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   '@rolldown/binding-android-arm64@1.2.1':
     resolution: {integrity: sha512-02hOeOSryYxVrOIphmLAsqnCJWxwlzFk+pEt/N/i6OgT3lShHO7xGCU5cpgchRDHboAEbSjzgGh+O/u1GswQmA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -684,8 +695,8 @@ packages:
   '@types/node@26.1.2':
     resolution: {integrity: sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg==}
 
-  '@types/pg@8.20.0':
-    resolution: {integrity: sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow==}
+  '@types/pg@8.20.1':
+    resolution: {integrity: sha512-ybDwWypSo+Rs2LhUxSTfz5VDoon8FMvntvAZMLbFx4U4csIoXVnDjRdnp634rKgqldGio33/aZSG6aN36CzAJg==}
 
   '@types/qrcode@1.5.6':
     resolution: {integrity: sha512-te7NQcV2BOvdj2b1hCAHzAoMNuj65kNBMz0KBaxM6c3VGBOhU0dURQKOtH8CFNI/dsKkwlv32p26qYQTWoB5bw==}
@@ -1157,6 +1168,11 @@ packages:
     resolution: {integrity: sha512-PpOwAdQ/YlXQ2vj8a3h8IipDuYRi3wceVQQGYWxNINccq40Anw7BlsEXCMbt1Zt+OLA6Fq9suIpIWD0OsnISlw==}
     engines: {node: '>=8'}
 
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -1417,6 +1433,16 @@ packages:
 
   pino@10.3.1:
     resolution: {integrity: sha512-r34yH/GlQpKZbU1BvFFqOjhISRo1MNx1tWYsYvmj6KIRHSPMT2+yHOEb1SG6NMvRoHRF0a07kCOox/9yakl1vg==}
+    hasBin: true
+
+  playwright-core@1.62.1:
+    resolution: {integrity: sha512-wPYSwEBJY9GHraISXqyqtx0na0LpO3XEX7jNDhntbex7tzUS7kLnZsOlFruFJB4Hi/rhDMjXGqHewDZ68nYZVw==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.62.1:
+    resolution: {integrity: sha512-0M+L3LAD8/nm554LOla9Ayx0j0tmFZ0FBcoQ7F1VuVHpM/XpiC8RcDzBQB8W5+hA8L22THxELzeF+2WcUzvcLg==}
+    engines: {node: '>=20'}
     hasBin: true
 
   pngjs@5.0.0:
@@ -2138,6 +2164,10 @@ snapshots:
 
   '@pinojs/redact@0.4.0': {}
 
+  '@playwright/test@1.62.1':
+    dependencies:
+      playwright: 1.62.1
+
   '@rolldown/binding-android-arm64@1.2.1':
     optional: true
 
@@ -2244,7 +2274,7 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
-  '@types/pg@8.20.0':
+  '@types/pg@8.20.1':
     dependencies:
       '@types/node': 26.1.2
       pg-protocol: 1.15.0
@@ -2470,9 +2500,9 @@ snapshots:
 
   dom-accessibility-api@0.6.3: {}
 
-  drizzle-orm@0.45.2(@types/pg@8.20.0)(pg@8.22.0):
+  drizzle-orm@0.45.2(@types/pg@8.20.1)(pg@8.22.0):
     optionalDependencies:
-      '@types/pg': 8.20.0
+      '@types/pg': 8.20.1
       pg: 8.22.0
 
   duplexify@4.1.3:
@@ -2588,6 +2618,9 @@ snapshots:
     dependencies:
       locate-path: 5.0.0
       path-exists: 4.0.0
+
+  fsevents@2.3.2:
+    optional: true
 
   fsevents@2.3.3:
     optional: true
@@ -2828,6 +2861,14 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 4.2.1
       thread-stream: 4.2.0
+
+  playwright-core@1.62.1: {}
+
+  playwright@1.62.1:
+    dependencies:
+      playwright-core: 1.62.1
+    optionalDependencies:
+      fsevents: 2.3.2
 
   pngjs@5.0.0: {}
 
