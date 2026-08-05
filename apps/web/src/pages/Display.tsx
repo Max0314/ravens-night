@@ -28,7 +28,9 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   const [qr, setQr] = useState<string>();
   const [reordering, setReordering] = useState(false);
   const [seatError, setSeatError] = useState<string>();
+  const [deathNotice, setDeathNotice] = useState<{ seq: number; message: string }>();
   const reorderPending = useRef(false);
+  const seenDeathSeq = useRef(0);
   useEffect(() => {
     let active = true;
     const refresh = () => void getRoom(code).then((next) => { if (active && !reorderPending.current) setRoom(next); }).catch((error) => {
@@ -43,6 +45,14 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
     document.addEventListener("fullscreenchange", update);
     return () => document.removeEventListener("fullscreenchange", update);
   }, []);
+  useEffect(() => {
+    const latest = room?.game?.events.slice().reverse().find((event) => event.message.includes("死亡"));
+    if (!latest || latest.seq <= seenDeathSeq.current) return;
+    seenDeathSeq.current = latest.seq;
+    setDeathNotice(latest);
+    const timer = window.setTimeout(() => setDeathNotice(undefined), 7_000);
+    return () => window.clearTimeout(timer);
+  }, [room?.game?.events]);
 
   const game = room?.game;
   const players = [...(room?.participants.filter((participant) => participant.mode === "PLAYER") ?? [])]
@@ -65,6 +75,7 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   }
 
   return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
+    {deathNotice ? <section className="death-reveal death-reveal--display" role="status"><div className="death-reveal__moon" aria-hidden="true">☾</div><p>黎明的钟声</p><h2>昨夜有人离开了村庄</h2><strong>{deathNotice.message}</strong></section> : null}
     <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
     <section className="display__town">{game ? <SeatRing seats={seats} /> : <SeatOrderEditor players={players} busy={reordering} onReorder={(ids) => void applySeatOrder(ids)} />}<div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>拖动卡片，使编号与线下座位一致</small></div> : <><p>{copy.eyebrow}</p><h1>{game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? nominee.nickname : copy.title}</h1><small>{game.phase === "VOTING" && game.nomination && nominee ? `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></>}</div></section>
     {game ? <Panel className="display__village-feed" aria-label="村庄公开信息">

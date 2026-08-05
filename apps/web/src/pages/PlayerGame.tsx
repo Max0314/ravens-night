@@ -1,5 +1,5 @@
-import { Button, Panel, RoleCard } from "@ravens/ui";
-import { useEffect, useState } from "react";
+import { Button, Panel, RoleCard, SeatRing } from "@ravens/ui";
+import { useEffect, useRef, useState } from "react";
 import type { PrivateHistoryEntry, PrivateHistoryKind, PrivateView } from "../api.js";
 import type { GuideMode } from "../components/GuideOverlay.js";
 import { roleArt } from "../role-art.js";
@@ -29,9 +29,20 @@ const phaseNames: Record<string, string> = {
 export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onCancelNomination, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide }: PlayerGameProps) {
   const [selected, setSelected] = useState<number[]>([]);
   const [pendingNominee, setPendingNominee] = useState<number>();
+  const [deathNotice, setDeathNotice] = useState<{ seq: number; message: string }>();
+  const seenDeathSeq = useRef(0);
   const game = view?.game;
   const role = view?.role;
   useEffect(() => { setSelected([]); setPendingNominee(undefined); }, [game?.phase, view?.action?.kind]);
+  useEffect(() => {
+    if (!view || view.playMode === "IN_PERSON") return;
+    const latest = game?.events.slice().reverse().find((event) => event.message.includes("死亡"));
+    if (!latest || latest.seq <= seenDeathSeq.current) return;
+    seenDeathSeq.current = latest.seq;
+    setDeathNotice(latest);
+    const timer = window.setTimeout(() => setDeathNotice(undefined), 6_000);
+    return () => window.clearTimeout(timer);
+  }, [game?.events, view?.playMode]);
 
   if (!view || !role || !game) return <main className="game-page"><button className="screen-back" type="button" onClick={onBack}>← 返回首页</button><Waiting title="等待所有玩家" detail="大家完成教学后，身份会同时揭晓。" compact /></main>;
 
@@ -54,6 +65,7 @@ export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitA
   const submittedNightAction = isNight && view.history.some((entry) => entry.phase === game.phase && entry.day === game.day && entry.kind === "ACTION");
   if (isNight) return <main className="game-page game-page--night">
     <GameHeader phase={phaseNames[game.phase]!} day={game.day} role={role.name} onBack={onBack} />
+    {view.playMode && view.playMode !== "IN_PERSON" ? <RemoteTownBoard game={game} /> : null}
     <RoleCompass role={role} task={action?.prompt ?? "当前无需操作。保持安静并等待手机出现新的行动提示。"} onOpen={onOpenGuide} />
     {game.phase === "FIRST_NIGHT" && role.alignment === "EVIL" ? <EvilFirstNightIntel entries={view.history.filter((entry) => entry.phase === "ROLE_REVEAL" && (entry.kind === "INFORMATION" || entry.kind === "NOTICE"))} /> : null}
     {action?.kind === "SELECT_ONE" || action?.kind === "SELECT_TWO" ? <Panel className="action-panel">
@@ -65,7 +77,9 @@ export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitA
   </main>;
 
   return <main className="game-page game-page--day">
+    {deathNotice ? <section className="death-reveal death-reveal--player" role="status"><div className="death-reveal__moon" aria-hidden="true">☾</div><p>天亮了</p><h2>昨夜的公开结果</h2><strong>{deathNotice.message}</strong><small>你的私密信息仍只显示在这台设备上。</small></section> : null}
     <GameHeader phase={phaseNames[game.phase] ?? game.phase} day={game.day} role={role.name} onBack={onBack} />
+    {view.playMode && view.playMode !== "IN_PERSON" ? <RemoteTownBoard game={game} /> : null}
     <RoleCompass role={role} task={dayTask(view)} onOpen={onOpenGuide} />
     {game.phase === "VOTING" && game.nomination ? <Panel className="vote-panel">
       <p className="eyebrow">提名投票</p><h1>{seatName(game.seats, game.nomination.nomineeSeat)}</h1>
@@ -87,6 +101,10 @@ export function PlayerGame({ view, busy, error, onBack, onConfirmRole, onSubmitA
 }
 
 function GameHeader({ phase, day, role, onBack }: { phase: string; day: number; role: string; onBack: () => void }) { return <header className="game-header"><button className="screen-back screen-back--header" type="button" onClick={onBack}>← 首页</button><div className="game-header__phase"><span>第 {day || 1} 天</span><strong>{phase}</strong></div><div className="role-chip">{role}</div></header>; }
+
+function RemoteTownBoard({ game }: { game: NonNullable<PrivateView["game"]> }) {
+  return <section className="remote-town-board" aria-label="公开城镇"><header><span>远程公开城镇</span><small>所有玩家看到相同的座位与生死状态</small></header><SeatRing seats={game.seats} /></section>;
+}
 
 function RoleCompass({ role, task, onOpen }: { role: NonNullable<PrivateView["role"]>; task: string; onOpen: (mode: GuideMode) => void }) {
   return <section className="role-compass" aria-label="当前任务"><div><span>你是 {role.name}</span><strong>{task}</strong></div><GameGuideLinks onOpen={onOpen} /></section>;

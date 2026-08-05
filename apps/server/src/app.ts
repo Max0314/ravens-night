@@ -3,7 +3,7 @@ import websocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyRequest } from "fastify";
 import { createHash, timingSafeEqual } from "node:crypto";
-import { RoomService, type ParticipantMode } from "./rooms/service.js";
+import { RoomService, type ParticipantMode, type RoomPlayMode } from "./rooms/service.js";
 import { PostgresRoomRepository } from "./db/room-repository.js";
 
 export function buildApp(options: { accessPassword?: string } = {}) {
@@ -18,6 +18,13 @@ export function buildApp(options: { accessPassword?: string } = {}) {
     app.addHook("onReady", async () => { await repository.initialize(); rooms.restore(await repository.loadAll()); });
     app.addHook("onClose", async () => repository.close());
   }
+  const lobbyTtlMs = Number(process.env.ROOM_LOBBY_TTL_MS ?? 2 * 60 * 60 * 1000);
+  const activeTtlMs = Number(process.env.ROOM_ACTIVE_TTL_MS ?? 24 * 60 * 60 * 1000);
+  const expiryTimer = setInterval(() => {
+    for (const code of rooms.expireIdle(Date.now(), lobbyTtlMs, activeTtlMs)) void repository?.delete(code).catch(() => undefined);
+  }, 60_000);
+  expiryTimer.unref();
+  app.addHook("onClose", async () => { clearInterval(expiryTimer); });
   const persist = async (code: string) => { if (repository) await repository.save(rooms.snapshot(code)); };
 
   app.addHook("onRequest", async (request, reply) => {
@@ -42,9 +49,9 @@ export function buildApp(options: { accessPassword?: string } = {}) {
     return reply.code(401).send({ error: "访问口令不正确" });
   });
 
-  app.post<{ Body: { playerCount: number; organizerName: string } }>("/api/rooms", async (request, reply) => {
+  app.post<{ Body: { playerCount: number; organizerName: string; playMode?: RoomPlayMode; voiceRoomUrl?: string } }>("/api/rooms", async (request, reply) => {
     try {
-      const { room, organizerToken } = rooms.create(request.body.playerCount, request.body.organizerName);
+      const { room, organizerToken } = rooms.create(request.body.playerCount, request.body.organizerName, request.body.playMode, request.body.voiceRoomUrl);
       reply.setCookie("ravens_organizer", organizerToken, participantCookieOptions());
       await persist(room.code);
       return reply.code(201).send({ code: room.code, organizerToken });

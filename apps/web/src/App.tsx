@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { ApiError, cancelNomination, castVote, completeTutorial, confirmRole, createRoom, getAuthSession, getPrivateView, getRoom, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, type PrivateView, type RoomView } from "./api.js";
+import { ApiError, cancelNomination, castVote, completeTutorial, confirmRole, createRoom, getAuthSession, getPrivateView, getRoom, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, type PrivateView, type RoomPlayMode, type RoomView } from "./api.js";
+import { GramophonePlayer } from "./components/GramophonePlayer.js";
 import { GuideOverlay, type GuideMode } from "./components/GuideOverlay.js";
 import { Create } from "./pages/Create.js";
 import { Display } from "./pages/Display.js";
@@ -113,9 +114,9 @@ export function App() {
     finally { setBusy(false); }
   }
 
-  async function submitCreate(name: string, count: number) {
+  async function submitCreate(name: string, count: number, playMode: RoomPlayMode, voiceRoomUrl?: string) {
     setBusy(true); setError(undefined);
-    try { const created = await createRoom(count, name); const joined = await joinRoom(created.code, name, "PLAYER"); const current = await getRoom(created.code); setConnectionState("ONLINE"); saveSession({ roomCode: current.code, mode: "PLAYER", participantId: joined.id }); setParticipantId(joined.id); setRoom(current); setScreen("LOBBY"); }
+    try { const created = await createRoom(count, name, playMode, voiceRoomUrl); const joined = await joinRoom(created.code, name, "PLAYER"); const current = await getRoom(created.code); setConnectionState("ONLINE"); saveSession({ roomCode: current.code, mode: "PLAYER", participantId: joined.id }); setParticipantId(joined.id); setRoom(current); setScreen("LOBBY"); }
     catch (caught) { if (isNetworkFailure(caught)) setConnectionState("OFFLINE"); setError(caught instanceof Error ? caught.message : "创建失败"); }
     finally { setBusy(false); }
   }
@@ -168,7 +169,7 @@ export function App() {
     setScreen("HOME");
   }, []);
 
-  const withStatus = (page: ReactNode) => <>{page}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
+  const withStatus = (page: ReactNode) => <>{page}<GramophonePlayer />{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
   const withGuide = (page: ReactNode) => withStatus(<>{page}{guide ? <GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /> : null}</>);
 
   if (screen === "LOADING") return withStatus(<main className="app-loading" aria-label="正在进入钟楼"><span>☾</span></main>);

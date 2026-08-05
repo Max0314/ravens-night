@@ -1,4 +1,5 @@
 export interface RoomParticipant { id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean }
+export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface GameView {
   phase: "ROLE_REVEAL" | "FIRST_NIGHT" | "DAY_DISCUSSION" | "NOMINATION" | "VOTING" | "OTHER_NIGHT" | "GAME_OVER";
   day: number;
@@ -12,7 +13,7 @@ export interface GameView {
   winner?: "GOOD" | "EVIL";
   winReason?: string;
 }
-export interface RoomView { code: string; state: string; playerCount: number; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView }
+export interface RoomView { code: string; state: string; playerCount: number; playMode?: RoomPlayMode; voiceRoomUrl?: string; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView }
 export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
 export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 export interface PrivateHistoryEntry {
@@ -25,6 +26,7 @@ export interface PrivateHistoryEntry {
 export interface PrivateView {
   participant: { id: string; nickname: string; seat: number };
   state: string;
+  playMode?: RoomPlayMode;
   role?: { roleId: string; alignment: "GOOD" | "EVIL"; type: string; name: string; summary: string; beginnerTip: string; perceivedAs?: string };
   roleConfirmed?: boolean;
   voteRaised?: boolean;
@@ -48,8 +50,8 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 export function getAuthSession() { return request<{ authorized: boolean }>("/api/auth/session"); }
 export function login(accessPassword: string) { return request<{ authorized: boolean }>("/api/auth/login", { method: "POST", body: JSON.stringify({ accessPassword }) }); }
 
-export function createRoom(playerCount: number, organizerName: string) {
-  return request<{ code: string; organizerToken: string }>("/api/rooms", { method: "POST", body: JSON.stringify({ playerCount, organizerName }) });
+export function createRoom(playerCount: number, organizerName: string, playMode: RoomPlayMode, voiceRoomUrl?: string) {
+  return request<{ code: string; organizerToken: string }>("/api/rooms", { method: "POST", body: JSON.stringify({ playerCount, organizerName, playMode, ...(voiceRoomUrl?.trim() ? { voiceRoomUrl: voiceRoomUrl.trim() } : {}) }) });
 }
 
 export function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPLAY") {

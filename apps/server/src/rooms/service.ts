@@ -14,6 +14,7 @@ import { createOpaqueToken, hashOpaqueToken } from "../auth/session.js";
 import { createRoomCode, normalizeRoomCode } from "./codes.js";
 
 export type ParticipantMode = "PLAYER" | "DISPLAY";
+export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 
 export interface ParticipantRecord {
   id: string;
@@ -31,6 +32,9 @@ export interface RoomRecord {
   organizerName: string;
   organizerParticipantId?: string;
   playerCount: number;
+  playMode: RoomPlayMode;
+  voiceRoomUrl?: string;
+  lastActivityAt: string;
   participants: ParticipantRecord[];
   state: "LOBBY" | "TUTORIAL" | "RUNNING" | "GAME_OVER";
   organizerTokenHash: string;
@@ -84,10 +88,13 @@ interface GameRuntime {
 export class RoomService {
   readonly #rooms = new Map<string, RoomRecord>();
 
-  create(playerCount: number, organizerName: string): { room: RoomRecord; organizerToken: string } {
+  create(playerCount: number, organizerName: string, playMode: RoomPlayMode = "IN_PERSON", voiceRoomUrl?: string): { room: RoomRecord; organizerToken: string } {
     if (!Number.isInteger(playerCount) || playerCount < 5 || playerCount > 12) {
       throw new Error("Player count must be between 5 and 12");
     }
+    if (!["IN_PERSON", "REMOTE", "HYBRID"].includes(playMode)) throw new Error("Unknown play mode");
+    const normalizedVoiceRoomUrl = voiceRoomUrl?.trim();
+    if (normalizedVoiceRoomUrl && !isSafeExternalUrl(normalizedVoiceRoomUrl)) throw new Error("Voice link must use http or https");
     let code = createRoomCode();
     while (this.#rooms.has(code)) code = createRoomCode();
     const organizerToken = createOpaqueToken();
@@ -96,6 +103,9 @@ export class RoomService {
       code,
       organizerName: organizerName.trim().slice(0, 24) || "组织者",
       playerCount,
+      playMode,
+      ...(normalizedVoiceRoomUrl ? { voiceRoomUrl: normalizedVoiceRoomUrl } : {}),
+      lastActivityAt: new Date().toISOString(),
       participants: [],
       state: "LOBBY",
       organizerTokenHash: hashOpaqueToken(organizerToken),
@@ -189,8 +199,21 @@ export class RoomService {
       const game = snapshot.game ? this.restoreGame(snapshot.game) : undefined;
       const organizerParticipantId = snapshot.organizerParticipantId
         ?? snapshot.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1)?.id;
-      this.#rooms.set(code, structuredClone({ ...snapshot, ...(organizerParticipantId ? { organizerParticipantId } : {}), ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 }));
+      this.#rooms.set(code, structuredClone({ ...snapshot, playMode: snapshot.playMode ?? "IN_PERSON", lastActivityAt: snapshot.lastActivityAt ?? new Date().toISOString(), ...(organizerParticipantId ? { organizerParticipantId } : {}), ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 }));
     }
+  }
+
+  expireIdle(now = Date.now(), lobbyTtlMs = 2 * 60 * 60 * 1000, activeTtlMs = 24 * 60 * 60 * 1000): string[] {
+    const expired: string[] = [];
+    for (const room of this.#rooms.values()) {
+      const age = now - Date.parse(room.lastActivityAt);
+      const ttl = room.state === "LOBBY" ? lobbyTtlMs : activeTtlMs;
+      if (Number.isFinite(age) && age >= ttl) {
+        this.#rooms.delete(room.code);
+        expired.push(room.code);
+      }
+    }
+    return expired;
   }
 
   find(codeInput: string): RoomRecord {
@@ -207,6 +230,8 @@ export class RoomService {
       code: room.code,
       state: room.state,
       playerCount: room.playerCount,
+      playMode: room.playMode,
+      ...(room.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {}),
       ...(organizer ? { organizerId: organizer.id, organizerName: organizer.nickname } : {}),
       participants: room.participants.map(({ tokenHash: _tokenHash, tutorialComplete: _tutorialComplete, ...participant }) => participant),
       ...(room.game ? { game: this.publicGame(room) } : {}),
@@ -412,6 +437,7 @@ export class RoomService {
     return {
       participant: { id: participant.id, nickname: participant.nickname, seat: participant.seat },
       state: room.state,
+      playMode: room.playMode,
       messages: room.game?.messages[participant.seat!] ?? [],
       history: room.game?.privateHistory[participant.seat!] ?? [],
       ...(room.game?.phase === "VOTING" && room.game.voteSubmissions[participant.seat!] !== undefined ? { voteRaised: room.game.voteSubmissions[participant.seat!] } : {}),
@@ -542,7 +568,7 @@ export class RoomService {
     return `你选择了${targets.join("与")}。`;
   }
 
-  private changed(room: RoomRecord): void { room.revision += 1; }
+  private changed(room: RoomRecord): void { room.revision += 1; room.lastActivityAt = new Date().toISOString(); }
 
   private organizer(room: RoomRecord): ParticipantRecord | undefined {
     return room.participants.find((participant) => participant.mode === "PLAYER" && participant.id === room.organizerParticipantId)
@@ -785,5 +811,14 @@ export class RoomService {
     if (assignment.roleId === "drunk") return "TOWNSFOLK";
     if (assignment.roleId === "recluse" || assignment.roleId === "spy") return chooseRegistration(assignment.roleId, "ROLE_TYPE", room.id, eventSeq + assignment.seat);
     return assignment.roleType;
+  }
+}
+
+function isSafeExternalUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
   }
 }
