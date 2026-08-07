@@ -17,7 +17,19 @@ export function Lobby({ room, onBegin, onLeave, onTutorial, onRoles, canBegin, b
   });
   const playMode = room.playMode ?? "IN_PERSON";
   const mode = modeCopy[playMode];
-  return <main className={`lobby lobby--${playMode.toLowerCase()}`}><section className="lobby__heading"><p>房间邀请码</p><h1>{room.code}</h1><p>{players.length}/{room.playerCount} 位玩家已入座</p><div className="lobby__guide-links"><button type="button" onClick={onTutorial}>教程</button><button type="button" onClick={onRoles}>角色表</button><button className="lobby__leave" type="button" onClick={onLeave} disabled={busy}>退出房间</button></div></section><SeatRing seats={seats} /><Panel className="lobby__status"><section className="lobby__mode"><p>{mode.eyebrow}</p><h2>{mode.title}</h2><span>{mode.detail}</span>{room.voiceRoomUrl ? <a href={room.voiceRoomUrl} target="_blank" rel="noreferrer">进入语音/视频频道 ↗</a> : playMode !== "IN_PERSON" ? <small>房主没有附上语音链接；请自行约定讨论频道。</small> : null}</section><p className="lobby__host">当前房主：<strong>{room.organizerName ?? players[0]?.nickname ?? "等待首位玩家"}</strong>{canBegin ? "（你）" : ""}</p><h2>{players.length === room.playerCount ? "所有人都已抵达" : "等待其他村民…"}</h2><p>扫描二维码，或访问本站后输入相同邀请码。公共大屏可直接选择“电视公共大屏”加入。</p><InviteTools code={room.code} />{error ? <p className="form-error" role="alert">{error}</p> : null}{canBegin ? <Button onClick={onBegin} disabled={players.length < room.playerCount || busy}>{busy ? "正在敲响钟声…" : "开始新手教学"}</Button> : <p className="lobby__waiting">等待房主 {room.organizerName ?? players[0]?.nickname ?? ""} 开始教学</p>}</Panel></main>;
+  return <main className={`lobby lobby--${playMode.toLowerCase()}${canBegin ? " lobby--host" : ""}`}>
+    <section className="lobby__heading"><p>房间邀请码</p><h1>{room.code}</h1><p>{players.length}/{room.playerCount} 位玩家已入座</p><div className="lobby__guide-links"><button type="button" onClick={onTutorial}>教程</button><button type="button" onClick={onRoles}>角色表</button><button className="lobby__leave" type="button" onClick={onLeave} disabled={busy}>退出房间</button></div></section>
+    <SeatRing seats={seats} />
+    <Panel className="lobby__status">
+      <section className="lobby__mode"><p>{mode.eyebrow}</p><h2>{mode.title}</h2><span>{mode.detail}</span>{room.voiceRoomUrl ? <a href={room.voiceRoomUrl} target="_blank" rel="noreferrer">进入语音/视频频道 ↗</a> : playMode !== "IN_PERSON" ? <small>房主没有附上语音链接；请自行约定讨论频道。</small> : null}</section>
+      <p className="lobby__host">当前房主：<strong>{room.organizerName ?? players[0]?.nickname ?? "等待首位玩家"}</strong>{canBegin ? "（你）" : ""}</p>
+      <h2>{players.length === room.playerCount ? "所有人都已抵达" : "等待其他村民…"}</h2>
+      <p>扫描二维码，或访问本站后输入相同邀请码。公共大屏可直接选择“电视公共大屏”加入。</p>
+      <InviteTools code={room.code} />
+      {error ? <p className="form-error" role="alert">{error}</p> : null}
+      {canBegin ? <Button onClick={onBegin} disabled={players.length < room.playerCount || busy}>{busy ? "正在敲响钟声…" : "开始新手教学"}</Button> : <p className="lobby__waiting">等待房主 {room.organizerName ?? players[0]?.nickname ?? ""} 开始教学</p>}
+    </Panel>
+  </main>;
 }
 
 function InviteTools({ code }: { code: string }) {

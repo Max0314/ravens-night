@@ -262,3 +262,262 @@ h1, h2 { font-family: "Noto Serif SC", "Songti SC", "STSong", serif; font-weight
 @media(max-width:820px){.play-mode-picker>div{grid-template-columns:1fr}.play-mode-picker button{min-height:92px;grid-template-columns:28px 1fr;grid-template-rows:auto auto;column-gap:10px}.play-mode-picker button>span{grid-row:1/3}.play-mode-picker button small{grid-column:2}.lobby__mode{margin-bottom:18px}.remote-town-board .rn-seat-ring{--rn-seat-radius:34vw;width:90vw}.gramophone{bottom:max(12px,env(safe-area-inset-bottom));right:max(12px,env(safe-area-inset-right))}.gramophone__panel iframe{height:260px}.death-reveal--display h2{font-size:2.4rem}}
 
 @media(prefers-reduced-motion:reduce){.gramophone__toggle>span:first-child{animation:none}.death-reveal{animation:none}}
+
+/* Formal art direction: generated source art remains atmospheric; live UI owns all copy and game state. */
+:root {
+  --ravens-paper: #c6ab78;
+  --ravens-ink: #05080d;
+  --ravens-blue: #0a1725;
+  --ravens-brass: #c99b51;
+  --ravens-wax: #762d30;
+}
+
+.login-page {
+  background:
+    linear-gradient(90deg, rgba(3, 7, 13, .92) 0%, rgba(3, 7, 13, .72) 45%, rgba(3, 7, 13, .3) 100%),
+    #060a10;
+}
+.login-page__art {
+  inset: 0 0 0 34%;
+  opacity: .72;
+  background: url("/assets/ravens/home-hero.png") right center / cover no-repeat;
+  mask-image: linear-gradient(to right, transparent, #000 30% 92%, transparent);
+}
+.login-panel {
+  border: 1px solid rgba(201, 155, 81, .24);
+  background: linear-gradient(135deg, rgba(6, 11, 18, .76), rgba(6, 9, 14, .3));
+  box-shadow: 0 28px 100px rgba(0, 0, 0, .34);
+  backdrop-filter: blur(8px);
+}
+
+.home {
+  background: #05090f;
+}
+.home::before {
+  opacity: 1;
+  background:
+    linear-gradient(90deg, rgba(3, 7, 13, .98) 0%, rgba(3, 7, 13, .88) 39%, rgba(3, 7, 13, .36) 66%, rgba(3, 7, 13, .08) 100%),
+    linear-gradient(180deg, rgba(3, 7, 13, .08), rgba(3, 7, 13, .68)),
+    url("/assets/ravens/home-hero.png") center / cover no-repeat;
+}
+.home::after {
+  background:
+    radial-gradient(circle at 18% 47%, rgba(201, 155, 81, .12), transparent 25%),
+    linear-gradient(90deg, transparent 47%, rgba(4, 8, 13, .08));
+}
+.home__art,
+.home__clock { display: none; }
+.home__copy { max-width: 610px; }
+.home__copy h1 {
+  color: #f1e8d4;
+  font-size: clamp(3.6rem, 6.6vw, 7.8rem);
+  text-shadow: 0 6px 36px rgba(0, 0, 0, .62);
+}
+.home__copy > p { color: #bbc0c3; }
+.home__actions .rn-button:first-child,
+.lobby--host .rn-button--gold {
+  background: linear-gradient(135deg, #e1bb70, #9d7132 64%, #6e451e);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 201, .42), 0 13px 34px rgba(0, 0, 0, .38);
+}
+
+.center-page {
+  isolation: isolate;
+  background: radial-gradient(circle at 55% 28%, rgba(45, 71, 87, .22), transparent 33%), #070b11;
+}
+.center-page::before {
+  opacity: .13;
+  filter: saturate(.72) blur(.6px);
+  background: url("/assets/ravens/scene-atlas.png") center / cover no-repeat;
+}
+.form-panel {
+  border-color: rgba(201, 155, 81, .38);
+  background:
+    linear-gradient(135deg, rgba(11, 17, 25, .96), rgba(4, 8, 13, .92)),
+    url("/assets/ravens/role-info-concept.png") center / cover no-repeat;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .52), inset 0 0 0 1px rgba(255, 239, 198, .04);
+}
+
+.lobby {
+  background: #060b11;
+}
+.lobby::before {
+  opacity: 1;
+  background:
+    linear-gradient(90deg, rgba(3, 7, 12, .92) 0%, rgba(3, 7, 12, .47) 53%, rgba(3, 7, 12, .85) 100%),
+    linear-gradient(180deg, rgba(3, 7, 12, .18), rgba(3, 7, 12, .77)),
+    url("/assets/ravens/lobby-concept.png") center / cover no-repeat;
+}
+.lobby::after {
+  background: radial-gradient(circle at 48% 51%, rgba(217, 170, 88, .16), transparent 24%);
+}
+.lobby__heading { text-shadow: 0 4px 18px rgba(0,0,0,.8); }
+.lobby__heading h1 { color: #f0d495; }
+.lobby .rn-seat-ring { filter: drop-shadow(0 18px 36px rgba(0, 0, 0, .5)); }
+.lobby .rn-seat {
+  border-color: rgba(202, 158, 84, .54);
+  background: linear-gradient(145deg, rgba(22, 29, 38, .94), rgba(5, 9, 14, .94));
+}
+.lobby__status {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(204, 161, 89, .46);
+  background: linear-gradient(140deg, rgba(8, 13, 20, .94), rgba(8, 11, 16, .86));
+  box-shadow: 0 28px 75px rgba(0, 0, 0, .48);
+}
+.lobby__status > * { position: relative; z-index: 1; }
+.lobby--host .lobby__status::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .12;
+  background: url("/assets/ravens/host-console-concept.png") center / cover no-repeat;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+.lobby__invite { background: rgba(4, 8, 13, .66); }
+
+.role-page,
+.ending,
+.game-page,
+.display {
+  isolation: isolate;
+}
+.role-page::before,
+.ending::before,
+.game-page::before,
+.display::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+}
+.role-page > *,
+.ending > *,
+.game-page > *,
+.display > * { position: relative; z-index: 1; }
+.role-page::before {
+  opacity: .21;
+  background: linear-gradient(rgba(5, 9, 15, .82), rgba(5, 9, 15, .94)), url("/assets/ravens/role-reveal-concept.png") center / cover no-repeat;
+}
+.role-page .rn-role-card {
+  border-color: rgba(207, 166, 92, .78);
+  border-radius: 5px 5px 24px 24px;
+  background: linear-gradient(155deg, rgba(30, 29, 25, .96), rgba(9, 13, 19, .98));
+  box-shadow: 0 26px 78px rgba(0,0,0,.64), inset 0 0 40px rgba(210, 166, 93, .05);
+}
+.role-page .rn-role-card__copy { background: linear-gradient(180deg, transparent, rgba(9, 13, 19, .92)); }
+
+.game-page--night::before {
+  opacity: .13;
+  background: linear-gradient(rgba(4, 9, 15, .48), rgba(4, 9, 15, .78)), url("/assets/ravens/night-action-concept.png") center / cover no-repeat;
+}
+.game-page--day::before {
+  opacity: .1;
+  background: linear-gradient(rgba(5, 9, 14, .56), rgba(5, 9, 14, .82)), url("/assets/ravens/vote-concept.png") center / cover no-repeat;
+}
+.action-panel,
+.day-panel,
+.vote-panel,
+.role-compass,
+.remote-town-board {
+  border-color: rgba(205, 160, 85, .38);
+  background: linear-gradient(145deg, rgba(12, 19, 29, .94), rgba(5, 9, 15, .94));
+  box-shadow: 0 18px 54px rgba(0,0,0,.34), inset 0 0 28px rgba(217, 170, 88, .035);
+}
+.seat-choices button,
+.nominee-grid button {
+  border-radius: 5px;
+  background: linear-gradient(145deg, rgba(25, 32, 42, .91), rgba(8, 12, 18, .93));
+}
+.seat-choices button.is-selected {
+  background: linear-gradient(135deg, rgba(148, 103, 43, .36), rgba(17, 27, 37, .96));
+  box-shadow: inset 0 0 0 1px rgba(234, 194, 112, .34), 0 0 28px rgba(201, 155, 81, .16);
+}
+.vote-actions .rn-button:first-child { background: linear-gradient(135deg, #557350, #253b2b); border-color: rgba(159, 191, 131, .48); }
+.vote-actions .rn-button:last-child { background: linear-gradient(135deg, #79383d, #33161c); border-color: rgba(196, 101, 106, .48); }
+
+.display {
+  background: radial-gradient(circle at 50% 45%, rgba(27, 52, 73, .52), #05090f 72%);
+}
+.display::before {
+  opacity: .24;
+  background: linear-gradient(180deg, rgba(4, 9, 15, .2), rgba(4, 9, 15, .82)), url("/assets/ravens/public-board-concept.png") center / cover no-repeat;
+}
+.display__header,
+.display__town,
+.display__village-feed { text-shadow: 0 2px 16px rgba(0,0,0,.82); }
+.display .rn-seat {
+  border-color: rgba(204, 161, 86, .6);
+  background: radial-gradient(circle at 50% 20%, rgba(218, 176, 96, .18), transparent 52%), rgba(4, 9, 14, .9);
+  box-shadow: 0 10px 26px rgba(0,0,0,.52), inset 0 0 18px rgba(205, 160, 85, .06);
+}
+.display__village-feed {
+  border-radius: 5px;
+  background: linear-gradient(100deg, rgba(15, 20, 27, .94), rgba(5, 9, 14, .94));
+}
+
+.guide-sheet {
+  position: relative;
+  border-color: rgba(205, 160, 85, .48);
+  background: linear-gradient(135deg, rgba(8, 13, 20, .95), rgba(5, 8, 13, .97));
+}
+.guide-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .075;
+  background: url("/assets/ravens/role-info-concept.png") center / cover no-repeat;
+  pointer-events: none;
+}
+.guide-sheet > * { position: relative; z-index: 1; }
+
+.death-reveal {
+  isolation: isolate;
+  overflow: hidden;
+  background: rgba(3, 7, 12, .9);
+  box-shadow: inset 0 0 170px rgba(0,0,0,.82);
+}
+.death-reveal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: .45;
+  background-image: url("/assets/ravens/dawn-death-strip.png");
+  background-size: 300% auto;
+  background-position: 0 center;
+  animation: ravens-dawn-strip 7s steps(1, end) both;
+}
+.death-reveal > * { position: relative; z-index: 1; }
+.death-reveal--player::before { opacity: .17; background-size: 230% auto; background-position: 50% center; }
+@keyframes ravens-dawn-strip {
+  0%, 32% { background-position: 0 center; }
+  33%, 65% { background-position: 50% center; }
+  66%, 100% { background-position: 100% center; }
+}
+
+.gramophone__toggle {
+  border-color: rgba(213, 171, 93, .66);
+  background: linear-gradient(135deg, rgba(32, 22, 13, .98), rgba(8, 12, 18, .98));
+  box-shadow: 0 12px 34px rgba(0,0,0,.52), inset 0 1px 0 rgba(255, 224, 160, .14);
+}
+
+@media (max-width: 820px) {
+  .login-page__art { inset: 0; opacity: .24; mask-image: linear-gradient(to bottom, #000, transparent 72%); }
+  .login-panel { background: rgba(5, 9, 14, .72); }
+  .home::before { background-position: 63% center; }
+  .home__copy { max-width: 94%; }
+  .home__copy h1 { font-size: clamp(3.35rem, 15.2vw, 5.4rem); }
+  .lobby::before { background-position: 58% center; }
+  .lobby__status { backdrop-filter: blur(12px); }
+  .role-page::before { opacity: .13; }
+  .game-page--night::before,
+  .game-page--day::before { opacity: .08; }
+  .display::before { opacity: .14; }
+  .death-reveal::before { opacity: .25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .death-reveal::before { animation: none; background-position: 100% center; }
+}
