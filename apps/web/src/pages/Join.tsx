@@ -12,12 +12,12 @@ export function Join({ initialCode = "", onBack, onSubmit, busy, error }: { init
     <main className="center-page">
       <button className="back-link" onClick={onBack}>← 返回</button>
       <Panel className="form-panel">
-        <h1>进入村庄</h1><p>输入所有人相同的邀请码。你的身份只会显示在这台设备上。</p>
+        <p className="eyebrow">加入游戏</p><h1>进入村庄</h1><p>输入所有人相同的邀请码。你的身份只会显示在这台设备上。</p>
         <form onSubmit={submit}>
           <label>六位邀请码<input aria-label="六位邀请码" inputMode="text" autoCapitalize="characters" maxLength={6} value={code} onChange={(event) => setCode(event.target.value)} placeholder="7K3MQ8" required /></label>
           <div className="mode-choice" role="group" aria-label="加入方式">
-            <button type="button" className={mode === "PLAYER" ? "is-active" : ""} onClick={() => setMode("PLAYER")}><span>📱</span>手机玩家<small>每人一台手机 · 身份与操作仅自己可见</small></button>
-            <button type="button" className={mode === "DISPLAY" ? "is-active" : ""} onClick={() => setMode("DISPLAY")}><span>▣</span>电视公共大屏<small>电脑连接电视 · 只显示公开城镇信息</small></button>
+            <button type="button" aria-pressed={mode === "PLAYER"} className={mode === "PLAYER" ? "is-active" : ""} onClick={() => setMode("PLAYER")}><span aria-hidden="true">♟</span>手机玩家<small>每人一台手机 · 身份与操作仅自己可见</small></button>
+            <button type="button" aria-pressed={mode === "DISPLAY"} className={mode === "DISPLAY" ? "is-active" : ""} onClick={() => setMode("DISPLAY")}><span aria-hidden="true">▣</span>电视公共大屏<small>电脑连接电视 · 只显示公开城镇信息</small></button>
           </div>
           {mode === "PLAYER" ? <label>你的昵称<input maxLength={24} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="大家认识的名字" required /></label> : null}
           {error ? <p className="form-error" role="alert">{error}</p> : null}

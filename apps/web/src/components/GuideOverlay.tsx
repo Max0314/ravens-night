@@ -1,5 +1,5 @@
 import { beginnerRoles } from "@ravens/content";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PrivateView } from "../api.js";
 import { rolePlayGuides, roleTypeGuidance, roleTypeNames, tutorialSteps } from "../guide-content.js";
 import { roleArt } from "../role-art.js";
@@ -10,11 +10,32 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
   const [activeMode, setActiveMode] = useState<GuideMode>(mode);
   const [step, setStep] = useState(0);
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(ownRole?.roleId);
+  const dialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    dialogRef.current?.focus();
+    const handleKeyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { onClose(); return; }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+      if (focusable.length === 0) { event.preventDefault(); return; }
+      const first = focusable[0]!;
+      const last = focusable.at(-1)!;
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    window.addEventListener("keydown", handleKeyboard);
+    return () => {
+      window.removeEventListener("keydown", handleKeyboard);
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+      previousFocus?.focus();
+    };
   }, [onClose]);
 
   const selectedRole = beginnerRoles.find((role) => role.id === selectedRoleId);
@@ -28,7 +49,7 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
   ];
 
   return <div className="guide-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <section className="guide-sheet" role="dialog" aria-modal="true" aria-label="游戏帮助">
+    <section ref={dialogRef} className="guide-sheet" role="dialog" aria-modal="true" aria-label="游戏帮助" tabIndex={-1}>
       <header className="guide-sheet__header">
         <div><span className="guide-sheet__mark">☾</span><strong>钟楼手册</strong></div>
         <button type="button" onClick={onClose} aria-label="关闭游戏帮助">关闭 ×</button>
