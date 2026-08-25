@@ -18,6 +18,8 @@ test("the first screen gives an authorized newcomer one clear way to join", asyn
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
   expect(await screen.findByRole("heading", { name: "今夜，每个人都有秘密" })).toBeVisible();
+  expect(screen.getByRole("link", { name: "渝ICP备2026016967号-1" })).toHaveAttribute("href", "https://beian.miit.gov.cn/");
+  expect(screen.getByRole("link", { name: "渝公网安备 50010502504754号" })).toHaveAttribute("href", "https://beian.mps.gov.cn/#/query/webSearch?code=50010502504754");
   fireEvent.click(screen.getByRole("button", { name: "加入一局" }));
   expect(screen.getByRole("heading", { name: "进入村庄" })).toBeVisible();
   expect(screen.getByLabelText("六位邀请码")).toHaveAttribute("inputMode", "text");
