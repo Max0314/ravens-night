@@ -1,0 +1,30 @@
+import { chromium } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs/promises';
+const browser = await chromium.launch({ headless: true });
+try {
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 1 });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('http://127.0.0.1:5187/comparison.html', { waitUntil: 'networkidle' });
+  await page.locator('.art img').first().waitFor();
+  const images = await page.locator('.art img').evaluateAll(images => images.map(image => ({ src: image.getAttribute('src'), complete: image.complete, width: image.naturalWidth, height: image.naturalHeight })));
+  if (images.length !== 12 || images.some(image => !image.complete || image.width === 0)) throw new Error('Expected 12 loaded portraits: ' + JSON.stringify(images));
+  await page.screenshot({ path: fileURLToPath(new URL('contact-sheet.png', import.meta.url)), fullPage: true });
+  await page.locator('[data-whole="b"]').click();
+  const selection = await page.locator('#choice-summary').textContent();
+  if (selection !== '洗衣妇 B  ·  猎魔人 B  ·  守鸦人 B') throw new Error('Whole-style choice failed: ' + selection);
+  await page.locator('[data-pick="slayer:d"]').click();
+  if (!(await page.locator('#selection-slayer').textContent()).includes('D')) throw new Error('Individual choice failed');
+  await page.locator('[data-open="d-slayer.png"]').click();
+  if (!(await page.locator('#viewer').evaluate(el => el.open))) throw new Error('Image dialog failed');
+  await page.keyboard.press('Escape');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: fileURLToPath(new URL('comparison-mobile.png', import.meta.url)), fullPage: true });
+  const mobileOverflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+  if (mobileOverflow) throw new Error('Body overflow on mobile');
+  if (errors.length) throw new Error(errors.join('; '));
+  const report = { imageCount: images.length, images, pageErrors: errors, fullSetChoice: true, individualChoice: true, dialog: true, mobileBodyOverflow: mobileOverflow, screenshot: 'contact-sheet.png' };
+  await fs.writeFile(new URL('qa.json', import.meta.url), JSON.stringify(report, null, 2));
+  console.log(JSON.stringify(report));
+} finally { await browser.close(); }

@@ -1,0 +1,83 @@
+{
+  "imageCount": 12,
+  "images": [
+    {
+      "src": "a-washerwoman.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "b-washerwoman.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "c-washerwoman.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "d-washerwoman.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "a-slayer.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "b-slayer.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "c-slayer.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "d-slayer.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "a-ravenkeeper.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "b-ravenkeeper.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "c-ravenkeeper.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "src": "d-ravenkeeper.png",
+      "complete": true,
+      "width": 1086,
+      "height": 1448
+    }
+  ],
+  "pageErrors": [],
+  "fullSetChoice": true,
+  "individualChoice": true,
+  "dialog": true,
+  "mobileBodyOverflow": false,
+  "screenshot": "contact-sheet.png"
+}

@@ -1,0 +1,265 @@
+{
+  "createdAt": "2026-09-27",
+  "generator": "Built-in image_gen.imagegen",
+  "status": "art-direction-candidates-not-selected",
+  "reference": "apps/web/public/assets/ravens/home-hero.png (visual style reference, inspected; not an edit target)",
+  "requestedCount": 12,
+  "actualCount": 12,
+  "styleDirections": [
+    {
+      "id": "a",
+      "label": "封面延伸 · 暗色古典油画",
+      "desc": "A. Cover-continuation art direction: exceptionally refined dark classical oil painting with fine etched detailing, a restrained thin antique brass Gothic pointed arch frame, blackened oak, antique metal, tactile fabrics. Sophisticated Western Gothic Victorian portrait. Painterly realistic faces and anatomy, not anime; deep midnight teal and charcoal palette with restrained antique gold and muted ivory, atmospheric narrow alley and window behind."
+    },
+    {
+      "id": "b",
+      "label": "手绘雕版 · 低饱和水彩",
+      "desc": "B. Engraved storybook art direction: hand-engraved expressive fine ink cross-hatching on aged ivory textured paper with low-saturation indigo, charcoal, olive and warm umber watercolor washes. Deliberate visible drawing strokes, Western Gothic Victorian portrait with a thin loosely inked pointed arch. Mature adult anatomically grounded faces, not cartoon or anime; sophisticated woodcut-meets-watercolor print, softly suggested old stone alley and window behind. Midtones legible on a mobile display."
+    },
+    {
+      "id": "c",
+      "label": "雾夜电影 · 半写实绘画",
+      "desc": "C. Cinematic fog-night art direction: premium semi-realistic digital oil illustration, brush-painted historic Victorian drama, delicate blue-grey moonlit rim light across hair and shoulders, warm distant lantern haze, foggy Gothic town alley behind. Minimal dark arched architectural silhouette, no decorative frame. Character lit enough to read face and props clearly on mobile. Atmospheric depth, rich tactile wool and worn brass. Not photography, not modern fashion, no glossy game CGI, no anime."
+    },
+    {
+      "id": "d",
+      "label": "装饰艺术 · 哥特几何",
+      "desc": "D. Gothic Art Deco portrait direction: sophisticated adult figurative painted illustration with controlled flat planes, elegant long lines, restrained geometric copper-gold pointed arch ornament, midnight teal and ink-black shapes, muted parchment face and hands. Inspired by early European decorative poster craft but without lettering. Dimensional readable mature face, graphic fabric folds, stylized proportions only subtly. Clean silhouette, balanced geometry, a reduced Gothic window/alley background. Not cartoon, not anime, no Chinese art, no Chinese costumes or ornaments."
+    }
+  ],
+  "characters": [
+    {
+      "id": "washerwoman",
+      "name": "洗衣妇",
+      "desc": "A working woman aged 48, pale warm complexion, firm oval face with faint freckles, intelligent grey eyes, dark brown hair with a silver streak center-parted and pinned in a plain low bun. A simple linen work cap, charcoal Victorian dress with rolled sleeves, worn ivory linen apron. One hand rests on the edge of a timber wash basin, the other holds a folded damp linen sheet. Practical honest occupation, weary but watchful, neither saintly nor villainous."
+    },
+    {
+      "id": "slayer",
+      "name": "猎魔人",
+      "desc": "An experienced male hunter aged 43, angular face, short dark wavy hair with grey temples, light stubble, steady hazel eyes. Dark brown Victorian wool long coat with simple leather shoulder strap, burgundy neck scarf, ivory shirt. Holds a single historically inspired antique percussion pistol beside his waist, muzzle pointed safely down, finger away from trigger. No firing, no wounds, no blood, calm watchful professional with morally ambiguous expression, not a cowboy or modern soldier."
+    },
+    {
+      "id": "ravenkeeper",
+      "name": "守鸦人",
+      "desc": "An elderly male raven keeper aged 64, long narrow weathered face, hooked nose, silver swept-back hair, short forked silver beard, calm deep-set brown eyes, clearly visible human face without mask. Worn charcoal Victorian greatcoat over olive wool waistcoat, leather work gloves. A raven perches on one gloved forearm and a brass key ring hangs at his waist. A partial antique empty birdcage beside him. Readable ordinary caretaker occupation; not a plague doctor, no beaked mask, no magical powers."
+    }
+  ],
+  "images": [
+    {
+      "id": "a-ravenkeeper",
+      "role": "守鸦人",
+      "style": "封面延伸 · 暗色古典油画",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: An elderly male raven keeper aged 64, long narrow weathered face, hooked nose, silver swept-back hair, short forked silver beard, calm deep-set brown eyes, clearly visible human face without mask. Worn charcoal Victorian greatcoat over olive wool waistcoat, leather work gloves. A raven perches on one gloved forearm and a brass key ring hangs at his waist. A partial antique empty birdcage beside him. Readable ordinary caretaker occupation; not a plague doctor, no beaked mask, no magical powers.\nStyle/medium: A. Cover-continuation art direction: exceptionally refined dark classical oil painting with fine etched detailing, a restrained thin antique brass Gothic pointed arch frame, blackened oak, antique metal, tactile fabrics. Sophisticated Western Gothic Victorian portrait. Painterly realistic faces and anatomy, not anime; deep midnight teal and charcoal palette with restrained antique gold and muted ivory, atmospheric narrow alley and window behind.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-046157ec-a18c-4a46-936e-469faca029c5.png",
+      "filename": "a-ravenkeeper.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Detailed classical realism with a thin aged gold arch."
+    },
+    {
+      "id": "a-slayer",
+      "role": "猎魔人",
+      "style": "封面延伸 · 暗色古典油画",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: An experienced male hunter aged 43, angular face, short dark wavy hair with grey temples, light stubble, steady hazel eyes. Dark brown Victorian wool long coat with simple leather shoulder strap, burgundy neck scarf, ivory shirt. Holds a single historically inspired antique percussion pistol beside his waist, muzzle pointed safely down, finger away from trigger. No firing, no wounds, no blood, calm watchful professional with morally ambiguous expression, not a cowboy or modern soldier.\nStyle/medium: A. Cover-continuation art direction: exceptionally refined dark classical oil painting with fine etched detailing, a restrained thin antique brass Gothic pointed arch frame, blackened oak, antique metal, tactile fabrics. Sophisticated Western Gothic Victorian portrait. Painterly realistic faces and anatomy, not anime; deep midnight teal and charcoal palette with restrained antique gold and muted ivory, atmospheric narrow alley and window behind.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-8856a467-fce6-4a13-b5b5-7b84a702aa2a.png",
+      "filename": "a-slayer.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Detailed classical realism with a thin aged gold arch."
+    },
+    {
+      "id": "a-washerwoman",
+      "role": "洗衣妇",
+      "style": "封面延伸 · 暗色古典油画",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: A working woman aged 48, pale warm complexion, firm oval face with faint freckles, intelligent grey eyes, dark brown hair with a silver streak center-parted and pinned in a plain low bun. A simple linen work cap, charcoal Victorian dress with rolled sleeves, worn ivory linen apron. One hand rests on the edge of a timber wash basin, the other holds a folded damp linen sheet. Practical honest occupation, weary but watchful, neither saintly nor villainous.\nStyle/medium: A. Cover-continuation art direction: exceptionally refined dark classical oil painting with fine etched detailing, a restrained thin antique brass Gothic pointed arch frame, blackened oak, antique metal, tactile fabrics. Sophisticated Western Gothic Victorian portrait. Painterly realistic faces and anatomy, not anime; deep midnight teal and charcoal palette with restrained antique gold and muted ivory, atmospheric narrow alley and window behind.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-acdec3c4-6a52-4c89-b942-a4d6241665d9.png",
+      "filename": "a-washerwoman.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Detailed classical realism with a thin aged gold arch."
+    },
+    {
+      "id": "b-ravenkeeper",
+      "role": "守鸦人",
+      "style": "手绘雕版 · 低饱和水彩",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: An elderly male raven keeper aged 64, long narrow weathered face, hooked nose, silver swept-back hair, short forked silver beard, calm deep-set brown eyes, clearly visible human face without mask. Worn charcoal Victorian greatcoat over olive wool waistcoat, leather work gloves. A raven perches on one gloved forearm and a brass key ring hangs at his waist. A partial antique empty birdcage beside him. Readable ordinary caretaker occupation; not a plague doctor, no beaked mask, no magical powers.\nStyle/medium: B. Engraved storybook art direction: hand-engraved expressive fine ink cross-hatching on aged ivory textured paper with low-saturation indigo, charcoal, olive and warm umber watercolor washes. Deliberate visible drawing strokes, Western Gothic Victorian portrait with a thin loosely inked pointed arch. Mature adult anatomically grounded faces, not cartoon or anime; sophisticated woodcut-meets-watercolor print, softly suggested old stone alley and window behind. Midtones legible on a mobile display.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: strong visible hand engraving and watercolor wash aesthetic, no photorealism; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-d0c48067-1b20-44f4-ad9a-0c0655bd3f8d.png",
+      "filename": "b-ravenkeeper.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Visible engraved linework and watercolor on ivory paper."
+    },
+    {
+      "id": "b-slayer",
+      "role": "猎魔人",
+      "style": "手绘雕版 · 低饱和水彩",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: An experienced male hunter aged 43, angular face, short dark wavy hair with grey temples, light stubble, steady hazel eyes. Dark brown Victorian wool long coat with simple leather shoulder strap, burgundy neck scarf, ivory shirt. Holds a single historically inspired antique percussion pistol beside his waist, muzzle pointed safely down, finger away from trigger. No firing, no wounds, no blood, calm watchful professional with morally ambiguous expression, not a cowboy or modern soldier.\nStyle/medium: B. Engraved storybook art direction: hand-engraved expressive fine ink cross-hatching on aged ivory textured paper with low-saturation indigo, charcoal, olive and warm umber watercolor washes. Deliberate visible drawing strokes, Western Gothic Victorian portrait with a thin loosely inked pointed arch. Mature adult anatomically grounded faces, not cartoon or anime; sophisticated woodcut-meets-watercolor print, softly suggested old stone alley and window behind. Midtones legible on a mobile display.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: strong visible hand engraving and watercolor wash aesthetic, no photorealism; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-0ebc193e-5116-4dea-b124-8d82e9c4a123.png",
+      "filename": "b-slayer.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Visible engraved linework and watercolor on ivory paper."
+    },
+    {
+      "id": "b-washerwoman",
+      "role": "洗衣妇",
+      "style": "手绘雕版 · 低饱和水彩",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: A working woman aged 48, pale warm complexion, firm oval face with faint freckles, intelligent grey eyes, dark brown hair with a silver streak center-parted and pinned in a plain low bun. A simple linen work cap, charcoal Victorian dress with rolled sleeves, worn ivory linen apron. One hand rests on the edge of a timber wash basin, the other holds a folded damp linen sheet. Practical honest occupation, weary but watchful, neither saintly nor villainous.\nStyle/medium: B. Engraved storybook art direction: hand-engraved expressive fine ink cross-hatching on aged ivory textured paper with low-saturation indigo, charcoal, olive and warm umber watercolor washes. Deliberate visible drawing strokes, Western Gothic Victorian portrait with a thin loosely inked pointed arch. Mature adult anatomically grounded faces, not cartoon or anime; sophisticated woodcut-meets-watercolor print, softly suggested old stone alley and window behind. Midtones legible on a mobile display.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: strong visible hand engraving and watercolor wash aesthetic, no photorealism; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-d2499921-cc3e-463d-944d-540ef5ba0b31.png",
+      "filename": "b-washerwoman.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Visible engraved linework and watercolor on ivory paper."
+    },
+    {
+      "id": "c-ravenkeeper",
+      "role": "守鸦人",
+      "style": "雾夜电影 · 半写实绘画",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: An elderly male raven keeper aged 64, long narrow weathered face, hooked nose, silver swept-back hair, short forked silver beard, calm deep-set brown eyes, clearly visible human face without mask. Worn charcoal Victorian greatcoat over olive wool waistcoat, leather work gloves. A raven perches on one gloved forearm and a brass key ring hangs at his waist. A partial antique empty birdcage beside him. Readable ordinary caretaker occupation; not a plague doctor, no beaked mask, no magical powers.\nStyle/medium: C. Cinematic fog-night art direction: premium semi-realistic digital oil illustration, brush-painted historic Victorian drama, delicate blue-grey moonlit rim light across hair and shoulders, warm distant lantern haze, foggy Gothic town alley behind. Minimal dark arched architectural silhouette, no decorative frame. Character lit enough to read face and props clearly on mobile. Atmospheric depth, rich tactile wool and worn brass. Not photography, not modern fashion, no glossy game CGI, no anime.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling. Mist around the lower silhouette and soft moonlight makes this distinct from a flat studio oil portrait.\nConstraints: visible premium painted brush textures, not a camera photo; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-ddab5243-cc50-4663-bc13-c86fdf6c23a0.png",
+      "filename": "c-ravenkeeper.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Moonlit cinematic painterly realism, more photographic than the B/D options."
+    },
+    {
+      "id": "c-slayer",
+      "role": "猎魔人",
+      "style": "雾夜电影 · 半写实绘画",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: An experienced male hunter aged 43, angular face, short dark wavy hair with grey temples, light stubble, steady hazel eyes. Dark brown Victorian wool long coat with simple leather shoulder strap, burgundy neck scarf, ivory shirt. Holds a single historically inspired antique percussion pistol beside his waist, muzzle pointed safely down, finger away from trigger. No firing, no wounds, no blood, calm watchful professional with morally ambiguous expression, not a cowboy or modern soldier.\nStyle/medium: C. Cinematic fog-night art direction: premium semi-realistic digital oil illustration, brush-painted historic Victorian drama, delicate blue-grey moonlit rim light across hair and shoulders, warm distant lantern haze, foggy Gothic town alley behind. Minimal dark arched architectural silhouette, no decorative frame. Character lit enough to read face and props clearly on mobile. Atmospheric depth, rich tactile wool and worn brass. Not photography, not modern fashion, no glossy game CGI, no anime.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling. Mist around the lower silhouette and soft moonlight makes this distinct from a flat studio oil portrait.\nConstraints: visible premium painted brush textures, not a camera photo; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-66f726b4-c564-433c-8c7c-b058a4ce6dc7.png",
+      "filename": "c-slayer.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Moonlit cinematic painterly realism, more photographic than the B/D options."
+    },
+    {
+      "id": "c-washerwoman",
+      "role": "洗衣妇",
+      "style": "雾夜电影 · 半写实绘画",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: A working woman aged 48, pale warm complexion, firm oval face with faint freckles, intelligent grey eyes, dark brown hair with a silver streak center-parted and pinned in a plain low bun. A simple linen work cap, charcoal Victorian dress with rolled sleeves, worn ivory linen apron. One hand rests on the edge of a timber wash basin, the other holds a folded damp linen sheet. Practical honest occupation, weary but watchful, neither saintly nor villainous.\nStyle/medium: C. Cinematic fog-night art direction: premium semi-realistic digital oil illustration, brush-painted historic Victorian drama, delicate blue-grey moonlit rim light across hair and shoulders, warm distant lantern haze, foggy Gothic town alley behind. Minimal dark arched architectural silhouette, no decorative frame. Character lit enough to read face and props clearly on mobile. Atmospheric depth, rich tactile wool and worn brass. Not photography, not modern fashion, no glossy game CGI, no anime.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling. Mist around the lower silhouette and soft moonlight makes this distinct from a flat studio oil portrait.\nConstraints: visible premium painted brush textures, not a camera photo; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-125d10b2-7a09-4d4d-b172-2d9c2400c022.png",
+      "filename": "c-washerwoman.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Moonlit cinematic painterly realism, more photographic than the B/D options."
+    },
+    {
+      "id": "d-ravenkeeper",
+      "role": "守鸦人",
+      "style": "装饰艺术 · 哥特几何",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: An elderly male raven keeper aged 64, long narrow weathered face, hooked nose, silver swept-back hair, short forked silver beard, calm deep-set brown eyes, clearly visible human face without mask. Worn charcoal Victorian greatcoat over olive wool waistcoat, leather work gloves. A raven perches on one gloved forearm and a brass key ring hangs at his waist. A partial antique empty birdcage beside him. Readable ordinary caretaker occupation; not a plague doctor, no beaked mask, no magical powers.\nStyle/medium: D. Gothic Art Deco portrait direction: sophisticated adult figurative painted illustration with controlled flat planes, elegant long lines, restrained geometric copper-gold pointed arch ornament, midnight teal and ink-black shapes, muted parchment face and hands. Inspired by early European decorative poster craft but without lettering. Dimensional readable mature face, graphic fabric folds, stylized proportions only subtly. Clean silhouette, balanced geometry, a reduced Gothic window/alley background. Not cartoon, not anime, no Chinese art, no Chinese costumes or ornaments.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: strong graphical flat-plane painted Art Deco aesthetic with restrained geometry, no photographic realism; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-8e3be493-8a4c-4474-b2e6-bcb1dd6addf5.png",
+      "filename": "d-ravenkeeper.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Graphic planar painting with copper-gold Gothic geometry."
+    },
+    {
+      "id": "d-slayer",
+      "role": "猎魔人",
+      "style": "装饰艺术 · 哥特几何",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: An experienced male hunter aged 43, angular face, short dark wavy hair with grey temples, light stubble, steady hazel eyes. Dark brown Victorian wool long coat with simple leather shoulder strap, burgundy neck scarf, ivory shirt. Holds a single historically inspired antique percussion pistol beside his waist, muzzle pointed safely down, finger away from trigger. No firing, no wounds, no blood, calm watchful professional with morally ambiguous expression, not a cowboy or modern soldier.\nStyle/medium: D. Gothic Art Deco portrait direction: sophisticated adult figurative painted illustration with controlled flat planes, elegant long lines, restrained geometric copper-gold pointed arch ornament, midnight teal and ink-black shapes, muted parchment face and hands. Inspired by early European decorative poster craft but without lettering. Dimensional readable mature face, graphic fabric folds, stylized proportions only subtly. Clean silhouette, balanced geometry, a reduced Gothic window/alley background. Not cartoon, not anime, no Chinese art, no Chinese costumes or ornaments.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: strong graphical flat-plane painted Art Deco aesthetic with restrained geometry, no photographic realism; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-c33ee060-be00-4806-bdc5-cb7ea6472f4b.png",
+      "filename": "d-slayer.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Graphic planar painting with copper-gold Gothic geometry."
+    },
+    {
+      "id": "d-washerwoman",
+      "role": "洗衣妇",
+      "style": "装饰艺术 · 哥特几何",
+      "prompt": "Use case: stylized-concept.\nAsset type: a single game-character art direction comparison portrait. Generate exactly ONE image, one main human character, no montage.\nPrimary request: A working woman aged 48, pale warm complexion, firm oval face with faint freckles, intelligent grey eyes, dark brown hair with a silver streak center-parted and pinned in a plain low bun. A simple linen work cap, charcoal Victorian dress with rolled sleeves, worn ivory linen apron. One hand rests on the edge of a timber wash basin, the other holds a folded damp linen sheet. Practical honest occupation, weary but watchful, neither saintly nor villainous.\nStyle/medium: D. Gothic Art Deco portrait direction: sophisticated adult figurative painted illustration with controlled flat planes, elegant long lines, restrained geometric copper-gold pointed arch ornament, midnight teal and ink-black shapes, muted parchment face and hands. Inspired by early European decorative poster craft but without lettering. Dimensional readable mature face, graphic fabric folds, stylized proportions only subtly. Clean silhouette, balanced geometry, a reduced Gothic window/alley background. Not cartoon, not anime, no Chinese art, no Chinese costumes or ornaments.\nComposition/framing: vertical 3:4 portrait, head to upper thigh, character centered, head fully visible with comfortable margin, three-quarter frontal pose, human face at 30% height, hands and principal occupational props visible in lower half; keep consistent comparable character-sheet framing. Props must not obscure face.\nLighting/mood: sober, intimate, mysterious Western Gothic small town, natural adult expression, no alignment signaling.\nConstraints: strong graphical flat-plane painted Art Deco aesthetic with restrained geometry, no photographic realism; no text, no lettering, no logos, no UI, no card stats, no buttons, no watermark. No East Asian or Chinese costume, hair ornaments, architecture, martial arts or fantasy robes. No gore. European Victorian village world. No cropped face or extra limbs. This is a NEW original illustration, not an edit of earlier images.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-53e606ae-8801-499f-9e43-5e5bc9f9d6bd.png",
+      "filename": "d-washerwoman.png",
+      "qa": {
+        "checked": true,
+        "faceUncropped": true,
+        "occupationReadable": true,
+        "noTextOrUI": true,
+        "noChineseCostume": true,
+        "noGore": true,
+        "portraitComposition": true
+      },
+      "note": "Graphic planar painting with copper-gold Gothic geometry."
+    }
+  ]
+}
