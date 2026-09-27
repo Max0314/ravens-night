@@ -1,7 +1,9 @@
 import { Panel, SeatRing } from "@ravens/ui";
-import { useEffect, useRef, useState, type CSSProperties, type DragEvent, type KeyboardEvent } from "react";
-import { ApiError, getRoom, reorderRoomSeats, type RoomParticipant, type RoomView } from "../api.js";
+import { useCallback, useEffect, useState, type CSSProperties, type DragEvent, type KeyboardEvent } from "react";
+import { ApiError, getRoom, type RoomParticipant, type RoomView } from "../api.js";
 import { invitationQr } from "../invite.js";
+import { EventStage, publicEventsAt } from "../components/EventStage.js";
+import { connectRoomFeed } from "../room-live.js";
 
 const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string }> = {
   ROLE_REVEAL: { eyebrow: "保持安静", title: "身份正在揭晓", detail: "请只看自己的手机" },
@@ -26,15 +28,16 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   const [room, setRoom] = useState<RoomView>();
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const [qr, setQr] = useState<string>();
-  const [reordering, setReordering] = useState(false);
   const [seatError, setSeatError] = useState<string>();
-  const [deathNotice, setDeathNotice] = useState<{ seq: number; message: string }>();
-  const reorderPending = useRef(false);
-  const seenDeathSeq = useRef(0);
+  const acceptRoom = useCallback((incoming: RoomView) => setRoom((previous) => {
+    if (incoming.game?.gameId && previous?.game?.gameId === incoming.game.gameId && (incoming.game.revision ?? 0) < (previous.game.revision ?? 0)) return previous;
+    return incoming;
+  }), []);
   useEffect(() => {
     let active = true;
-    const refresh = () => void getRoom(code).then((next) => { if (active && !reorderPending.current) setRoom(next); }).catch((error) => {
-      if (active && error instanceof ApiError && error.status === 404) onRoomClosed();
+    const refresh = () => void getRoom(code, "DISPLAY").then((next) => { if (active) { acceptRoom(next); setSeatError(undefined); } }).catch((error) => {
+      if (active && error instanceof ApiError && [401, 403, 404].includes(error.status)) onRoomClosed();
+      else if (active) setSeatError("连接暂时中断，正在重新同步城镇…");
     });
     refresh(); const timer = window.setInterval(refresh, 1_200);
     return () => { active = false; window.clearInterval(timer); };
@@ -46,13 +49,9 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
     return () => document.removeEventListener("fullscreenchange", update);
   }, []);
   useEffect(() => {
-    const latest = room?.game?.events.slice().reverse().find((event) => event.message.includes("死亡"));
-    if (!latest || latest.seq <= seenDeathSeq.current) return;
-    seenDeathSeq.current = latest.seq;
-    setDeathNotice(latest);
-    const timer = window.setTimeout(() => setDeathNotice(undefined), 7_000);
-    return () => window.clearTimeout(timer);
-  }, [room?.game?.events]);
+    if (typeof WebSocket === "undefined") return;
+    return connectRoomFeed(code, "DISPLAY", (payload) => acceptRoom(payload.room));
+  }, [code]);
 
   const game = room?.game;
   const players = [...(room?.participants.filter((participant) => participant.mode === "PLAYER") ?? [])]
@@ -61,27 +60,20 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   const copy = phaseCopy[game?.phase ?? "ROLE_REVEAL"] ?? phaseCopy.ROLE_REVEAL!;
   const nominee = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nomineeSeat) : undefined;
   const nominator = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nominatorSeat) : undefined;
-  const publicEvents = game?.events.slice(-3).reverse() ?? [];
+  const publicEvents = publicEventsAt(game?.events ?? [], game?.serverNow ?? Date.now()).slice(-3).reverse();
   const isNight = game?.phase === "FIRST_NIGHT" || game?.phase === "OTHER_NIGHT";
-
-  async function applySeatOrder(participantIds: string[]) {
-    if (!room || game || reorderPending.current) return;
-    reorderPending.current = true;
-    setReordering(true);
-    setSeatError(undefined);
-    try { setRoom(await reorderRoomSeats(code, participantIds)); }
-    catch (error) { setSeatError(error instanceof Error ? error.message : "座位调整失败，请重试"); }
-    finally { reorderPending.current = false; setReordering(false); }
-  }
+  const finalePending = game?.phase === "GAME_OVER" && (game.presentationUntil ?? 0) > (game.serverNow ?? Date.now());
+  const defending = Boolean(game?.nomination?.defenseUntil && (game.serverNow ?? Date.now()) < game.nomination.defenseUntil);
+  const voteDetail = game?.nomination && nominee ? defending ? `${nominee.nickname} 的辩护时间 · ${Math.max(0, Math.ceil(((game.nomination.defenseUntil ?? 0) - (game.serverNow ?? Date.now())) / 1000))} 秒后开始顺时针计票` : game.nomination.voterOrder ? `${game.nomination.currentVoterSeat ? `正在计 ${game.nomination.currentVoterSeat} 号的票` : "等待钟声"} · 已计 ${game.nomination.countedSeats?.length ?? 0}/${game.nomination.voterOrder.length} 位 · 当前 ${game.nomination.votesRaised} 票 · 达标 ${game.nomination.threshold} 票` : `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 达标需 ${game.nomination.threshold} 票` : copy.detail;
 
   return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
-    {deathNotice ? <section className="death-reveal death-reveal--display" role="status"><div className="death-reveal__moon" aria-hidden="true">☾</div><p>黎明的钟声</p><h2>昨夜有人离开了村庄</h2><strong>{deathNotice.message}</strong></section> : null}
+    {game ? <EventStage game={game} /> : null}
     <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
-    <section className="display__town">{game ? <SeatRing seats={seats} /> : <SeatOrderEditor players={players} busy={reordering} onReorder={(ids) => void applySeatOrder(ids)} />}<div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>拖动卡片，使编号与线下座位一致</small></div> : <><p>{copy.eyebrow}</p><h1>{game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? nominee.nickname : copy.title}</h1><small>{game.phase === "VOTING" && game.nomination && nominee ? `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 过半需 ${game.nomination.threshold} 票` : copy.detail}</small></>}</div></section>
+    <section className="display__town"><SeatRing seats={seats} {...(game?.nomination?.currentVoterSeat ? { activeSeat: game.nomination.currentVoterSeat } : {})} {...(game?.nomination?.countedVotes ? { countedVotes: game.nomination.countedVotes } : {})} {...(game?.nomination?.raisedSeats ? { raisedSeats: game.nomination.raisedSeats } : {})} /><div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>请房主在手机上调整座位，准备后开局</small></div> : <><p>{defending ? "辩护时间" : game.phase === "VOTING" ? "顺时针表决" : copy.eyebrow}</p><h1>{finalePending ? "钟声仍在回响" : game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? nominee.nickname : copy.title}</h1><small>{voteDetail}</small></>}</div></section>
     {game ? <Panel className="display__village-feed" aria-label="村庄公开信息">
       <header><div><span aria-hidden="true">⌁</span><strong>村庄公开信息</strong></div><small>所有玩家均可得知</small></header>
       <ol>{publicEvents.map((event, index) => <li key={event.seq} className={index === 0 ? "is-latest" : ""}><span>{index === 0 ? "最新" : `记录 ${event.seq}`}</span><p>{event.message}</p></li>)}</ol>
-    </Panel> : <Panel className={`display__notice${seatError ? " display__notice--error" : ""}`} aria-live="polite">{seatError ?? (reordering ? "正在同步新的座位顺序…" : players.length > 1 ? "开局前可拖动玩家调整座位 · 选中卡片后也可按方向键" : `${players.length}/${room?.playerCount ?? "?"} 位玩家已入座`)}</Panel>}
+    </Panel> : <Panel className={`display__notice${seatError ? " display__notice--error" : ""}`} aria-live="polite">{seatError ?? (players.length > 1 ? "座位与准备状态由玩家手机同步 · 没有大屏也能完整游玩" : `${players.length}/${room?.playerCount ?? "?"} 位玩家已入座`)}</Panel>}
   </main>;
 }
 

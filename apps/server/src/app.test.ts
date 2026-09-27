@@ -77,12 +77,15 @@ describe("HTTP application", () => {
 
     const replacement = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname: "补位玩家", mode: "PLAYER" } });
     expect(replacement.statusCode).toBe(201);
+    for (const cookie of [...cookies.slice(1), String(replacement.headers["set-cookie"]).split(";")[0]!]) {
+      expect((await app.inject({ method: "POST", url: `/api/rooms/${room.code}/ready`, headers: { cookie }, payload: { ready: true } })).statusCode).toBe(200);
+    }
     const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, headers: { cookie: cookies[1]! }, payload: {} });
     expect(started.statusCode).toBe(200);
     expect(started.json()).toMatchObject({ state: "TUTORIAL", organizerName: "接任房主" });
   });
 
-  test("only a display session may reorder every player before the game starts", async () => {
+  test("the organizer and display may reorder players, but an ordinary player may not", async () => {
     const app = buildApp();
     apps.push(app);
     const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "原房主" } });
@@ -96,9 +99,11 @@ describe("HTTP application", () => {
     const displayCookie = String(display.headers["set-cookie"]).split(";")[0]!;
     const participantIds = [players[2]!.id, players[0]!.id, players[1]!.id, players[3]!.id, players[4]!.id];
 
-    const denied = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: players[0]!.cookie }, payload: { participantIds } });
+    const denied = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: players[1]!.cookie }, payload: { participantIds } });
     expect(denied.statusCode).toBe(400);
-    expect(denied.json()).toMatchObject({ error: expect.stringContaining("只有公共大屏") });
+    expect(denied.json()).toMatchObject({ error: expect.stringContaining("房主") });
+
+    expect((await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: players[0]!.cookie }, payload: { participantIds } })).statusCode).toBe(200);
 
     const reordered = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: displayCookie }, payload: { participantIds } });
     expect(reordered.statusCode).toBe(200);
@@ -115,6 +120,7 @@ describe("HTTP application", () => {
     for (const nickname of ["一", "二", "三", "四", "五"]) {
       const joined = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname, mode: "PLAYER" } });
       tokens.push(joined.json<{ token: string }>().token);
+      expect((await app.inject({ method: "POST", url: `/api/rooms/${room.code}/ready`, payload: { token: joined.json().token, ready: true } })).statusCode).toBe(200);
     }
     const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, payload: { organizerToken: room.organizerToken } });
     expect(started.statusCode).toBe(200);
@@ -143,6 +149,7 @@ describe("HTTP application", () => {
     for (const nickname of ["一", "二", "三", "四", "五"]) {
       const joined = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/join`, payload: { nickname, mode: "PLAYER" } });
       playerCookies.push(String(joined.headers["set-cookie"]).split(";")[0]!);
+      expect((await app.inject({ method: "POST", url: `/api/rooms/${room.code}/ready`, headers: { cookie: playerCookies.at(-1)! }, payload: { ready: true } })).statusCode).toBe(200);
     }
     const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, headers: { cookie: organizerCookie }, payload: {} });
     expect(started.statusCode).toBe(200);

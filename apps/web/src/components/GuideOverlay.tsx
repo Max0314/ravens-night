@@ -1,4 +1,5 @@
 import { beginnerRoles } from "@ravens/content";
+import { RolePortrait } from "@ravens/ui";
 import { useEffect, useRef, useState } from "react";
 import type { PrivateView } from "../api.js";
 import { rolePlayGuides, roleTypeGuidance, roleTypeNames, tutorialSteps } from "../guide-content.js";
@@ -83,7 +84,7 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
       {activeMode === "roles" ? <div className="role-compendium">
         <div className="role-compendium__intro"><div><p>暗流涌动 · 22 个角色</p><h1>{selectedRole ? selectedRole.name : "选择角色查看规则"}</h1></div>{selectedRole ? <button type="button" onClick={() => setSelectedRoleId(undefined)}>返回全部</button> : null}</div>
         {selectedRole ? <article className="role-detail">
-          <div className="role-detail__portrait" role="img" aria-label={`${selectedRole.name}角色立绘`} style={{ backgroundImage: `url(${selectedRoleArt!.portraitUrl})`, backgroundPosition: selectedRoleArt!.portraitPosition }} />
+          <RolePortrait className="role-detail__portrait" label={`${selectedRole.name}角色立绘`} url={selectedRoleArt!.portraitUrl} position={selectedRoleArt!.portraitPosition} />
           <div className="role-detail__copy"><p className={`role-alignment role-alignment--${selectedRole.type === "MINION" || selectedRole.type === "DEMON" ? "evil" : "good"}`}>{roleTypeNames[selectedRole.type]} · {roleTypeGuidance[selectedRole.type]}</p>
           <h2>能力</h2><p>{selectedRole.summary}</p>
           <h2>第一次玩</h2><p>{selectedRole.beginnerTip}</p>
@@ -100,5 +101,5 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
 
 function RoleIndexButton({ role, onSelect }: { role: (typeof beginnerRoles)[number]; onSelect: (roleId: string) => void }) {
   const art = roleArt(role.id);
-  return <button type="button" onClick={() => onSelect(role.id)}><span className="role-index__portrait" role="img" aria-label={`${role.name}角色缩略立绘`} style={{ backgroundImage: `url(${art.portraitUrl})`, backgroundPosition: art.portraitPosition }} /><span className="role-index__copy"><strong>{role.name}</strong><small>{role.summary}</small></span></button>;
+  return <button type="button" onClick={() => onSelect(role.id)}><RolePortrait className="role-index__portrait" label={`${role.name}角色缩略立绘`} url={art.portraitUrl} position={art.portraitPosition} /><span className="role-index__copy"><strong>{role.name}</strong><small>{role.summary}</small></span></button>;
 }

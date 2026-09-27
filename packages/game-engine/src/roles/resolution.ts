@@ -1,3 +1,4 @@
+import { randomAt } from "../rng.js";
 import type { Alignment } from "../types.js";
 
 export interface KillContext {
@@ -6,6 +7,12 @@ export interface KillContext {
   targetRoleId: string;
   protectedSeat: number | undefined;
   livingMinionSeats: number[];
+  targetAlive?: boolean;
+  livingCountBefore?: number;
+  /** Must already be checked for life and impairment by the caller. */
+  healthyScarletWomanSeat?: number;
+  selectedSuccessorSeat?: number;
+  seed?: string;
 }
 
 export interface KillResult {
@@ -14,9 +21,14 @@ export interface KillResult {
 }
 
 export function resolveDemonKill(context: KillContext): KillResult {
+  if (context.targetAlive === false) return { deaths: [] };
   if (context.targetRoleId === "soldier" || context.protectedSeat === context.targetSeat) return { deaths: [] };
   if (context.targetSeat === context.demonSeat && context.targetRoleId === "imp" && context.livingMinionSeats.length > 0) {
-    return { deaths: [context.targetSeat], newDemonSeat: [...context.livingMinionSeats].sort((a, b) => a - b)[0]! };
+    const scarlet = (context.livingCountBefore ?? 0) >= 5 && context.healthyScarletWomanSeat !== undefined && context.livingMinionSeats.includes(context.healthyScarletWomanSeat)
+      ? context.healthyScarletWomanSeat : undefined;
+    const chosen = context.selectedSuccessorSeat !== undefined && context.livingMinionSeats.includes(context.selectedSuccessorSeat) ? context.selectedSuccessorSeat : undefined;
+    const random = context.livingMinionSeats[Math.floor(randomAt(context.seed ?? "imp-succession", context.targetSeat) * context.livingMinionSeats.length)]!;
+    return { deaths: [context.targetSeat], newDemonSeat: scarlet ?? chosen ?? random };
   }
   return { deaths: [context.targetSeat] };
 }

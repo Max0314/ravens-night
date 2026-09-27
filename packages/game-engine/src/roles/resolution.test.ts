@@ -8,7 +8,7 @@ describe("night kill resolution", () => {
   });
 
   test("an imp self-kill transfers demonhood to a living minion", () => {
-    expect(resolveDemonKill({ targetSeat: 5, demonSeat: 5, targetRoleId: "imp", protectedSeat: undefined, livingMinionSeats: [2, 4] })).toEqual({ deaths: [5], newDemonSeat: 2 });
+    expect(resolveDemonKill({ targetSeat: 5, demonSeat: 5, targetRoleId: "imp", protectedSeat: undefined, livingMinionSeats: [2, 4], selectedSuccessorSeat: 4 })).toEqual({ deaths: [5], newDemonSeat: 4 });
   });
 });
 
@@ -21,4 +21,9 @@ describe("special wins", () => {
     expect(resolveSpecialWin({ livingRoleIds: ["mayor", "imp", "chef"], livingCount: 3, demonAlive: true, executedToday: false, mayorWinEligible: true })).toEqual({ winner: "GOOD", reason: "mayor-final-three" });
     expect(resolveSpecialWin({ livingRoleIds: ["mayor", "imp", "chef"], livingCount: 3, demonAlive: true, executedToday: false })).toBeUndefined();
   });
+});
+
+test("a self-kill respects healthy Scarlet Woman priority and corpse attacks do nothing", () => {
+  expect(resolveDemonKill({ targetSeat: 6, demonSeat: 6, targetRoleId: "imp", protectedSeat: undefined, livingMinionSeats: [2, 5], selectedSuccessorSeat: 2, livingCountBefore: 5, healthyScarletWomanSeat: 5 })).toEqual({ deaths: [6], newDemonSeat: 5 });
+  expect(resolveDemonKill({ targetSeat: 3, targetRoleId: "saint", protectedSeat: undefined, livingMinionSeats: [], targetAlive: false })).toEqual({ deaths: [] });
 });

@@ -1,6 +1,6 @@
 import { roleById } from "@ravens/game-engine";
 import { expect, test } from "vitest";
-import { RoomService } from "./service.js";
+import { TestRoomService as RoomService } from "./test-room-service.js";
 
 function controlledSixPlayerRoom(roleIds: string[], perceivedRoles: Record<number, string> = {}) {
   const setup = new RoomService();
@@ -34,19 +34,14 @@ function reachFirstDay(service: RoomService, code: string, players: Array<{ toke
   expect(service.publicView(code).game?.phase).toBe("DAY_DISCUSSION");
 }
 
-test("six-player evil players receive teammate names and seat numbers but no demon bluffs", () => {
+test("official Teensyville conceals evil teammates and does not supply demon bluffs", () => {
   const { service, room, players } = controlledSixPlayerRoom(["chef", "empath", "saint", "butler", "poisoner", "imp"]);
-  const minionView = service.privateView(room.code, players[4]!.token);
-  const demonView = service.privateView(room.code, players[5]!.token);
-  const minionMessages = minionView.messages.join(" ");
-  const demonMessages = demonView.messages.join(" ");
-  expect(minionMessages).toContain("恶魔是 六（6号）");
-  expect(demonMessages).toContain("你的爪牙：五（5号）");
-  expect(minionMessages).toContain("邪恶玩家会在首夜得知队友姓名与编号");
-  expect(demonMessages).toContain("邪恶玩家会在首夜得知队友姓名与编号");
-  expect(demonMessages).not.toContain("三个安全伪装：");
-  expect(minionView.history).toContainEqual(expect.objectContaining({ phase: "ROLE_REVEAL", kind: "INFORMATION", text: expect.stringContaining("六（6号）") }));
-  expect(demonView.history).toContainEqual(expect.objectContaining({ phase: "ROLE_REVEAL", kind: "INFORMATION", text: expect.stringContaining("五（5号）") }));
+  for (const player of players.slice(4)) {
+    const view = service.privateView(room.code, player.token);
+    expect(view.messages.join(" ")).toContain("恶魔与爪牙互不认识");
+    expect(view.messages.join(" ")).not.toMatch(/恶魔是|你的爪牙：|三个安全伪装：/);
+    expect(view.history.some((entry) => entry.kind === "INFORMATION")).toBe(false);
+  }
 });
 
 test("the Butler must choose exactly one other player", () => {
@@ -88,7 +83,7 @@ test("an investigator may see the Recluse as an in-play Minion instead of being 
   const { service, room, players } = controlledSixPlayerRoom(["investigator", "recluse", "saint", "butler", "baron", "imp"]);
   reachFirstDay(service, room.code, players);
   const information = service.privateView(room.code, players[0]!.token).messages.find((message) => message.startsWith("调查员信息"));
-  expect(information).toMatch(/调查员信息：.+（\d号）与.+（\d号）中，有一位是男爵。/);
+  expect(information).toMatch(/调查员信息：.+（\d号）与.+（\d号）中，有一位是(?:男爵|投毒者|间谍|猩红女郎)。/);
   expect(information).not.toContain("有一位是隐士");
 });
 

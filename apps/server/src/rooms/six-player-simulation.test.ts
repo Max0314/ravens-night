@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { RoomService } from "./service.js";
+import { TestRoomService as RoomService } from "./test-room-service.js";
 
 type JoinedPlayer = ReturnType<RoomService["join"]>;
 
@@ -30,7 +30,7 @@ function settleNight(service: RoomService, code: string, players: JoinedPlayer[]
       let legalSeats = [...view.action.legalSeats];
       if (assignment.roleType === "DEMON") {
         const preferredGood = snapshot.assignments
-          .filter((candidate) => candidate.alignment === "GOOD" && candidate.roleId !== "soldier")
+          .filter((candidate) => candidate.alignment === "GOOD" && candidate.roleId !== "soldier" && snapshot.game!.aliveSeats.includes(candidate.seat))
           .map((candidate) => candidate.seat)
           .find((candidate) => legalSeats.includes(candidate));
         if (preferredGood !== undefined) legalSeats = [preferredGood, ...legalSeats.filter((candidate) => candidate !== preferredGood)];
@@ -39,7 +39,8 @@ function settleNight(service: RoomService, code: string, players: JoinedPlayer[]
           .find((candidate) => candidate !== seat && legalSeats.includes(candidate) && snapshot.assignments.find((assignmentCandidate) => assignmentCandidate.seat === candidate)?.alignment === "EVIL");
         if (evil !== undefined) legalSeats = [evil, ...legalSeats.filter((candidate) => candidate !== evil)];
       }
-      service.submitAction(code, player.token, legalSeats.slice(0, view.action.maxTargets));
+      const current = service.privateView(code, player.token).action;
+      if (current?.kind === "SELECT_ONE" || current?.kind === "SELECT_TWO") service.submitAction(code, player.token, legalSeats.slice(0, current.maxTargets));
     }
   }
   throw new Error("night failed to settle after 16 passes");
@@ -49,7 +50,7 @@ function executeSeat(service: RoomService, code: string, players: JoinedPlayer[]
   const nominator = players.find((player) => player.participant.seat === nominatorSeat)!;
   service.nominate(code, nominator.token, nomineeSeat);
   if (service.publicView(code).game?.phase !== "VOTING") return;
-  for (const player of players) service.vote(code, player.token, true);
+  for (const player of players) if (service.privateView(code, player.token).canVote) service.vote(code, player.token, true);
   const aliveSeats = service.publicView(code).game!.seats.filter((seat) => seat.alive).map((seat) => seat.seat);
   for (const seat of aliveSeats) {
     const player = players.find((candidate) => candidate.participant.seat === seat)!;

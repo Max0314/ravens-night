@@ -2,7 +2,7 @@ import { Button, Panel } from "@ravens/ui";
 import { useState } from "react";
 import { tutorialSteps } from "../guide-content.js";
 
-export function Tutorial({ onBack, onDone }: { onBack: () => void; onDone: () => void }) {
+export function Tutorial({ onBack, onDone, busy = false, error }: { onBack: () => void; onDone: () => void; busy?: boolean; error?: string }) {
   const [step, setStep] = useState(0);
   const item = tutorialSteps[step]!;
   return <main className="center-page tutorial">
@@ -15,10 +15,11 @@ export function Tutorial({ onBack, onDone }: { onBack: () => void; onDone: () =>
       <div className="tutorial__actions">
         {step > 0
           ? <Button variant="quiet" onClick={() => setStep((value) => value - 1)}>上一步</Button>
-          : <Button variant="quiet" onClick={onDone}>跳过教程，查看身份</Button>}
-        <Button onClick={() => step === tutorialSteps.length - 1 ? onDone() : setStep((value) => value + 1)}>{step === tutorialSteps.length - 1 ? "查看我的身份" : "我明白了"}</Button>
+          : <Button variant="quiet" onClick={onDone} disabled={busy}>跳过教程，查看身份</Button>}
+        <Button disabled={busy} onClick={() => step === tutorialSteps.length - 1 ? onDone() : setStep((value) => value + 1)}>{busy ? "正在同步身份…" : step === tutorialSteps.length - 1 ? "查看我的身份" : "我明白了"}</Button>
       </div>
       {step === 0 ? <small className="tutorial__skip-note">跳过后，游戏中仍可随时打开教程和角色表。</small> : null}
+      {error ? <p role="alert" className="form-error">{error}</p> : null}
     </Panel>
   </main>;
 }

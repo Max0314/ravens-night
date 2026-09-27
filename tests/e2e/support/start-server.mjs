@@ -1,0 +1,12 @@
+import { build } from "esbuild";
+import { spawn, spawnSync } from "node:child_process";
+import { mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
+await mkdir("outputs/e2e", { recursive: true });
+await mkdir("outputs/ui-qa", { recursive: true });
+const webBuild = spawnSync(process.execPath, [resolve("apps/web/node_modules/vite/bin/vite.js"), "build"], { cwd: resolve("apps/web"), stdio: "inherit" });
+if (webBuild.status !== 0) process.exit(webBuild.status ?? 1);
+await build({ entryPoints: ["tests/e2e/support/server.ts"], bundle: true, platform: "node", format: "cjs", target: "node24", outfile: "outputs/e2e/server.cjs" });
+const child = spawn(process.execPath, ["outputs/e2e/server.cjs"], { stdio: "inherit", env: { ...process.env, STATIC_DIR: resolve("apps/web/dist"), NODE_ENV: "test" } });
+for (const signal of ["SIGTERM", "SIGINT"]) process.on(signal, () => child.kill(signal));
+child.on("exit", (code) => process.exit(code ?? 0));

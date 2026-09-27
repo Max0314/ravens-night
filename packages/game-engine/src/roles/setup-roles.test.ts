@@ -32,3 +32,14 @@ describe("role assignment", () => {
     expect(assignments?.some((assignment) => assignment.roleId === drunk?.perceivedRoleId)).toBe(false);
   });
 });
+
+
+test("curated bags preserve distributions while giving larger towns an opening clue and active ability", () => {
+  for (let seed = 0; seed < 100; seed += 1) {
+    const assignments = setupGameRoles(10, `curated-${seed}`);
+    const townsfolk = assignments.filter((assignment) => assignment.roleType === "TOWNSFOLK").map((assignment) => assignment.roleId);
+    expect(townsfolk.some((roleId) => ["washerwoman", "librarian", "investigator", "chef", "empath", "fortune_teller"].includes(roleId))).toBe(true);
+    expect(townsfolk.some((roleId) => ["fortune_teller", "monk", "ravenkeeper", "slayer"].includes(roleId))).toBe(true);
+    expect(new Set(assignments.map((assignment) => assignment.roleId)).size).toBe(assignments.length);
+  }
+});

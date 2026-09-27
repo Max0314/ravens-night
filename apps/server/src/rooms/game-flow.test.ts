@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { RoomService } from "./service.js";
+import { TestRoomService as RoomService } from "./test-room-service.js";
 
 test("all players share tutorial state and receive only their own role", () => {
   const service = new RoomService();
@@ -79,7 +79,8 @@ test("a public display can reorder seats without transferring organizer authorit
   expect(playersBySeat.map((player) => `${player.seat}:${player.nickname}`)).toEqual(["1:三号", "2:原房主", "3:二号", "4:四号", "5:五号"]);
   expect(publicRoom).toMatchObject({ organizerId: owner.participant.id, organizerName: "原房主" });
   expect(service.privateView(room.code, owner.token).participant.seat).toBe(2);
-  expect(() => service.reorderSeats(room.code, owner.token, reordered)).toThrow(/只有公共大屏/);
+  expect(() => service.reorderSeats(room.code, owner.token, reordered)).not.toThrow();
+  expect(() => service.reorderSeats(room.code, second.token, reordered)).toThrow(/房主或公共大屏/);
   expect(() => service.reorderSeats(room.code, display.token, reordered.slice(0, 4))).toThrow(/当前全部玩家/);
   expect(() => service.startTutorial(room.code, owner.token)).not.toThrow();
   expect(() => service.reorderSeats(room.code, display.token, reordered)).toThrow(/开局前/);
@@ -151,7 +152,7 @@ test("a complete nomination vote returns to nominations and can end the day", ()
   expect(["OTHER_NIGHT", "GAME_OVER"]).toContain(service.publicView(room.code).game?.phase);
 });
 
-test("a nominator may cancel before voting starts and reuse the nomination", () => {
+test("withdrawing a nomination consumes both daily allowances", () => {
   const { service, room, players } = runningRoom();
   reachFirstDay(service, room.code, players);
   const nomineeIndex = players.findIndex((player, index) => index > 0 && service.privateView(room.code, player.token).role?.roleId !== "virgin");
@@ -162,7 +163,8 @@ test("a nominator may cancel before voting starts and reuse the nomination", () 
   expect(() => service.cancelNomination(room.code, players[1]!.token)).toThrow(/Only the nominator/i);
   service.cancelNomination(room.code, players[0]!.token);
   expect(service.publicView(room.code).game?.phase).toBe("NOMINATION");
-  expect(() => service.nominate(room.code, players[0]!.token, nomineeIndex + 1)).not.toThrow();
+  expect(() => service.nominate(room.code, players[0]!.token, nomineeIndex + 1)).toThrow(/already nominated/i);
+  expect(() => service.nominate(room.code, players[1]!.token, nomineeIndex + 1)).toThrow(/already nominated/i);
 });
 
 test("a voter may switch between raised and lowered until the final ballot arrives", () => {
@@ -171,15 +173,16 @@ test("a voter may switch between raised and lowered until the final ballot arriv
   const nomineeIndex = players.findIndex((player, index) => index > 0 && service.privateView(room.code, player.token).role?.roleId !== "virgin");
   service.nominate(room.code, players[0]!.token, nomineeIndex + 1);
 
-  service.vote(room.code, players[0]!.token, true);
-  expect(service.privateView(room.code, players[0]!.token)).toMatchObject({ voteRaised: true, action: { kind: "VOTE" } });
+  const voter = players.find((player) => service.privateView(room.code, player.token).role?.roleId !== "butler")!;
+  service.vote(room.code, voter.token, true);
+  expect(service.privateView(room.code, voter.token)).toMatchObject({ voteRaised: true, action: { kind: "VOTE" } });
   expect(service.publicView(room.code).game?.nomination).toMatchObject({ votesReceived: 1, votesRaised: 1 });
-  service.vote(room.code, players[0]!.token, false);
-  expect(service.privateView(room.code, players[0]!.token)).toMatchObject({ voteRaised: false, action: { kind: "VOTE" } });
+  service.vote(room.code, voter.token, false);
+  expect(service.privateView(room.code, voter.token)).toMatchObject({ voteRaised: false, action: { kind: "VOTE" } });
   expect(service.publicView(room.code).game?.nomination).toMatchObject({ votesReceived: 1, votesRaised: 0 });
   expect(() => service.cancelNomination(room.code, players[0]!.token)).toThrow(/after voting begins/i);
 
-  for (const player of players.slice(1)) service.vote(room.code, player.token, false);
+  for (const player of players.filter((player) => player !== voter)) service.vote(room.code, player.token, false);
   expect(service.publicView(room.code).game?.phase).toBe("NOMINATION");
 });
 
@@ -222,12 +225,17 @@ test("the organizer can reset a table without making seated players rejoin", () 
   for (const player of seated) service.completeTutorial(created.room.code, player.token);
 
   expect(() => service.reset(created.room.code, "wrong-token")).toThrow(/authorization/i);
+  expect(() => service.reset(created.room.code, created.organizerToken)).toThrow(/进行中/);
+  const ended = service.snapshot(created.room.code);
+  ended.state = "GAME_OVER"; ended.game!.phase = "GAME_OVER";
+  service.restore([ended]);
   service.reset(created.room.code, created.organizerToken);
   const reset = service.publicView(created.room.code);
   expect(reset.state).toBe("LOBBY");
   expect(reset.participants).toHaveLength(5);
   expect(reset.game).toBeUndefined();
 
+  for (const player of seated) service.setReady(created.room.code, player.token, true);
   service.startTutorial(created.room.code, created.organizerToken);
   expect(service.publicView(created.room.code).state).toBe("TUTORIAL");
   const secondSetup = service.snapshot(created.room.code);

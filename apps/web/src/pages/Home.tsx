@@ -23,6 +23,7 @@ export function Home({ onCreate, onJoin, onTutorial, onRoles, activeRoom, active
       <section className="home__copy">
         <h1>今夜，每个人都有秘密</h1>
         <p>围坐在同一张桌旁。手机只告诉你该知道的事，钟楼会主持余下的一切。</p>
+        {!activeRoom && error ? <p className="form-error" role="alert">{error}</p> : null}
         {activeRoom && onResume ? <section className="home__resume" aria-label="当前房间">
           <div><span>{activeMode === "DISPLAY" ? "公共大屏" : "当前游戏"}</span><strong>房间 {activeRoom.code}</strong><small>{activeRoom.state === "LOBBY" ? "尚未开局，可以安全退出并更换房间" : "本局仍在进行，身份和座位已为你保留"}</small></div>
           <div><Button onClick={onResume}>继续当前房间</Button>{canLeave && onLeave ? <Button variant="quiet" onClick={onLeave} disabled={busy}>{busy ? "正在退出…" : activeMode === "DISPLAY" ? "退出大屏" : "退出并更换房间"}</Button> : null}</div>

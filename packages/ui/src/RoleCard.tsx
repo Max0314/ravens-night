@@ -24,7 +24,7 @@ export function RoleCard({ name, alignment, ability, portraitUrl, portraitPositi
   return (
     <article className="rn-role-card">
       <div className="rn-role-card__portrait-wrap">
-        <div className="rn-role-card__portrait" role="img" aria-label={`${name}角色立绘`} style={{ backgroundImage: `url(${portraitUrl})`, backgroundPosition: portraitPosition }} />
+        <RolePortrait className="rn-role-card__portrait" label={`${name}角色立绘`} url={portraitUrl} position={portraitPosition} />
         <div className="rn-role-card__fade" />
       </div>
       <div className="rn-role-card__copy">
@@ -36,4 +36,10 @@ export function RoleCard({ name, alignment, ability, portraitUrl, portraitPositi
       </div>
     </article>
   );
+}
+
+/** The source atlas is 1500 × 844 (3 × 2). SVG crops without stretching faces. */
+export function RolePortrait({ url, position = "50% 50%", label, className }: { url: string; position?: string; label: string; className?: string }) {
+  const [x = 50, y = 50] = position.split(" ").map(parseFloat);
+  return <svg {...(className ? { className } : {})} role="img" aria-label={label} viewBox={`${x * 10} ${y * 4.22} 500 422`} preserveAspectRatio="xMidYMid slice"><image href={url} width="1500" height="844" /></svg>;
 }

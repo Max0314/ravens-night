@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { FIRST_NIGHT_ORDER, OTHER_NIGHT_ORDER } from "../night/order.js";
 import { ROLE_CATALOG, rolesByType } from "./catalog.js";
 
 describe("beginner role catalog", () => {
@@ -17,4 +18,10 @@ describe("beginner role catalog", () => {
       expect(role.beginnerTip.length).toBeGreaterThan(8);
     }
   });
+});
+
+
+test("night ordering places protection and death before subsequent information", () => {
+  expect(FIRST_NIGHT_ORDER).toEqual(["poisoner", "washerwoman", "librarian", "investigator", "chef", "empath", "fortune_teller", "butler", "spy"]);
+  expect(OTHER_NIGHT_ORDER).toEqual(["poisoner", "monk", "imp", "ravenkeeper", "undertaker", "empath", "fortune_teller", "butler", "spy"]);
 });
