@@ -1,0 +1,161 @@
+{
+  "createdAt": "2026-09-29",
+  "group": "shadow",
+  "artDirection": "A · dark refined classical oil, copper-gold Gothic arch",
+  "authorization": "User selected entire A direction",
+  "generatedRoleCount": 6,
+  "generationCalls": 7,
+  "referenceImagesInspected": [
+    "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-washerwoman.png",
+    "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-slayer.png",
+    "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-ravenkeeper.png"
+  ],
+  "imageEditing": "Built-in referenced_image_paths only; no CLI or post-processing of original pixels",
+  "images": [
+    {
+      "id": "drunk",
+      "name": "酒鬼",
+      "desc": "A tired ordinary male town laborer aged 52, stocky broad shoulders and a round weathered ruddy face, short thinning sandy-brown hair, clean-shaven cheeks, heavy tired grey eyes, visibly distinct from the hunter in the reference. Plain rumpled navy wool waistcoat over a cream collarless shirt, an old charcoal coat loosely worn. One hand holds a small pewter hip flask upright near his waist; the other rests naturally against a tavern timber ledge. Subtle melancholy and self-doubt, not a comic drunk, not caricatured or stumbling. No visible alcohol branding.",
+      "setting": "Outside a quiet Victorian tavern doorway, rain-dark stone and a warm window in the deep blue night.",
+      "reference": "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-slayer.png",
+      "prompt": "Use case: style-transfer, derived character portrait.\nInput image: the supplied A-direction hunter portrait is the EDIT DERIVATION BASE for visual style, palette, thin copper-gold Gothic arch frame, relative scale and vertical composition. Preserve those invariants. Replace the depicted person's identity, face, hair, costume, profession, props and background with the NEW character below. Do not keep the hunter's face, gun, scarf or equipment.\nNew subject: A tired ordinary male town laborer aged 52, stocky broad shoulders and a round weathered ruddy face, short thinning sandy-brown hair, clean-shaven cheeks, heavy tired grey eyes, visibly distinct from the hunter in the reference. Plain rumpled navy wool waistcoat over a cream collarless shirt, an old charcoal coat loosely worn. One hand holds a small pewter hip flask upright near his waist; the other rests naturally against a tavern timber ledge. Subtle melancholy and self-doubt, not a comic drunk, not caricatured or stumbling. No visible alcohol branding.\nBackground replacement: Outside a quiet Victorian tavern doorway, rain-dark stone and a warm window in the deep blue night.\nStyle invariants: A-direction dark refined classical oil portrait, meticulously painted realistic mature face, tactile worn wool and metal, subdued deep midnight blue-black and charcoal with restrained old copper-gold and warm ivory. Thin antiqued Gothic pointed arch frame at all outer edges, same quiet sophistication as input, neither etched-paper watercolor nor flat Art Deco.\nComposition: one adult human only, approximately 3:4 vertical, head to upper thighs, entire head contained with generous top margin; top of head around 6-12% image height, eyes around 20-25%; both hands and occupation props clearly in frame. Readable face and hands in the midtones, dark atmospheric background. Anatomically believable hands, no extra fingers.\nConstraints: no text, no lettering, no labels, no numbers, no logos, no UI, no watermark. No Chinese or East Asian traditional costume, hair ornaments or architecture. No anime, cartoon, modern fashion, science fiction, blood or gore. Exactly one finished portrait, no montage.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-183f855a-24d1-417e-9a91-be66c779f16d.png",
+      "output": "originals/drunk.png",
+      "generator": "built-in image_gen.imagegen",
+      "qa": {
+        "method": "view_image inspection of final workspace file",
+        "passed": true,
+        "faceVisible": true,
+        "headUncropped": true,
+        "handsAndPropsVisible": true,
+        "westernVictorianCostume": true,
+        "aStyleFrameAndPalette": true,
+        "noTextUIOrWatermark": true,
+        "noGore": true,
+        "notes": "疲惫中年壮实体型与圆脸明显区别于猎魔人；锡酒壶及自然倚靠手可辨。没有醉汉夸张漫画表情。"
+      }
+    },
+    {
+      "id": "poisoner",
+      "name": "投毒者",
+      "desc": "An elegant male apothecary aged 34 with a slender build, smooth clean-shaven narrow face, pronounced cheekbones, light olive skin, straight dark hair neatly side-parted, fine arched eyebrows and observant brown eyes. Restrained black Victorian frock coat, muted dark sage waistcoat and cream cravat. Holds one tiny stoppered green-glass medicine vial delicately at mid-chest in a plausible hand; the other hand supports a small unlabelled brass apothecary box at waist height. Quiet professional concentration, neither grinning nor villainously red-eyed, no skull emblems, no magical glow.",
+      "setting": "A shadowed Victorian apothecary interior with indistinct glass bottles, aged oak shelves and one candle, a narrow Gothic window showing night.",
+      "reference": "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-slayer.png",
+      "prompt": "Use case: style-transfer, derived character portrait.\nInput image: the supplied A-direction hunter portrait is the EDIT DERIVATION BASE for visual style, palette, thin copper-gold Gothic arch frame, relative scale and vertical composition. Preserve those invariants. Replace the depicted person's identity, face, hair, costume, profession, props and background with the NEW character below. Do not keep the hunter's face, gun, scarf or equipment.\nNew subject: An elegant male apothecary aged 34 with a slender build, smooth clean-shaven narrow face, pronounced cheekbones, light olive skin, straight dark hair neatly side-parted, fine arched eyebrows and observant brown eyes. Restrained black Victorian frock coat, muted dark sage waistcoat and cream cravat. Holds one tiny stoppered green-glass medicine vial delicately at mid-chest in a plausible hand; the other hand supports a small unlabelled brass apothecary box at waist height. Quiet professional concentration, neither grinning nor villainously red-eyed, no skull emblems, no magical glow.\nBackground replacement: A shadowed Victorian apothecary interior with indistinct glass bottles, aged oak shelves and one candle, a narrow Gothic window showing night.\nStyle invariants: A-direction dark refined classical oil portrait, meticulously painted realistic mature face, tactile worn wool and metal, subdued deep midnight blue-black and charcoal with restrained old copper-gold and warm ivory. Thin antiqued Gothic pointed arch frame at all outer edges, same quiet sophistication as input, neither etched-paper watercolor nor flat Art Deco.\nComposition: one adult human only, approximately 3:4 vertical, head to upper thighs, entire head contained with generous top margin; top of head around 6-12% image height, eyes around 20-25%; both hands and occupation props clearly in frame. Readable face and hands in the midtones, dark atmospheric background. Anatomically believable hands, no extra fingers.\nConstraints: no text, no lettering, no labels, no numbers, no logos, no UI, no watermark. No Chinese or East Asian traditional costume, hair ornaments or architecture. No anime, cartoon, modern fashion, science fiction, blood or gore. Exactly one finished portrait, no montage.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-3f65c3f9-6af2-4231-b68d-f7788afdffb7.png",
+      "output": "originals/poisoner.png",
+      "generator": "built-in image_gen.imagegen",
+      "qa": {
+        "method": "view_image inspection of final workspace file",
+        "passed": true,
+        "faceVisible": true,
+        "headUncropped": true,
+        "handsAndPropsVisible": true,
+        "westernVictorianCostume": true,
+        "aStyleFrameAndPalette": true,
+        "noTextUIOrWatermark": true,
+        "noGore": true,
+        "notes": "年轻清瘦男性药剂师，绿玻璃小瓶、黄铜药盒与药房背景清楚；无骷髅标记、红眼或魔法荧光。"
+      }
+    },
+    {
+      "id": "spy",
+      "name": "间谍",
+      "desc": "A discreet female intelligence clerk aged 31 with warm brown skin, oval face, dark intent almond-shaped eyes, black hair pinned in a modest Victorian low coil, no headdress or ornaments. A modest charcoal tailored wool walking jacket over a pale high-collared blouse and muted slate skirt, a small simple brooch. She carries a closed worn leather ledger tucked under one arm, no visible writing, and one small sealed folded letter in her other hand at waist level. Calm alert stance, subtle sidelong attention, not sexualized, not a modern spy in latex, no weapon.",
+      "setting": "A secluded Gothic municipal archive corridor, rain visible beyond a narrow arched window, scattered indistinct shelves and warm lamplight.",
+      "reference": "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-washerwoman.png",
+      "prompt": "Use case: style-transfer, derived character portrait.\nInput image: the supplied A-direction washerwoman portrait is the EDIT DERIVATION BASE for visual style, palette, thin copper-gold Gothic arch frame, relative scale and vertical composition. Preserve those invariants. Replace the depicted person's identity, face, hair, costume, profession, props and background with the NEW character below. Do not keep the washerwoman's face, bonnet, apron, laundry or basin.\nNew subject: A discreet female intelligence clerk aged 31 with warm brown skin, oval face, dark intent almond-shaped eyes, black hair pinned in a modest Victorian low coil, no headdress or ornaments. A modest charcoal tailored wool walking jacket over a pale high-collared blouse and muted slate skirt, a small simple brooch. She carries a closed worn leather ledger tucked under one arm, no visible writing, and one small sealed folded letter in her other hand at waist level. Calm alert stance, subtle sidelong attention, not sexualized, not a modern spy in latex, no weapon.\nBackground replacement: A secluded Gothic municipal archive corridor, rain visible beyond a narrow arched window, scattered indistinct shelves and warm lamplight.\nStyle invariants: A-direction dark refined classical oil portrait, meticulously painted realistic mature face, tactile worn wool and metal, subdued deep midnight blue-black and charcoal with restrained old copper-gold and warm ivory. Thin antiqued Gothic pointed arch frame at all outer edges, same quiet sophistication as input, neither etched-paper watercolor nor flat Art Deco.\nComposition: one adult human only, approximately 3:4 vertical, head to upper thighs, entire head contained with generous top margin; top of head around 6-12% image height, eyes around 20-25%; both hands and occupation props clearly in frame. Readable face and hands in the midtones, dark atmospheric background. Anatomically believable hands, no extra fingers.\nConstraints: no text, no lettering, no labels, no numbers, no logos, no UI, no watermark. No Chinese or East Asian traditional costume, hair ornaments or architecture. No anime, cartoon, modern fashion, science fiction, blood or gore. Exactly one finished portrait, no montage.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-05af7669-6a36-4c02-b05c-b7a22c0fbf7a.png",
+      "output": "originals/spy.png",
+      "generator": "built-in image_gen.imagegen",
+      "qa": {
+        "method": "view_image inspection of final workspace file",
+        "passed": true,
+        "faceVisible": true,
+        "headUncropped": true,
+        "handsAndPropsVisible": true,
+        "westernVictorianCostume": true,
+        "aStyleFrameAndPalette": true,
+        "noTextUIOrWatermark": true,
+        "noGore": true,
+        "notes": "深肤色年轻成年女性，低调档案员衣装、封口信和无字账册可辨；脸、双手、道具未裁切。"
+      }
+    },
+    {
+      "id": "scarlet_woman",
+      "name": "猩红女郎",
+      "desc": "A mature sophisticated woman aged 42 with pale warm skin, broad diamond-shaped face, amber eyes, thick wavy auburn hair pinned in a low Western Victorian updo, a few loose curls. Wears an elegant deep oxblood-red Victorian silk dress with a high modest collar and long sleeves, a dark lace shoulder shawl, understated garnet pendant. One hand rests on a folded dark-red silk fan held at waist level, the other lightly touches a simple ring. Self-possessed ambiguous expression, dignified and mysterious; not a seductress costume, no horns, no red eyes, no blood.",
+      "setting": "A dim old European townhouse vestibule, antique mirror and dark burgundy curtains with a narrow window overlooking a rain-dark Gothic street.",
+      "reference": "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-production-a-2026-09-29\\originals\\scarlet_woman.png",
+      "prompt": "Use case: precise-object-edit. The provided image is the EDIT TARGET. Make one targeted correction: replace only this mature woman's facial identity so she is decisively a different person from the existing slim oval-faced washerwoman. New face: mature woman age 45, broad square cheek structure, rounded full cheeks, short broad nose with a slightly upturned tip, wide-set amber eyes under straight softly arched brows, visibly fuller lower lip, small rounded chin, warm pale skin with no freckles. Keep her dignified composed expression, not smiling. Keep auburn pinned-up hair but simplify the curl around her cheek so the new face reads clearly. Preserve EXACTLY the deep oxblood Victorian dress, pendant, shawl, folded fan, ring, both anatomically correct hands, pose, camera scale, lighting, dark classical oil-paint style, thin copper-gold Gothic arch frame, background, aspect ratio. Do not change her clothing or age into a youthful woman. No text, no UI, no new props, no blood. The only material change is a new distinct facial identity.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-2ba71237-3a0e-4b0d-8827-56c64e7acc82.png",
+      "output": "originals/scarlet_woman.png",
+      "originalDerivation": {
+        "prompt": "Use case: style-transfer, derived character portrait.\nInput image: the supplied A-direction washerwoman portrait is the EDIT DERIVATION BASE for visual style, palette, thin copper-gold Gothic arch frame, relative scale and vertical composition. Preserve those invariants. Replace the depicted person's identity, face, hair, costume, profession, props and background with the NEW character below. Do not keep the washerwoman's face, bonnet, apron, laundry or basin.\nNew subject: A mature sophisticated woman aged 42 with pale warm skin, broad diamond-shaped face, amber eyes, thick wavy auburn hair pinned in a low Western Victorian updo, a few loose curls. Wears an elegant deep oxblood-red Victorian silk dress with a high modest collar and long sleeves, a dark lace shoulder shawl, understated garnet pendant. One hand rests on a folded dark-red silk fan held at waist level, the other lightly touches a simple ring. Self-possessed ambiguous expression, dignified and mysterious; not a seductress costume, no horns, no red eyes, no blood.\nBackground replacement: A dim old European townhouse vestibule, antique mirror and dark burgundy curtains with a narrow window overlooking a rain-dark Gothic street.\nStyle invariants: A-direction dark refined classical oil portrait, meticulously painted realistic mature face, tactile worn wool and metal, subdued deep midnight blue-black and charcoal with restrained old copper-gold and warm ivory. Thin antiqued Gothic pointed arch frame at all outer edges, same quiet sophistication as input, neither etched-paper watercolor nor flat Art Deco.\nComposition: one adult human only, approximately 3:4 vertical, head to upper thighs, entire head contained with generous top margin; top of head around 6-12% image height, eyes around 20-25%; both hands and occupation props clearly in frame. Readable face and hands in the midtones, dark atmospheric background. Anatomically believable hands, no extra fingers.\nConstraints: no text, no lettering, no labels, no numbers, no logos, no UI, no watermark. No Chinese or East Asian traditional costume, hair ornaments or architecture. No anime, cartoon, modern fashion, science fiction, blood or gore. Exactly one finished portrait, no montage.",
+        "reference": "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-washerwoman.png",
+        "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-9c1f08f3-3559-4071-8804-b65de43898b3.png",
+        "reasonForRevision": "Initial face too similar to the washerwoman reference; replaced facial identity only."
+      },
+      "referenceSource": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-9c1f08f3-3559-4071-8804-b65de43898b3.png",
+      "generator": "built-in image_gen.imagegen",
+      "qa": {
+        "method": "view_image inspection of final workspace file",
+        "passed": true,
+        "faceVisible": true,
+        "headUncropped": true,
+        "handsAndPropsVisible": true,
+        "westernVictorianCostume": true,
+        "aStyleFrameAndPalette": true,
+        "noTextUIOrWatermark": true,
+        "noGore": true,
+        "notes": "针对初稿脸型与洗衣妇过近的问题进行一次面部身份修正；最终脸更宽、鼻更短、嘴唇更丰满。深红维多利亚礼服、蕾丝披肩、折扇与双手保持。"
+      }
+    },
+    {
+      "id": "baron",
+      "name": "男爵",
+      "desc": "An elderly nobleman aged 68, tall heavy-set build, broad square face, silver handlebar mustache and short neat silver hair combed back, shrewd hooded blue eyes. Wears a formal black Victorian tailcoat, discreet wine-colored waistcoat, ivory cravat, an antique gold signet ring, no military rank ribbons and no crown. His right hand rests on the brass sculpted head of a slim dark walking cane, his left holds a small ornate wax-seal stamp at waist level. Imposing but human expression; not a king, not supernatural.",
+      "setting": "An old manor library with carved dark oak, a dim warm lamp and tall Gothic leaded window behind, restrained inherited wealth.",
+      "reference": "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-ravenkeeper.png",
+      "prompt": "Use case: style-transfer, derived character portrait.\nInput image: the supplied A-direction portrait is the EDIT DERIVATION BASE for visual style, palette, thin copper-gold Gothic arch frame, relative scale and vertical composition. Preserve those invariants. Replace the depicted person's identity, face, hair, costume, profession, props and background with the NEW character below. Do not keep the reference person's face, beard, gun, bird, cage, scarf or equipment.\nNew subject: An elderly nobleman aged 68, tall heavy-set build, broad square face, silver handlebar mustache and short neat silver hair combed back, shrewd hooded blue eyes. Wears a formal black Victorian tailcoat, discreet wine-colored waistcoat, ivory cravat, an antique gold signet ring, no military rank ribbons and no crown. His right hand rests on the brass sculpted head of a slim dark walking cane, his left holds a small ornate wax-seal stamp at waist level. Imposing but human expression; not a king, not supernatural.\nBackground replacement: An old manor library with carved dark oak, a dim warm lamp and tall Gothic leaded window behind, restrained inherited wealth.\nStyle invariants: A-direction dark refined classical oil portrait, meticulously painted realistic mature face, tactile worn wool and metal, subdued deep midnight blue-black and charcoal with restrained old copper-gold and warm ivory. Thin antiqued Gothic pointed arch frame at all outer edges, same quiet sophistication as input, neither etched-paper watercolor nor flat Art Deco.\nComposition: one adult human only, approximately 3:4 vertical, head to upper thighs, entire head contained with generous top margin; top of head around 6-12% image height, eyes around 20-25%; both hands and occupation props clearly in frame. Readable face and hands in the midtones, dark atmospheric background. Anatomically believable hands, no extra fingers.\nConstraints: no text, no lettering, no labels, no numbers, no logos, no UI, no watermark. No Chinese or East Asian traditional costume, hair ornaments or architecture. No anime, cartoon, modern fashion, science fiction, blood or gore. Exactly one finished portrait, no montage.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-3e081827-9fb3-4222-89d2-2c1befd8a911.png",
+      "output": "originals/baron.png",
+      "generator": "built-in image_gen.imagegen",
+      "qa": {
+        "method": "view_image inspection of final workspace file",
+        "passed": true,
+        "faceVisible": true,
+        "headUncropped": true,
+        "handsAndPropsVisible": true,
+        "westernVictorianCostume": true,
+        "aStyleFrameAndPalette": true,
+        "noTextUIOrWatermark": true,
+        "noGore": true,
+        "notes": "年长宽脸银胡贵族，手杖与封蜡印章都在画面内；无王冠或夸张反派特征，肖像完整。"
+      }
+    },
+    {
+      "id": "imp",
+      "name": "小恶魔",
+      "desc": "An adult humanlike male demonic town stranger, apparent age 37, lean build, elongated angular face, dusky pale skin with natural subtle texture, short tousled black hair, clean-shaven, deep-set normal dark amber eyes without glow. Two small subtly backward-curving charcoal horns emerge from the hair at his temples, entirely visible within headroom. Wears an ordinary worn black Victorian long coat, dark plum waistcoat and aged ivory neckcloth. One hand holds a small unlit black candle in a plain brass holder at waist height, the other relaxed and anatomically human. Subtle unsettling poise, restrained low-key supernatural character, not a monster, no wings, no claws, no fangs, no armor, no pentagrams, no blood or gore.",
+      "setting": "An empty rain-soaked Gothic town passage with an iron gate and distant lantern, midnight blue shadows and a narrow pale sky.",
+      "reference": "C:\\Users\\陈鹏列\\.codex\\worktrees\\clocktower-redesign\\ravens-night\\artifacts\\character-directions-2026-09-27\\a-slayer.png",
+      "prompt": "Use case: style-transfer, derived character portrait.\nInput image: the supplied A-direction portrait is the EDIT DERIVATION BASE for visual style, palette, thin copper-gold Gothic arch frame, relative scale and vertical composition. Preserve those invariants. Replace the depicted person's identity, face, hair, costume, profession, props and background with the NEW character below. Do not keep the reference person's face, beard, gun, bird, cage, scarf or equipment.\nNew subject: An adult humanlike male demonic town stranger, apparent age 37, lean build, elongated angular face, dusky pale skin with natural subtle texture, short tousled black hair, clean-shaven, deep-set normal dark amber eyes without glow. Two small subtly backward-curving charcoal horns emerge from the hair at his temples, entirely visible within headroom. Wears an ordinary worn black Victorian long coat, dark plum waistcoat and aged ivory neckcloth. One hand holds a small unlit black candle in a plain brass holder at waist height, the other relaxed and anatomically human. Subtle unsettling poise, restrained low-key supernatural character, not a monster, no wings, no claws, no fangs, no armor, no pentagrams, no blood or gore.\nBackground replacement: An empty rain-soaked Gothic town passage with an iron gate and distant lantern, midnight blue shadows and a narrow pale sky.\nStyle invariants: A-direction dark refined classical oil portrait, meticulously painted realistic mature face, tactile worn wool and metal, subdued deep midnight blue-black and charcoal with restrained old copper-gold and warm ivory. Thin antiqued Gothic pointed arch frame at all outer edges, same quiet sophistication as input, neither etched-paper watercolor nor flat Art Deco.\nComposition: one adult human only, approximately 3:4 vertical, head to upper thighs, entire head contained with generous top margin; top of head around 6-12% image height, eyes around 20-25%; both hands and occupation props clearly in frame. Readable face and hands in the midtones, dark atmospheric background. Anatomically believable hands, no extra fingers.\nConstraints: no text, no lettering, no labels, no numbers, no logos, no UI, no watermark. No Chinese or East Asian traditional costume, hair ornaments or architecture. No anime, cartoon, modern fashion, science fiction, blood or gore. Exactly one finished portrait, no montage.",
+      "sourcePath": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e255-3f6b-71f3-8abb-95a0ebb99b6e\\exec-c52e5f3a-7377-4abd-9a6a-f3244dcf71cb.png",
+      "output": "originals/imp.png",
+      "generator": "built-in image_gen.imagegen",
+      "qa": {
+        "method": "view_image inspection of final workspace file",
+        "passed": true,
+        "faceVisible": true,
+        "headUncropped": true,
+        "handsAndPropsVisible": true,
+        "westernVictorianCostume": true,
+        "aStyleFrameAndPalette": true,
+        "noTextUIOrWatermark": true,
+        "noGore": true,
+        "notes": "成年人形小恶魔，弯角完整且未裁切，普通黑长外套、熄灭黑烛与黄铜烛台；无血腥、无发光红眼。"
+      }
+    }
+  ]
+}

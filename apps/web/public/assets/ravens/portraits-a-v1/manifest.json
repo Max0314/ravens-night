@@ -1,0 +1,470 @@
+{
+  "collection": "gothic-a-v1",
+  "selectedAt": "2026-09-29",
+  "encoder": "sharp 0.35.4",
+  "complete": true,
+  "portraits": [
+    {
+      "id": "washerwoman",
+      "name": "洗衣妇",
+      "sourceSha256": "5881c72d63032ec2031473ca57de1b7724abbea0c1a74e5db85b23e6d8d46c05",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "washerwoman.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 210224
+        },
+        {
+          "file": "washerwoman-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 13204
+        }
+      ]
+    },
+    {
+      "id": "librarian",
+      "name": "图书管理员",
+      "sourceSha256": "c06a7d474912fddb27cfbf266277182467cf5ea042f7d4380a03e9a9b77a42ab",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "librarian.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 190680
+        },
+        {
+          "file": "librarian-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 10928
+        }
+      ]
+    },
+    {
+      "id": "investigator",
+      "name": "调查员",
+      "sourceSha256": "56cb8e739a12523293f22ea4a19df063ecd04aa8056a1e1b520b6038656d1c4f",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "investigator.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 168876
+        },
+        {
+          "file": "investigator-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 10098
+        }
+      ]
+    },
+    {
+      "id": "chef",
+      "name": "厨师",
+      "sourceSha256": "6efaa889cf520f2bb461e3383a7b2be2a3dd70cd32c91a0e6f5fe4b6621c8ead",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "chef.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 252556
+        },
+        {
+          "file": "chef-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 15442
+        }
+      ]
+    },
+    {
+      "id": "empath",
+      "name": "共情者",
+      "sourceSha256": "14af4f9fb9476c5bc632901c39cfe4fb7ee087938def99f08e4a688f32c913fe",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "empath.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 168122
+        },
+        {
+          "file": "empath-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 9702
+        }
+      ]
+    },
+    {
+      "id": "fortune_teller",
+      "name": "占卜师",
+      "sourceSha256": "9a8a852216839c9a3290599390d58c37585634ea6cf53cfeed5c69575434aef7",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "fortune_teller.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 197662
+        },
+        {
+          "file": "fortune_teller-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 12466
+        }
+      ]
+    },
+    {
+      "id": "undertaker",
+      "name": "送葬者",
+      "sourceSha256": "f7247957045b1322816a54ab07669e0e5d894fc8dbc3959102206831839f7db8",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "undertaker.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 210122
+        },
+        {
+          "file": "undertaker-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 13736
+        }
+      ]
+    },
+    {
+      "id": "monk",
+      "name": "僧侣",
+      "sourceSha256": "c03be8a3ab9937d1dd2078d922d3397b435003b3a09337f5a3ec3e844c7c6659",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "monk.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 212530
+        },
+        {
+          "file": "monk-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 11282
+        }
+      ]
+    },
+    {
+      "id": "ravenkeeper",
+      "name": "守鸦人",
+      "sourceSha256": "9eb769065c6f1523ddf922c64ab9c9fedcaf03a561fdd178e9f6c5b307f8a293",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "ravenkeeper.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 199664
+        },
+        {
+          "file": "ravenkeeper-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 11552
+        }
+      ]
+    },
+    {
+      "id": "virgin",
+      "name": "处女",
+      "sourceSha256": "76c016fbb53e80f602e4938c6f53acddf429254b328c6bf6a9b7435481a29b87",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "virgin.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 212290
+        },
+        {
+          "file": "virgin-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 14958
+        }
+      ]
+    },
+    {
+      "id": "slayer",
+      "name": "猎魔人",
+      "sourceSha256": "ee52e51dca5a2472829ca3e9275e29d7ea6c0cb338dcd9700973e4da0380c612",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "slayer.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 150810
+        },
+        {
+          "file": "slayer-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 8802
+        }
+      ]
+    },
+    {
+      "id": "soldier",
+      "name": "士兵",
+      "sourceSha256": "fc70ff9ec2ef9ce824856e43c69b8d6ad46899f1580e4f7a44eb225f708285e4",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "soldier.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 172466
+        },
+        {
+          "file": "soldier-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 10506
+        }
+      ]
+    },
+    {
+      "id": "mayor",
+      "name": "镇长",
+      "sourceSha256": "d1380887d33983cf2a4023a22fc4c1a56937a44d84bfe129da9ce967247a3699",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "mayor.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 192324
+        },
+        {
+          "file": "mayor-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 11500
+        }
+      ]
+    },
+    {
+      "id": "butler",
+      "name": "管家",
+      "sourceSha256": "521e2ad7430e20b016b8af2dbf798afc82e20b6a813e995a42ea392f2d217310",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "butler.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 156486
+        },
+        {
+          "file": "butler-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 9358
+        }
+      ]
+    },
+    {
+      "id": "drunk",
+      "name": "酒鬼",
+      "sourceSha256": "adb55c98d61f7e6fec206128b79aa1b80c04c730a4b62936db7873a3461a91fd",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "drunk.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 186470
+        },
+        {
+          "file": "drunk-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 10792
+        }
+      ]
+    },
+    {
+      "id": "recluse",
+      "name": "隐士",
+      "sourceSha256": "778a8ab8d4b2b75393cd65a923c91f760a7e7c089aada484b8d9402efe909440",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "recluse.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 253938
+        },
+        {
+          "file": "recluse-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 13900
+        }
+      ]
+    },
+    {
+      "id": "saint",
+      "name": "圣徒",
+      "sourceSha256": "8cbfda6d1c6f8374f60132ea768a4e6d6bdf258d604c82678973429f73e752b6",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "saint.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 172052
+        },
+        {
+          "file": "saint-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 10294
+        }
+      ]
+    },
+    {
+      "id": "poisoner",
+      "name": "投毒者",
+      "sourceSha256": "30df55e9d8b7f1ccc2cf657c9f62112c7b73af374367b617726a4d52fef27b5f",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "poisoner.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 151184
+        },
+        {
+          "file": "poisoner-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 9702
+        }
+      ]
+    },
+    {
+      "id": "spy",
+      "name": "间谍",
+      "sourceSha256": "d6d5ebbe83639f7a7c7fe3265dd3ae825b51deb9c306de7e346ec6e88cbbc937",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "spy.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 171490
+        },
+        {
+          "file": "spy-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 11040
+        }
+      ]
+    },
+    {
+      "id": "scarlet_woman",
+      "name": "猩红女郎",
+      "sourceSha256": "f1705b5fa0796abbe6cc4113df56ff80bff41ba34f19b76938eccfe2682119af",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "scarlet_woman.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 181464
+        },
+        {
+          "file": "scarlet_woman-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 12568
+        }
+      ]
+    },
+    {
+      "id": "baron",
+      "name": "男爵",
+      "sourceSha256": "6f893dbf46572df9bbdc5ff4bfdef845748bde67fa0ce9be54002114aa3193a6",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "baron.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 177692
+        },
+        {
+          "file": "baron-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 10762
+        }
+      ]
+    },
+    {
+      "id": "imp",
+      "name": "小恶魔",
+      "sourceSha256": "82359c0de4ca95e3c15c5ed31ac9d9ac75a1871d09b3840d52ef7e5f64c594bf",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "variants": [
+        {
+          "file": "imp.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 151626
+        },
+        {
+          "file": "imp-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 9530
+        }
+      ]
+    }
+  ]
+}

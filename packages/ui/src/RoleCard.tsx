@@ -6,11 +6,12 @@ export interface RoleCardProps {
   alignment: string;
   ability: string;
   portraitUrl: string;
+  portraitSrcSet?: string;
   portraitPosition?: string;
   beginnerTip?: string;
 }
 
-export function RoleCard({ name, alignment, ability, portraitUrl, portraitPosition = "50% 50%", beginnerTip }: RoleCardProps) {
+export function RoleCard({ name, alignment, ability, portraitUrl, portraitSrcSet, portraitPosition = "50% 50%", beginnerTip }: RoleCardProps) {
   const [covered, setCovered] = useState(false);
   if (covered) {
     return (
@@ -24,7 +25,7 @@ export function RoleCard({ name, alignment, ability, portraitUrl, portraitPositi
   return (
     <article className="rn-role-card">
       <div className="rn-role-card__portrait-wrap">
-        <RolePortrait className="rn-role-card__portrait" label={`${name}角色立绘`} url={portraitUrl} position={portraitPosition} />
+        <RolePortrait className="rn-role-card__portrait" label={`${name}角色立绘`} url={portraitUrl} {...(portraitSrcSet ? { srcSet: portraitSrcSet } : {})} sizes="(max-width: 420px) 90vw, 390px" position={portraitPosition} />
         <div className="rn-role-card__fade" />
       </div>
       <div className="rn-role-card__copy">
@@ -38,8 +39,7 @@ export function RoleCard({ name, alignment, ability, portraitUrl, portraitPositi
   );
 }
 
-/** The source atlas is 1500 × 844 (3 × 2). SVG crops without stretching faces. */
-export function RolePortrait({ url, position = "50% 50%", label, className }: { url: string; position?: string; label: string; className?: string }) {
-  const [x = 50, y = 50] = position.split(" ").map(parseFloat);
-  return <svg {...(className ? { className } : {})} role="img" aria-label={label} viewBox={`${x * 10} ${y * 4.22} 500 422`} preserveAspectRatio="xMidYMid slice"><image href={url} width="1500" height="844" /></svg>;
+/** Individual portraits keep their natural proportions; no atlas coordinates. */
+export function RolePortrait({ url, position = "50% 50%", label, className, srcSet, sizes, loading = "eager" }: { url: string; position?: string; label: string; className?: string; srcSet?: string | undefined; sizes?: string; loading?: "eager" | "lazy" }) {
+  return <img className={className} src={url} srcSet={srcSet} sizes={sizes} alt={label} width={960} height={1280} loading={loading} decoding="async" draggable={false} style={{ objectPosition: position }} />;
 }

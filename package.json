@@ -9,12 +9,14 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "build": "pnpm -r --if-present build",
     "lint": "pnpm typecheck",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "art:build": "node scripts/build-portraits.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
     "@types/node": "latest",
     "esbuild": "^0.28.1",
+    "sharp": "0.35.4",
     "typescript": "latest",
     "vitest": "latest"
   }

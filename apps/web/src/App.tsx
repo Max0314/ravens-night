@@ -11,11 +11,13 @@ import { Login } from "./pages/Login.js";
 import { PlayerGame } from "./pages/PlayerGame.js";
 import { Tutorial } from "./pages/Tutorial.js";
 import { EffectsPreview } from "./pages/EffectsPreview.js";
+import { PortraitsPreview } from "./pages/PortraitsPreview.js";
 import type { PrivateReceipt } from "./components/EventStage.js";
 import { enableEffectsAudio, effectsAudioEnabled } from "./components/experience-audio.js";
 import { connectRoomFeed } from "./room-live.js";
 import "./styles/app.css";
 import "./styles/game-redesign.css";
+import "./styles/portraits.css";
 
 type Screen = "LOADING" | "LOGIN" | "HOME" | "CREATE" | "JOIN" | "LOBBY" | "TUTORIAL" | "GAME" | "DISPLAY";
 type ConnectionState = "ONLINE" | "OFFLINE" | "RECONNECTING";
@@ -23,7 +25,10 @@ interface StoredSession { roomCode: string; mode: "PLAYER" | "DISPLAY"; particip
 const SESSION_KEY = "ravens_room_session";
 const PROTECTED_SCREENS = new Set<Screen>(["LOBBY", "TUTORIAL", "GAME", "DISPLAY"]);
 
-export function App() { return new URLSearchParams(window.location.search).get("preview") === "effects" ? <EffectsPreview /> : <RoomApp />; }
+export function App() {
+  const preview = new URLSearchParams(window.location.search).get("preview");
+  return preview === "effects" ? <EffectsPreview /> : preview === "portraits" ? <PortraitsPreview /> : <RoomApp />;
+}
 
 function RoomApp() {
   const invitedRoomCode = readInvitedRoomCode();

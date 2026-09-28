@@ -7,11 +7,13 @@ import { roleArt } from "../role-art.js";
 
 export type GuideMode = "tutorial" | "roles" | "mine";
 
-export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownRole?: PrivateView["role"]; onClose: () => void }) {
+export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: GuideMode; ownRole?: PrivateView["role"]; initialRoleId?: string; onClose: () => void }) {
   const [activeMode, setActiveMode] = useState<GuideMode>(mode);
   const [step, setStep] = useState(0);
-  const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(ownRole?.roleId);
+  const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(initialRoleId ?? ownRole?.roleId);
   const dialogRef = useRef<HTMLElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
 
   useEffect(() => {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
@@ -21,13 +23,13 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
     document.documentElement.style.overflow = "hidden";
     dialogRef.current?.focus();
     const handleKeyboard = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { onClose(); return; }
+      if (event.key === "Escape") { closeRef.current(); return; }
       if (event.key !== "Tab" || !dialogRef.current) return;
       const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')];
       if (focusable.length === 0) { event.preventDefault(); return; }
       const first = focusable[0]!;
       const last = focusable.at(-1)!;
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     window.addEventListener("keydown", handleKeyboard);
@@ -37,7 +39,7 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
       document.documentElement.style.overflow = previousRootOverflow;
       previousFocus?.focus();
     };
-  }, [onClose]);
+  }, []);
 
   const selectedRole = beginnerRoles.find((role) => role.id === selectedRoleId);
   const selectedRoleArt = selectedRole ? roleArt(selectedRole.id) : undefined;
@@ -84,7 +86,7 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
       {activeMode === "roles" ? <div className="role-compendium">
         <div className="role-compendium__intro"><div><p>暗流涌动 · 22 个角色</p><h1>{selectedRole ? selectedRole.name : "选择角色查看规则"}</h1></div>{selectedRole ? <button type="button" onClick={() => setSelectedRoleId(undefined)}>返回全部</button> : null}</div>
         {selectedRole ? <article className="role-detail">
-          <RolePortrait className="role-detail__portrait" label={`${selectedRole.name}角色立绘`} url={selectedRoleArt!.portraitUrl} position={selectedRoleArt!.portraitPosition} />
+          <RolePortrait className="role-detail__portrait" label={`${selectedRole.name}角色立绘`} url={selectedRoleArt!.portraitUrl} srcSet={selectedRoleArt!.portraitSrcSet} sizes="(max-width: 820px) 90vw, 390px" position={selectedRoleArt!.portraitPosition} />
           <div className="role-detail__copy"><p className={`role-alignment role-alignment--${selectedRole.type === "MINION" || selectedRole.type === "DEMON" ? "evil" : "good"}`}>{roleTypeNames[selectedRole.type]} · {roleTypeGuidance[selectedRole.type]}</p>
           <h2>能力</h2><p>{selectedRole.summary}</p>
           <h2>第一次玩</h2><p>{selectedRole.beginnerTip}</p>
@@ -101,5 +103,5 @@ export function GuideOverlay({ mode, ownRole, onClose }: { mode: GuideMode; ownR
 
 function RoleIndexButton({ role, onSelect }: { role: (typeof beginnerRoles)[number]; onSelect: (roleId: string) => void }) {
   const art = roleArt(role.id);
-  return <button type="button" onClick={() => onSelect(role.id)}><RolePortrait className="role-index__portrait" label={`${role.name}角色缩略立绘`} url={art.portraitUrl} position={art.portraitPosition} /><span className="role-index__copy"><strong>{role.name}</strong><small>{role.summary}</small></span></button>;
+  return <button type="button" onClick={() => onSelect(role.id)}><RolePortrait className="role-index__portrait" label={`${role.name}角色缩略立绘`} url={art.thumbnailUrl} loading="lazy" position={art.portraitPosition} /><span className="role-index__copy"><strong>{role.name}</strong><small>{role.summary}</small></span></button>;
 }

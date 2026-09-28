@@ -1,0 +1,206 @@
+{
+  "group": "town",
+  "date": "2026-09-29",
+  "art_direction": "A — dark classical oil-painted realism, gothic Victorian town, thin copper-gold pointed arch, 3:4 portrait",
+  "generation_mode": "built-in imagegen, individual style-transfer derivative per character",
+  "tool": "tools.image_gen__imagegen",
+  "reference_policy": "References were inspected through view_image; used solely for style, palette, frame and composition, with new character identities, costume, props and settings.",
+  "roles": [
+    {
+      "role_id": "librarian",
+      "role_name": "图书管理员",
+      "final_prompt": "Use case: style-transfer. Asset type: one finished character portrait for the gothic Victorian village game Raven's Night.\nInput image 1 is the existing A-style washerwoman portrait, a STYLE, FRAME, LIGHTING and COMPOSITION reference only. Create a new independent character by replacing the woman's identity, face, clothes, props, and setting, while faithfully keeping the same dark classical oil-painted realism, finely textured real materials, muted deep blue-black and smoke-grey colors with restrained aged copper-gold, and the thin antique copper-gold pointed arch frame. Do not copy the washerwoman's face.\nSubject: the town librarian, a perceptive 45-year-old adult woman with an oval face, brown eyes, delicate wire-rim spectacles, and dark auburn hair streaked at the temples in a neat bun. High-neck charcoal Victorian dress with an understated worn velvet jacket. At waist level she carefully cradles a thick antique leather-bound book with one hand under the book and the other resting on its closed cover. Both hands clear and natural.\nScene: the dim old town library, worn book spines and a distant arched window, subtle warm lamplight on her face, hands and book, cool blue night beyond. No legible writing.\nComposition: exactly one person, portrait 3:4, visible down to mid-thigh; full head with generous air above, top of head around 8 percent, eyes near 22 percent of canvas. Face and hands are detailed and clearly readable at mobile size. Book and both hands fully inside the frame. Same level of lifelike aged oil-painted detail as reference, sober historical gothic atmosphere.\nAvoid: modern garments, East Asian historical clothing, fantasy armor, anime, line engraving, flat geometry, parchment background, cropped head, hidden hands, extra limbs, blood, visible writing, labels, numbers, UI, watermark.",
+      "references": [
+        {
+          "path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-directions-2026-09-27/a-washerwoman.png",
+          "purpose": "style, palette, frame and composition reference; identity replaced",
+          "viewed_before_generation": true
+        }
+      ],
+      "generation_tool": "tools.image_gen__imagegen",
+      "original_output_path": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e927-23be-7990-8d1a-4585b2d6c9bd\\exec-cc5415ae-7f3f-4379-aee8-48a07f50e640.png",
+      "saved_path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-production-a-2026-09-29/originals/librarian.png",
+      "visual_qa": {
+        "tool": "tools.view_image",
+        "status": "passed",
+        "notes": "Glasses, aged book and library identify role; both hands naturally support book; full head and lower portrait contained; face, hands and copper-gold arch clear.",
+        "checks": [
+          "role identity and occupational props",
+          "face and hands",
+          "full head / hand / prop framing",
+          "A-series painted realism and antique arch",
+          "no text UI, gore or modern costume"
+        ],
+        "regeneration_required": false
+      }
+    },
+    {
+      "role_id": "investigator",
+      "role_name": "调查员",
+      "final_prompt": "Use case: style-transfer. Produce ONE finished portrait, not a sheet, for the gothic Victorian village game Raven's Night.\nInput image 1 is the A-style slayer portrait, used ONLY as a style/composition/antique-frame reference. Preserve the dark classical oil-painted lifelike realism, tangible worn fabrics and metals, deep blue-black/charcoal palette and restrained bronze-gold pointed arch border. REPLACE the person entirely with a visibly different character and a different setting.\nSubject: a 35-year-old male investigator, clean-shaven, long narrow face, prominent straight nose, pale gray eyes and straight short dark blond hair parted to one side. He looks alert and thoughtful, not glamorous. A fitted charcoal frock coat over a plain muted grey waistcoat and off-white high collar, no gun, no shoulder strap. His right hand holds a brass magnifying glass upright near his lower chest; his left holds a small open leather field notebook at waist height, with its page facing mostly upward and no legible text. Both hands natural, separate and fully visible.\nSetting: a modest investigator's study in the same Victorian town, worn oak desk and faded map shapes without writing, a cool arched night window and small warm oil lamp. Leave him clearly separated from the background.\nFraming: 3:4 vertical image; single person head to mid-thigh, entire head with top at about 8 percent of canvas and eyes at about 22 percent. Clear face and hands, props completely inside the border, readable midtones for phone screens. Match the reference's fine realistic painted texture, period authenticity, quiet gothic mystery and thin copper-gold arch frame.\nAvoid the reference man's face, stubble or tousled grey hair; avoid modern clothes, modern police badges, East Asian costume, anime, engraving, flat geometric art, unframed cinema still, parchment, extra fingers or limbs, cropped hands or head, blood, labels, names, letters, UI, watermark.",
+      "references": [
+        {
+          "path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-directions-2026-09-27/a-slayer.png",
+          "purpose": "style, palette, frame and composition reference; identity replaced",
+          "viewed_before_generation": true
+        }
+      ],
+      "generation_tool": "tools.image_gen__imagegen",
+      "original_output_path": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e927-23be-7990-8d1a-4585b2d6c9bd\\exec-e480ebc3-366f-4c4b-80f1-58f9689d6af4.png",
+      "saved_path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-production-a-2026-09-29/originals/investigator.png",
+      "visual_qa": {
+        "tool": "tools.view_image",
+        "status": "passed",
+        "notes": "Younger narrow-faced clean-shaven man, brass magnifying glass and notebook distinguish role; hands and props natural and inside border; no readable labels; dark A-series materials preserved.",
+        "checks": [
+          "role identity and occupational props",
+          "face and hands",
+          "full head / hand / prop framing",
+          "A-series painted realism and antique arch",
+          "no text UI, gore or modern costume"
+        ],
+        "regeneration_required": false
+      }
+    },
+    {
+      "role_id": "chef",
+      "role_name": "厨师",
+      "final_prompt": "Use case: style-transfer. Create ONE finished gothic Victorian character portrait in the identical A-series art direction.\nInput image 1 is an antique-framed portrait of the ravenkeeper. It is solely a reference for the oil-painted realism, deep blue-black charcoal palette, warm subtle brass highlights, credible weathered materials, precise human anatomy and thin antique copper-gold pointed arch frame. Replace all ravenkeeper-specific features; no birds, cages, keys or similar face.\nNew subject: a 55-year-old male town chef, wide stocky build, broad round kind but weathered face, thick dark eyebrows, ruddy cheeks, balding head with close-cropped gray side hair and a small salt-and-pepper moustache. Simple cream cotton work shirt with sleeves neatly rolled, dark wool waistcoat, stained oatmeal linen apron tied at waist, no modern chef uniform or tall hat. His right hand holds a long copper soup ladle near the waist. His left hand naturally grips one handle of a small well-worn copper cooking pot resting on a waist-high wooden preparation table, all fingers and both props visible. Steady, patient expression.\nSetting: the same old western European gothic town, inside a modest stone kitchen at night, dark hearth, hanging copper pans, a little warm fire glow and cool blue light from a small arched window. No food glamour, no gore.\nComposition: vertical 3:4, one person visible down to mid-thigh, full head at 8 percent of the canvas, eye line around 22 percent, wide shoulders do not touch frame, both hands and pot/laddle inside frame, keep face and hands well lit for mobile viewing. Maintain the reference's finely textured lifelike classical painted character style and restrained thin copper-gold arch border.\nNo written text, labels, title, UI, watermark, modern clothes, East Asian robes, anime, flat art, parchment etching, modern photographic cinematic crop, extra people, distorted anatomy, cropped head or hands.",
+      "references": [
+        {
+          "path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-directions-2026-09-27/a-ravenkeeper.png",
+          "purpose": "style, palette, frame and composition reference; identity replaced",
+          "viewed_before_generation": true
+        }
+      ],
+      "generation_tool": "tools.image_gen__imagegen",
+      "original_output_path": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e927-23be-7990-8d1a-4585b2d6c9bd\\exec-164ebdf3-9b2e-4ef1-a80b-470db61ed9bb.png",
+      "saved_path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-production-a-2026-09-29/originals/chef.png",
+      "visual_qa": {
+        "tool": "tools.view_image",
+        "status": "passed",
+        "notes": "Broad older bald man differs in silhouette and face; linen apron, copper ladle and pot clearly identify role; face and both hands readable; no anatomical defect seen.",
+        "checks": [
+          "role identity and occupational props",
+          "face and hands",
+          "full head / hand / prop framing",
+          "A-series painted realism and antique arch",
+          "no text UI, gore or modern costume"
+        ],
+        "regeneration_required": false
+      }
+    },
+    {
+      "role_id": "undertaker",
+      "role_name": "送葬者",
+      "final_prompt": "Use case: style-transfer. One finished character portrait in the A-series for Raven's Night, gothic Victorian town. NOT a sheet.\nInput image 1 is the A-style washerwoman. Use it only for its lifelike dark classical oil painting, believable worn fabrics and stone, blue-black smoke-grey palette, warm copper light, thin aged copper-gold pointed arch frame, and portrait scale. Entirely replace the person, clothes, props and setting. Do not reuse her face or hair.\nSubject: a dignified 58-year-old female undertaker with a distinctly long angular face, silver-gray hair swept tightly back, fine lines around level blue-gray eyes and a composed, solemn expression. She wears a structured black Victorian mourning coat over a plain high-neck dress and a modest black bonnet with a gauze veil falling BEHIND her shoulders, leaving her face wholly clear. Black fitted gloves. At waist level one gloved hand holds two long-stemmed white lilies; her other gloved hand holds a simple folded wooden measuring rule vertically against her coat. Flowers, measuring rule and hands are distinct and fully inside the portrait. No body or coffin.\nSetting: a quiet stone churchyard gate and the outer workshop door of the village funeral house at dusk, distant old gravestones as unlettered shapes, restrained warm lantern light, cool atmospheric blue-black Gothic architecture. Sober humane dignity, not a witch.\nFraming: single adult character, 3:4 portrait from full head down to mid-thigh; bonnet top at about 8 percent and eyes about 22 percent. Enough breathing room above head, face and hands lit clearly, middle values readable on a phone. Thin copper-gold arch border matching input, detailed oil-painted realism, no diffuse unframed cinematic blur.\nAvoid modern fashion, crowns, extravagant witch hats, demonic eyes, fantasy magic, East Asian ancient costume, anime, engraving on parchment, flat geometry, extra fingers, hidden/cropped face or hands, gore, readable text, letters, names, titles, UI or watermark.",
+      "references": [
+        {
+          "path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-directions-2026-09-27/a-washerwoman.png",
+          "purpose": "style, palette, frame and composition reference; identity replaced",
+          "viewed_before_generation": true
+        }
+      ],
+      "generation_tool": "tools.image_gen__imagegen",
+      "original_output_path": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e927-23be-7990-8d1a-4585b2d6c9bd\\exec-ee3bc692-c4c9-4c71-8027-ab5094ef19ec.png",
+      "saved_path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-production-a-2026-09-29/originals/undertaker.png",
+      "visual_qa": {
+        "tool": "tools.view_image",
+        "status": "passed",
+        "notes": "Gray-haired mature woman in black bonnet and veil, white lilies and wooden rule; veil leaves face clear; gloved hands, head and props inside frame; sober burial trade scene without gore.",
+        "checks": [
+          "role identity and occupational props",
+          "face and hands",
+          "full head / hand / prop framing",
+          "A-series painted realism and antique arch",
+          "no text UI, gore or modern costume"
+        ],
+        "regeneration_required": false
+      }
+    },
+    {
+      "role_id": "soldier",
+      "role_name": "士兵",
+      "final_prompt": "Use case: style-transfer. Create ONE character portrait in the A-series for the game Raven's Night.\nInput image 1, the A-style slayer, is a STYLE, FRAME and COMPOSITION reference only. Keep the fine dark classical oil-painted realism, tangible weathered textiles and metal, deep blue-black/charcoal colors, subtle antique copper-gold accents, thin ornate pointed-arch border. Replace the subject's identity, pose, clothes, props and scene completely, no copying the input man's face.\nNew subject: a 32-year-old female infantry soldier with medium-deep brown skin, a strong square jaw, broad nose, dark brown eyes and close-cropped tightly curly black hair. Calm capable expression, clearly an adult woman. She wears a worn dark navy western European 19th-century infantry tunic with modest brass buttons and a muted red standing collar, dark wool trousers, crossed weathered leather shoulder belts, and no modern equipment. Bareheaded so face and hair remain clear. At waist height her left hand cradles a dark old-fashioned infantry cap with plain brass trim; her right hand rests naturally on the leather belt buckle. Both hands are separately visible and anatomically clear. No weapon held, no gun, no modern insignia.\nScene: old village barracks exterior at night, arched stone gate, cobblestones and distant lamplit town windows; no other people. Slightly cool ambient light and warm light on face, hands and uniform details.\nComposition: vertical 3:4, one figure from full head to mid-thigh, head top at about 8 percent, eye line at about 22 percent, plenty of room within border. Face and hands sufficiently bright for mobile screens, no hidden/cropped props. Keep exact A-series level of classical realistic painting and fine copper-gold gothic arch framing.\nAvoid: contemporary tactical gear, camouflage, assault rifles, fantasy metal armor, sexualized uniform, medieval Asian costume, anime, engraving or parchment, flat geometry, unframed film still, copied reference face, extra limbs, extra fingers, blood, words, labels, numbers, UI or watermark.",
+      "references": [
+        {
+          "path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-directions-2026-09-27/a-slayer.png",
+          "purpose": "style, palette, frame and composition reference; identity replaced",
+          "viewed_before_generation": true
+        }
+      ],
+      "generation_tool": "tools.image_gen__imagegen",
+      "original_output_path": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e927-23be-7990-8d1a-4585b2d6c9bd\\exec-919be702-1d7a-4f7c-9709-16930ce57ab0.png",
+      "saved_path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-production-a-2026-09-29/originals/soldier.png",
+      "visual_qa": {
+        "tool": "tools.view_image",
+        "status": "passed",
+        "notes": "Distinct short-curled brown-skinned adult woman, 19th-century infantry coat, crossed leather straps and cap; both hands clear; no modern weapons or tactical elements; antique arch retained.",
+        "checks": [
+          "role identity and occupational props",
+          "face and hands",
+          "full head / hand / prop framing",
+          "A-series painted realism and antique arch",
+          "no text UI, gore or modern costume"
+        ],
+        "regeneration_required": false
+      }
+    },
+    {
+      "role_id": "mayor",
+      "role_name": "镇长",
+      "final_prompt": "Use case: style-transfer. Produce one final A-series character portrait for Raven's Night.\nReference input 1 is the A ravenkeeper. Use only the dark lifelike classical oil-painted technique, finely rendered real skin and aged fabrics/metals, midnight blue-black and smoke-gray palette, restrained warm copper-gold light, portrait proportions, and thin antique copper-gold pointed arch frame. Completely replace the subject and environment; no raven, cage, keys, long hair or beard copied from input.\nSubject: the mayor of the gothic Victorian town, a 62-year-old man of substantial build, a square full face, broad forehead, short neatly combed silver hair with receding temples, heavy eyebrows and clean-shaven cheeks. Dignified but slightly weary expression. A dark charcoal formal frock coat over a muted burgundy waistcoat, high white collar and a substantial aged brass civic chain of office resting across his chest with a plain round medallion bearing decorative shapes, no readable heraldic text. At waist level he holds a folded cream parchment charter secured by a deep red wax seal, supported clearly with both natural hands. Distinct identity, not the reference man's face.\nScene: the oak-panelled town council chamber, an old carved chair and gothic window behind him, a warm desk lamp and cool moonlit rooftops outside; polished worn wood, restrained civic dignity.\nComposition: 3:4 vertical, single full head to mid-thigh figure; top of head about 8 percent, eyes about 22 percent, all hands and document inside frame. Clear midtone lighting on face, chain, seal and hands readable on mobile. Thin copper-gold pointed arch border matching reference, rich detailed dark classical painting with realistic physical texture.\nAvoid royal crowns, fur cloak, military medals, modern suit, modern office, East Asian historical clothing, anime, engraving/parchment art style, flat geometric art, oversaturated gold, unframed cinematic image, extra people, malformed hands, blood, visible lettering, names, words, UI, watermark.",
+      "references": [
+        {
+          "path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-directions-2026-09-27/a-ravenkeeper.png",
+          "purpose": "style, palette, frame and composition reference; identity replaced",
+          "viewed_before_generation": true
+        }
+      ],
+      "generation_tool": "tools.image_gen__imagegen",
+      "original_output_path": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e927-23be-7990-8d1a-4585b2d6c9bd\\exec-f8ae12c2-959d-40e5-909f-87625018ccff.png",
+      "saved_path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-production-a-2026-09-29/originals/mayor.png",
+      "visual_qa": {
+        "tool": "tools.view_image",
+        "status": "passed",
+        "notes": "Older substantial silver-haired clean-shaven man; civic chain and wax-sealed document legible as objects; hands naturally support document; face and chain readable in dark council chamber.",
+        "checks": [
+          "role identity and occupational props",
+          "face and hands",
+          "full head / hand / prop framing",
+          "A-series painted realism and antique arch",
+          "no text UI, gore or modern costume"
+        ],
+        "regeneration_required": false
+      }
+    },
+    {
+      "role_id": "butler",
+      "role_name": "管家",
+      "final_prompt": "Use case: style-transfer. Create ONE finished character portrait for the A-series of Raven's Night.\nInput image 1 is the existing A slayer portrait: use ONLY as reference for realistic dark classical oil painting, precise tactile wool and metals, deep midnight-blue/charcoal colors with restrained copper-gold highlights, the 3:4 portrait scale and thin ornate antique copper-gold pointed arch frame. Completely replace the person, pose, props, clothing and setting. Do not copy the slayer's face.\nNew subject: a 50-year-old male butler, tall and lean, distinct long oval face with high forehead, thin lips, dark brown eyes, a receding hairline and very short combed-back chestnut hair graying at the sides. Entirely clean-shaven, composed reserved expression. He wears a correct Victorian black tailcoat with a plain dark waistcoat, white stiff wing collar and small white bow tie; crisp white gloves. At waist level he carries a modest polished antique silver serving tray with BOTH gloved hands supporting its two edges, fully visible fingers in a natural secure grip. The tray holds a small silver teapot and one porcelain teacup on a saucer, stable and neatly spaced. No alcohol required.\nScene: interior corridor of an old Gothic manor in the same town, dark oak panelling, candle wall sconce, distant arched doorway and a small cool night window. Warm light softly picks out his face, white gloves and silver tray without blowing out highlights.\nComposition: 3:4 portrait, exactly one adult person from whole head to mid-thigh; top of head about 8 percent, eyes about 22 percent, all of the tray and both hands contained within the frame. Detailed face and clear hands at phone size, textured sober classical oil-painted realism and thin aged copper-gold arch identical in spirit to the reference.\nAvoid modern tuxedo styling, restaurant uniform, black bow tie, modern tray or crockery, East Asian historical costume, anime, line engraving, parchment, flat geometry, unframed cinematic photo, copied reference face, moustache or beard, extra fingers, merged hands, cropped tray/head, blood, words, lettering, name, labels, UI, watermark.",
+      "references": [
+        {
+          "path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-directions-2026-09-27/a-slayer.png",
+          "purpose": "style, palette, frame and composition reference; identity replaced",
+          "viewed_before_generation": true
+        }
+      ],
+      "generation_tool": "tools.image_gen__imagegen",
+      "original_output_path": "C:\\Users\\陈鹏列\\.codex\\generated_images\\01a0e927-23be-7990-8d1a-4585b2d6c9bd\\exec-bb05506a-7c10-44eb-b276-dcfc67320521.png",
+      "saved_path": "C:/Users/陈鹏列/.codex/worktrees/clocktower-redesign/ravens-night/artifacts/character-production-a-2026-09-29/originals/butler.png",
+      "visual_qa": {
+        "tool": "tools.view_image",
+        "status": "passed",
+        "notes": "Lean mature receding-haired man with white bow tie, white gloves and silver tea tray; both hands grip tray edges naturally; teapot, cup and tray entirely visible; full head and frame intact.",
+        "checks": [
+          "role identity and occupational props",
+          "face and hands",
+          "full head / hand / prop framing",
+          "A-series painted realism and antique arch",
+          "no text UI, gore or modern costume"
+        ],
+        "regeneration_required": false
+      }
+    }
+  ]
+}
