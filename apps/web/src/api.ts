@@ -1,4 +1,5 @@
 import type { ExperienceEvent, StorytellerDecision } from "@ravens/contracts";
+import {roomSessionKey} from './account-context.js';
 export interface RoomParticipant { id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface GameView {
@@ -56,8 +57,11 @@ export interface PrivateView {
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) { super(message); this.name = "ApiError"; }
 }
+let accountGeneration=0;
+export function resetAccountContext(){accountGeneration++;}
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const generation=accountGeneration;
   const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode() });
   if (init?.method && init.method !== "GET") headers.set("x-command-id", crypto.randomUUID());
   new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
@@ -68,6 +72,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     try {
       const response = await fetch(url, options);
       const body = await response.json().catch((error: unknown) => { if (error instanceof TypeError) throw error; return { error: "服务器暂时无法响应，请稍后重试" }; }) as T & { error?: string };
+      if(generation!==accountGeneration)throw new ApiError('账号已切换，旧请求结果已丢弃',409);
       if (!response.ok) throw new ApiError(body.error ?? "请求失败，请稍后重试", response.status);
       return body;
     } catch (error) { if (!(retryable && attempt === 0 && error instanceof TypeError)) throw error; }
@@ -75,6 +80,13 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export function getAuthSession() { return request<{ authorized: boolean }>("/api/auth/session"); }
+export type AccountRoom={code:string;participantId:string;mode:'PLAYER'|'DISPLAY';nickname:string};
+export type AccountAccess={signedIn:boolean;guestClaimAvailable:boolean;rooms:AccountRoom[]};
+export function getAccount(){return request<AccountAccess>('/api/account');}
+export function resumeAccountRoom(room:AccountRoom){return request<{id:string;mode:'PLAYER'|'DISPLAY';code:string}>(`/api/rooms/${room.code}/account/resume`,{method:'POST',body:JSON.stringify({participantId:room.participantId})});}
+export type GuestPreview={previewToken:string;code:string;nickname:string;seat:number};
+export function previewGuest(code:string){return request<GuestPreview>(`/api/rooms/${code}/account/guest-preview`,{method:'POST',body:'{}'});}
+export function claimGuest(preview:GuestPreview){return request<{claimed:true;code:string;id:string}>(`/api/rooms/${preview.code}/account/guest-claim`,{method:'POST',body:JSON.stringify({previewToken:preview.previewToken,confirm:true})});}
 export function login(accessPassword: string) { return request<{ authorized: boolean }>("/api/auth/login", { method: "POST", body: JSON.stringify({ accessPassword }) }); }
 
 export function createRoom(playerCount: number, organizerName: string, playMode: RoomPlayMode, voiceRoomUrl?: string) {
@@ -119,6 +131,6 @@ export function resumeGame(code: string) { return request<PrivateView>(`/api/roo
 export function finishDefense(code: string) { return request<PrivateView>(`/api/rooms/${code}/nomination/defense/complete`, { method: "POST", body: "{}" }); }
 
 function currentRoomMode(): "PLAYER" | "DISPLAY" {
-  try { return JSON.parse(sessionStorage.getItem("ravens_room_session") ?? "{}").mode === "DISPLAY" ? "DISPLAY" : "PLAYER"; }
+  try { return JSON.parse(sessionStorage.getItem(roomSessionKey()) ?? "{}").mode === "DISPLAY" ? "DISPLAY" : "PLAYER"; }
   catch { return "PLAYER"; }
 }

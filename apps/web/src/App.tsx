@@ -18,11 +18,14 @@ import { connectRoomFeed } from "./room-live.js";
 import "./styles/app.css";
 import "./styles/game-redesign.css";
 import "./styles/portraits.css";
+import "./styles/account.css";
+import {roomSessionKey} from './account-context.js';
+import {getAccount,resumeAccountRoom} from './api.js';
 
 type Screen = "LOADING" | "LOGIN" | "HOME" | "CREATE" | "JOIN" | "LOBBY" | "TUTORIAL" | "GAME" | "DISPLAY";
 type ConnectionState = "ONLINE" | "OFFLINE" | "RECONNECTING";
 interface StoredSession { roomCode: string; mode: "PLAYER" | "DISPLAY"; participantId?: string }
-const SESSION_KEY = "ravens_room_session";
+const SESSION_KEY = roomSessionKey();
 const PROTECTED_SCREENS = new Set<Screen>(["LOBBY", "TUTORIAL", "GAME", "DISPLAY"]);
 
 export function App() {
@@ -182,7 +185,11 @@ function RoomApp() {
     try {
       const session = await getAuthSession();
       setConnectionState("ONLINE");
-      if (session.authorized) await restoreSession(); else setScreen("LOGIN");
+      if (session.authorized) {
+        const account=await getAccount();
+        if(account.signedIn&&!readSession()&&account.rooms.length===1&&!invitedRoomCode){const result=await resumeAccountRoom(account.rooms[0]!);saveSession({roomCode:result.code,mode:result.mode,participantId:result.id});}
+        await restoreSession();
+      } else setScreen("LOGIN");
     } catch { setConnectionState("OFFLINE"); setScreen("LOADING"); }
   }
 
@@ -272,7 +279,8 @@ function RoomApp() {
   if (screen === "GAME") return withGuide(<PlayerGame {...(privateView ? { view: privateView } : {})} {...(receipt ? { receipt } : {})} {...(room ? { roomCode: room.code } : {})} {...(room?.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {})} busy={busy} canRestart={isOrganizer} {...(error ? { error } : {})} onBack={returnHome} onResumeGame={() => void runGameMutation(resumeGame)} onFinishDefense={() => void runGameMutation(finishDefense)} onLeave={() => void exitRoom()} onRefresh={() => { if (room) void getPrivateView(room.code).then(acceptPrivateView).catch(handleSessionFailure); }} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats), seats)} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onCancelNomination={() => void runGameMutation(cancelNomination)} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(readyToEndDay)} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
   if (screen === "DISPLAY") return withStatus(<Display code={room?.code ?? "------"} onBack={returnHome} onRoomClosed={handleRoomClosed} />);
   const stored = room ? readSession() : undefined;
-  return withGuide(<Home onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(error ? { error } : {})} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy } : {})} />);
+  let guestCode:string|undefined;try{guestCode=(JSON.parse(localStorage.getItem('ravens_room_session')??'{}') as StoredSession).roomCode;}catch{}
+  return withGuide(<Home {...(guestCode?{guestCode}:{})} onAccountResume={(code,id,mode)=>{saveSession({roomCode:code,mode,participantId:id});void restoreSession();}} onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(error ? { error } : {})} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy } : {})} />);
 }
 
 export function saveSession(session: StoredSession): void { try { const value = JSON.stringify(session); sessionStorage.setItem(SESSION_KEY, value); localStorage.setItem(`${SESSION_KEY}:${session.roomCode}:${session.mode}`, value); if (session.mode === "PLAYER") localStorage.setItem(SESSION_KEY, value); } catch { /* Cookie sessions remain valid when storage is unavailable. */ } }

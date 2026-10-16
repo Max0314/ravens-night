@@ -2,5 +2,12 @@ packages:
   - apps/*
   - packages/*
 allowBuilds:
-  argon2: set this to true or false
   esbuild: true
+overrides:
+  brace-expansion@^5: 5.0.12
+  fast-uri@^3: 3.1.8
+  fast-uri@^4: 4.1.5
+  fastify@^5: 5.12.7
+  nanoid@^3: 3.3.18
+  source-map-js: 1.2.2
+  undici@^8: 8.10.2

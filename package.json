@@ -2,7 +2,7 @@
   "name": "ravens-night",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -16,8 +16,8 @@
     "@playwright/test": "^1.62.1",
     "@types/node": "latest",
     "esbuild": "^0.28.1",
-    "sharp": "0.35.4",
+    "sharp": "0.35.5",
     "typescript": "latest",
-    "vitest": "latest"
+    "vitest": "4.1.11"
   }
 }

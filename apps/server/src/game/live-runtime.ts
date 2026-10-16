@@ -1,9 +1,11 @@
 import { createHash } from "node:crypto";
-import { RoomService, type RoomRecord } from "../rooms/service.js";
+import { RoomService, type RoomRecord, type AccountClaim } from "../rooms/service.js";
 export interface RoomRepository {
   initialize(): Promise<void>;
   loadAll(): Promise<RoomRecord[]>;
-  commit(changed: RoomRecord[], deleted: string[]): Promise<void>;
+  commit(changed: RoomRecord[], deleted: string[], claims?:AccountClaim[]): Promise<void>;
+  loadClaims?():Promise<AccountClaim[]>;
+  health?():Promise<void>;
   close(): Promise<void>;
 }
 interface Receipt { fingerprint: string; result: unknown; }
@@ -21,6 +23,7 @@ export class LiveRoomRuntime {
     if (!this.repository) return;
     await this.repository.initialize();
     this.#service.restore(await this.repository.loadAll());
+    this.#service.restoreClaims(await this.repository.loadClaims?.()??[]);
   }
   subscribe(listener: (changedCodes: string[]) => void): () => void { this.#listeners.add(listener); return () => this.#listeners.delete(listener); }
   execute<T>(mutation: (stage: RoomService) => T, receipt?: { code: string; id: string; actor: string; fingerprint: string }): Promise<T> {
@@ -28,6 +31,7 @@ export class LiveRoomRuntime {
       const before = this.#service.listCodes().map((code) => this.#service.snapshot(code));
       const stage = new RoomService(this.options);
       stage.restore(before);
+      stage.restoreClaims(this.#service.accountClaims());
       const key = receipt ? createHash("sha256").update(`${receipt.actor}:${receipt.id}`).digest("hex") : undefined;
       const receiptRoom = receipt ? stage.find(receipt.code) : undefined;
       if (receipt && receiptRoom) {
@@ -54,8 +58,9 @@ export class LiveRoomRuntime {
       const changed = after.filter((room) => !original.has(room.code) || room.revision !== original.get(room.code)!.revision);
       const remaining = new Set(after.map((room) => room.code));
       const deleted = before.filter((room) => !remaining.has(room.code)).map((room) => room.code);
-      if (this.repository && (changed.length || deleted.length)) {
-        try { await this.repository.commit(changed, deleted); }
+      const claims=stage.accountClaims().filter(value=>!this.#service.accountClaim(value.sub));
+      if (this.repository && (changed.length || deleted.length || claims.length)) {
+        try { await this.repository.commit(changed, deleted,claims); }
         catch (cause) { throw new PersistenceUnavailableError(cause); }
       }
       this.#service = stage;

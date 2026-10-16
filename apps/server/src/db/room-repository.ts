@@ -1,6 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
-import type { RoomRecord } from "../rooms/service.js";
+import type { RoomRecord, AccountClaim } from "../rooms/service.js";
 import type { RoomRepository } from "../game/live-runtime.js";
 
 interface Envelope { format: "ravens-aes256-v1"; iv: string; tag: string; data: string; }
@@ -34,11 +34,11 @@ export class PostgresRoomRepository implements RoomRepository {
     this.#pool = new Pool({ connectionString: databaseUrl, max: 5 }); this.#codec = new SnapshotCodec(key);
     // A lost connection may also mean a lost advisory lock. Fail closed until restart
     // reloads authoritative snapshots; never write from potentially stale memory.
-    this.#pool.on("error", () => { this.#writerUnavailable = true; });
+    this.#pool.on("error", () => this.fail());
   }
   async initialize(): Promise<void> {
     this.#writer = await this.#pool.connect();
-    this.#writer.on("error", () => { this.#writerUnavailable = true; });
+    this.#writer.on("error", () => this.fail());
     try {
     const lock = await this.#writer.query<{ locked: boolean }>("SELECT pg_try_advisory_lock(hashtext('ravens-night-runtime-writer')) AS locked");
     if (!lock.rows[0]?.locked) throw new Error("Another ravens-night writer is already running");
@@ -46,6 +46,7 @@ export class PostgresRoomRepository implements RoomRepository {
       CREATE TABLE IF NOT EXISTS room_runtime_snapshots (code text PRIMARY KEY, revision integer NOT NULL, snapshot jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
       CREATE TABLE IF NOT EXISTS room_runtime_journal (code text NOT NULL, revision integer NOT NULL, snapshot jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(code, revision));
       CREATE TABLE IF NOT EXISTS room_public_events (code text NOT NULL, game_id text NOT NULL, seq integer NOT NULL, event jsonb NOT NULL, PRIMARY KEY(code, game_id, seq));
+      CREATE TABLE IF NOT EXISTS account_guest_claims(account_id text PRIMARY KEY,room_id text NOT NULL,participant_id text NOT NULL UNIQUE,preview_hash text NOT NULL,completed_at timestamptz NOT NULL DEFAULT now());
     `);
     } catch (error) {
       this.#writer.release(true); this.#writer = undefined;
@@ -57,12 +58,16 @@ export class PostgresRoomRepository implements RoomRepository {
     return result.rows.map((row) => this.#codec.decode<RoomRecord>(row.snapshot));
   }
   async save(snapshot: RoomRecord): Promise<void> { await this.commit([snapshot], []); }
+  private fail(){this.#writerUnavailable=true;if(process.env.NODE_ENV==='production')setTimeout(()=>process.exit(1),100).unref();}
+  async health(){if(!this.#writer||this.#writerUnavailable)throw Error('Database writer unavailable');await this.#writer.query('SELECT 1');}
+  async loadClaims():Promise<AccountClaim[]>{return(await this.#pool.query('SELECT account_id AS sub,room_id AS "roomId",participant_id AS "participantId",preview_hash AS "previewHash" FROM account_guest_claims')).rows;}
   async delete(code: string): Promise<void> { await this.commit([], [code]); }
-  async commit(changed: RoomRecord[], deleted: string[]): Promise<void> {
+  async commit(changed: RoomRecord[], deleted: string[],claims:AccountClaim[]=[]): Promise<void> {
     if (!this.#writer || this.#writerUnavailable) throw new Error("Database writer is unavailable; restart to reacquire lock and restore committed rooms");
     const connection = await this.#pool.connect();
     try {
       await connection.query("BEGIN");
+      for(const claim of claims)await connection.query('INSERT INTO account_guest_claims(account_id,room_id,participant_id,preview_hash) VALUES($1,$2,$3,$4)',[claim.sub,claim.roomId,claim.participantId,claim.previewHash]);
       for (const snapshot of changed) {
         const encoded = JSON.stringify(this.#codec.encode(snapshot));
         const saved = await connection.query(`INSERT INTO room_runtime_snapshots(code,revision,snapshot) VALUES($1,$2,$3::jsonb)

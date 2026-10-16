@@ -71,19 +71,21 @@ export function createRecovery(room: RoomRecord, token: string) {
   update(room, social);
   return { recoveryCode, expiresAt };
 }
-export function recoverMembership(service: RoomService, code: string, recoveryCode: string, commandId?: string): RecoveryResult {
+export function recoverMembership(service: RoomService, code: string, recoveryCode: string, commandId?: string,accountId?:string): RecoveryResult {
   const room = service.find(code);
   const social = data(room);
   const receiptKey = commandId ? hashOpaqueToken(`${recoveryCode}:${commandId}`) : undefined;
   const receipt = receiptKey ? social.recoveryReceipts?.find((r) => r.key === receiptKey && r.expiresAt > Date.now()) : undefined;
   if (receipt) {
     const participant = member(room, receipt.result.token, "PLAYER");
+    if(participant.accountId&&participant.accountId!==accountId)throw Error('账号与座位授权不匹配');
     return { ...receipt.result, seat: participant.seat, nickname: participant.nickname };
   }
   const entry = social.recovery.find((r) => r.hash === hashOpaqueToken(recoveryCode) && r.expiresAt > Date.now());
   if (!entry) throw new Error("恢复码无效或已过期");
   const participant = room.participants.find((p) => p.id === entry.participantId && !p.left);
   if (!participant) throw new Error("原座位已离开房间");
+  if(participant.accountId&&participant.accountId!==accountId)throw Error('账号与座位授权不匹配');
   const token = randomBytes(32).toString("base64url");
   const oldHash = participant.tokenHash;
   participant.tokenHash = hashOpaqueToken(token);

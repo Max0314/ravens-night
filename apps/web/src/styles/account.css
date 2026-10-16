@@ -1,0 +1,4 @@
+.account-access{margin:24px 0;padding:18px;border:1px solid #99815855;border-radius:16px;background:#11131bcc;font-size:14px;max-width:540px;text-align:left;color:#e8ddc9}
+.account-access p{font-size:14px!important;line-height:1.65!important;margin:10px 0!important}
+.account-access a{color:#dfbd78;text-decoration:underline}.account-access button{max-width:100%;margin:6px;padding:10px 14px;min-height:44px;border:1px solid #99815888;border-radius:10px;background:#282633;color:#eee3ce;cursor:pointer}
+.account-access button:disabled{opacity:.5;cursor:wait}.account-access [role=alert]{color:#ffb8b8}

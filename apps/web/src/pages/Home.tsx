@@ -1,6 +1,7 @@
 import { Button } from "@ravens/ui";
 import type { RoomView } from "../api.js";
 import { FilingLinks } from "../components/FilingLinks.js";
+import {AccountPanel} from '../components/AccountPanel.js';
 
 interface HomeProps {
   onCreate: () => void;
@@ -13,9 +14,11 @@ interface HomeProps {
   onLeave?: () => void;
   busy?: boolean;
   error?: string;
+  guestCode?:string;
+  onAccountResume?:(code:string,id:string,mode:'PLAYER'|'DISPLAY')=>void;
 }
 
-export function Home({ onCreate, onJoin, onTutorial, onRoles, activeRoom, activeMode, onResume, onLeave, busy = false, error }: HomeProps) {
+export function Home({ onCreate, onJoin, onTutorial, onRoles, activeRoom, activeMode, onResume, onLeave, busy = false, error,guestCode,onAccountResume }: HomeProps) {
   const canLeave = activeRoom?.state === "LOBBY" || activeMode === "DISPLAY";
   return (
     <main className="home">
@@ -31,6 +34,7 @@ export function Home({ onCreate, onJoin, onTutorial, onRoles, activeRoom, active
         </section> : <div className="home__actions"><Button onClick={onJoin}>加入一局</Button><Button variant="quiet" onClick={onCreate}>创建房间</Button></div>}
         <div className="home__guides"><button type="button" onClick={onTutorial}>先看 3 分钟教程</button><span>·</span><button type="button" onClick={onRoles}>翻阅 22 个角色</button></div>
         <ul className="home__features" aria-label="游戏特点"><li><strong>5–12</strong><span>游戏人数</span></li><li><strong>全自动</strong><span>无需真人主持</span></li><li><strong>零门槛</strong><span>内置新手教学</span></li></ul>
+        {onAccountResume?<AccountPanel {...(guestCode?{guestCode}:{})} onResume={onAccountResume}/>:null}
         <FilingLinks />
       </section>
       <div className="home__art" role="img" aria-label="午夜村庄中的六位人物" />

@@ -15,8 +15,10 @@ import { createRoomCode, normalizeRoomCode } from "./codes.js";
 
 export type ParticipantMode = "PLAYER" | "DISPLAY";
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
+export interface AccountClaim {sub:string;roomId:string;participantId:string;previewHash:string}
 
 export interface ParticipantRecord {
+  accountId?: string;
   id: string;
   nickname: string;
   mode: ParticipantMode;
@@ -30,6 +32,7 @@ export interface ParticipantRecord {
 }
 
 export interface RoomRecord {
+  organizerAccountId?: string;
   metadata?: Record<string, unknown>;
   id: string;
   code: string;
@@ -124,6 +127,7 @@ interface GameRuntime {
 
 export class RoomService {
   readonly #rooms = new Map<string, RoomRecord>();
+  readonly #claims = new Map<string, AccountClaim>();
   readonly #now: () => number;
   readonly #presentation: boolean;
 
@@ -219,12 +223,34 @@ export class RoomService {
       room.organizerParticipantId = players[0]!.id;
       room.organizerName = players[0]!.nickname;
       room.organizerTokenHash = players[0]!.tokenHash;
+      if(players[0]!.accountId)room.organizerAccountId=players[0]!.accountId;else delete room.organizerAccountId;
     }
     this.changed(room);
     return { roomDestroyed: false, organizerChanged };
   }
 
   listCodes(): string[] { return [...this.#rooms.keys()]; }
+
+  accountClaims():AccountClaim[]{return structuredClone([...this.#claims.values()]);}
+  restoreClaims(values:AccountClaim[]){for(const value of values)this.#claims.set(value.sub,structuredClone(value));}
+  accountClaim(sub:string){return this.#claims.get(sub);}
+  bindAccount(code:string,token:string,sub:string,newToken:string){
+    const room=this.find(code),participant=room.participants.find(value=>!value.left&&value.tokenHash===hashOpaqueToken(token));
+    if(!participant||participant.accountId&&participant.accountId!==sub)throw Error('Player authorization failed');
+    participant.accountId=sub;participant.tokenHash=hashOpaqueToken(newToken);
+    if(room.organizerParticipantId===participant.id){room.organizerAccountId=sub;room.organizerTokenHash=participant.tokenHash;}
+    this.changed(room);return participant;
+  }
+  claimAccount(code:string,token:string,sub:string,previewHash:string,newToken:string){
+    if(this.#claims.has(sub))throw Error('本账号在鸦钟夜话的游客认领机会已使用');
+    const room=this.find(code),participant=room.participants.find(value=>!value.left&&value.tokenHash===hashOpaqueToken(token));
+    if(!participant||participant.accountId||participant.mode!=='PLAYER')throw Error('没有可认领的游客座位');
+    if(this.accountRooms(sub).length)throw Error('账号已有房间，不能覆盖');
+    this.bindAccount(code,token,sub,newToken);
+    this.#claims.set(sub,{sub,roomId:room.code,participantId:participant.id,previewHash});
+    return participant;
+  }
+  accountRooms(sub:string){return this.listCodes().flatMap(code=>{const room=this.find(code);return room.participants.filter(value=>!value.left&&value.accountId===sub).map(value=>({code,participantId:value.id,mode:value.mode,nickname:value.nickname}));});}
 
   snapshot(codeInput: string): RoomRecord { return structuredClone(this.find(codeInput)); }
 
@@ -287,7 +313,7 @@ export class RoomService {
       playMode: room.playMode,
       ...(room.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {}),
       ...(organizer ? { organizerId: organizer.id, organizerName: organizer.nickname } : {}),
-      participants: room.participants.map(({ tokenHash: _tokenHash, tutorialComplete: _tutorialComplete, ...participant }) => participant),
+      participants: room.participants.map(({ tokenHash: _tokenHash, accountId: _accountId, tutorialComplete: _tutorialComplete, ...participant }) => participant),
       ...(room.game ? { game: this.publicGame(room) } : {}),
     };
   }
