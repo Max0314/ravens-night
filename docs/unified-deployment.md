@@ -1,6 +1,6 @@
 # 鸦钟夜话统一账号部署
 
-核对日期：2026-10-16。状态：配置中。生产入口为 `https://clocktower.fribench.cn`，回环端口 23005，独立 Compose 项目 `fribench-ravens-night`。工作台不参与本服务部署。
+核对日期：2026-10-16。状态：已验证。业务提交 `deb82732b08b949b7c4016b112d0c928878c2278` 已推送合并并部署，179 项测试（含真实 PostgreSQL 事务、加密恢复及认领回滚）、构建和生产依赖审计通过。公网身份契约和手机布局通过。生产入口为 `https://clocktower.fribench.cn`，回环端口 23005，独立 Compose 项目 `fribench-ravens-night`。工作台不参与本服务部署。
 
 ## 账号与公开游玩
 
