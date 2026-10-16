@@ -11,7 +11,7 @@ services:
       PUBLIC_ORIGIN: https://clocktower.fribench.cn
       ACCESS_PASSWORD: ""
     ports: ["127.0.0.1:23005:3000"]
-    networks: [backend, identity, edge]
+    networks: [backend, identity]
     restart: unless-stopped
     init: true
     read_only: true
@@ -37,4 +37,3 @@ networks:
   identity:
     external: true
     name: fribench-services-edge-v1
-  edge: {}
