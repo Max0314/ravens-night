@@ -38,7 +38,7 @@ const phaseNames: Record<string, string> = {
 export function PlayerGame(props: PlayerGameProps) {
   const [covered, setCovered] = useState(false);
   useEffect(() => { const hide = () => { if (document.hidden) setCovered(true); }; document.addEventListener("visibilitychange", hide); return () => document.removeEventListener("visibilitychange", hide); }, []);
-  return <><div hidden={covered}><PlayerGameContent {...props} /></div>{props.view?.game ? <><button className="privacy-toggle" type="button" onClick={() => setCovered(true)}>◈ 遮住私密内容</button><EventStage game={props.view.game} {...(!covered && props.receipt ? { receipt: props.receipt } : {})} />{covered ? <section className="privacy-curtain" role="dialog" aria-modal="true" aria-label="私密内容已遮住"><span>☾</span><h1>秘密已妥善遮住</h1><p>身份、线索与夜间行动仅你可见。</p><Button onClick={() => setCovered(false)}>显示私密内容</Button></section> : null}</> : null}</>;
+  return <><div hidden={covered}><PlayerGameContent {...props} /></div>{props.view?.game ? <><button className="privacy-toggle" type="button" onClick={() => setCovered(true)}>◈ 遮住私密内容</button><EventStage game={props.view.game} {...(!covered && props.receipt ? { receipt: props.receipt } : {})} />{covered ? <section className="privacy-curtain" role="dialog" aria-modal="true" aria-label="私密内容已遮住"><span>☾</span><h1>私密内容已遮住</h1><p>身份、线索与夜间行动仅你可见。</p><Button onClick={() => setCovered(false)}>显示私密内容</Button></section> : null}</> : null}</>;
 }
 
 function PlayerGameContent({ view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onCancelNomination, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide, roomCode, voiceRoomUrl, onLeave, onRefresh, onResumeGame, onFinishDefense }: PlayerGameProps) {
@@ -218,7 +218,7 @@ function privateHistoryLabel(entry: PrivateHistoryEntry): string {
 function PublicLog({ events }: { events: Array<{ seq: number; message: string }> }) { return <details className="public-log"><summary>村庄记录</summary>{[...events].reverse().map((event) => <p key={event.seq}>{event.message}</p>)}</details>; }
 function StorytellerReview({ decisions }: { decisions: NonNullable<PrivateView["storytellerDecisions"]> }) {
   if (!decisions.length) return null;
-  return <details className="storyteller-review"><summary>说书人裁量复盘 · {decisions.length} 条</summary><p>故事落幕后，公开本局的规则裁量与信息选择依据。</p><ol>{decisions.map((decision) => <li key={decision.id}><small>{decision.day ? `第 ${decision.day} 天` : "开局配置"}{decision.seat ? ` · ${decision.seat} 号` : ""}</small><strong>{decision.choice}</strong><p>{decision.reason}</p></li>)}</ol></details>;
+  return <details className="storyteller-review"><summary>说书人裁量复盘 · {decisions.length} 条</summary><p>对局结束后可查看本局的规则裁量和信息选择依据。</p><ol>{decisions.map((decision) => <li key={decision.id}><small>{decision.day ? `第 ${decision.day} 天` : "开局配置"}{decision.seat ? ` · ${decision.seat} 号` : ""}</small><strong>{decision.choice}</strong><p>{decision.reason}</p></li>)}</ol></details>;
 }
 function seatName(seats: Array<{ seat: number; nickname: string }>, seat: number) { const player = seats.find((candidate) => candidate.seat === seat); return `${player?.nickname ?? "玩家"}（${seat}号）`; }
-function winReason(reason?: string) { return ({ "saint-executed": "圣徒被处决，邪恶达成了特殊胜利。", "mayor-final-three": "三人存活且无人被处决，镇长带领善良获胜。", "demon-dead": "恶魔已经死亡。", "final-two": "仅剩两人存活，邪恶控制了村庄。" } as Record<string, string>)[reason ?? ""] ?? "这一夜的故事已经写完。"; }
+function winReason(reason?: string) { return ({ "saint-executed": "圣徒被处决，邪恶达成了特殊胜利。", "mayor-final-three": "三人存活且无人被处决，镇长带领善良获胜。", "demon-dead": "恶魔已经死亡。", "final-two": "仅剩两人存活，邪恶控制了村庄。" } as Record<string, string>)[reason ?? ""] ?? "对局已结束。"; }

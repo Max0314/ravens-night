@@ -11,7 +11,7 @@ export function PortraitsPreview() {
   const roles = beginnerRoles.filter((role) => group === "ALL" || role.type === group);
   return <main className="portrait-gallery">
     <header className="portrait-gallery__nav"><a href="/">☾ 鸦钟夜话</a><a href="?preview=effects">钟楼演出 ↗</a></header>
-    <section className="portrait-gallery__intro"><p>RAVENS AT MIDNIGHT · THE TOWNSPEOPLE</p><h1>同一座钟楼，<br />二十二个秘密。</h1><div>旧铜拱窗里，有洗不净的往事，也有说不出口的名字。<br />点击人物，翻开他的故事与能力。</div><span>暗流涌动 · 人物画册</span></section>
+    <section className="portrait-gallery__intro"><p>RAVENS AT MIDNIGHT · THE TOWNSPEOPLE</p><h1>22 个角色<br />与能力说明</h1><div>点击角色，查看能力、规则和游玩建议。</div><span>角色图鉴</span></section>
     <nav className="portrait-gallery__filters" aria-label="人物类别">{groups.map((item) => <button key={item.id} type="button" aria-pressed={item.id === group} onClick={() => setGroup(item.id)}>{item.label}</button>)}<small>{roles.length} 位人物</small></nav>
     <div className="portrait-gallery__grid">{roles.map((role) => {
       const art = roleArt(role.id);
@@ -20,7 +20,7 @@ export function PortraitsPreview() {
         <span><strong>{role.name}</strong><small>{groups.find((item) => item.id === role.type)?.label}</small></span>
       </button>;
     })}</div>
-    <footer>每一个身份，都藏着不同的夜晚。<a href="/">返回钟楼 →</a></footer>
+    <footer>按类别筛选角色，点击查看说明。<a href="/">返回钟楼 →</a></footer>
     {selected ? <GuideOverlay mode="roles" initialRoleId={selected} onClose={() => setSelected(undefined)} /> : null}
   </main>;
 }

@@ -17,7 +17,7 @@ afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); windo
 test("the first screen gives an authorized newcomer one clear way to join", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  expect(await screen.findByRole("heading", { name: "今夜，每个人都有秘密" })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: "5–12 人阵营推理" })).toBeVisible();
   expect(screen.getByRole("link", { name: "渝ICP备2026016967号-1" })).toHaveAttribute("href", "https://beian.miit.gov.cn/");
   expect(screen.getByRole("link", { name: "渝公网安备 50010502504754号" })).toHaveAttribute("href", "https://beian.mps.gov.cn/#/query/webSearch?code=50010502504754");
   fireEvent.click(screen.getByRole("button", { name: "加入一局" }));
@@ -28,7 +28,7 @@ test("the first screen gives an authorized newcomer one clear way to join", asyn
 test("the home screen exposes an interactive tutorial and the complete role compendium", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  await screen.findByRole("heading", { name: "今夜，每个人都有秘密" });
+  await screen.findByRole("heading", { name: "5–12 人阵营推理" });
   fireEvent.click(screen.getByRole("button", { name: "先看 3 分钟教程" }));
   expect(screen.getByRole("dialog", { name: "游戏帮助" })).toBeVisible();
   expect(screen.getByRole("heading", { name: "两个阵营，一项使命" })).toBeVisible();
@@ -73,7 +73,7 @@ test("evil first-night intelligence prominently shows teammate names and seat nu
 test("joining from a television has a distinct public-display choice", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  await screen.findByRole("heading", { name: "今夜，每个人都有秘密" });
+  await screen.findByRole("heading", { name: "5–12 人阵营推理" });
   fireEvent.click(screen.getByRole("button", { name: "加入一局" }));
   fireEvent.click(screen.getByRole("button", { name: /电视公共大屏/ }));
   expect(screen.queryByLabelText("你的昵称")).not.toBeInTheDocument();
