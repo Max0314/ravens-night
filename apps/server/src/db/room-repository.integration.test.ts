@@ -43,7 +43,7 @@ test.skipIf(!process.env.RAVENS_TEST_DATABASE_URL)("PostgreSQL transactions, enc
     expect((await restored.loadAll()).find((r) => r.code === room.code)).toEqual(snapshot);
     await restored.commit([], [another.code]);
     expect(await restored.loadAll()).toHaveLength(1);
-    const locks = await pool.query("SELECT pid FROM pg_locks WHERE locktype='advisory' AND granted");
+    const locks = await pool.query("SELECT pid FROM pg_locks WHERE locktype='advisory' AND granted AND database=(SELECT oid FROM pg_database WHERE datname=current_database())");
     expect(locks.rows).toHaveLength(1);
     await pool.query("SELECT pg_terminate_backend($1)", [locks.rows[0].pid]);
     await new Promise((resolve) => setTimeout(resolve, 100));

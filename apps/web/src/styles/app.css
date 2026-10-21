@@ -508,3 +508,21 @@ a { color: inherit; }
   .waiting-orbit, .gramophone__toggle > span:first-child, .death-reveal::before { animation: none; }
   .death-reveal::before { background-position: 100% center; }
 }
+
+/* Fribench: native scroll boundaries; keep nested gesture owners independent. */
+:root .login-page,
+:root .lobby,
+:root .guide-tutorial,
+:root .own-role-guide,
+:root .role-compendium,
+:root .whisper-room ol {
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+}
+:root .guide-tabs,
+:root .vote-procession {
+  overscroll-behavior-x: none;
+}
