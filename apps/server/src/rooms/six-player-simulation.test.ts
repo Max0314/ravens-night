@@ -7,7 +7,7 @@ function createSixPlayerGame() {
   const service = new RoomService();
   const { room, organizerToken } = service.create(6, "压力测试主持");
   const players = Array.from({ length: 6 }, (_, index) => service.join(room.code, `模拟玩家${index + 1}`, "PLAYER"));
-  service.startTutorial(room.code, organizerToken);
+  service.startTutorial(room.code, players[0]!.token);
   for (const player of players) service.completeTutorial(room.code, player.token);
   for (const player of players) service.confirmRole(room.code, player.token);
   settleNight(service, room.code, players);

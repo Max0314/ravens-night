@@ -6,7 +6,7 @@ function controlledSixPlayerRoom(roleIds: string[], perceivedRoles: Record<numbe
   const setup = new RoomService();
   const { room, organizerToken } = setup.create(6, "六人局测试");
   const players = ["一", "二", "三", "四", "五", "六"].map((nickname) => setup.join(room.code, nickname, "PLAYER"));
-  setup.startTutorial(room.code, organizerToken);
+  setup.startTutorial(room.code, players[0]!.token);
   const snapshot = setup.snapshot(room.code);
   snapshot.assignments = roleIds.map((roleId, index) => {
     const role = roleById(roleId);

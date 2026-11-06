@@ -37,7 +37,7 @@ export function Lobby({ room, onBegin, onLeave, onTutorial, onRoles, canBegin, b
       <ol className="lobby-player-list" aria-label="玩家准备状态">{ordered.map((player, index) => <li key={player.id}><span>{player.seat}</span><strong>{player.nickname}{player.id === participantId ? " · 你" : ""}</strong><small className={player.ready ? "is-ready" : ""}>{!player.connected ? "离线" : player.ready ? "已准备" : "未准备"}</small>{canBegin && onReorder ? <div><button aria-label={`将${player.nickname}座位前移`} type="button" disabled={busy || index === 0} onClick={() => move(index, -1)}>↑</button><button aria-label={`将${player.nickname}座位后移`} type="button" disabled={busy || index === ordered.length - 1} onClick={() => move(index, 1)}>↓</button></div> : null}</li>)}</ol>
       {mine && onReady ? <Button variant={mine.ready ? "quiet" : "gold"} onClick={() => onReady(!mine.ready)} disabled={busy}>{mine.ready ? "取消准备" : "我已准备好"} · {readyCount}/{room.playerCount}</Button> : null}
       {error ? <p className="form-error" role="alert">{error}</p> : null}
-      {canBegin ? <Button onClick={onBegin} disabled={players.length < room.playerCount || busy || Boolean(onReady && readyCount < room.playerCount)}>{busy ? "正在敲响钟声…" : "开始新手教学"}</Button> : <p className="lobby__waiting">等待房主 {room.organizerName ?? players[0]?.nickname ?? ""} 开始教学</p>}
+      {canBegin ? <Button onClick={onBegin} disabled={players.length !== room.playerCount || busy || players.some(player => !player.connected || (player.id !== participantId && !player.ready))}>{busy ? "正在敲响钟声…" : mine?.ready ? "开始游戏" : "准备并开始"}</Button> : <p className="lobby__waiting">等待房主 {room.organizerName ?? players[0]?.nickname ?? ""} 开始游戏</p>}
     </Panel>
   </main>;
 }

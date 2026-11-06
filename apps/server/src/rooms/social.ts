@@ -7,6 +7,14 @@ interface Recovery { hash: string; participantId: string; expiresAt: number; }
 interface RecoveryResult { id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat: number | undefined; token: string; }
 interface RecoveryReceipt { key: string; expiresAt: number; result: RecoveryResult; }
 interface Social { whispers: Whisper[]; recovery: Recovery[]; recoveryReceipts?: RecoveryReceipt[]; }
+/** Removing a seat must also revoke its recovery credentials and conversations. */
+export function revokeMembership(room: RoomRecord, participantId: string): void {
+  const social = data(room);
+  for (const whisper of social.whispers) if ([whisper.fromId, whisper.toId].includes(participantId)) whisper.status = "CLOSED";
+  social.recovery = social.recovery.filter(value => value.participantId !== participantId);
+  social.recoveryReceipts = social.recoveryReceipts?.filter(value => value.result.id !== participantId) ?? [];
+  update(room, social);
+}
 function data(room: RoomRecord): Social { return (room.metadata?.social as Social | undefined) ?? { whispers: [], recovery: [] }; }
 function update(room: RoomRecord, value: Social): void { room.metadata = { ...room.metadata, social: value }; room.revision += 1; room.lastActivityAt = new Date().toISOString(); }
 export function member(room: RoomRecord, token: string, mode?: "PLAYER" | "DISPLAY"): ParticipantRecord {

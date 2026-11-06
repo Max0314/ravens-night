@@ -9,6 +9,8 @@ import { RoomService, type ParticipantMode, type RoomPlayMode } from "./rooms/se
 import { PostgresRoomRepository } from "./db/room-repository.js";
 import { LiveRoomRuntime, PersistenceUnavailableError, type RoomRepository } from "./game/live-runtime.js";
 import { createRecovery, inviteWhisper, leaveWhisper, member, recoverMembership, respondWhisper, sendWhisper, socialView } from "./rooms/social.js";
+import { roomCommandProperties, roomCommandRequired, type RoomCommandContext } from "@ravens/contracts";
+import { RoomError } from "./rooms/errors.js";
 
 type RoomRequest = { Params: { code: string; id?: string }; Body: Record<string, unknown>; Querystring: { token?: string; mode?: string } };
 const string = { type: "string", maxLength: 500 };
@@ -67,6 +69,9 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       catch { return reply.code(403).send({ error: "请求来源不匹配" }); }
     }
     const pathname = request.url.split("?")[0]!;
+    if (!["GET", "HEAD", "OPTIONS"].includes(request.method) && /^\/api\/rooms\/[^/]+\//.test(pathname) && request.headers["x-ravens-protocol"] !== "2") {
+      return reply.code(426).send({ errorCode: "CLIENT_UPGRADE_REQUIRED", error: "游戏已更新，请刷新页面后继续", refreshRequired: true });
+    }
     if (/\/auth\/login$|\/join$|\/recover$/.test(pathname) && request.method === "POST") {
       const key = `${request.ip}:${pathname.split("/").at(-1)}`;
       const current = attempts.get(key);
@@ -80,12 +85,13 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   });
   app.addHook("onSend", async (_request, reply) => { reply.header("X-Content-Type-Options", "nosniff").header("Referrer-Policy", "same-origin").header("Cache-Control", "no-store"); });
   app.setErrorHandler((error, _request, reply) => {
-    if (error instanceof PersistenceUnavailableError) return reply.code(503).send({ error: error.message });
+    if (error instanceof RoomError) return reply.code(error.status).send({ errorCode: error.errorCode, error: error.message, refreshRequired: error.refreshRequired });
+    if (error instanceof PersistenceUnavailableError) return reply.code(503).send({ errorCode: "SAVE_UNAVAILABLE", error: error.message });
     const failure = error as Error & { validation?: unknown };
-    if (failure.validation) return reply.code(400).send({ error: "请求参数不符合规则" });
+    if (failure.validation) return reply.code(400).send({ errorCode: "INVALID_REQUEST", error: "请求参数不符合规则" });
     const message = failure.message;
     const status = message === "Room not found" ? 404 : /authorization|session is missing|授权/i.test(message) ? 403 : 400;
-    return reply.code(status).send({ error: message });
+    return reply.code(status).send({ errorCode: status === 404 ? "ROOM_NOT_FOUND" : status === 403 ? "SEAT_REMOVED" : "INVALID_ACTION", error: message });
   });
   app.get("/healthz", async (_request,reply) => {try{await repository?.health?.();return{ok:true,service:'ravens-night'};}catch{return reply.code(503).send({ok:false,service:'ravens-night'});}});
   app.get("/api/auth/session", async (request) => ({ authorized: !accessPassword || signedCookie(request, "ravens_access") === "authorized" }));
@@ -130,10 +136,13 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     return { authorized: true };
   });
   const privateView = (rooms: RoomService, code: string, token: string) => ({ ...rooms.privateView(code, token), ...socialView(rooms.find(code), token) });
+  const publicView = (rooms: RoomService, code: string, token: string, accountId?: string) => ({ ...rooms.publicView(code), self: rooms.self(code, token, accountId) });
   function receipt(request: FastifyRequest<RoomRequest>, token: string) {
     const id = request.headers["x-command-id"];
-    if (typeof id !== "string" || !/^[\w-]{8,128}$/.test(id)) return undefined;
-    return { code: request.params.code, id, actor: token, fingerprint: createHash("sha256").update(`${request.method}:${request.url}:${JSON.stringify(request.body ?? {})}`).digest("hex") };
+    if (typeof id !== "string" || !/^[\w-]{8,128}$/.test(id)) throw new RoomError("COMMAND_ID_REQUIRED", "请求缺少操作编号，请刷新", 400);
+    const accountId = accounts.get(request)?.sub;
+    return { code: request.params.code, id, actor: token, fingerprint: createHash("sha256").update(`${request.method}:${request.url}:${JSON.stringify(request.body ?? {})}`).digest("hex"),
+      context: request.body as unknown as RoomCommandContext, ...(accountId ? { accountId } : {}) };
   }
   app.post<{ Body: { playerCount: number; organizerName: string; playMode?: RoomPlayMode; voiceRoomUrl?: string } }>("/api/rooms", { schema: { body: bodySchema({ playerCount: { type: "integer", minimum: 5, maximum: 12 }, organizerName: { type: "string", minLength: 1, maxLength: 24 }, playMode: { enum: ["IN_PERSON", "REMOTE", "HYBRID"] }, voiceRoomUrl: { type: "string", maxLength: 2048 } }, ["playerCount", "organizerName"]) } }, async (request, reply) => {
     const result = await runtime.execute((rooms) => {const result=rooms.create(request.body.playerCount, request.body.organizerName, request.body.playMode, request.body.voiceRoomUrl);const account=accounts.get(request);if(account)rooms.find(result.room.code).organizerAccountId=account.sub;return result;});
@@ -151,20 +160,28 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     reply.setCookie(mode === "DISPLAY" ? "ravens_display" : "ravens_player", result.token, cookieOptions(roomPath(request.params.code)));
     return reply.code(201).send({ id: result.participant.id, nickname: result.participant.nickname, mode, ...(result.participant.seat ? { seat: result.participant.seat } : {}), token: result.token });
   });
-  app.delete<RoomRequest>("/api/rooms/:code/leave", { schema: { body: bodySchema({}) } }, async (request, reply) => {
+  app.delete<RoomRequest>("/api/rooms/:code/leave", { schema: { body: bodySchema(roomCommandProperties, roomCommandRequired) } }, async (request, reply) => {
     const token = participantToken(request, request.body?.token as string | undefined);
     const participant = member(runtime.service.find(request.params.code), token);
-    const result = await runtime.execute((rooms) => { if (participant.mode === "PLAYER") leaveWhisper(rooms.find(request.params.code), token); return rooms.leave(request.params.code, token); });
+    const result = await runtime.execute((rooms) => {
+      rooms.validateCommand(request.params.code, token, request.body as unknown as RoomCommandContext, "ROOM", accounts.get(request)?.sub);
+      return rooms.leave(request.params.code, token);
+    }, { ...receipt(request, token), resultKind: "result" });
     reply.clearCookie(participant.mode === "DISPLAY" ? "ravens_display" : "ravens_player", { path: roomPath(request.params.code) });
     if (participant.mode === "PLAYER") reply.clearCookie("ravens_organizer", { path: roomPath(request.params.code) });
-    return { left: true, ...result };
+    return { left: true, ...result, self: null };
   });
   app.get<RoomRequest>("/api/rooms/:code", async (request) => {
-    const rooms = runtime.service;
-    const view = rooms.publicView(request.params.code);
     const token = optionalToken(request);
-    if (token) { try { member(rooms.find(request.params.code), token); await runtime.execute((stage) => stage.pulse(request.params.code, token, now())); } catch { /* Public invitation preview does not expose role data. */ } }
-    return { ...view, serverNow: now() };
+    if (token) {
+      runtime.service.self(request.params.code, token, accounts.get(request)?.sub);
+      await runtime.execute(stage => {
+        stage.self(request.params.code, token, accounts.get(request)?.sub);
+        stage.pulse(request.params.code, token, now());
+      });
+      return publicView(runtime.service, request.params.code, token, accounts.get(request)?.sub);
+    }
+    return runtime.service.publicView(request.params.code);
   });
   app.get<RoomRequest>("/api/rooms/:code/me", async (request) => {
     const token = participantToken(request, request.query.token, "PLAYER");
@@ -173,23 +190,32 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     catch (error) { if (!(error instanceof PersistenceUnavailableError)) throw error; }
     return privateView(runtime.service, request.params.code, token);
   });
-  function command(path: string, properties: Record<string, unknown>, required: string[], change: (rooms: RoomService, code: string, token: string, body: Record<string, unknown>, request: FastifyRequest<RoomRequest>) => unknown, view: "public" | "private" | "result" = "private", organizer = false) {
-    app.post<RoomRequest>(`/api/rooms/:code/${path}`, { schema: { body: bodySchema(properties, required) } }, async (request) => {
+  function command(path: string, properties: Record<string, unknown>, required: string[], change: (rooms: RoomService, code: string, token: string, body: Record<string, unknown>, request: FastifyRequest<RoomRequest>) => unknown, view: "public" | "private" | "result" = "private", organizer = false, scope: "ROOM" | "GAME" | "BALLOT" | "OPTIONAL_GAME" = "ROOM") {
+    if (["vote", "nomination/cancel", "nomination/defense/complete"].includes(path)) scope = "BALLOT";
+    else if (["role/confirm", "action", "nominate", "day/ready", "day/ability", "resume"].includes(path)) scope = "GAME";
+    else if (path.startsWith("whispers")) scope = "OPTIONAL_GAME";
+    app.post<RoomRequest>(`/api/rooms/:code/${path}`, { schema: { body: bodySchema({ ...roomCommandProperties, ...properties }, [...roomCommandRequired, ...required]) } }, async (request) => {
       const token = organizer ? organizerCredential(request, request.body?.organizerToken as string | undefined) : participantToken(request, request.body?.token as string | undefined);
       const result = await runtime.execute((rooms) => {
+        rooms.validateCommand(request.params.code, token, request.body as unknown as RoomCommandContext, scope, accounts.get(request)?.sub);
         const result = change(rooms, request.params.code, token, request.body ?? {}, request);
-        return view === "result" ? result : view === "public" ? rooms.publicView(request.params.code) : privateView(rooms, request.params.code, token);
-      }, receipt(request, token));
+        return view === "result" ? result : undefined;
+      }, { ...receipt(request, token), resultKind: view === "result" ? "result" : "view" });
       // Retried mutations are idempotent, but their response must not rewind the client.
-      return view === "result" ? result : view === "public" ? runtime.service.publicView(request.params.code) : privateView(runtime.service, request.params.code, token);
+      return view === "result" ? { ...result as object, self: runtime.service.self(request.params.code, token, accounts.get(request)?.sub) } : view === "public" ? publicView(runtime.service, request.params.code, token, accounts.get(request)?.sub) : privateView(runtime.service, request.params.code, token);
     });
   }
-  command("start", {}, [], (rooms, code, token) => rooms.startTutorial(code, token), "public", true);
+  command("start", { tutorialMode: { enum: ["SKIP", "OPTIONAL"] }, markHostReady: { type: "boolean" } }, [], (rooms, code, token, body) => rooms.startTutorial(code, token, body.tutorialMode as "SKIP" | "OPTIONAL" ?? "SKIP", body.markHostReady === true), "public", true);
   command("reset", {}, [], (rooms, code, token) => {
     rooms.reset(code, token);
     const room = rooms.find(code);
     if (room.metadata) delete room.metadata.social;
-  }, "public", true);
+  }, "public", true, "OPTIONAL_GAME");
+  command("tutorial/cancel", {}, [], (rooms, code, token) => rooms.cancelTutorial(code, token), "public", true);
+  command("participants/:id/remove", { confirm: { const: true }, cancelTutorial: { type: "boolean" } }, ["confirm"], (rooms, code, token, body, request) => rooms.removeParticipant(code, token, request.params.id!, body.cancelTutorial === true), "public", true);
+  command("abort", { confirm: { const: true } }, ["confirm"], (rooms, code, token) => rooms.abort(code, token), "private", true, "GAME");
+  command("reopen", { confirm: { const: true } }, ["confirm"], (rooms, code, token) => rooms.reopen(code, token), "public", true, "OPTIONAL_GAME");
+  command("host/claim", { expectedOrganizerId: { type: "string", maxLength: 100 } }, ["expectedOrganizerId"], (rooms, code, token, body) => rooms.claimHost(code, token, body.expectedOrganizerId as string), "public");
   command("seats", { participantIds: { type: "array", items: { type: "string" }, maxItems: 12, uniqueItems: true } }, ["participantIds"], (rooms, code, token, body) => rooms.reorderSeats(code, token, body.participantIds as string[]), "public");
   command("ready", { ready: { type: "boolean" } }, ["ready"], (rooms, code, token, body) => rooms.setReady(code, token, body.ready as boolean), "public");
   command("resume", {}, [], (rooms, code, token) => rooms.resume(code, token));
@@ -200,7 +226,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   command("nomination/cancel", {}, [], (rooms, code, token) => rooms.cancelNomination(code, token));
   command("nomination/defense/complete", {}, [], (rooms, code, token) => rooms.finishDefense(code, token));
   command("vote", { raised: { type: "boolean" } }, ["raised"], (rooms, code, token, body) => rooms.vote(code, token, body.raised as boolean));
-  command("day/ready", {}, [], (rooms, code, token) => rooms.readyToEndDay(code, token));
+  command("day/ready", { ready: { type: "boolean" } }, ["ready"], (rooms, code, token, body) => rooms.readyToEndDay(code, token, body.ready as boolean));
   command("day/ability", { targetSeat: { type: "integer", minimum: 1, maximum: 12 } }, ["targetSeat"], (rooms, code, token, body) => rooms.useDayAbility(code, token, body.targetSeat as number));
   command("whispers", { targetSeat: { type: "integer", minimum: 1, maximum: 12 } }, ["targetSeat"], (rooms, code, token, body) => inviteWhisper(rooms.find(code), token, body.targetSeat as number));
   command("whispers/:id/respond", { accept: { type: "boolean" } }, ["accept"], (rooms, code, token, body, request) => respondWhisper(rooms.find(code), token, request.params.id!, body.accept as boolean));
@@ -226,7 +252,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
         try {
           accounts.set(request,await resolveAccount(request.headers.cookie));assertToken(request,token);
           member(runtime.service.find(request.params.code), token, mode);
-          socket.send(JSON.stringify({ type: "view", room: runtime.service.publicView(request.params.code), ...(mode === "PLAYER" ? { privateView: privateView(runtime.service, request.params.code, token) } : {}), serverNow: now() }));
+          socket.send(JSON.stringify({ type: "view", room: publicView(runtime.service, request.params.code, token, accounts.get(request)?.sub), ...(mode === "PLAYER" ? { privateView: privateView(runtime.service, request.params.code, token) } : {}), serverNow: now() }));
         } catch { socket.close(1008, "Room or session unavailable"); }
       };
       const unsubscribe = runtime.subscribe((codes) => { if (codes.includes(request.params.code.toUpperCase())) void publish(); });

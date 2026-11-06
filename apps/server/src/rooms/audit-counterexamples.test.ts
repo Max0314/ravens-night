@@ -8,7 +8,7 @@ function table(roleIds: string[], perceived: Record<number, string> = {}, cinema
   const { room, organizerToken } = service.create(roleIds.length, "规则反例");
   const players = roleIds.map((_, index) => service.join(room.code, `玩家${index + 1}`, "PLAYER"));
   for (const player of players) service.setReady(room.code, player.token, true);
-  service.startTutorial(room.code, organizerToken);
+  service.startTutorial(room.code, players[0]!.token);
   const snapshot = service.snapshot(room.code);
   snapshot.assignments = roleIds.map((roleId, index) => {
     const role = roleById(roleId);
@@ -224,14 +224,14 @@ describe("lifecycle, recovery and public choreography", () => {
   test("lobby readiness is explicit, duplicate start cannot redeal, running reset is rejected", () => {
     const service = new RoomService(); const { room, organizerToken } = service.create(5, "host");
     const players = Array.from({ length: 5 }, (_, index) => service.join(room.code, String(index), "PLAYER"));
-    expect(() => service.startTutorial(room.code, organizerToken)).toThrow(/准备/);
+    expect(() => service.startTutorial(room.code, players[0]!.token)).toThrow(/准备/);
     for (const player of players) service.setReady(room.code, player.token, true);
-    service.startTutorial(room.code, organizerToken);
+    service.startTutorial(room.code, players[0]!.token);
     const assignments = service.snapshot(room.code).assignments;
-    expect(() => service.startTutorial(room.code, organizerToken)).toThrow(/Only a lobby/);
+    expect(() => service.startTutorial(room.code, players[0]!.token)).toThrow(/Only a lobby/);
     expect(service.snapshot(room.code).assignments).toEqual(assignments);
     for (const player of players) service.completeTutorial(room.code, player.token);
-    expect(() => service.reset(room.code, organizerToken)).toThrow(/进行中/);
+    expect(() => service.reset(room.code, players[0]!.token)).toThrow(/中止/);
   });
 
   test("join rejects unexpected participant modes at runtime", () => {
@@ -346,11 +346,11 @@ describe("information privacy and recovery invariants", () => {
     const { room, organizerToken } = service.create(5, "host");
     const players = Array.from({ length: 5 }, (_, index) => service.join(room.code, String(index), "PLAYER"));
     for (const player of players) service.setReady(room.code, player.token, true);
-    service.startTutorial(room.code, organizerToken);
+    service.startTutorial(room.code, players[0]!.token);
     for (const player of players) service.completeTutorial(room.code, player.token);
     const snapshot = service.snapshot(room.code);
     snapshot.game!.phase = "VOTING";
-    snapshot.game!.nomination = { nominatorSeat: 1, nomineeSeat: 2 };
+    snapshot.game!.nomination = { ballotId: "fixture-ballot", nominatorSeat: 1, nomineeSeat: 2 };
     snapshot.game!.phaseDeadlineAt = now + 100;
     service.restore([snapshot]);
     now += 101;

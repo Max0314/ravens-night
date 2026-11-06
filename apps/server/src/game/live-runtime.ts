@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
 import { RoomService, type RoomRecord, type AccountClaim } from "../rooms/service.js";
+import type { RoomCommandContext } from "@ravens/contracts";
+import { RoomError, COMMAND_RECEIPT_LIMIT } from "../rooms/errors.js";
 export interface RoomRepository {
   initialize(): Promise<void>;
   loadAll(): Promise<RoomRecord[]>;
@@ -8,7 +10,11 @@ export interface RoomRepository {
   health?():Promise<void>;
   close(): Promise<void>;
 }
-interface Receipt { fingerprint: string; result: unknown; }
+interface Receipt { fingerprint: string; kind?: "view" | "result"; result?: unknown; actorCommandVersion?: number; contextId?: string; }
+export interface CommandReceipt {
+  code: string; id: string; actor: string; fingerprint: string;
+  context?: RoomCommandContext; accountId?: string; resultKind?: "view" | "result";
+}
 export class PersistenceUnavailableError extends Error {
   constructor(cause: unknown) { super("房间状态暂时无法保存，请稍后重试", { cause }); this.name = "PersistenceUnavailableError"; }
 }
@@ -22,11 +28,19 @@ export class LiveRoomRuntime {
   async initialize(): Promise<void> {
     if (!this.repository) return;
     await this.repository.initialize();
-    this.#service.restore(await this.repository.loadAll());
+    const snapshots = await this.repository.loadAll();
+    const legacyCodes = snapshots.filter(room => !room.schemaVersion).map(room => room.code);
+    this.#service.restore(snapshots);
     this.#service.restoreClaims(await this.repository.loadClaims?.()??[]);
+    const migrated = legacyCodes.map(code => this.#service.snapshot(code));
+    if (migrated.length) {
+      for (const room of migrated) room.revision += 1;
+      await this.repository.commit(migrated, []);
+      this.#service.restore(migrated);
+    }
   }
   subscribe(listener: (changedCodes: string[]) => void): () => void { this.#listeners.add(listener); return () => this.#listeners.delete(listener); }
-  execute<T>(mutation: (stage: RoomService) => T, receipt?: { code: string; id: string; actor: string; fingerprint: string }): Promise<T> {
+  execute<T>(mutation: (stage: RoomService) => T, receipt?: CommandReceipt): Promise<T> {
     const run = this.#tail.then(async () => {
       const before = this.#service.listCodes().map((code) => this.#service.snapshot(code));
       const stage = new RoomService(this.options);
@@ -34,20 +48,27 @@ export class LiveRoomRuntime {
       stage.restoreClaims(this.#service.accountClaims());
       const key = receipt ? createHash("sha256").update(`${receipt.actor}:${receipt.id}`).digest("hex") : undefined;
       const receiptRoom = receipt ? stage.find(receipt.code) : undefined;
+      const actor = receipt?.context ? stage.authorizeCommand(receipt.code, receipt.actor, receipt.context, receipt.accountId) : undefined;
       if (receipt && receiptRoom) {
         const actorHash = createHash("sha256").update(receipt.actor).digest("hex");
-        if (receiptRoom.organizerTokenHash !== actorHash && !receiptRoom.participants.some((p) => !p.left && p.tokenHash === actorHash)) throw new Error("Player authorization failed");
+        if (!receiptRoom.participants.some((p) => !p.left && p.tokenHash === actorHash)) throw new RoomError("SEAT_REMOVED", "原座位已失效，请重新加入或恢复", 403);
       }
       const receipts = (receiptRoom?.metadata?.commandReceipts ?? {}) as Record<string, Receipt>;
       if (key && receipts[key]) {
-        if (receipts[key]!.fingerprint !== receipt!.fingerprint) throw new Error("同一操作编号不能用于不同请求");
+        if (receipts[key]!.fingerprint !== receipt!.fingerprint) throw new RoomError("COMMAND_ID_REUSED", "同一操作编号不能用于不同请求");
         return structuredClone(receipts[key]!.result) as T;
       }
       const result = mutation(stage);
+      if (actor && receipt) stage.completeCommand(receipt.code, actor.participantId);
       if (key && receiptRoom && stage.listCodes().includes(receiptRoom.code)) {
-        receipts[key] = { fingerprint: receipt!.fingerprint, result: structuredClone(result) };
+        receipts[key] = {
+          fingerprint: receipt!.fingerprint, kind: receipt!.resultKind ?? "result",
+          ...(receipt!.resultKind === "view" ? {} : { result: structuredClone(result) }),
+          ...(actor ? { actorCommandVersion: actor.commandVersion } : {}),
+          ...(receipt!.context?.contextId ? { contextId: receipt!.context.contextId } : {}),
+        };
         const keys = Object.keys(receipts);
-        for (const old of keys.slice(0, Math.max(0, keys.length - 256))) delete receipts[old];
+        for (const old of keys.slice(0, Math.max(0, keys.length - COMMAND_RECEIPT_LIMIT))) delete receipts[old];
         receiptRoom.metadata = { ...receiptRoom.metadata, commandReceipts: receipts };
         receiptRoom.revision += 1;
       }

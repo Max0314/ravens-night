@@ -8,7 +8,7 @@ function timedTable(roleIds = ["chef", "empath", "soldier", "saint", "baron", "i
   const { room, organizerToken } = service.create(roleIds.length, "顺时针测试");
   const players = roleIds.map((_, index) => service.join(room.code, `玩家${index + 1}`, "PLAYER"));
   for (const player of players) service.setReady(room.code, player.token, true);
-  service.startTutorial(room.code, organizerToken);
+  service.startTutorial(room.code, players[0]!.token);
   const snapshot = service.snapshot(room.code);
   snapshot.assignments = roleIds.map((roleId, index) => ({ seat: index + 1, roleId, perceivedRoleId: roleId, roleType: roleById(roleId).type, alignment: ["MINION", "DEMON"].includes(roleById(roleId).type) ? "EVIL" : "GOOD" }));
   service.restore([snapshot]);
@@ -85,14 +85,15 @@ test("Butler's counted vote is frozen even if their later-counted master lowers 
   expect(t.game().events.at(-1)!).toMatchObject({ kind: "VOTE_RESULT", votes: 1, seats: [1] });
 });
 
-test("a master raising after Butler's count does not retroactively grant the Butler a vote", () => {
+test("a Butler hand counts even without the master; only its owner receives a reminder", () => {
   const t = timedTable(["butler", "chef", "empath", "saint", "baron", "imp"]);
   t.mutate((state) => { state.game!.butlerMasterSeat = 4; });
   t.nominate(2, 6); t.vote(1, true);
   t.advance(21_500);
-  expect(t.game().nomination!.countedVotes![1]).toBe(false);
+  expect(t.game().nomination!.countedVotes![1]).toBe(true);
+  expect(t.service.privateView(t.room.code, t.players[0]!.token).history.at(-1)?.text).toContain("主人未举手");
   t.vote(4, true); t.finish();
-  expect(t.game().events.at(-1)!).toMatchObject({ votes: 1, seats: [4] });
+  expect(t.game().events.at(-1)!).toMatchObject({ votes: 2, seats: [1, 4] });
 });
 
 test("a master whose ghost vote was already counted still authorizes the living Butler's later vote", () => {

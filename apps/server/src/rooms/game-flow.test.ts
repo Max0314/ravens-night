@@ -6,7 +6,7 @@ test("all players share tutorial state and receive only their own role", () => {
   const { room, organizerToken } = service.create(5, "Max");
   const players = ["一", "二", "三", "四", "五"].map((nickname) => service.join(room.code, nickname, "PLAYER"));
 
-  service.startTutorial(room.code, organizerToken);
+  service.startTutorial(room.code, players[0]!.token);
   expect(service.publicView(room.code).state).toBe("TUTORIAL");
   for (const player of players) service.completeTutorial(room.code, player.token);
   expect(service.publicView(room.code).state).toBe("RUNNING");
@@ -21,8 +21,8 @@ test("all players share tutorial state and receive only their own role", () => {
 test("a room cannot start before every planned player has joined", () => {
   const service = new RoomService();
   const { room, organizerToken } = service.create(5, "Max");
-  service.join(room.code, "一", "PLAYER");
-  expect(() => service.startTutorial(room.code, organizerToken)).toThrow(/all players/i);
+  const players = [service.join(room.code, "一", "PLAYER")];
+  expect(() => service.startTutorial(room.code, players[0]!.token)).toThrow(/all players/i);
 });
 
 test("a player can leave the lobby and their seat is released", () => {
@@ -38,7 +38,7 @@ test("a player can leave the lobby and their seat is released", () => {
     { nickname: "一", seat: 1 },
     { nickname: "三", seat: 2 },
   ]);
-  expect(() => service.privateView(room.code, second.token)).toThrow(/authorization/i);
+  expect(() => service.privateView(room.code, second.token)).toThrow(/房主|authorization/i);
   expect(service.privateView(room.code, first.token).participant.seat).toBe(1);
   expect(service.privateView(room.code, third.token).participant.seat).toBe(2);
 });
@@ -98,14 +98,14 @@ test("the room is destroyed when its last player leaves", () => {
 
 test("a player cannot leave after the game starts", () => {
   const { service, room, players } = runningRoom();
-  expect(() => service.leave(room.code, players[0]!.token)).toThrow(/不能中途退出/);
+  expect(() => service.leave(room.code, players[0]!.token)).toThrow(/本局仍在进行/);
 });
 
 function runningRoom() {
   const service = new RoomService();
   const { room, organizerToken } = service.create(5, "主持测试");
   const players = ["一", "二", "三", "四", "五"].map((nickname) => service.join(room.code, nickname, "PLAYER"));
-  service.startTutorial(room.code, organizerToken);
+  service.startTutorial(room.code, players[0]!.token);
   for (const player of players) service.completeTutorial(room.code, player.token);
   return { service, room, players };
 }
@@ -220,23 +220,23 @@ test("the organizer can reset a table without making seated players rejoin", () 
   const service = new RoomService();
   const created = service.create(5, "创建者");
   const seated = ["一", "二", "三", "四", "五"].map((nickname) => service.join(created.room.code, nickname, "PLAYER"));
-  service.startTutorial(created.room.code, created.organizerToken);
+  service.startTutorial(created.room.code, seated[0]!.token);
   const firstSetup = service.snapshot(created.room.code);
   for (const player of seated) service.completeTutorial(created.room.code, player.token);
 
-  expect(() => service.reset(created.room.code, "wrong-token")).toThrow(/authorization/i);
-  expect(() => service.reset(created.room.code, created.organizerToken)).toThrow(/进行中/);
+  expect(() => service.reset(created.room.code, "wrong-token")).toThrow(/房主|authorization/i);
+  expect(() => service.reset(created.room.code, seated[0]!.token)).toThrow(/中止/);
   const ended = service.snapshot(created.room.code);
   ended.state = "GAME_OVER"; ended.game!.phase = "GAME_OVER";
   service.restore([ended]);
-  service.reset(created.room.code, created.organizerToken);
+  service.reset(created.room.code, seated[0]!.token);
   const reset = service.publicView(created.room.code);
   expect(reset.state).toBe("LOBBY");
   expect(reset.participants).toHaveLength(5);
   expect(reset.game).toBeUndefined();
 
   for (const player of seated) service.setReady(created.room.code, player.token, true);
-  service.startTutorial(created.room.code, created.organizerToken);
+  service.startTutorial(created.room.code, seated[0]!.token);
   expect(service.publicView(created.room.code).state).toBe("TUTORIAL");
   const secondSetup = service.snapshot(created.room.code);
   expect(secondSetup.gameNumber).toBe(firstSetup.gameNumber + 1);

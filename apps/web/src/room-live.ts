@@ -1,4 +1,5 @@
 import type { PrivateView, RoomView } from "./api.js";
+import { observeRoomView } from "./api.js";
 export interface RoomPacket { type: "view"; room: RoomView; privateView?: PrivateView; serverNow: number }
 
 /** Cookie-authenticated updates, with bounded reconnect and an HTTP polling fallback. */
@@ -9,7 +10,7 @@ export function connectRoomFeed(code: string, mode: "PLAYER" | "DISPLAY", receiv
     if (stopped) return;
     socket = new WebSocket(`${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/api/rooms/${encodeURIComponent(code)}/live?mode=${mode}`);
     socket.onopen = () => { backoff = 1_000; heartbeat = window.setInterval(() => { if (socket?.readyState === WebSocket.OPEN) socket.send("ping"); }, 15_000); };
-    socket.onmessage = (event) => { if (stopped) return; try { const packet = JSON.parse(String(event.data)) as RoomPacket; if (packet.type === "view" && packet.room) receive(packet); } catch { /* Polling will repair an invalid packet. */ } };
+    socket.onmessage = (event) => { if (stopped) return; try { const packet = JSON.parse(String(event.data)) as RoomPacket; if (packet.type === "view" && packet.room) { observeRoomView(code, packet.room, mode); if (packet.privateView) observeRoomView(code, packet.privateView, mode); receive(packet); } } catch { /* Polling will repair an invalid packet. */ } };
     socket.onclose = (event) => { if (heartbeat !== undefined) window.clearInterval(heartbeat); if (!stopped && event.code !== 1008) { retry = window.setTimeout(connect, backoff); backoff = Math.min(15_000, backoff * 2); } };
     socket.onerror = () => { /* The close callback owns retries; avoid concurrent sockets. */ };
   };

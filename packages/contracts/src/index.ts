@@ -3,3 +3,4 @@ export * from "./events.js";
 export * from "./transport.js";
 export * from "./views.js";
 export * from "./experience.js";
+export * from "./room-protocol.js";
