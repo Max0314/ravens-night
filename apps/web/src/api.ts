@@ -1,68 +1,8 @@
 import type { ExperienceEvent, StorytellerDecision, RoomProtocolView, RoomCommandContext } from "@ravens/contracts";
 import {roomSessionKey} from './account-context.js';
-export interface RoomParticipant { id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
-export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
-export interface GameView {
-  contextId?: string;
-  gameId?: string;
-  revision?: number;
-  serverNow?: number;
-  presentationUntil?: number;
-  phaseDeadlineAt?: number;
-  pauseReason?: string;
-  phase: "ROLE_REVEAL" | "FIRST_NIGHT" | "DAY_DISCUSSION" | "NOMINATION" | "VOTING" | "OTHER_NIGHT" | "GAME_OVER" | "ABORTED";
-  day: number;
-  seats: Array<{ seat: number; nickname: string; connected: boolean; alive: boolean; ghostVoteAvailable: boolean }>;
-  events: Array<Partial<ExperienceEvent> & { seq: number; message: string }>;
-  readyCount: number;
-  aliveCount: number;
-  nomination?: { ballotId?: string; nominatorSeat: number; nomineeSeat: number; votesReceived: number; votesRaised: number; threshold: number; votersRequired?: number; defenseUntil?: number; voteStartsAt?: number; voteEndsAt?: number; currentVoterSeat?: number; countedSeats?: number[]; countedVotes?: Record<number, boolean>; voterOrder?: number[]; raisedSeats?: number[]; nextCountAt?: number };
-  onBlock?: { seat: number; votes: number };
-  executionTied?: boolean;
-  winner?: "GOOD" | "EVIL";
-  winReason?: string;
-}
-export interface RoomView extends Partial<RoomProtocolView> { code: string; state: string; playerCount: number; playMode?: RoomPlayMode; voiceRoomUrl?: string; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView; rulesSummary?: string; hostClaimAt?: number; tutorialCompleteCount?: number }
-export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
-export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
-export interface PrivateHistoryEntry {
-  seq: number;
-  phase: PrivateHistoryPhase;
-  day: number;
-  kind: PrivateHistoryKind;
-  text: string;
-}
-export interface PrivateView extends Partial<RoomProtocolView> {
-  contextId?: string;
-  dayReady?: boolean;
-  canCancelNomination?: boolean;
-  canAbort?: boolean;
-  canRestart?: boolean;
-  canCancelTutorial?: boolean;
-  canClaimHost?: boolean;
-  butler?: { masterSeat?: number; masterRaised: boolean };
-  social?: { invitations: Array<{ id: string; fromSeat: number; toSeat: number; status: string; createdAt: number }>; activeWhisper?: { id: string; participants: number[]; messages: Array<{ id: string; seat: number; text: string; createdAt: number }> } };
-  participant: { id: string; nickname: string; seat: number; tutorialComplete?: boolean };
-  storytellerDecisions?: StorytellerDecision[];
-  state: string;
-  playMode?: RoomPlayMode;
-  voiceRoomUrl?: string;
-  canClaimSlayer?: boolean;
-  dayAbilityTargets?: number[];
-  canNominate?: boolean;
-  nominationTargets?: number[];
-  canVote?: boolean;
-  canEndDay?: boolean;
-  canFinishDefense?: boolean;
-  role?: { roleId: string; alignment: "GOOD" | "EVIL"; type: string; name: string; summary: string; beginnerTip: string; perceivedAs?: string };
-  roleConfirmed?: boolean;
-  voteRaised?: boolean;
-  messages: string[];
-  history: PrivateHistoryEntry[];
-  game?: GameView;
-  action?: { kind: "CONFIRM_ROLE" | "SELECT_ONE" | "SELECT_TWO" | "VOTE" | "DAY" | "SLAYER"; legalSeats: number[]; minTargets: number; maxTargets: number; prompt: string };
-}
-
+import { isOlderSnapshot } from "./snapshot-order.js";
+import type { RoomParticipant, RoomPlayMode, GameView, RoomView, PrivateView, RoomResult } from "@ravens/contracts";
+export type { RoomParticipant, RoomPlayMode, GameView, RoomView, PrivateView, RoomResult, PrivateHistoryEntry, PrivateHistoryPhase, PrivateHistoryKind } from "@ravens/contracts";
 export class ApiError extends Error {
   constructor(message: string, readonly status: number, readonly errorCode?: string) { super(message); this.name = "ApiError"; }
 }
@@ -70,15 +10,15 @@ let accountGeneration=0;
 type ContextView = Partial<RoomProtocolView> & { contextId?: string; game?: GameView };
 const contexts = new Map<string, ContextView>();
 const tails = new Map<string, Promise<unknown>>();
-interface Intent { url: string; init: RequestInit; body: Record<string, unknown>; binding: Omit<RoomCommandContext, "expectedCommandVersion">; generation: number; sent: boolean; promise?: Promise<unknown> }
+interface Intent { onCommitted?: (() => void) | undefined; url: string; init: RequestInit; body: Record<string, unknown>; binding: Omit<RoomCommandContext, "expectedCommandVersion">; generation: number; sent: boolean; promise?: Promise<unknown> }
 const unsentVotes = new Map<string, Intent>();
 const pending = new Map<string, Intent>();
 const contextKey = (code: string, mode = currentRoomMode()) => `${code.toUpperCase()}:${mode}`;
-export function resetAccountContext(){accountGeneration++; contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear();}
+export function resetAccountContext(){accountGeneration++; contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear();}
 export function observeRoomView(code: string, incoming: ContextView, mode = currentRoomMode()) {
   const key = contextKey(code, mode), previous = contexts.get(key);
   if (!incoming.roomInstanceId || !incoming.self) return;
-  if (previous?.roomInstanceId === incoming.roomInstanceId && (incoming.revision ?? 0) < (previous.revision ?? 0)) return;
+  if (isOlderSnapshot(incoming, previous)) return;
   contexts.set(key, incoming);
 }
 
@@ -96,10 +36,10 @@ function commandBinding(code: string, path: string): Omit<RoomCommandContext, "e
 const memberPath = (url: string) => /^\/api\/rooms\/([^/]+)\/(.+)$/.exec(url);
 function isMemberWrite(url: string, init?: RequestInit) {
   const match = memberPath(url);
-  return match && init?.method && !["GET", "HEAD"].includes(init.method) && !/^(join|recover|account\/)/.test(match[2]!) ? match : undefined;
+  return match && init?.method && !["GET", "HEAD"].includes(init.method) && !/^(?:join$|recover$|account\/)/.test(match[2]!) ? match : undefined;
 }
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+async function request<T>(url: string, init?: RequestInit, onCommitted?: () => void): Promise<T> {
   const match = isMemberWrite(url, init);
   if (!match) return rawRequest<T>(url, init);
   const code = match[1]!, path = match[2]!, key = contextKey(code), binding = commandBinding(code, path);
@@ -109,7 +49,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     old.body = body;
     return old.promise as Promise<T>;
   }
-  const intent: Intent = { url, init: { ...init, headers: { "x-command-id": crypto.randomUUID() } }, body, binding, generation: accountGeneration, sent: false };
+  const intent: Intent = { onCommitted, url, init: { ...init, headers: { "x-command-id": crypto.randomUUID() } }, body, binding, generation: accountGeneration, sent: false };
   const run = (tails.get(key) ?? Promise.resolve()).catch(() => undefined).then(async () => {
     if (intent.generation !== accountGeneration) throw new ApiError("账号已切换，请重新操作", 409, "ACCOUNT_CHANGED");
     if (pending.has(key)) throw new ApiError("上一项操作结果待确认，请先重试该操作", 409, "COMMAND_PENDING");
@@ -120,7 +60,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     const commandVersion = contexts.get(key)!.self!.commandVersion;
     intent.init.body = JSON.stringify({ ...intent.body, ...intent.binding, expectedCommandVersion: commandVersion });
     return dispatchIntent<T>(key, intent);
-  });
+  }).finally(() => { if (unsentVotes.get(key) === intent) unsentVotes.delete(key); });
   intent.promise = run;
   tails.set(key, run);
   if (path === "vote") unsentVotes.set(key, intent);
@@ -132,8 +72,13 @@ async function dispatchIntent<T>(key: string, intent: Intent): Promise<T> {
   try {
     const result = await rawRequest<T>(intent.url, intent.init);
     if (pending.get(key) === intent) pending.delete(key);
+    const committed=intent.onCommitted;intent.onCommitted=undefined;committed?.();
     return result;
   } catch (error) {
+    if (intent.init.method === "DELETE" && intent.url.endsWith("/leave") && error instanceof ApiError && (error.status === 404 || (error.status === 403 && error.errorCode === "SEAT_REMOVED"))) {
+      if (pending.get(key) === intent) pending.delete(key);
+      return { left: true, roomDestroyed: error.status === 404, organizerChanged: false, self: null } as T;
+    }
     if (error instanceof ApiError && error.status < 500 && pending.get(key) === intent) pending.delete(key);
     throw error;
   }
@@ -162,7 +107,7 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
       const body = await response.json().catch((error: unknown) => { if (error instanceof TypeError) throw error; return { error: "服务器暂时无法响应，请稍后重试" }; }) as T & { error?: string; errorCode?: string };
       if(generation!==accountGeneration)throw new ApiError('账号已切换，旧请求结果已丢弃',409);
       if (!response.ok) throw new ApiError(body.error ?? "请求失败，请稍后重试", response.status, body.errorCode);
-      const match = memberPath(url);
+      const match = /^\/api\/rooms\/([^/?]+)(?:[/?]|$)/.exec(url);
       if (match && typeof body === "object" && body) {
         const view = body as ContextView;
         if (view.roomInstanceId) observeRoomView(match[1]!, view, headers.get("x-room-mode") === "DISPLAY" ? "DISPLAY" : "PLAYER");
@@ -193,8 +138,35 @@ export function createRoom(playerCount: number, organizerName: string, playMode:
   return request<{ code: string; organizerToken: string }>("/api/rooms", { method: "POST", body: JSON.stringify({ playerCount, organizerName, playMode, ...(voiceRoomUrl?.trim() ? { voiceRoomUrl: voiceRoomUrl.trim() } : {}) }) });
 }
 
-export function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPLAY") {
-  return request<{ id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; token: string }>(`/api/rooms/${code}/join`, { method: "POST", body: JSON.stringify({ nickname, mode }) });
+const joinTickets = new Map<string, string>();
+export async function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPLAY") {
+  const key = `ravens_join:${roomSessionKey()}:${code}:${mode}`;
+  let ticket = joinTickets.get(key);
+  try { ticket ??= sessionStorage.getItem(key) ?? undefined; } catch { /* In-memory retry remains available. */ }
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (!ticket) {
+      ticket = (await request<{ joinTicket: string }>(`/api/rooms/${code}/join-ticket?mode=${mode}`, { headers: { "x-room-mode": mode } })).joinTicket;
+      joinTickets.set(key, ticket);
+      try { sessionStorage.setItem(key, ticket); } catch { /* Cookie recovery remains available. */ }
+    }
+    try {
+      const result = await request<{ id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; token: string }>(`/api/rooms/${code}/join`, { method: "POST", headers: { "x-room-mode": mode }, body: JSON.stringify({ nickname, mode, joinTicket: ticket }) });
+      const context=contextKey(code,mode);
+      if(contexts.get(context)?.self?.participantId !== result.id){contexts.delete(context);pending.delete(context);tails.delete(context);unsentVotes.delete(context);}
+      joinTickets.delete(key);
+      try { sessionStorage.removeItem(key); } catch { /* The seat is already committed. */ }
+      return result;
+    } catch (error) {
+      if (error instanceof ApiError && ["SETUP_CHANGED", "JOIN_TICKET_EXPIRED", "JOIN_TICKET_REVOKED"].includes(error.errorCode ?? "")) {
+        joinTickets.delete(key); ticket = undefined;
+        try { sessionStorage.removeItem(key); } catch { /* Retry still has the in-memory decision. */ }
+        // Only a confirmed unused setup conflict may obtain another ticket automatically.
+        if (error.errorCode === "SETUP_CHANGED" && attempt === 0) continue;
+      }
+      throw error;
+    }
+  }
+  throw new ApiError("人数或座序已变化，请重新加入", 409, "SETUP_CHANGED");
 }
 
 export function leaveRoom(code: string) { return request<{ left: true; roomDestroyed: boolean; organizerChanged: boolean }>(`/api/rooms/${code}/leave`, { method: "DELETE", body: "{}" }); }
@@ -221,7 +193,7 @@ export function useDayAbility(code: string, targetSeat: number) { return request
 export function inviteWhisper(code: string, targetSeat: number) { return request<unknown>(`/api/rooms/${code}/whispers`, { method: "POST", body: JSON.stringify({ targetSeat }) }); }
 export function respondWhisper(code: string, id: string, accept: boolean) { return request<unknown>(`/api/rooms/${code}/whispers/${encodeURIComponent(id)}/respond`, { method: "POST", body: JSON.stringify({ accept }) }); }
 export function leaveWhisper(code: string) { return request<unknown>(`/api/rooms/${code}/whispers/leave`, { method: "POST", body: "{}" }); }
-export function sendWhisper(code: string, id: string, text: string) { return request<unknown>(`/api/rooms/${code}/whispers/${encodeURIComponent(id)}/messages`, { method: "POST", body: JSON.stringify({ text }) }); }
+export function sendWhisper(code: string, id: string, text: string, onCommitted?: () => void) { return request<unknown>(`/api/rooms/${code}/whispers/${encodeURIComponent(id)}/messages`, { method: "POST", body: JSON.stringify({ text }) }, onCommitted); }
 export function createRecoveryCode(code: string) { return request<{ recoveryCode: string; expiresAt: number }>(`/api/rooms/${code}/recovery`, { method: "POST", body: "{}" }); }
 export async function recoverRoom(code: string, recoveryCode: string) {
   const digest = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${code}:${recoveryCode}`)))].map((byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -239,3 +211,5 @@ function currentRoomMode(): "PLAYER" | "DISPLAY" {
   try { return JSON.parse(sessionStorage.getItem(roomSessionKey()) ?? "{}").mode === "DISPLAY" ? "DISPLAY" : "PLAYER"; }
   catch { return "PLAYER"; }
 }
+
+export function getRoomResult(code: string) { return request<{ result: RoomResult | null }>(`/api/rooms/${code}/result`); }

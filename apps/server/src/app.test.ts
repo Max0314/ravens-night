@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, test } from "vitest";
-import { buildApp } from "./app.js";
+import { protocolApp as buildApp } from "./test-fixtures/protocol-app.js";
 
 describe("HTTP application", () => {
   const apps: Array<ReturnType<typeof buildApp>> = [];
   afterEach(async () => Promise.all(apps.splice(0).map((app) => app.close())));
 
   test("health endpoint reports readiness", async () => {
-    const app = buildApp();
+    const app = buildApp({presentation:false,timers:false});
     apps.push(app);
     const response = await app.inject({ method: "GET", url: "/healthz" });
     expect(response.statusCode).toBe(200);
@@ -28,7 +28,7 @@ describe("HTTP application", () => {
   });
 
   test("five guests can join one invitation-only room", async () => {
-    const app = buildApp();
+    const app = buildApp({presentation:false,timers:false});
     apps.push(app);
     const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "Max" } });
     expect(created.statusCode).toBe(201);
@@ -43,7 +43,7 @@ describe("HTTP application", () => {
   });
 
   test("leaving a lobby releases the participant cookie and seat", async () => {
-    const app = buildApp();
+    const app = buildApp({presentation:false,timers:false});
     apps.push(app);
     const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "Max" } });
     const room = created.json<{ code: string }>();
@@ -53,13 +53,13 @@ describe("HTTP application", () => {
     const left = await app.inject({ method: "DELETE", url: `/api/rooms/${room.code}/leave`, headers: { cookie: playerCookie }, payload: {} });
 
     expect(left.statusCode).toBe(200);
-    expect(left.json()).toEqual({ left: true, roomDestroyed: true, organizerChanged: true });
+    expect(left.json()).toEqual({ left: true, roomDestroyed: true, organizerChanged: true, self:null });
     expect(String(left.headers["set-cookie"])).toContain("ravens_player=");
     expect((await app.inject({ method: "GET", url: `/api/rooms/${room.code}` })).statusCode).toBe(404);
   });
 
   test("the successor can start with their player cookie after the original organizer leaves", async () => {
-    const app = buildApp();
+    const app = buildApp({presentation:false,timers:false});
     apps.push(app);
     const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "原房主" } });
     const room = created.json<{ code: string }>();
@@ -82,11 +82,11 @@ describe("HTTP application", () => {
     }
     const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, headers: { cookie: cookies[1]! }, payload: {} });
     expect(started.statusCode).toBe(200);
-    expect(started.json()).toMatchObject({ state: "TUTORIAL", organizerName: "接任房主" });
+    expect(started.json()).toMatchObject({ state: "RUNNING", organizerName: "接任房主" });
   });
 
-  test("the organizer and display may reorder players, but an ordinary player may not", async () => {
-    const app = buildApp();
+  test("only the current organizer may reorder players", async () => {
+    const app = buildApp({presentation:false,timers:false});
     apps.push(app);
     const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "原房主" } });
     const room = created.json<{ code: string }>();
@@ -100,19 +100,20 @@ describe("HTTP application", () => {
     const participantIds = [players[2]!.id, players[0]!.id, players[1]!.id, players[3]!.id, players[4]!.id];
 
     const denied = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: players[1]!.cookie }, payload: { participantIds } });
-    expect(denied.statusCode).toBe(400);
+    expect(denied.statusCode).toBe(403);
     expect(denied.json()).toMatchObject({ error: expect.stringContaining("房主") });
 
     expect((await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: players[0]!.cookie }, payload: { participantIds } })).statusCode).toBe(200);
 
     const reordered = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/seats`, headers: { cookie: displayCookie }, payload: { participantIds } });
-    expect(reordered.statusCode).toBe(200);
-    expect(reordered.json()).toMatchObject({ organizerId: players[0]!.id, organizerName: "原房主" });
-    expect(reordered.json().participants.find((participant: { id: string }) => participant.id === players[2]!.id)).toMatchObject({ seat: 1, nickname: "三号" });
+    expect(reordered.statusCode).toBe(403);
+    const current=await app.inject(`/api/rooms/${room.code}`);
+    expect(current.json()).toMatchObject({ organizerId: players[0]!.id, organizerName: "原房主" });
+    expect(current.json().participants.find((participant: { id: string }) => participant.id === players[2]!.id)).toMatchObject({ seat: 1, nickname: "三号" });
   });
 
   test("the organizer starts one synchronized tutorial and each player receives a private role", async () => {
-    const app = buildApp();
+    const app = buildApp({presentation:false,timers:false});
     apps.push(app);
     const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "Max" } });
     const room = created.json<{ code: string; organizerToken: string }>();
@@ -122,7 +123,8 @@ describe("HTTP application", () => {
       tokens.push(joined.json<{ token: string }>().token);
       expect((await app.inject({ method: "POST", url: `/api/rooms/${room.code}/ready`, payload: { token: joined.json().token, ready: true } })).statusCode).toBe(200);
     }
-    const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, payload: { organizerToken: room.organizerToken } });
+    for(const token of tokens)await app.inject({method:"POST",url:`/api/rooms/${room.code}/ready`,payload:{token,ready:true}});
+    const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, payload: { token: tokens[0], tutorialMode:"OPTIONAL" } });
     expect(started.statusCode).toBe(200);
     for (const token of tokens) {
       const completed = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/tutorial/complete`, payload: { token } });
@@ -140,7 +142,7 @@ describe("HTTP application", () => {
   });
 
   test("signed device cookies restore organizer and player identity without exposing tokens in URLs", async () => {
-    const app = buildApp();
+    const app = buildApp({presentation:false,timers:false});
     apps.push(app);
     const created = await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "创建者" } });
     const room = created.json<{ code: string }>();
@@ -151,7 +153,9 @@ describe("HTTP application", () => {
       playerCookies.push(String(joined.headers["set-cookie"]).split(";")[0]!);
       expect((await app.inject({ method: "POST", url: `/api/rooms/${room.code}/ready`, headers: { cookie: playerCookies.at(-1)! }, payload: { ready: true } })).statusCode).toBe(200);
     }
-    const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, headers: { cookie: organizerCookie }, payload: {} });
+    expect((await app.inject({method:"POST",url:`/api/rooms/${room.code}/start`,headers:{cookie:organizerCookie},payload:{}})).statusCode).toBe(403);
+    for(const cookie of playerCookies)await app.inject({method:"POST",url:`/api/rooms/${room.code}/ready`,headers:{cookie},payload:{ready:true}});
+    const started = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/start`, headers: { cookie: playerCookies[0]! }, payload: {tutorialMode:"OPTIONAL"} });
     expect(started.statusCode).toBe(200);
     for (const cookie of playerCookies) {
       const completed = await app.inject({ method: "POST", url: `/api/rooms/${room.code}/tutorial/complete`, headers: { cookie }, payload: {} });

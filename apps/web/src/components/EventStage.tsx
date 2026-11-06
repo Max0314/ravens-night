@@ -87,11 +87,11 @@ export function EventStage({ game, receipt, preview = false }: { game?: GameView
   function skip() { silenceEffects(); if (active) { remember(active.id); setDismissed((all) => [...all, active.id]); } setPrivateScene(undefined); }
   function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !reduced) scheduleCue(active.id, active.kind, elapsed); }); }
   const event = active;
-  const showResult = reducedOrLate || elapsed >= (event?.kind === "SHOT" ? 2_800 : event?.kind === "EXECUTION" ? 2_800 : 2_100);
+  const showResult = Boolean(event?.outcome) && (reducedOrLate || elapsed >= (event?.kind === "SHOT" ? 2_800 : event?.kind === "EXECUTION" ? 2_800 : 2_100));
   const target = game?.seats.find((seat) => seat.seat === event?.targetSeat);
   const actor = game?.seats.find((seat) => seat.seat === event?.actorSeat);
-  const deaths = event?.seats ?? (event?.targetSeat ? [event.targetSeat] : []);
-  const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${actor?.nickname ?? `${event.actorSeat ?? "?"} 号玩家`} 举起了枪`, EXECUTION: showResult ? event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
+  const deaths = event?.seats ?? [];
+  const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${actor?.nickname ?? `${event.actorSeat ?? "?"} 号玩家`} 举起了枪`, EXECUTION: showResult ? event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !event.outcome ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
   return <>
     <button className="effects-audio" type="button" aria-pressed={sound} onClick={toggleSound} title={sound ? "关闭演出音效" : "点击启用演出音效"}>{sound ? "♪ 音效开" : "♪ 音效关"}</button>
     {event ? <section key={event.id} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${reduced ? " is-reduced" : ""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": `${animationAnchor.current?.delay ?? 0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>

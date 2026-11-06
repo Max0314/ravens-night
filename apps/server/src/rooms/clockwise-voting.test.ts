@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { roleById } from "@ravens/game-engine";
 import { RoomService, type RoomRecord } from "./service.js";
+import { initializePresentation } from "./presentation.js";
 
 function timedTable(roleIds = ["chef", "empath", "soldier", "saint", "baron", "imp"]) {
   let now = 1_800_000_000_000;
@@ -13,13 +14,13 @@ function timedTable(roleIds = ["chef", "empath", "soldier", "saint", "baron", "i
   snapshot.assignments = roleIds.map((roleId, index) => ({ seat: index + 1, roleId, perceivedRoleId: roleId, roleType: roleById(roleId).type, alignment: ["MINION", "DEMON"].includes(roleById(roleId).type) ? "EVIL" : "GOOD" }));
   service.restore([snapshot]);
   for (const player of players) service.completeTutorial(room.code, player.token);
-  const mutate = (change: (state: RoomRecord) => void) => { const state = service.snapshot(room.code); change(state); service.restore([state]); };
+  const mutate = (change: (state: RoomRecord) => void) => { const state = service.snapshot(room.code); change(state); delete state.game!.publicProjection; delete state.game!.pendingPublications; initializePresentation(state.game!); service.restore([state]); };
   mutate((state) => { state.game!.phase = "DAY_DISCUSSION"; state.game!.day = 1; });
   const game = () => service.publicView(room.code).game!;
   const advance = (milliseconds: number, tick = true) => { now += milliseconds; if (tick) service.advanceTime(now); };
   const nominate = (actor: number, nominee: number) => { service.nominate(room.code, players[actor - 1]!.token, nominee); advance(2500); };
   const vote = (seat: number, raised: boolean) => service.vote(room.code, players[seat - 1]!.token, raised);
-  const finish = () => { advance(game().nomination!.voteEndsAt! - now); };
+  const finish = () => { advance(game().nomination!.voteEndsAt! - now); advance(1500); };
   return { service, room, players, mutate, game, advance, nominate, vote, finish, now: () => now };
 }
 
@@ -41,6 +42,16 @@ test("production defense lasts twenty seconds and all submitted ballots still co
   t.finish();
   expect(t.game().phase).toBe("NOMINATION");
   expect(t.game().onBlock).toEqual({ seat: 3, votes: 6 });
+});
+
+test("the final frozen ghost vote is public before VOTE_RESULT starts",()=>{
+  const t=timedTable();t.mutate(room=>{room.game!.aliveSeats=[1,2,3,4,5];});t.nominate(1,6);t.vote(6,true);
+  const end=t.game().nomination!.voteEndsAt!;t.advance(end-t.now());
+  expect(t.game().nomination!.countedSeats).toHaveLength(6);expect(t.game().nomination!.countedVotes?.[6]).toBe(true);expect(t.game().seats.find(p=>p.seat===6)!.ghostVoteAvailable).toBe(false);
+});
+test("the final sunset confirmation is immediately visible before night publication",()=>{
+  const t=timedTable();for(const player of t.players)t.service.readyToEndDay(t.room.code,player.token,true);
+  expect(t.game().readyCount).toBe(6);expect(t.game().phase).toBe("DAY_DISCUSSION");const night=t.service.snapshot(t.room.code).game!.events.find(e=>e.kind==="NIGHT_FALLS")!;t.advance(night.startsAt-t.now());expect(t.game().readyCount).toBe(0);
 });
 
 test("only the nominee can end defense early, including a nominated dead player", () => {
@@ -127,6 +138,7 @@ test("equal highest timed vote totals clear the execution block through a tie", 
   expect(t.game().events.at(-1)!).toMatchObject({ outcome: "TIED", votes: 3 });
   t.advance(4000);
   for (const player of t.players) t.service.readyToEndDay(t.room.code, player.token);
+  t.advance(4300);
   expect(t.game().aliveCount).toBe(6);
   expect(t.game().events.filter((event) => event.kind === "EXECUTION").at(-1)!.outcome).toBe("NONE");
 });
@@ -150,14 +162,14 @@ test("an interrupted count resumes from the persisted slot without re-counting a
   const snapshot = t.service.snapshot(t.room.code);
   const restored = new RoomService({ presentation: true, now: t.now }); restored.restore([snapshot]);
   expect(restored.publicView(t.room.code).game!.nomination!.countedSeats).toEqual([1, 2]);
-  t.advance(t.game().nomination!.voteEndsAt! - t.now(), false); restored.advanceTime(t.now());
+  t.advance(t.game().nomination!.voteEndsAt! - t.now(), false); restored.advanceTime(t.now()); t.advance(1500, false); restored.advanceTime(t.now());
   const result = restored.publicView(t.room.code).game!;
   expect(result.events.at(-1)!).toMatchObject({ votes: 2, seats: [1, 3] });
   expect(result.seats[0]!.ghostVoteAvailable).toBe(false);
 });
 
 test("all disconnected players automatically abstain and the ballot completes", () => {
-  const t = timedTable(); t.nominate(1, 6); t.advance(60_000);
+  const t = timedTable(); t.nominate(1, 6); t.advance(60_000); t.advance(1500);
   expect(t.game().phase).toBe("NOMINATION");
   expect(t.game().events.at(-1)!).toMatchObject({ votes: 0, seats: [] });
   expect(t.game().seats.every((seat) => seat.ghostVoteAvailable)).toBe(true);
@@ -169,8 +181,9 @@ test("a shot pauses the remaining count for the shared full-screen presentation"
   const before = t.game().nomination!;
   const endBefore = before.voteEndsAt!;
   t.service.useDayAbility(t.room.code, t.players[1]!.token, 1);
+  t.advance(1500);
   expect(t.game().nomination!.voteEndsAt).toBe(endBefore + 6000);
-  t.advance(6000);
+  t.advance(4500);
   expect(t.game().nomination!.countedSeats).toEqual([1]);
   t.advance(1500);
   expect(t.game().nomination!.countedSeats).toEqual([1, 2]);
@@ -183,6 +196,8 @@ test("a player counted while alive retains their ghost vote if shot before the b
   t.nominate(2, 5); t.vote(6, true); t.advance(21_500);
   expect(t.game().nomination!.countedSeats).toEqual([6]);
   t.service.useDayAbility(t.room.code, t.players[0]!.token, 6);
+  expect(t.game().seats[5]!.alive).toBe(true);
+  t.advance(4300);
   expect(t.game().seats[5]!.alive).toBe(false);
   expect(t.game().phase).toBe("VOTING");
   t.finish();

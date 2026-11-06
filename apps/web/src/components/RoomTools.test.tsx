@@ -3,11 +3,11 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { RoomTools } from "./RoomTools.js";
-import { abortRoom, cancelTutorialRoom, claimRoomHost } from "../api.js";
+import { reopenRoom, cancelTutorialRoom, claimRoomHost } from "../api.js";
 vi.mock("../api.js", () => ({
   abortRoom: vi.fn().mockResolvedValue({}), cancelTutorialRoom: vi.fn().mockResolvedValue({}), claimRoomHost: vi.fn().mockResolvedValue({}),
   createRecoveryCode: vi.fn().mockResolvedValue({ recoveryCode: "private-recovery", expiresAt: Date.now() + 600_000 }),
-  hasPendingCommand: () => false, removeRoomPlayer: vi.fn(), reopenRoom: vi.fn(), retryPendingCommand: vi.fn(),
+  hasPendingCommand: () => false, removeRoomPlayer: vi.fn(), reopenRoom: vi.fn().mockResolvedValue({}), retryPendingCommand: vi.fn(),
 }));
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 const room = { code: "ABCDEF", state: "TUTORIAL", playerCount: 5, organizerId: "host", serverNow: 1000, hostClaimAt: 999, participants: [{ id: "host", nickname: "房主", mode: "PLAYER" as const, connected: true }] };
@@ -28,8 +28,8 @@ test("a stranded player can claim an offline host while an active host can abort
   fireEvent.click(screen.getByRole("button", { name: "确认" }));
   await waitFor(() => expect(claimRoomHost).toHaveBeenCalledWith("ABCDEF", "host"));
   ui.rerender(<RoomTools room={{ ...room, state: "RUNNING" }} participantId="host" onChanged={change} />);
-  fireEvent.click(screen.getByRole("button", { name: "中止本局" }));
-  expect(screen.getByText("结束本局，不判胜负，也不追加身份揭晓。")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "重开本局" }));
+  expect(screen.getByText("本局不判胜负，所有人返回大厅并重新准备。")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "确认" }));
-  await waitFor(() => expect(abortRoom).toHaveBeenCalledWith("ABCDEF"));
+  await waitFor(() => expect(reopenRoom).toHaveBeenCalledWith("ABCDEF"));
 });

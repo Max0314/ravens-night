@@ -244,14 +244,15 @@ describe("lifecycle, recovery and public choreography", () => {
     t.mutate((room) => { room.game!.phase = "DAY_DISCUSSION"; room.game!.day = 1; });
     t.service.useDayAbility(t.room.code, t.players[0]!.token, 6);
     const game = t.service.publicView(t.room.code).game!;
-    const shot = game.events.find((event) => event.kind === "SHOT")!;
-    const finale = game.events.find((event) => event.kind === "GAME_OVER")!;
+    const shot = t.service.snapshot(t.room.code).game!.events.find((event) => event.kind === "SHOT")!;
+    const finale = t.service.snapshot(t.room.code).game!.events.find((event) => event.kind === "GAME_OVER")!;
     expect(shot).toMatchObject({ durationMs: 4500, startsAt: t.now() + 1500, outcome: "DEATH" });
     expect(finale.startsAt).toBe(shot.startsAt + shot.durationMs);
     expect(game.gameId).toContain("game-1");
+    expect(game.events.some(e=>e.kind==="SHOT"||e.kind==="GAME_OVER")).toBe(false);
     expect(t.service.privateView(t.room.code, t.players[1]!.token).game!.events).toEqual(game.events);
     expect(() => t.service.nominate(t.room.code, t.players[1]!.token, 3)).toThrow(/演出/);
-    expect(t.service.privateView(t.room.code, t.players[0]!.token).storytellerDecisions).toBeDefined();
+    expect(t.service.privateView(t.room.code, t.players[0]!.token).storytellerDecisions).toBeUndefined();
   });
 
   test("missed ballots time out to abstention and do not consume ghost votes", () => {

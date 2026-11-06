@@ -3,10 +3,10 @@ import { TestRoomService as RoomService } from "./test-room-service.js";
 
 type JoinedPlayer = ReturnType<RoomService["join"]>;
 
-function createSixPlayerGame() {
+function createSixPlayerGame(count = 6) {
   const service = new RoomService();
-  const { room, organizerToken } = service.create(6, "压力测试主持");
-  const players = Array.from({ length: 6 }, (_, index) => service.join(room.code, `模拟玩家${index + 1}`, "PLAYER"));
+  const { room, organizerToken } = service.create(count, "压力测试主持");
+  const players = Array.from({ length: count }, (_, index) => service.join(room.code, `模拟玩家${index + 1}`, "PLAYER"));
   service.startTutorial(room.code, players[0]!.token);
   for (const player of players) service.completeTutorial(room.code, player.token);
   for (const player of players) service.confirmRole(room.code, player.token);
@@ -58,11 +58,15 @@ function executeSeat(service: RoomService, code: string, players: JoinedPlayer[]
   }
 }
 
-function playGoodStrategy(): "GOOD" | "EVIL" {
-  const { service, code, players } = createSixPlayerGame();
+function playGoodStrategy(count = 6): "GOOD" | "EVIL" {
+  const { service, code, players } = createSixPlayerGame(count);
   for (let round = 0; round < 8; round += 1) {
     const publicGame = service.publicView(code).game!;
-    if (publicGame.phase === "GAME_OVER") return publicGame.winner!;
+    if (publicGame.phase === "GAME_OVER") {
+      const winner=publicGame.winner!;service.reset(code,players[0]!.token);
+      expect(service.publicView(code).state).toBe("LOBBY");expect(service.publicView(code).participants.every(p=>!p.ready)).toBe(true);
+      return winner;
+    }
     expect(["DAY_DISCUSSION", "NOMINATION"]).toContain(publicGame.phase);
     const snapshot = service.snapshot(code);
     const living = publicGame.seats.filter((seat) => seat.alive).map((seat) => seat.seat);
@@ -95,6 +99,9 @@ function playEvilStrategy(): "GOOD" | "EVIL" {
 }
 
 describe("repeated six-player simulations", () => {
+  test.each([5,6,7,12])("%i players complete tutorial, role confirmation, nights, votes, finale and reset",count=>{
+    expect(playGoodStrategy(count)).toBe("GOOD");
+  });
   test("one hundred randomized games can finish with the demon repeatedly executed", () => {
     for (let game = 0; game < 100; game += 1) expect(playGoodStrategy()).toBe("GOOD");
   });

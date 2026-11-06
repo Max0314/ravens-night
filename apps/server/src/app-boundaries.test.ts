@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest";
-import { buildApp } from "./app.js";
+import { protocolApp as buildApp } from "./test-fixtures/protocol-app.js";
 import type { RoomRepository } from "./game/live-runtime.js";
 import type { RoomRecord } from "./rooms/service.js";
 

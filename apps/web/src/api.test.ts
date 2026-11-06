@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { webcrypto } from "node:crypto";
 import { TextEncoder } from "node:util";
-import { afterEach, expect, test, vi } from "vitest";
-import { ApiError, createRoom, joinRoom, leaveRoom, recoverRoom, submitGameAction } from "./api.js";
+import { beforeEach, afterEach, expect, test, vi } from "vitest";
+import { observeRoomView, resetAccountContext, ApiError, createRoom, joinRoom, leaveRoom, recoverRoom, submitGameAction } from "./api.js";
 
+beforeEach(()=>{resetAccountContext();observeRoomView("ABCDEF",{roomInstanceId:"instance",setupId:"setup",revision:1,self:{participantId:"p1",mode:"PLAYER",commandVersion:0},contextId:"context",game:{gameId:"game",phase:"OTHER_NIGHT",day:1,seats:[],events:[],readyCount:0,aliveCount:5}});});
 afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear(); });
 const success = () => ({ ok: true, json: async () => ({ id: "restored-seat" }) });
 const commandId = (fetcher: ReturnType<typeof vi.fn>, attempt: number) => new Headers(fetcher.mock.calls[attempt]?.[1].headers).get("x-command-id");
@@ -23,6 +24,7 @@ test("create, join, leave, and rejected commands are never blindly replayed", as
   await expect(joinRoom("ABCDEF", "甲", "PLAYER")).rejects.toThrow();
   await expect(leaveRoom("ABCDEF")).rejects.toThrow();
   expect(fetcher).toHaveBeenCalledTimes(3);
+  resetAccountContext();observeRoomView("ABCDEF",{roomInstanceId:"instance",setupId:"setup",revision:1,self:{participantId:"p1",mode:"PLAYER",commandVersion:0}});
   fetcher.mockReset().mockResolvedValue({ ok: false, status: 400, json: async () => ({ error: "这位玩家不能行动" }) });
   await expect(submitGameAction("ABCDEF", [2])).rejects.toBeInstanceOf(ApiError);
   expect(fetcher).toHaveBeenCalledTimes(1);

@@ -29,7 +29,7 @@ export class LiveRoomRuntime {
     if (!this.repository) return;
     await this.repository.initialize();
     const snapshots = await this.repository.loadAll();
-    const legacyCodes = snapshots.filter(room => !room.schemaVersion).map(room => room.code);
+    const legacyCodes = snapshots.filter(room => room.schemaVersion !== 2).map(room => room.code);
     this.#service.restore(snapshots);
     this.#service.restoreClaims(await this.repository.loadClaims?.()??[]);
     const migrated = legacyCodes.map(code => this.#service.snapshot(code));

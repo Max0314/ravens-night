@@ -4,6 +4,7 @@ import { ApiError, getRoom, type RoomParticipant, type RoomView } from "../api.j
 import { invitationQr } from "../invite.js";
 import { EventStage, publicEventsAt } from "../components/EventStage.js";
 import { connectRoomFeed } from "../room-live.js";
+import { isOlderSnapshot } from "../snapshot-order.js";
 
 const phaseCopy: Record<string, { eyebrow: string; title: string; detail: string }> = {
   ROLE_REVEAL: { eyebrow: "保持安静", title: "身份正在揭晓", detail: "请只看自己的手机" },
@@ -30,7 +31,7 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   const [qr, setQr] = useState<string>();
   const [seatError, setSeatError] = useState<string>();
   const acceptRoom = useCallback((incoming: RoomView) => setRoom((previous) => {
-    if (incoming.game?.gameId && previous?.game?.gameId === incoming.game.gameId && (incoming.game.revision ?? 0) < (previous.game.revision ?? 0)) return previous;
+    if (isOlderSnapshot(incoming, previous)) return previous;
     return incoming;
   }), []);
   useEffect(() => {

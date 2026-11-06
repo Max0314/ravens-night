@@ -75,9 +75,12 @@ export class PostgresRoomRepository implements RoomRepository {
           WHERE room_runtime_snapshots.revision < EXCLUDED.revision`, [snapshot.code, snapshot.revision, encoded]);
         if (saved.rowCount !== 1) throw new Error("Room revision conflict; only one application writer is supported");
         await connection.query("INSERT INTO room_runtime_journal(code,revision,snapshot) VALUES($1,$2,$3::jsonb) ON CONFLICT DO NOTHING", [snapshot.code, snapshot.revision, encoded]);
-        if (snapshot.game?.events.length) await connection.query(`INSERT INTO room_public_events(code,game_id,seq,event)
+        // Replace this game's public history in the same transaction as its projection.
+        // This also removes unreleased rows left by v1 without exposing raw future events.
+        if (snapshot.game) await connection.query("DELETE FROM room_public_events WHERE code=$1 AND game_id=$2", [snapshot.code, snapshot.game.gameId]);
+        if (snapshot.game?.publicProjection?.events.length) await connection.query(`INSERT INTO room_public_events(code,game_id,seq,event)
           SELECT $1, item->>'gameId', (item->>'seq')::integer, item FROM jsonb_array_elements($2::jsonb) item
-          ON CONFLICT DO NOTHING`, [snapshot.code, JSON.stringify(snapshot.game.events)]);
+          ON CONFLICT(code,game_id,seq) DO UPDATE SET event=EXCLUDED.event`, [snapshot.code, JSON.stringify(snapshot.game.publicProjection.events)]);
         await connection.query("DELETE FROM room_runtime_journal WHERE code=$1 AND revision < $2", [snapshot.code, Math.max(0, snapshot.revision - 500)]);
       }
       for (const code of deleted) {

@@ -76,7 +76,7 @@ function player(): PrivateView { return { participant: { id: "p1", nickname: "1�
 
 test("in-person players have the complete town and can inspect a dead player's ghost vote", () => {
   render(<PlayerGame {...handlers} view={player()} />);
-  fireEvent.click(screen.getByRole("button", { name: "公开城镇" }));
+  fireEvent.click(screen.getByRole("button", { name: "城镇" }));
   expect(screen.getByRole("region", { name: "公开城镇" })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "3号 3号玩家 已死亡" }));
   expect(screen.getByText("仍可讨论 · 保留一枚幽灵票")).toBeVisible();
@@ -85,16 +85,16 @@ test("in-person players have the complete town and can inspect a dead player's g
 test("private cover removes the poison animation and private target from view", () => {
   render(<PlayerGame {...handlers} view={player()} receipt={{ id: "private-1", kind: "POISON", target: "秘密目标" }} />);
   expect(screen.getByRole("status", { name: "仅你可见的行动回执" })).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "◈ 遮住私密内容" }));
+  fireEvent(window,new Event("ravens:cover-private"));
   expect(screen.queryByRole("status", { name: "仅你可见的行动回执" })).not.toBeInTheDocument();
-  expect(screen.getByRole("dialog", { name: "私密内容已遮住" })).toBeVisible();
+  expect(screen.getByLabelText("私密内容已遮住")).toBeVisible();
 });
 
 test("a dead player confirms the single ghost vote before sending it", () => {
   const view = player(); view.participant.seat = 3; view.game!.phase = "VOTING"; view.game!.nomination = { nominatorSeat: 1, nomineeSeat: 2, votesReceived: 0, votesRaised: 0, threshold: 2 };
   const onVote = vi.fn(); render(<PlayerGame {...handlers} onVote={onVote} view={view} />);
-  fireEvent.click(screen.getByRole("button", { name: "举手赞成" })); expect(onVote).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "确认使用幽灵票" })); expect(onVote).toHaveBeenCalledWith(true);
+  fireEvent.click(screen.getByRole("button", { name: "举手" })); expect(onVote).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "确认使用鬼票" })); expect(onVote).toHaveBeenCalledWith(true);
 });
 
 test("non-slayer living players can make the same public claim without leaking their role", () => {
@@ -108,11 +108,11 @@ test("non-slayer living players can make the same public claim without leaking t
 test("a ghost confirmation stops accepting a vote once its seat has been counted", () => {
   const view = player(); view.participant.seat = 3; view.canVote = true; view.game!.phase = "VOTING"; view.game!.nomination = { nominatorSeat: 1, nomineeSeat: 2, votesReceived: 0, votesRaised: 0, threshold: 2, voterOrder: [3, 4, 5, 1, 2], countedSeats: [] };
   const onVote = vi.fn(); const content = render(<PlayerGame {...handlers} onVote={onVote} view={view} />);
-  fireEvent.click(screen.getByRole("button", { name: "举手赞成" }));
+  fireEvent.click(screen.getByRole("button", { name: "举手" }));
   content.rerender(<PlayerGame {...handlers} onVote={onVote} view={{ ...view, canVote: false, game: { ...view.game!, nomination: { ...view.game!.nomination!, countedSeats: [3], countedVotes: { 3: false } } } }} />);
-  expect(screen.getByRole("button", { name: "确认使用幽灵票" })).toBeDisabled();
-  fireEvent.click(screen.getByRole("button", { name: "确认使用幽灵票" })); expect(onVote).not.toHaveBeenCalled();
-  expect(screen.getByText("你的票已锁定：未举手")).toBeVisible();
+  expect(screen.getByRole("button", { name: "确认使用鬼票" })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "确认使用鬼票" })); expect(onVote).not.toHaveBeenCalled();
+  expect(screen.getByText("已锁票：未举手")).toBeVisible();
 });
 
 test("storyteller decisions remain hidden until the final public presentation ends", () => {

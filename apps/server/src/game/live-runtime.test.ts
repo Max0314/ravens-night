@@ -48,7 +48,7 @@ describe("the production command path", () => {
     await f.runtime.execute(action, receipt);
     expect(invoked).toBe(1);
     await f.runtime.execute((s) => s.rotateParticipantToken(f.code, f.token));
-    await expect(f.runtime.execute(action, receipt)).rejects.toThrow("authorization");
+    await expect(f.runtime.execute(action, receipt)).rejects.toMatchObject({errorCode:"SEAT_REMOVED",status:403});
   });
   test("routine heartbeats update presence without database writes or event broadcasts", async () => {
     const f = await fixture(); let published = 0;

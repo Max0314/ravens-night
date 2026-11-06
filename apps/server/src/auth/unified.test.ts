@@ -1,5 +1,5 @@
 import {afterEach,expect,test} from 'vitest';
-import {buildApp} from '../app.js';
+import {protocolApp as buildApp} from "../test-fixtures/protocol-app.js";
 import {Pool} from 'pg';
 import {randomBytes} from 'node:crypto';
 import {PostgresRoomRepository} from '../db/room-repository.js';
@@ -24,14 +24,33 @@ test('guest claims require signed preview and explicit confirmation; duplicates 
   const joined=await app.inject({method:'POST',url:`/api/rooms/${room.code}/join`,payload:{nickname:'游客',mode:'PLAYER'}}),guest=cookieOf(joined);
   const post=(suffix:string,payload:object,fixture='fixture=owner; ')=>app.inject({method:'POST',url:`/api/rooms/${room.code}/account/${suffix}`,headers:{cookie:fixture+guest},payload});
   const preview=await post('guest-preview',{});expect(preview.statusCode).toBe(200);expect(preview.json().consumesOpportunity).toBe(false);
+  expect(preview.json().self).toMatchObject({participantId:joined.json().id,mode:'PLAYER',commandVersion:0});
   expect((await app.inject({url:'/api/account',headers:{cookie:'fixture=owner'}})).json().guestClaimAvailable).toBe(true);
   expect((await post('guest-claim',{previewToken:preview.json().previewToken,confirm:false})).statusCode).toBe(400);
   expect((await post('guest-claim',{previewToken:preview.json().previewToken,confirm:true},'fixture=other; ')).statusCode).toBe(400);
   const claimed=await post('guest-claim',{previewToken:preview.json().previewToken,confirm:true});expect(claimed.statusCode).toBe(200);
+  expect(claimed.json().self).toMatchObject({participantId:joined.json().id,mode:'PLAYER'});
   expect((await post('guest-claim',{previewToken:preview.json().previewToken,confirm:true})).json()).toEqual(claimed.json());
   expect((await app.inject({url:'/api/account',headers:{cookie:'fixture=owner'}})).json().guestClaimAvailable).toBe(false);
   expect((await app.inject({url:`/api/rooms/${room.code}/me`,headers:{cookie:guest}})).statusCode).toBe(403);
   expect((await post('guest-preview',{})).statusCode).toBe(400);
+});
+
+test('account avatar refreshes in lobby and stays fixed after starting the game',async()=>{
+  let picture='https://auth.fribench.cn/assets/avatars/v3/banana-cat-crying.webp';
+  const app=buildApp({timers:false,presentation:false,resolveAccount:async header=>header?.includes('fixture=avatar')?{sub:'avatar-owner',name:'头像玩家',picture}:null});apps.push(app);
+  const code=(await app.inject({method:'POST',url:'/api/rooms',payload:{playerCount:5,organizerName:'头像玩家'}})).json().code;
+  const joined=await app.inject({method:'POST',url:`/api/rooms/${code}/join`,headers:{cookie:'fixture=avatar'},payload:{nickname:'头像玩家',mode:'PLAYER'}});
+  let owner='fixture=avatar; '+cookieOf(joined);
+  const avatar=async()=>(await app.inject(`/api/rooms/${code}`)).json().participants[0].avatar;
+  expect(await avatar()).toBe(picture);
+  picture='https://auth.fribench.cn/assets/avatars/v3/lara-adventurer.webp';
+  const resume=async()=>app.inject({method:'POST',url:`/api/rooms/${code}/account/resume`,headers:{cookie:owner},payload:{participantId:joined.json().id}});
+  owner='fixture=avatar; '+cookieOf(await resume());expect(await avatar()).toBe(picture);
+  const cookies=[owner];for(let i=1;i<5;i++)cookies.push(cookieOf(await app.inject({method:'POST',url:`/api/rooms/${code}/join`,payload:{nickname:`玩家${i}`,mode:'PLAYER'}})));
+  for(const cookie of cookies)expect((await app.inject({method:'POST',url:`/api/rooms/${code}/ready`,headers:{cookie},payload:{ready:true}})).statusCode).toBe(200);
+  expect((await app.inject({method:'POST',url:`/api/rooms/${code}/start`,headers:{cookie:owner},payload:{tutorialMode:'SKIP'}})).statusCode).toBe(200);
+  const frozen=picture;picture='https://auth.fribench.cn/assets/avatars/v3/banana-cat-crying.webp';await resume();expect(await avatar()).toBe(frozen);
 });
 
 test.skipIf(!process.env.TEST_DATABASE_URL)('PostgreSQL preserves encrypted account rooms and once-only claims across restart, atomically rolling back conflicts',async()=>{

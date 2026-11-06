@@ -9,3 +9,4 @@ export * from "./state.js";
 export * from "./storyteller/policy.js";
 export * from "./types.js";
 export * from "./win.js";
+export * from "./spy-grimoire.js";

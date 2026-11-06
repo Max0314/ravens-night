@@ -1,6 +1,8 @@
+import { TICKET_MS } from "./errors.js";
 import { randomUUID, randomBytes } from "node:crypto";
 import { hashOpaqueToken } from "../auth/session.js";
 import type { RoomRecord, ParticipantRecord, RoomService } from "./service.js";
+import { revokeJoinTicket } from "./join-ticket.js";
 interface WhisperMessage { id: string; authorId: string; text: string; createdAt: number; }
 interface Whisper { id: string; fromId: string; toId: string; status: "PENDING" | "ACTIVE" | "DECLINED" | "CLOSED"; createdAt: number; messages: WhisperMessage[]; }
 interface Recovery { hash: string; participantId: string; expiresAt: number; }
@@ -9,6 +11,7 @@ interface RecoveryReceipt { key: string; expiresAt: number; result: RecoveryResu
 interface Social { whispers: Whisper[]; recovery: Recovery[]; recoveryReceipts?: RecoveryReceipt[]; }
 /** Removing a seat must also revoke its recovery credentials and conversations. */
 export function revokeMembership(room: RoomRecord, participantId: string): void {
+  revokeJoinTicket(room, participantId);
   const social = data(room);
   for (const whisper of social.whispers) if ([whisper.fromId, whisper.toId].includes(participantId)) whisper.status = "CLOSED";
   social.recovery = social.recovery.filter(value => value.participantId !== participantId);
@@ -68,42 +71,43 @@ export function sendWhisper(room: RoomRecord, token: string, id: string, text: s
   whisper.messages = whisper.messages.slice(-100);
   update(room, social);
 }
-export function createRecovery(room: RoomRecord, token: string) {
+export function createRecovery(room: RoomRecord, token: string, now = Date.now()) {
   const participant = member(room, token, "PLAYER");
   const social = data(room);
   const recoveryCode = randomBytes(18).toString("base64url");
-  const expiresAt = Date.now() + 10 * 60_000;
-  social.recovery = social.recovery.filter((r) => r.participantId !== participant.id && r.expiresAt > Date.now());
-  social.recoveryReceipts = (social.recoveryReceipts ?? []).filter((r) => r.result.id !== participant.id && r.expiresAt > Date.now());
+  const expiresAt = now + TICKET_MS;
+  social.recovery = social.recovery.filter((r) => r.participantId !== participant.id && r.expiresAt > now);
+  social.recoveryReceipts = (social.recoveryReceipts ?? []).filter((r) => r.result.id !== participant.id && r.expiresAt > now);
   social.recovery.push({ hash: hashOpaqueToken(recoveryCode), participantId: participant.id, expiresAt });
   update(room, social);
   return { recoveryCode, expiresAt };
 }
-export function recoverMembership(service: RoomService, code: string, recoveryCode: string, commandId?: string,accountId?:string): RecoveryResult {
+export function recoverMembership(service: RoomService, code: string, recoveryCode: string, commandId?: string,accountId?:string,now = Date.now()): RecoveryResult {
   const room = service.find(code);
   const social = data(room);
   const receiptKey = commandId ? hashOpaqueToken(`${recoveryCode}:${commandId}`) : undefined;
-  const receipt = receiptKey ? social.recoveryReceipts?.find((r) => r.key === receiptKey && r.expiresAt > Date.now()) : undefined;
+  const receipt = receiptKey ? social.recoveryReceipts?.find((r) => r.key === receiptKey && r.expiresAt > now) : undefined;
   if (receipt) {
     const participant = member(room, receipt.result.token, "PLAYER");
     if(participant.accountId&&participant.accountId!==accountId)throw Error('账号与座位授权不匹配');
     return { ...receipt.result, seat: participant.seat, nickname: participant.nickname };
   }
-  const entry = social.recovery.find((r) => r.hash === hashOpaqueToken(recoveryCode) && r.expiresAt > Date.now());
+  const entry = social.recovery.find((r) => r.hash === hashOpaqueToken(recoveryCode) && r.expiresAt > now);
   if (!entry) throw new Error("恢复码无效或已过期");
   const participant = room.participants.find((p) => p.id === entry.participantId && !p.left);
   if (!participant) throw new Error("原座位已离开房间");
   if(participant.accountId&&participant.accountId!==accountId)throw Error('账号与座位授权不匹配');
   const token = randomBytes(32).toString("base64url");
   const oldHash = participant.tokenHash;
+  revokeJoinTicket(room, participant.id);
   participant.tokenHash = hashOpaqueToken(token);
   participant.connected = true;
-  participant.lastSeenAt = Date.now();
+  participant.lastSeenAt = now;
   if (room.organizerTokenHash === oldHash || room.organizerParticipantId === participant.id) room.organizerTokenHash = participant.tokenHash;
   social.recovery = social.recovery.filter((r) => r.participantId !== participant.id);
   const result = { id: participant.id, nickname: participant.nickname, mode: participant.mode, seat: participant.seat, token };
   if (receiptKey) {
-    social.recoveryReceipts = (social.recoveryReceipts ?? []).filter((r) => r.result.id !== participant.id && r.expiresAt > Date.now());
+    social.recoveryReceipts = (social.recoveryReceipts ?? []).filter((r) => r.result.id !== participant.id && r.expiresAt > now);
     social.recoveryReceipts.push({ key: receiptKey, expiresAt: entry.expiresAt, result });
   }
   update(room, social);

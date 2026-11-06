@@ -1,22 +1,23 @@
 import { Button, Panel } from "@ravens/ui";
 import { useState } from "react";
-import { tutorialSteps } from "../guide-content.js";
+const tutorialSteps = [
+  {symbol:"☾",title:"查看身份",detail:"每个人只看自己的身份，并亲自确认。夜晚按手机提示行动。"},
+  {symbol:"☀",title:"讨论与提名",detail:"白天交换线索。存活玩家每天可提名一次，每人每天只可被提名一次。"},
+  {symbol:"✋",title:"举手与鬼票",detail:"辩护后顺时针计票，轮到你之前可改手势。死者全局仅有一枚赞成票。"},
+];
 
-export function Tutorial({ onBack, onDone, busy = false, error }: { onBack: () => void; onDone: () => void; busy?: boolean; error?: string }) {
+export function Tutorial({ onBack, onDone, busy = false, error, completeCount, total }: { onBack: () => void; onDone: () => void; busy?: boolean; error?: string; completeCount?: number; total?: number }) {
   const [step, setStep] = useState(0);
   const item = tutorialSteps[step]!;
   return <main className="center-page tutorial">
     <button className="screen-back" type="button" onClick={onBack}>← 返回首页</button>
+    {total ? <p>{completeCount ?? 0}/{total} 人已完成</p> : null}
     <p className="tutorial__progress">教学 {step + 1} / {tutorialSteps.length}</p>
     <Panel className="tutorial__panel">
       <div className="tutorial__symbol">{item.symbol}</div><h1>{item.title}</h1><p>{item.detail}</p>
-      {item.points ? <ul className="tutorial__points">{item.points.map((point) => <li key={point}>{point}</li>)}</ul> : null}
-      {item.example ? <aside className="tutorial__example"><span>{item.example.label}</span><p>{item.example.text}</p></aside> : null}
       <div className="tutorial__actions">
-        {step > 0
-          ? <Button variant="quiet" onClick={() => setStep((value) => value - 1)}>上一步</Button>
-          : <Button variant="quiet" onClick={onDone} disabled={busy}>跳过教程，查看身份</Button>}
-        <Button disabled={busy} onClick={() => step === tutorialSteps.length - 1 ? onDone() : setStep((value) => value + 1)}>{busy ? "正在同步身份…" : step === tutorialSteps.length - 1 ? "查看我的身份" : "我明白了"}</Button>
+        <Button variant="quiet" onClick={onDone} disabled={busy}>跳过教学</Button>
+        <Button disabled={busy} onClick={() => step === tutorialSteps.length - 1 ? onDone() : setStep((value) => value + 1)}>{busy ? "正在同步身份…" : step === tutorialSteps.length - 1 ? "完成教学" : "我明白了"}</Button>
       </div>
       {step === 0 ? <small className="tutorial__skip-note">跳过后，游戏中仍可随时打开教程和角色表。</small> : null}
       {error ? <p role="alert" className="form-error">{error}</p> : null}
