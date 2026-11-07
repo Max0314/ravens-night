@@ -43,6 +43,26 @@ test("the installed 500ms scheduler publishes only committed due results on the 
   }finally{await app.close();vi.useRealTimers();}
 });
 
+test.each([false,true])("clock cannot write while startup migration is pending (failure=%s)",async(fail)=>{
+  const t=shootingTable();t.service.useDayAbility(t.room.code,t.players[0]!.token,6);
+  const legacy=t.service.snapshot(t.room.code);delete (legacy as Partial<RoomRecord>).schemaVersion;
+  delete legacy.game!.publicProjection;delete legacy.game!.pendingPublications;
+  let releaseClaims!:()=>void, enteredClaims!:()=>void;
+  const entered=new Promise<void>(resolve=>{enteredClaims=resolve;});
+  const gate=new Promise<void>(resolve=>{releaseClaims=resolve;});
+  const commit=vi.fn(async()=>{if(fail)throw new Error("migration unavailable");});
+  const repository:RoomRepository={async initialize(){},async close(){},async loadAll(){return[legacy];},async loadClaims(){enteredClaims();await gate;return[];},commit};
+  vi.useFakeTimers({toFake:["Date","setInterval","clearInterval"]});vi.setSystemTime(t.now());
+  const app=buildApp({repository,now:()=>Date.now(),presentation:true});
+  const ready=app.ready().then(()=>null,error=>error);
+  try{
+    await entered;await vi.advanceTimersByTimeAsync(6000);expect(commit).not.toHaveBeenCalled();
+    releaseClaims();const result=await ready;expect(Boolean(result)).toBe(fail);expect(commit).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(500);
+    expect(commit).toHaveBeenCalledTimes(fail?1:2);
+  }finally{releaseClaims();await app.close();vi.useRealTimers();}
+});
+
 test("HTTP serializers release neither future event kinds nor death/winner/identity before their publication nodes", () => {
   const t = shootingTable();
   t.service.useDayAbility(t.room.code, t.players[0]!.token, 6);

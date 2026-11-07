@@ -45,16 +45,21 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   void app.register(cookie, { secret: process.env.SESSION_SECRET ?? "development-only-session-secret-change-me" });
   void app.register(websocket, { options: { maxPayload: 1024 } });
   if (process.env.STATIC_DIR) void app.register(fastifyStatic, { root: process.env.STATIC_DIR, wildcard: false });
-  app.addHook("onReady", async () => { await runtime.initialize(); });
   const lobbyTtl = Number(process.env.ROOM_LOBBY_TTL_MS ?? 2 * 60 * 60_000);
   const activeTtl = Number(process.env.ROOM_ACTIVE_TTL_MS ?? 24 * 60 * 60_000);
   let ticking = false;
-  const timer = options.timers === false ? undefined : setInterval(() => {
-    if (ticking) return;
-    ticking = true;
-    void runtime.execute((rooms) => { rooms.advanceTime(now()); rooms.expireIdle(now(), lobbyTtl, activeTtl); }).catch(() => app.log.error("Room clock persistence failed; no uncommitted state was published")).finally(() => { ticking = false; });
-  }, PUBLICATION_TICK_MS);
-  timer?.unref();
+  let timer: ReturnType<typeof setInterval> | undefined;
+  app.addHook("onReady", async () => {
+    await runtime.initialize();
+    // No clock writes may race startup's all-room migration transaction.
+    if (options.timers === false) return;
+    timer = setInterval(() => {
+      if (ticking) return;
+      ticking = true;
+      void runtime.execute((rooms) => { rooms.advanceTime(now()); rooms.expireIdle(now(), lobbyTtl, activeTtl); }).catch(() => app.log.error("Room clock persistence failed; no uncommitted state was published")).finally(() => { ticking = false; });
+    }, PUBLICATION_TICK_MS);
+    timer.unref();
+  });
   app.addHook("onClose", async () => { if (timer) clearInterval(timer); await runtime.close(); });
 
   const attempts = new Map<string, { count: number; reset: number }>();
