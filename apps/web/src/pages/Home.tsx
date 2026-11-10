@@ -1,44 +1,30 @@
-import { Button } from "@ravens/ui";
-import type { RoomView } from "../api.js";
-import { FilingLinks } from "../components/FilingLinks.js";
-import {AccountPanel} from '../components/AccountPanel.js';
+import { Button } from '@ravens/ui';
+import type { ReactNode } from 'react';
+import type { RoomView } from '../api.js';
+import { FilingLinks } from '../components/FilingLinks.js';
+import { AccountPanel } from '../components/AccountPanel.js';
+import { HomePortrait } from '../components/HomePortrait.js';
 
 interface HomeProps {
-  onCreate: () => void;
-  onJoin: () => void;
-  onTutorial: () => void;
-  onRoles: () => void;
-  activeRoom?: RoomView;
-  activeMode?: "PLAYER" | "DISPLAY";
-  onResume?: () => void;
-  onLeave?: () => void;
-  busy?: boolean;
-  error?: string;
-  guestCode?:string;
-  onAccountResume?:(code:string,id:string,mode:'PLAYER'|'DISPLAY')=>void;
+  onCreate:()=>void;onJoin:()=>void;onTutorial:()=>void;onRoles:()=>void;
+  activeRoom?:RoomView;activeMode?:'PLAYER'|'DISPLAY';onResume?:()=>void;onLeave?:()=>void;busy?:boolean;error?:string;guestCode?:string;
+  onAccountResume?:(code:string,id:string,mode:'PLAYER'|'DISPLAY')=>void;accountTools?:ReactNode;
 }
-
-export function Home({ onCreate, onJoin, onTutorial, onRoles, activeRoom, activeMode, onResume, onLeave, busy = false, error,guestCode,onAccountResume }: HomeProps) {
-  const canLeave = activeRoom?.state === "LOBBY" || activeMode === "DISPLAY";
-  return (
-    <main className="home">
-      <header className="brand"><span className="brand__mark">☾</span><span>鸦钟夜话</span><small>RAVENS AT MIDNIGHT</small></header>
-      <section className="home__copy">
-        <h1>5–12 人阵营推理</h1>
-        <p>每人用手机查看身份和线索，系统负责夜间行动、投票与胜负结算。</p>
-        {!activeRoom && error ? <p className="form-error" role="alert">{error}</p> : null}
-        {activeRoom && onResume ? <section className="home__resume" aria-label="当前房间">
-          <div><span>{activeMode === "DISPLAY" ? "公共大屏" : "当前游戏"}</span><strong>房间 {activeRoom.code}</strong><small>{activeRoom.state === "LOBBY" ? "尚未开局，可以安全退出并更换房间" : "本局仍在进行，身份和座位已为你保留"}</small></div>
-          <div><Button onClick={onResume}>继续当前房间</Button>{canLeave && onLeave ? <Button variant="quiet" onClick={onLeave} disabled={busy}>{busy ? "正在退出…" : activeMode === "DISPLAY" ? "退出大屏" : "退出并更换房间"}</Button> : null}</div>
-          {error ? <p className="form-error" role="alert">{error}</p> : null}
-        </section> : <div className="home__actions"><Button onClick={onJoin}>加入一局</Button><Button variant="quiet" onClick={onCreate}>创建房间</Button></div>}
-        <div className="home__guides"><button type="button" onClick={onTutorial}>先看 3 分钟教程</button><span>·</span><button type="button" onClick={onRoles}>翻阅 22 个角色</button></div>
-        <ul className="home__features" aria-label="游戏特点"><li><strong>5–12</strong><span>游戏人数</span></li><li><strong>全自动</strong><span>无需真人主持</span></li><li><strong>新手教学</strong><span>附角色与规则说明</span></li></ul>
-        {onAccountResume?<AccountPanel {...(guestCode?{guestCode}:{})} onResume={onAccountResume}/>:null}
-        <FilingLinks />
-      </section>
-      <div className="home__art" role="img" aria-label="午夜村庄中的六位人物" />
-      <div className="home__clock" aria-hidden="true"><span>Ⅰ</span><span>Ⅳ</span><span>Ⅶ</span><span>Ⅹ</span></div>
-    </main>
-  );
+export function Home({onCreate,onJoin,onTutorial,onRoles,activeRoom,activeMode,onResume,onLeave,busy=false,error,onAccountResume,accountTools}:HomeProps){
+  const canLeave=activeRoom?.state==='LOBBY'||activeRoom?.state==='GAME_OVER'||activeRoom?.state==='ABORTED'||activeMode==='DISPLAY';
+  return <main className="home home--compact">
+    <header className="home-header"><div className="home-brand"><span aria-hidden="true">☾</span><div><h1>鸦钟夜话</h1><small>RAVENS AT MIDNIGHT</small></div></div><AccountPanel onResume={onAccountResume??(()=>undefined)} {...(accountTools?{tools:accountTools}:{})}/></header>
+    <HomePortrait/>
+    <section className="home-controls" aria-label="游戏入口">
+      {activeRoom?<div className="home-current-room"><span>房间 {activeRoom.code} · {activeMode==='DISPLAY'?'大屏':'席位已保留'}</span>{canLeave&&onLeave?<button type="button" disabled={busy} onClick={onLeave}>离开房间</button>:null}</div>:null}
+      <nav className="home-entry-grid" aria-label="首页操作">
+        <Button onClick={activeRoom&&onResume?onResume:onJoin} disabled={busy}>{activeRoom?'继续当前房间':'加入房间'}</Button>
+        <Button variant="quiet" onClick={onTutorial}>查看教程</Button>
+        <Button variant="quiet" onClick={onCreate} disabled={busy||Boolean(activeRoom)}>创建房间</Button>
+        <Button variant="quiet" onClick={onRoles}>查看角色表</Button>
+      </nav>
+      {error?<p className="home-error" role="alert">{error}</p>:null}
+    </section>
+    <FilingLinks/>
+  </main>;
 }

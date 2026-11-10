@@ -1,5 +1,6 @@
 import { Button, Panel } from "@ravens/ui";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { getAccount } from '../api.js';
 import type { RoomPlayMode } from "../api.js";
 
 const modeCopy: Record<RoomPlayMode, { title: string; detail: string; symbol: string }> = {
@@ -10,6 +11,7 @@ const modeCopy: Record<RoomPlayMode, { title: string; detail: string; symbol: st
 
 export function Create({ onBack, onSubmit, busy, error }: { onBack: () => void; onSubmit: (name: string, count: number, playMode: RoomPlayMode, voiceRoomUrl?: string) => void; busy: boolean; error?: string }) {
   const [name, setName] = useState("");
+  useEffect(()=>{let active=true;void getAccount().then(value=>{if(active&&value.profile)setName(current=>current||value.profile!.nickname);}).catch(()=>{});return()=>{active=false;};},[]);
   const [count, setCount] = useState(8);
   const [playMode, setPlayMode] = useState<RoomPlayMode>("IN_PERSON");
   const [voiceRoomUrl, setVoiceRoomUrl] = useState("");

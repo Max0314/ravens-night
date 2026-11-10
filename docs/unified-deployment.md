@@ -1,5 +1,9 @@
 # 鸦钟夜话统一账号部署
 
+2026-11-10单拱门首页与本游戏资料候选：新增本业务库 `room_account_profiles(account_id,revision,profile)`，payload复用AES-GCM加密；初始化CREATE TABLE IF NOT EXISTS为增量兼容，不改schemaVersion=2或旧表。加载在初始化成功/时钟启动前完成，资料与大厅变更共用事务及单写锁。复用原DATABASE_URL/DATA_ENCRYPTION_KEY，无新配置或公共底座更新。回退代码可保留新增表；旧代码忽略本游戏覆盖，禁止为回退DROP资料或恢复整个库覆盖新局。
+
+本轮读取规范ops `964c0ba2357810506ba4d9e883d217f377ea0615`；资料权限/并发/错误/加密/PG恢复及首页DOM已验证，执行范围见开发阶段文档。发布仍用固定SHA、全局锁、目标库备份恢复及非目标保护检查，不打开本地页面。运行版本与候选状态将在发布后登记。
+
 2026-11-10 14:48（北京时间）月亮加载故障修复已发布，当前运行 `8aee8393198f5333d4e93829a37fdc624ca40694`。原881c137容器及健康/账号接口均正常；前端将SDK对同一身份的初始通知当成切账号，无条件进入LOADING且不重新初始化。修复仅在命名空间实际变化时清理，保留真实换账号重载和旧请求失效。新增通知早到/晚到两用例在旧实现均失败，修复后App/mobile/queue共37项通过，已登录刷新另1项通过，Web构建通过；独立复核无阻断。发布前读取最新ops规范 `964c0ba2357810506ba4d9e883d217f377ea0615`，不改变后端协议、数据模型或依赖。本轮不打开本地游戏页面。
 
 此次仍用已验证的ops控制版本a5145d4，在全局发布锁内完成空房边界、专库备份恢复及仅游戏服务更新。备份回执 `/srv/fribench/backups/unified-platform/ravens-night-20261110T064759Z/receipt.json`，验收记录 `/var/lib/fribench/ravens-release-20261110/result.json`。公网HTTP/协议/加入离房/WebSocket及30秒观察通过，45个非目标运行容器与49份路由摘要保持。公网首页指向 `index-C71hsVLU.js`，内容SHA256 `c3df8bce1aa1c7920b4bbad09d5f0294f8e1466c1d2096498a06937a792320f5` 与本地测试构建一致，首页Cache-Control为no-store。修复场景使用DOM测试验证，没有运行浏览器或声称真机已验收。

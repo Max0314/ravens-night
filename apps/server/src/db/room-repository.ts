@@ -2,6 +2,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
 import { Pool, type PoolClient } from "pg";
 import type { RoomRecord, AccountClaim } from "../rooms/service.js";
 import type { RoomRepository } from "../game/live-runtime.js";
+import type { AccountProfile } from '../auth/game-profile.js';
 
 interface Envelope { format: "ravens-aes256-v1"; iv: string; tag: string; data: string; }
 export class SnapshotCodec {
@@ -47,6 +48,7 @@ export class PostgresRoomRepository implements RoomRepository {
       CREATE TABLE IF NOT EXISTS room_runtime_journal (code text NOT NULL, revision integer NOT NULL, snapshot jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(code, revision));
       CREATE TABLE IF NOT EXISTS room_public_events (code text NOT NULL, game_id text NOT NULL, seq integer NOT NULL, event jsonb NOT NULL, PRIMARY KEY(code, game_id, seq));
       CREATE TABLE IF NOT EXISTS account_guest_claims(account_id text PRIMARY KEY,room_id text NOT NULL,participant_id text NOT NULL UNIQUE,preview_hash text NOT NULL,completed_at timestamptz NOT NULL DEFAULT now());
+      CREATE TABLE IF NOT EXISTS room_account_profiles(account_id text PRIMARY KEY,revision integer NOT NULL,profile jsonb NOT NULL);
     `);
     } catch (error) {
       this.#writer.release(true); this.#writer = undefined;
@@ -61,12 +63,14 @@ export class PostgresRoomRepository implements RoomRepository {
   private fail(){this.#writerUnavailable=true;if(process.env.NODE_ENV==='production')setTimeout(()=>process.exit(1),100).unref();}
   async health(){if(!this.#writer||this.#writerUnavailable)throw Error('Database writer unavailable');await this.#writer.query('SELECT 1');}
   async loadClaims():Promise<AccountClaim[]>{return(await this.#pool.query('SELECT account_id AS sub,room_id AS "roomId",participant_id AS "participantId",preview_hash AS "previewHash" FROM account_guest_claims')).rows;}
+  async loadProfiles():Promise<AccountProfile[]>{return(await this.#pool.query('SELECT profile FROM room_account_profiles')).rows.map(row=>this.#codec.decode<AccountProfile>(row.profile));}
   async delete(code: string): Promise<void> { await this.commit([], [code]); }
-  async commit(changed: RoomRecord[], deleted: string[],claims:AccountClaim[]=[]): Promise<void> {
+  async commit(changed: RoomRecord[], deleted: string[],claims:AccountClaim[]=[],profiles:AccountProfile[]=[]): Promise<void> {
     if (!this.#writer || this.#writerUnavailable) throw new Error("Database writer is unavailable; restart to reacquire lock and restore committed rooms");
     const connection = await this.#pool.connect();
     try {
       await connection.query("BEGIN");
+      for(const profile of profiles){const saved=await connection.query('INSERT INTO room_account_profiles(account_id,revision,profile) VALUES($1,$2,$3::jsonb) ON CONFLICT(account_id) DO UPDATE SET revision=EXCLUDED.revision,profile=EXCLUDED.profile WHERE room_account_profiles.revision=EXCLUDED.revision-1',[profile.sub,profile.revision,JSON.stringify(this.#codec.encode(profile))]);if(saved.rowCount!==1)throw new Error('Profile revision conflict');}
       for(const claim of claims)await connection.query('INSERT INTO account_guest_claims(account_id,room_id,participant_id,preview_hash) VALUES($1,$2,$3,$4)',[claim.sub,claim.roomId,claim.participantId,claim.previewHash]);
       for (const snapshot of changed) {
         const encoded = JSON.stringify(this.#codec.encode(snapshot));

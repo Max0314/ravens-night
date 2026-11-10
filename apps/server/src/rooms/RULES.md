@@ -89,6 +89,9 @@ ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与�
 
 ## 房间与恢复接口
 
+- GET /api/account返回本人本游戏资料及默认值；POST /api/account/profile仅可信登录账号可写nickname/avatar和expectedRevision，不能指定他人账号。恢复默认提交两字段null；头像仅允许已有Fribench目录URL。相同目标值重试不重复推进资料版本，不同值旧版本返回409。
+- 资料在既有runtime队列中与大厅快照原子提交。大厅即时更新本账号昵称/头像；教学和进行中局保持当时资料，返回大厅（含撤销教学）应用待更新值；正常战报不回写。资料更新不改变座位、秘密身份或准备周期。
+
 - startTutorial 仅大厅、人数齐备且全员 ready/30秒内在线；可跳过教学但不能跳过身份确认。reset 仅接受正常终局演出完成或 ABORTED；RUNNING 必须先由现任房主明确中止。
 - setReady(code, token, ready)：大厅准备；reorderSeats 仅房主可用；阵容或座序变动清空准备并轮换 setupId。公共大屏只读。
 - privateView.participant.tutorialComplete：只向本人返回教学完成状态；刷新后已完成者继续等候其他玩家，不必重复教学。

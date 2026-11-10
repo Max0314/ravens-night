@@ -2,11 +2,13 @@ import { createHash } from "node:crypto";
 import { RoomService, type RoomRecord, type AccountClaim } from "../rooms/service.js";
 import type { RoomCommandContext } from "@ravens/contracts";
 import { RoomError, COMMAND_RECEIPT_LIMIT } from "../rooms/errors.js";
+import type { AccountProfile } from '../auth/game-profile.js';
 export interface RoomRepository {
   initialize(): Promise<void>;
   loadAll(): Promise<RoomRecord[]>;
-  commit(changed: RoomRecord[], deleted: string[], claims?:AccountClaim[]): Promise<void>;
+  commit(changed: RoomRecord[], deleted: string[], claims?:AccountClaim[], profiles?:AccountProfile[]): Promise<void>;
   loadClaims?():Promise<AccountClaim[]>;
+  loadProfiles?():Promise<AccountProfile[]>;
   health?():Promise<void>;
   close(): Promise<void>;
 }
@@ -32,6 +34,7 @@ export class LiveRoomRuntime {
     const legacyCodes = snapshots.filter(room => room.schemaVersion !== 2).map(room => room.code);
     this.#service.restore(snapshots);
     this.#service.restoreClaims(await this.repository.loadClaims?.()??[]);
+    this.#service.restoreProfiles(await this.repository.loadProfiles?.()??[]);
     const migrated = legacyCodes.map(code => this.#service.snapshot(code));
     if (migrated.length) {
       for (const room of migrated) room.revision += 1;
@@ -46,6 +49,7 @@ export class LiveRoomRuntime {
       const stage = new RoomService(this.options);
       stage.restore(before);
       stage.restoreClaims(this.#service.accountClaims());
+      stage.restoreProfiles(this.#service.accountProfiles());
       const key = receipt ? createHash("sha256").update(`${receipt.actor}:${receipt.id}`).digest("hex") : undefined;
       const receiptRoom = receipt ? stage.find(receipt.code) : undefined;
       const actor = receipt?.context ? stage.authorizeCommand(receipt.code, receipt.actor, receipt.context, receipt.accountId) : undefined;
@@ -80,8 +84,9 @@ export class LiveRoomRuntime {
       const remaining = new Set(after.map((room) => room.code));
       const deleted = before.filter((room) => !remaining.has(room.code)).map((room) => room.code);
       const claims=stage.accountClaims().filter(value=>!this.#service.accountClaim(value.sub));
-      if (this.repository && (changed.length || deleted.length || claims.length)) {
-        try { await this.repository.commit(changed, deleted,claims); }
+      const profiles=stage.accountProfiles().filter(value=>value.revision!==this.#service.accountProfile(value.sub)?.revision);
+      if (this.repository && (changed.length || deleted.length || claims.length || profiles.length)) {
+        try { await this.repository.commit(changed, deleted,claims,profiles); }
         catch (cause) { throw new PersistenceUnavailableError(cause); }
       }
       this.#service = stage;

@@ -12,6 +12,8 @@ import { createRecovery, inviteWhisper, leaveWhisper, member, recoverMembership,
 import { roomCommandProperties, roomCommandRequired, type RoomCommandContext } from "@ravens/contracts";
 import { RoomError, PUBLICATION_TICK_MS } from "./rooms/errors.js";
 import { issueJoinTicket, validateJoinTicket, assertJoinCapacity, revokeJoinTicket } from "./rooms/join-ticket.js";
+import { profileView } from './auth/game-profile.js';
+import { avatarChoices } from './auth/avatar.js';
 
 type RoomRequest = { Params: { code: string; id?: string }; Body: Record<string, unknown>; Querystring: { token?: string; mode?: string } };
 const string = { type: "string", maxLength: 500 };
@@ -102,13 +104,19 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   });
   app.get("/healthz", async (_request,reply) => {try{await repository?.health?.();return{ok:true,service:'ravens-night'};}catch{return reply.code(503).send({ok:false,service:'ravens-night'});}});
   app.get("/api/auth/session", async (request) => ({ authorized: !accessPassword || signedCookie(request, "ravens_access") === "authorized" }));
-  app.get('/api/account',async request=>{const account=accounts.get(request);return{signedIn:Boolean(account),guestClaimAvailable:account?!runtime.service.accountClaim(account.sub):false,rooms:account?runtime.service.accountRooms(account.sub):[]};});
+  app.get('/api/account',async request=>{const account=accounts.get(request);return{signedIn:Boolean(account),guestClaimAvailable:account?!runtime.service.accountClaim(account.sub):false,rooms:account?runtime.service.accountRooms(account.sub):[],...(account?{profile:profileView(account,runtime.service.accountProfile(account.sub))}:{} )};});
+  app.get('/api/account/avatars',async()=>({avatars:avatarChoices}));
+  app.post<{Body:{nickname:string|null;avatar:string|null;expectedRevision:number}}>('/api/account/profile',{schema:{body:bodySchema({nickname:{anyOf:[{type:'string',maxLength:24},{type:'null'}]},avatar:{anyOf:[{type:'string',maxLength:200},{type:'null'}]},expectedRevision:{type:'integer',minimum:0}},['nickname','avatar','expectedRevision'])}},async(request,reply)=>{
+    const account=accounts.get(request);if(!account)return reply.code(401).send({error:'请先登录账号'});
+    const profile=await runtime.execute(rooms=>rooms.updateAccountProfile(account,request.body.nickname,request.body.avatar,request.body.expectedRevision));
+    return {profile};
+  });
   app.post<RoomRequest>('/api/rooms/:code/account/resume',{schema:{body:bodySchema({participantId:{type:'string',maxLength:100}},['participantId'])}},async(request,reply)=>{
     const account=accounts.get(request);if(!account)return reply.code(401).send({error:'请先登录账号'});
     const result=await runtime.execute(rooms=>{
       const room=rooms.find(request.params.code),participant=room.participants.find(value=>!value.left&&value.accountId===account.sub&&value.id===request.body.participantId);
       if(!participant)throw Error('座位授权不匹配');
-      if(room.state==='LOBBY'){if(account.picture)participant.avatarSnapshot=account.picture;else delete participant.avatarSnapshot;}
+      rooms.syncAccountProfile(room,participant,account);
       const token=accountToken(account.sub,room.code,participant.id);if(participant.tokenHash!==hashOpaqueToken(token))revokeJoinTicket(room,participant.id);participant.tokenHash=hashOpaqueToken(token);if(room.organizerParticipantId===participant.id)room.organizerTokenHash=participant.tokenHash;room.revision++;
       return{id:participant.id,mode:participant.mode,code:room.code,token};
     });
@@ -177,7 +185,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       const existing = cookie ? room.participants.find(p => !p.left && p.mode === mode && p.tokenHash === hashOpaqueToken(cookie)) : undefined;
       if (existing) {
         rooms.self(room.code, cookie!, account?.sub);
-        if (room.state === "LOBBY" && account) { if (account.picture) existing.avatarSnapshot = account.picture; else delete existing.avatarSnapshot; room.revision++; }
+        if (account) rooms.syncAccountProfile(room,existing,account);
         return { participant: existing, token: cookie! };
       }
       const accountSeat = account ? room.participants.find(p => !p.left && p.mode === mode && p.accountId === account.sub) : undefined;
@@ -185,7 +193,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
         const token = accountToken(account.sub, room.code, accountSeat.id);
         if (accountSeat.tokenHash !== hashOpaqueToken(token)) revokeJoinTicket(room, accountSeat.id);
         accountSeat.tokenHash = hashOpaqueToken(token);
-        if (room.state === "LOBBY") { if (account.picture) accountSeat.avatarSnapshot = account.picture; else delete accountSeat.avatarSnapshot; }
+        rooms.syncAccountProfile(room,accountSeat,account);
         if (room.organizerParticipantId === accountSeat.id) room.organizerTokenHash = accountSeat.tokenHash;
         room.revision++;
         return { participant: accountSeat, token };
@@ -200,12 +208,12 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       }
       if (ticket.setupId !== room.setupId) throw new RoomError("SETUP_CHANGED", "人数或座序已变化，请重新加入");
       assertJoinCapacity(room, now());
-      const result = rooms.join(room.code, request.body.nickname as string, mode);
+      const result = rooms.join(room.code, account ? rooms.accountProfile(account.sub)?.nickname??request.body.nickname as string : request.body.nickname as string, mode);
       const participant = room.participants.find(p => p.id === result.participant.id)!;
       const token = account ? accountToken(account.sub, room.code, participant.id) : ticket.token;
       if (account) rooms.bindAccount(room.code, result.token, account.sub, token);
       participant.tokenHash = hashOpaqueToken(token);
-      if (account?.picture) participant.avatarSnapshot = account.picture;
+      if (account) rooms.syncAccountProfile(room,participant,account);
       participant.joinTicket = { hash: ticket.hash, expiresAt: ticket.expiresAt, credentialHash: participant.tokenHash };
       if (room.organizerParticipantId === participant.id) room.organizerTokenHash = participant.tokenHash;
       return { participant, token };

@@ -21,6 +21,7 @@ import "./styles/game-redesign.css";
 import "./styles/portraits.css";
 import "./styles/account.css";
 import "./styles/mobile.css";
+import "./styles/home.css";
 import { roomSnapshot } from "./room-snapshot.js";
 import {roomSessionKey} from './account-context.js';
 import {getAccount,resumeAccountRoom} from './api.js';
@@ -247,7 +248,8 @@ function RoomApp() {
   }
 
   const withStatus = (page: ReactNode) => <>{page}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
-  const withGuide = (page: ReactNode) => withStatus(<>{page}{room && participantId ? <RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView ? { view: privateView } : {})} onChanged={refreshCurrentRoom} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={setGuide} /> : null}{guide ? <GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /> : null}</>);
+  const roomTools=room&&participantId?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={setGuide}/>:null;
+  const withGuide = (page: ReactNode) => withStatus(<>{page}{screen!=='HOME'?roomTools:null}{guide ? <GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /> : null}</>);
 
   if (screen === "LOADING") return withStatus(<main className="app-loading" aria-label="正在进入钟楼"><span>☾</span>{connectionState === "OFFLINE" ? <button type="button" onClick={() => void initialize()}>重新连接钟楼</button> : null}</main>);
   if (screen === "LOGIN") return withStatus(<Login onSubmit={submitLogin} busy={busy} {...(error ? { error } : {})} />);
@@ -315,7 +317,7 @@ function RoomApp() {
   if (screen === "DISPLAY") return withStatus(<Display key={`${room?.roomInstanceId}:${room?.code}`} code={room?.code ?? "------"} onBack={returnHome} onRoomClosed={handleRoomClosed} />);
   const stored = room ? readSession() : undefined;
   let guestCode:string|undefined;try{guestCode=(JSON.parse(localStorage.getItem('ravens_room_session')??'{}') as StoredSession).roomCode;}catch{}
-  return withGuide(<Home {...(guestCode?{guestCode}:{})} onAccountResume={(code,id,mode)=>{beginSession();saveSession({roomCode:code,mode,participantId:id});void restoreSession();}} onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(error ? { error } : {})} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy } : {})} />);
+  return withGuide(<Home accountTools={roomTools} {...(guestCode?{guestCode}:{})} onAccountResume={(code,id,mode)=>{beginSession();saveSession({roomCode:code,mode,participantId:id});void restoreSession();}} onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(error ? { error } : {})} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy } : {})} />);
 }
 
 export function saveSession(session: StoredSession): void { try { const value = JSON.stringify(session); sessionStorage.setItem(SESSION_KEY, value); localStorage.setItem(`${SESSION_KEY}:${session.roomCode}:${session.mode}`, value); if (session.mode === "PLAYER") localStorage.setItem(SESSION_KEY, value); } catch { /* Cookie sessions remain valid when storage is unavailable. */ } }

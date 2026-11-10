@@ -126,8 +126,11 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
 
 export function getAuthSession() { return request<{ authorized: boolean }>("/api/auth/session"); }
 export type AccountRoom={code:string;participantId:string;mode:'PLAYER'|'DISPLAY';nickname:string};
-export type AccountAccess={signedIn:boolean;guestClaimAvailable:boolean;rooms:AccountRoom[]};
+export type GameProfile={revision:number;nickname:string;avatar:string|null;nicknameOverride:string|null;avatarOverride:string|null;defaultNickname:string;defaultAvatar:string|null};
+export type AccountAccess={signedIn:boolean;guestClaimAvailable:boolean;rooms:AccountRoom[];profile?:GameProfile};
 export function getAccount(){return request<AccountAccess>('/api/account');}
+export function getAvatarChoices(){return request<{avatars:Array<{id:string;url:string}>}>('/api/account/avatars');}
+export function saveGameProfile(nickname:string|null,avatar:string|null,expectedRevision:number){return request<{profile:GameProfile}>('/api/account/profile',{method:'POST',body:JSON.stringify({nickname,avatar,expectedRevision})});}
 export function resumeAccountRoom(room:AccountRoom){return request<{id:string;mode:'PLAYER'|'DISPLAY';code:string}>(`/api/rooms/${room.code}/account/resume`,{method:'POST',body:JSON.stringify({participantId:room.participantId})});}
 export type GuestPreview={previewToken:string;code:string;nickname:string;seat:number};
 export function previewGuest(code:string){return request<GuestPreview>(`/api/rooms/${code}/account/guest-preview`,{method:'POST',body:'{}'});}

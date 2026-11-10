@@ -1,11 +1,13 @@
 import { Button, Panel } from "@ravens/ui";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { getAccount } from '../api.js';
 
 export interface JoinValues { code: string; nickname: string; mode: "PLAYER" | "DISPLAY"; recoveryCode?: string }
 
 export function Join({ initialCode = "", onBack, onSubmit, busy, error }: { initialCode?: string; onBack: () => void; onSubmit: (values: JoinValues) => void; busy: boolean; error?: string }) {
   const [code, setCode] = useState(initialCode);
   const [nickname, setNickname] = useState("");
+  useEffect(()=>{let active=true;void getAccount().then(value=>{if(active&&value.profile)setNickname(current=>current||value.profile!.nickname);}).catch(()=>{});return()=>{active=false;};},[]);
   const [mode, setMode] = useState<"PLAYER" | "DISPLAY">("PLAYER");
   const [recovering, setRecovering] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState("");

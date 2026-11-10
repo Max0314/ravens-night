@@ -17,19 +17,19 @@ afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); windo
 test("the first screen gives an authorized newcomer one clear way to join", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  expect(await screen.findByRole("heading", { name: "5–12 人阵营推理" })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: "鸦钟夜话" })).toBeVisible();
   expect(screen.getByRole("link", { name: "渝ICP备2026016967号-1" })).toHaveAttribute("href", "https://beian.miit.gov.cn/");
   expect(screen.getByRole("link", { name: "渝公网安备 50010502504754号" })).toHaveAttribute("href", "https://beian.mps.gov.cn/#/query/webSearch?code=50010502504754");
-  fireEvent.click(screen.getByRole("button", { name: "加入一局" }));
+  fireEvent.click(screen.getByRole("button", { name: "加入房间" }));
   expect(screen.getByRole("heading", { name: "进入村庄" })).toBeVisible();
   expect(screen.getByLabelText("六位邀请码")).toHaveAttribute("inputMode", "text");
 });
 
 test("the initial account notification cannot return a loaded home screen to the moon loader",async()=>{
   vi.stubGlobal("fetch",vi.fn(async(url:string)=>({ok:true,json:async()=>url==="/api/auth/session"?{authorized:true}:{signedIn:false,rooms:[]}})));
-  render(<App/>);await screen.findByRole("heading",{name:"5–12 人阵营推理"});
+  render(<App/>);await screen.findByRole("heading",{name:"鸦钟夜话"});
   fireEvent(window,new CustomEvent("fribench:account-change",{detail:{authenticated:false,accountKey:null}}));
-  expect(screen.getByRole("heading",{name:"5–12 人阵营推理"})).toBeVisible();
+  expect(screen.getByRole("heading",{name:"鸦钟夜话"})).toBeVisible();
   expect(screen.queryByLabelText("正在进入钟楼")).not.toBeInTheDocument();
 });
 
@@ -38,14 +38,14 @@ test("an unchanged account notification during initial requests still finishes e
   vi.stubGlobal("fetch",vi.fn(async(url:string)=>url==="/api/auth/session"?new Promise(resolve=>{finish=resolve;}):{ok:true,json:async()=>({signedIn:false,rooms:[]})}));
   render(<App/>);fireEvent(window,new CustomEvent("fribench:account-change",{detail:{authenticated:false,accountKey:null}}));
   finish({ok:true,json:async()=>({authorized:true})});
-  expect(await screen.findByRole("heading",{name:"5–12 人阵营推理"})).toBeVisible();
+  expect(await screen.findByRole("heading",{name:"鸦钟夜话"})).toBeVisible();
 });
 
 test("the home screen exposes an interactive tutorial and the complete role compendium", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  await screen.findByRole("heading", { name: "5–12 人阵营推理" });
-  fireEvent.click(screen.getByRole("button", { name: "先看 3 分钟教程" }));
+  await screen.findByRole("heading", { name: "鸦钟夜话" });
+  fireEvent.click(screen.getByRole("button", { name: "查看教程" }));
   expect(screen.getByRole("dialog", { name: "游戏帮助" })).toBeVisible();
   expect(screen.getByRole("heading", { name: "两个阵营，一项使命" })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "下一条" }));
@@ -89,8 +89,8 @@ test("evil first-night intelligence prominently shows teammate names and seat nu
 test("joining from a television has a distinct public-display choice", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  await screen.findByRole("heading", { name: "5–12 人阵营推理" });
-  fireEvent.click(screen.getByRole("button", { name: "加入一局" }));
+  await screen.findByRole("heading", { name: "鸦钟夜话" });
+  fireEvent.click(screen.getByRole("button", { name: "加入房间" }));
   fireEvent.click(screen.getByRole("button", { name: /电视公共大屏/ }));
   expect(screen.queryByLabelText("你的昵称")).not.toBeInTheDocument();
   expect(screen.getByText("电脑连接电视 · 只显示公开城镇信息")).toBeVisible();
@@ -146,7 +146,7 @@ test("the lobby provides an explicit way to leave and switch rooms", () => {
 test("the home screen preserves an active game and offers a clear resume action", () => {
   const onResume = vi.fn();
   render(<Home onCreate={vi.fn()} onJoin={vi.fn()} onTutorial={vi.fn()} onRoles={vi.fn()} activeRoom={{ code: "ABC123", state: "RUNNING", playerCount: 6, participants: [] }} activeMode="PLAYER" onResume={onResume} />);
-  expect(screen.getByText("本局仍在进行，身份和座位已为你保留")).toBeVisible();
+  expect(screen.getByText("房间 ABC123 · 席位已保留")).toBeVisible();
   expect(screen.queryByRole("button", { name: "退出并更换房间" })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "继续当前房间" }));
   expect(onResume).toHaveBeenCalledOnce();

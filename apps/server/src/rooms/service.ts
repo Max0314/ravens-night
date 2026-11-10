@@ -18,12 +18,15 @@ import { revokeMembership } from "./social.js";
 import { initializePresentation, enqueuePublication, publishDue, syncImmediate, attachBallotTiming, abortPresentation, projectedGame, type PublicProjection, type Publication } from "./presentation.js";
 import { migratePresentation, migrateReceipts, validateLegacyRoom } from "./migration.js";
 import { revokeJoinTicket } from "./join-ticket.js";
+import type { Account } from '../auth/account.js';
+import { profileView, validateProfile, type AccountProfile } from '../auth/game-profile.js';
 
 export type ParticipantMode = "PLAYER" | "DISPLAY";
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface AccountClaim {sub:string;roomId:string;participantId:string;previewHash:string}
 
 export interface ParticipantRecord {
+  pendingProfile?: {nickname:string;avatar:string|null};
   avatarSnapshot?: string;
   joinTicket?: { hash: string; expiresAt: number; credentialHash: string };
   commandVersion: number;
@@ -151,6 +154,7 @@ export interface GameRuntime {
 
 export class RoomService {
   readonly #rooms = new Map<string, RoomRecord>();
+  readonly #profiles = new Map<string, AccountProfile>();
   readonly #claims = new Map<string, AccountClaim>();
   readonly #now: () => number;
   readonly #presentation: boolean;
@@ -267,6 +271,29 @@ export class RoomService {
   accountClaims():AccountClaim[]{return structuredClone([...this.#claims.values()]);}
   restoreClaims(values:AccountClaim[]){for(const value of values)this.#claims.set(value.sub,structuredClone(value));}
   accountClaim(sub:string){return this.#claims.get(sub);}
+  accountProfiles(){return structuredClone([...this.#profiles.values()]);}
+  restoreProfiles(values:AccountProfile[]){for(const value of values)this.#profiles.set(value.sub,structuredClone(value));}
+  accountProfile(sub:string){return this.#profiles.get(sub);}
+  syncAccountProfile(room:RoomRecord,participant:ParticipantRecord,account:Account,force=false){
+    const saved=this.accountProfile(account.sub),view=profileView(account,saved);
+    const next={nickname:saved||force?view.nickname:participant.nickname,avatar:view.avatar};
+    if(room.state!=='LOBBY'){if(force)participant.pendingProfile=next;return;}
+    if(participant.nickname===next.nickname&&(participant.avatarSnapshot??null)===next.avatar)return;
+    participant.nickname=next.nickname;if(next.avatar)participant.avatarSnapshot=next.avatar;else delete participant.avatarSnapshot;
+    if(room.organizerParticipantId===participant.id)room.organizerName=participant.nickname;
+    this.changed(room);
+  }
+  updateAccountProfile(account:Account,nickname:string|null,avatar:string|null,expectedRevision:number){
+    const values=validateProfile(nickname,avatar),previous=this.accountProfile(account.sub);
+    const same=Boolean(previous&&previous.nickname===values.nickname&&previous.avatar===values.avatar);
+    if(!same&&(previous?.revision??0)!==expectedRevision)throw new RoomError('PROFILE_STALE','资料已在其他页面更新，请重新打开后修改');
+    if(!same)this.#profiles.set(account.sub,{sub:account.sub,revision:(previous?.revision??0)+1,...values});
+    for(const room of this.#rooms.values())for(const participant of room.participants.filter(p=>!p.left&&p.accountId===account.sub)){
+      this.syncAccountProfile(room,participant,account,true);
+      if(room.state!=='LOBBY')this.changed(room);
+    }
+    return profileView(account,this.accountProfile(account.sub));
+  }
   bindAccount(code:string,token:string,sub:string,newToken:string){
     const room=this.find(code),participant=room.participants.find(value=>!value.left&&value.tokenHash===hashOpaqueToken(token));
     if(!participant||participant.accountId&&participant.accountId!==sub)throw Error('Player authorization failed');
@@ -323,6 +350,7 @@ export class RoomService {
   }
 
   private invalidateSetup(room: RoomRecord): void {
+    if(room.state==='LOBBY')for(const participant of room.participants){const pending=participant.pendingProfile;if(!pending)continue;participant.nickname=pending.nickname;if(pending.avatar)participant.avatarSnapshot=pending.avatar;else delete participant.avatarSnapshot;delete participant.pendingProfile;if(room.organizerParticipantId===participant.id)room.organizerName=participant.nickname;}
     room.setupId = randomUUID();
     for (const player of room.participants) player.ready = false;
   }
