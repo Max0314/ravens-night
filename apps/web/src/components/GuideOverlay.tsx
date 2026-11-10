@@ -7,18 +7,23 @@ import { rolePlayGuides, roleTypeGuidance, roleTypeNames, tutorialSteps } from "
 import { roleArt } from "../role-art.js";
 
 export type GuideMode = "tutorial" | "roles" | "mine";
+const roleTypes = ["TOWNSFOLK", "OUTSIDER", "MINION", "DEMON"] as const;
+type RoleType = typeof roleTypes[number];
 
 export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: GuideMode; ownRole?: PrivateView["role"]; initialRoleId?: string; onClose: () => void }) {
   const [activeMode, setActiveMode] = useState<GuideMode>(mode);
   const [step, setStep] = useState(0);
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(initialRoleId);
-  const [filter, setFilter] = useState("ALL");
+  const [category, setCategory] = useState<RoleType>(() => beginnerRoles.find(role => role.id === initialRoleId)?.type ?? "TOWNSFOLK");
   const selectedRef = useRef(selectedRoleId); selectedRef.current = selectedRoleId;
   const gridRef = useRef<HTMLDivElement>(null);
   const compendiumRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLElement>(null);
+  const tutorialRef = useRef<HTMLDivElement>(null);
   const scroll = useRef(0);
-  const filtered = beginnerRoles.filter(role => filter === "ALL" || role.type === filter);
+  const filtered = beginnerRoles.filter(role => role.type === category);
+  useEffect(() => { if(tutorialRef.current)tutorialRef.current.scrollTop=0; }, [step, activeMode]);
+  function selectCategory(type: RoleType) { setCategory(type); if(compendiumRef.current)compendiumRef.current.scrollTop=0; }
   function selectRole(id: string) { scroll.current = compendiumRef.current?.scrollTop ?? 0; setSelectedRoleId(id); }
   function closeDetail() { const id=selectedRef.current; setSelectedRoleId(undefined); requestAnimationFrame(() => { if (compendiumRef.current) compendiumRef.current.scrollTop = scroll.current; gridRef.current?.querySelector<HTMLButtonElement>(`[data-role-id="${id}"]`)?.focus({preventScroll:true}); }); }
   const closeDetailRef = useRef(closeDetail); closeDetailRef.current = closeDetail;
@@ -86,11 +91,13 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
 
       {activeMode === "tutorial" ? <div className="guide-tutorial">
         <p className="guide-step-count">规则 {step + 1} / {tutorialSteps.length}</p>
-        <div className="guide-tutorial__symbol">{tutorialSteps[step]!.symbol}</div>
+        <div className="guide-tutorial__body" ref={tutorialRef}>
+        <div className="guide-tutorial__symbol" aria-hidden="true">{tutorialSteps[step]!.symbol}</div>
         <h1>{tutorialSteps[step]!.title}</h1>
         <p>{tutorialSteps[step]!.detail}</p>
         {tutorialSteps[step]!.points ? <ul className="tutorial__points">{tutorialSteps[step]!.points!.map((point) => <li key={point}>{point}</li>)}</ul> : null}
         {tutorialSteps[step]!.example ? <aside className="tutorial__example"><span>{tutorialSteps[step]!.example!.label}</span><p>{tutorialSteps[step]!.example!.text}</p></aside> : null}
+        </div>
         <div className="guide-tutorial__actions">
           <button type="button" disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))}>上一条</button>
           <button type="button" onClick={() => step === tutorialSteps.length - 1 ? setActiveMode("roles") : setStep((value) => value + 1)}>{step === tutorialSteps.length - 1 ? "继续看角色表" : "下一条"}</button>
@@ -98,14 +105,25 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
       </div> : null}
 
       {activeMode === "roles" ? <div className="role-compendium" ref={compendiumRef}>
-        <div hidden={Boolean(selectedRole)} ref={gridRef}>
-          <label className="role-filter">角色类型<select value={filter} onChange={event => setFilter(event.target.value)}><option value="ALL">全部角色</option>{(["TOWNSFOLK","OUTSIDER","MINION","DEMON"] as const).map(type => <option key={type} value={type}>{roleTypeNames[type]}</option>)}</select></label>
-          <div className="role-grid">{filtered.map(role => <RoleIndexButton key={role.id} role={role} onSelect={selectRole}/>)}</div>
+        <div className="role-browser" hidden={Boolean(selectedRole)} ref={gridRef}>
+          <nav className="role-category-tabs" role="tablist" aria-label="角色分类">
+            {roleTypes.map(type => <button type="button" role="tab" id={`role-tab-${type}`} key={type} data-role-type={type} aria-selected={category===type} aria-controls="role-category-panel" tabIndex={category===type?0:-1} onClick={()=>selectCategory(type)} onKeyDown={event=>{
+              let next: RoleType | undefined;
+              if(event.key==='ArrowRight')next=roleTypes[(roleTypes.indexOf(type)+1)%roleTypes.length];
+              if(event.key==='ArrowLeft')next=roleTypes[(roleTypes.indexOf(type)+roleTypes.length-1)%roleTypes.length];
+              if(event.key==='Home')next=roleTypes[0];if(event.key==='End')next=roleTypes.at(-1);
+              if(next){event.preventDefault();selectCategory(next);event.currentTarget.parentElement?.querySelector<HTMLButtonElement>(`[data-role-type="${next}"]`)?.focus({preventScroll:true});}
+            }}>{roleTypeNames[type]}<small>{beginnerRoles.filter(role=>role.type===type).length}</small></button>)}
+          </nav>
+          <section id="role-category-panel" role="tabpanel" aria-labelledby={`role-tab-${category}`}>
+            <p className="role-category-summary">{roleTypeGuidance[category]}</p>
+            <div className="role-grid">{filtered.map(role => <RoleIndexButton key={role.id} role={role} onSelect={selectRole}/>)}</div>
+          </section>
         </div>
         {selectedRole ? <article className="role-detail" ref={detailRef} tabIndex={-1} aria-label={`${selectedRole.name}详情`}>
           <header className="role-detail-nav"><button type="button" onClick={closeDetail}>返回角色表</button><strong>{selectedRole.name}</strong><span>{roleTypeNames[selectedRole.type]}</span></header>
           <RolePortrait className="role-detail__portrait" label={`${selectedRole.name}角色立绘`} url={selectedRoleArt!.portraitUrl} srcSet={selectedRoleArt!.portraitSrcSet} sizes="(max-width: 820px) 90vw, 390px" position={selectedRoleArt!.portraitPosition} />
-          <div className="role-detail__copy"><h2>能力</h2><p>{selectedRole.summary}</p><h2>第一次玩</h2><p>{selectedRole.beginnerTip}</p>{selectedPlayGuide ? <><h2>规则细节</h2><p>{selectedPlayGuide.mechanics}</p><h2>怎么玩</h2><p>{selectedPlayGuide.play}</p><h2>实战例子</h2><p>{selectedPlayGuide.example}</p><h2>冒充与反制</h2><p>{selectedPlayGuide.bluff}</p></> : null}</div>
+          <div className="role-detail__copy"><h2>能力</h2><p>{selectedRole.summary}</p>{selectedPlayGuide ? <><h2>规则细节</h2><p>{selectedPlayGuide.mechanics}</p></> : null}<details className="role-detail__advice"><summary>游玩建议与示例</summary><p>{selectedRole.beginnerTip}</p>{selectedPlayGuide ? <><p>{selectedPlayGuide.play}</p><h3>实战例子</h3><p>{selectedPlayGuide.example}</p><h3>冒充与反制</h3><p>{selectedPlayGuide.bluff}</p></> : null}</details></div>
           <footer className="role-detail-nav"><button type="button" disabled={filtered.findIndex(r=>r.id===selectedRole.id)<=0} onClick={()=>setSelectedRoleId(filtered[filtered.findIndex(r=>r.id===selectedRole.id)-1]!.id)}>上一位</button><button type="button" disabled={filtered.findIndex(r=>r.id===selectedRole.id)>=filtered.length-1} onClick={()=>setSelectedRoleId(filtered[filtered.findIndex(r=>r.id===selectedRole.id)+1]!.id)}>下一位</button></footer>
         </article> : null}
       </div> : null}
@@ -115,5 +133,5 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
 
 function RoleIndexButton({ role, onSelect }: { role: (typeof beginnerRoles)[number]; onSelect: (roleId: string) => void }) {
   const art = roleArt(role.id);
-  return <button type="button" data-role-id={role.id} onClick={() => onSelect(role.id)}><RolePortrait className="role-index__portrait" label={`${role.name}角色缩略立绘`} url={art.thumbnailUrl} loading="lazy" position={art.portraitPosition} /><span className="role-index__copy"><strong>{role.name}</strong><small aria-label={roleTypeNames[role.type]} className={`role-type-dot role-type-dot--${role.type.toLowerCase()}`}>●</small></span></button>;
+  return <button type="button" data-role-id={role.id} aria-label={`查看${role.name}详情`} onClick={() => onSelect(role.id)}><RolePortrait className="role-index__portrait" label="" url={art.thumbnailUrl} loading="lazy" position={art.portraitPosition} /><span className="role-index__copy"><strong>{role.name}</strong></span></button>;
 }

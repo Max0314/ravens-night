@@ -25,14 +25,18 @@ img,a{-webkit-user-drag:none;}
 .display{height:100%;min-height:0!important;overflow:hidden;grid-template-rows:auto minmax(0,1fr) minmax(0,25%);}.display__town{min-height:0;overflow:auto;overscroll-behavior:contain;display:block;}.display__canvas{position:relative;display:grid;place-items:center;width:fit-content;max-width:none;margin:0 auto;}.display__village-feed,.display__notice{min-height:0;max-height:100%;overflow:auto;overscroll-behavior:contain;}.display__village-feed ol{max-height:none;}
 .app-viewport>.portrait-gallery,.app-viewport>.effects-preview{height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;}
 .home.home--compact{height:100%;}
-.home--compact::before{background:url('/assets/ravens/home-scene-v1.webp') 34% center/cover no-repeat;}
-.home--compact::after{background:linear-gradient(180deg,#050a1026,#050a1070 55%,#050a10e8),radial-gradient(ellipse at 50% 40%,transparent 15%,#050a1077 85%);}
+.home--compact::before{background:url('/assets/ravens/home-scene-v1.webp') 34% center/cover no-repeat;filter:brightness(.64) saturate(.48) sepia(.28);}
+.home--compact::after{background:linear-gradient(180deg,#08070444,#05050477 55%,#040403ed),radial-gradient(ellipse at 50% 30%,#a9812c0c 10%,#05040388 85%);}
 .home-portrait{grid-template-rows:minmax(0,1fr) 128px 44px;}
-.home-portrait__arch{width:auto;max-width:100%;height:100%;aspect-ratio:3/4;touch-action:pan-y;}
+.home-portrait__viewport{width:100%;height:100%;min-height:0;overflow:hidden;touch-action:pan-y;outline-offset:-2px;}
+.home-portrait__arch{width:auto;max-width:100%;height:100%;aspect-ratio:3/4;touch-action:pan-y;flex-shrink:1;background:#100e0a;box-shadow:0 0 0 4px #080705,0 0 0 5px #a68c4533,0 12px 30px #0009;}
 .home-portrait__track{display:flex;height:100%;width:100%;transform:translate3d(-100%,0,0);will-change:transform;pointer-events:none;}
-.home-portrait__slide{flex:0 0 100%;width:100%;height:100%;overflow:hidden;}
+.home-portrait__slide{flex:0 0 100%;width:100%;height:100%;min-width:0;display:flex;align-items:center;justify-content:center;padding:8px 14px;overflow:visible;box-sizing:border-box;}
 .home-portrait__slide img{animation:none;filter:brightness(.8) saturate(.74);}
-.home-portrait__caption{height:128px;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden;align-content:start;padding-top:4px;}
+.home-portrait__caption{height:128px;min-height:0;overflow:hidden;padding-top:4px;}
+.home-portrait__caption-body{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);align-content:start;animation:role-caption-enter 240ms ease-out both;}
+.home-portrait__caption-body>span{font-size:10px;letter-spacing:.23em;color:#b3a078;}
+@keyframes role-caption-enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .home-portrait__caption p{overflow:auto;overscroll-behavior:contain;margin-bottom:0;align-self:stretch;}
 .home-entry-grid{grid-template-columns:minmax(0,1.5fr) minmax(100px,.85fr);gap:8px 24px;align-items:center;}
 .home-entry-grid>.rn-button{border-radius:8px;min-height:50px;box-shadow:0 6px 20px #0005;}
@@ -42,3 +46,56 @@ img,a{-webkit-user-drag:none;}
 .home-guide-entry svg{height:20px;width:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
 @media(max-height:660px){.home-portrait{grid-template-rows:minmax(0,1fr) 112px 44px;}.home-portrait__caption{height:112px;}}
 @media(orientation:landscape) and (max-height:540px){.home-portrait{grid-template-rows:minmax(0,1fr) 96px 44px;}.home-portrait__caption{height:96px;}.home-portrait__caption p{font-size:12px;}}
+
+/* Compact, category-first handbook. Scroll stays within the sheet. */
+.home.home--compact{background:#070604;}
+.home-account-trigger{background:#15120d99;}
+.home-entry-grid>.rn-button:nth-child(3){background:#19160fc9;}
+.guide-sheet{background:linear-gradient(140deg,#16130e,#090908 70%);border-color:#b4955355;}
+.guide-sheet__header{padding:calc(10px + env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) 10px max(18px,env(safe-area-inset-left));min-height:56px;}
+.guide-sheet__header>div{font-size:14px;letter-spacing:.06em;}
+.guide-sheet__header>button{min-height:44px;}
+.guide-sheet__mark{width:26px;height:26px;}
+.guide-tabs{padding:4px 12px;gap:10px;}
+.guide-tabs button{min-height:44px;border-radius:0;padding:7px 10px;font-size:13px;}
+.guide-tabs button.is-active{background:transparent;box-shadow:inset 0 -2px #bea166;color:#e1c38d;}
+.guide-sheet>.guide-tutorial{display:flex;flex-direction:column;align-items:stretch;overflow:hidden;text-align:left;padding:18px 20px;}
+.guide-step-count{flex:none;margin:0 0 16px;}
+.guide-tutorial__body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;}
+.guide-tutorial__symbol{font-size:26px;line-height:1.2;}
+.guide-tutorial h1{font:400 26px/1.3 var(--rn-serif);letter-spacing:.06em;margin:12px 0 18px;}
+.guide-tutorial__body>p,.guide-tutorial .tutorial__points{font-size:15px;line-height:1.8;color:#c9c2b4;max-width:42em;}
+.guide-tutorial .tutorial__points{padding-left:20px;text-align:left;}
+.guide-tutorial .tutorial__points li{padding-left:2px;margin:12px 0;}
+.guide-tutorial__actions{flex:none;margin-top:18px;gap:12px;}
+.guide-tutorial__actions button{flex:1;min-height:46px;}
+.guide-sheet>.role-compendium{padding:0;}
+.role-browser{padding:0 16px 20px;}
+.role-category-tabs{position:sticky;top:0;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:0 -16px;padding:12px 16px 10px;background:#100f0df5;border-bottom:1px solid #a78c4826;}
+.role-category-tabs button{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:44px;padding:6px 3px;border:1px solid transparent;border-radius:7px;background:transparent;color:#a39a87;font-size:14px;cursor:pointer;}
+.role-category-tabs button[aria-selected=true]{background:#bd9a561b;border-color:#bd9a5644;color:#edd7ad;}
+.role-category-tabs small{font:10px var(--rn-mono);opacity:.7;}
+.role-category-summary{font-size:12px;line-height:1.6;color:#a69d8e;margin:12px 0 16px;}
+.role-browser .role-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+.role-browser .role-grid>button{padding:0;gap:0;overflow:hidden;border:1px solid #b59b582e;border-radius:12px;background:linear-gradient(145deg,#242017,#14120e);box-shadow:0 5px 14px #0004;cursor:pointer;transition:border-color .16s,transform .16s;}
+.role-browser .role-grid>button:active{transform:scale(.97);border-color:#cdb071;}
+.role-browser .role-index__portrait{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:0;background:#0b0a08;box-shadow:none;filter:brightness(.88) saturate(.75);}
+.role-browser .role-index__copy{width:100%;padding:10px 3px;color:#e3d2b0;}
+.role-browser .role-index__copy strong{font:400 14px/1.4 var(--rn-serif);letter-spacing:.04em;}
+.guide-sheet .role-detail{margin:12px;max-width:none;border-color:#aa8d482e;background:#12110e;}
+.role-detail-nav{padding:8px 12px;background:#15130ff5;border-bottom:1px solid #aa8d4826;}
+.role-detail-nav button{min-height:44px;border:0;background:transparent;color:#d7bd8b;font-size:13px;padding:6px;}
+.role-detail-nav button:disabled{opacity:.35;}
+.role-detail-nav strong{font-size:15px;}
+.role-detail-nav>span{font-size:11px;color:#aa9b80;white-space:nowrap;}
+.guide-sheet .role-detail__portrait{display:block;min-height:0;height:auto;aspect-ratio:4/3;max-height:280px;object-fit:cover;object-position:50% 30%;}
+.guide-sheet .role-detail__copy{padding:4px 18px 18px;}
+.role-detail__copy h2{font:400 18px var(--rn-serif);margin:18px 0 8px;color:#dbc28d;}
+.role-detail__copy p{font-size:14px;line-height:1.8;margin:8px 0 14px;}
+.role-detail__advice{border-top:1px solid #ab935231;margin-top:18px;padding-top:8px;}
+.role-detail__advice summary{min-height:44px;line-height:44px;font-size:14px;color:#cdb585;cursor:pointer;}
+.role-detail__advice h3{font-size:14px;font-weight:500;color:#cdb585;margin:16px 0 8px;}
+@media(min-width:600px){.role-browser .role-grid{grid-template-columns:repeat(4,minmax(0,1fr));}.role-browser{padding:0 24px 24px;}.role-category-tabs{margin:0 -24px;padding-left:24px;padding-right:24px;}}
+@media(min-width:900px){.role-browser .role-grid{grid-template-columns:repeat(5,minmax(0,1fr));}}
+@media(max-height:600px){.guide-sheet>.guide-tutorial{padding:12px 16px;}.guide-step-count{margin-bottom:8px;}.guide-tutorial h1{font-size:23px;margin:8px 0 12px;}.guide-tutorial__symbol{display:none;}.guide-tutorial__actions{margin-top:10px;}}
+@media(prefers-reduced-motion:reduce){.home-portrait__caption-body{animation:none!important;transition:none!important;}}

@@ -9,16 +9,21 @@ import {getAccount,getAvatarChoices,saveGameProfile} from './api.js';
 vi.mock('./api.js',async original=>({...await original<object>(),getAccount:vi.fn(),getAvatarChoices:vi.fn(),saveGameProfile:vi.fn()}));
 afterEach(()=>{cleanup();vi.resetAllMocks();vi.unstubAllGlobals();vi.useRealTimers();window.history.replaceState({},'','/');});
 const profile={revision:0,nickname:'默认昵称',avatar:null,nicknameOverride:null,avatarOverride:null,defaultNickname:'默认昵称',defaultAvatar:null};
-test('portrait follows the finger and snaps on release; interruption returns to the same role',()=>{
+test('whole arches follow the finger while copy fades, then snap once; cancellation restores copy',()=>{
   vi.useFakeTimers();class Pointer extends MouseEvent{pointerId:number;constructor(type:string,init:MouseEventInit&{pointerId?:number}={}){super(type,init);this.pointerId=init.pointerId??1;}}vi.stubGlobal('PointerEvent',Pointer);
   const ui=render(<HomePortrait/>),art=screen.getByLabelText('左右滑动切换角色'),track=ui.container.querySelector('.home-portrait__track') as HTMLElement;
   const first=screen.getByRole('img',{name:/原画/}).getAttribute('alt');
+  const caption=ui.container.querySelector('.home-portrait__caption-body') as HTMLElement;
+  expect(track.querySelectorAll('.home-portrait__arch')).toHaveLength(3);
+  expect(screen.getByRole('img',{name:/原画/}).closest('.home-portrait__arch')?.parentElement?.parentElement).toBe(track);
   fireEvent.pointerDown(art,{pointerId:1,button:0,clientX:150,clientY:100});fireEvent.pointerMove(art,{pointerId:1,clientX:70,clientY:100});act(()=>{vi.advanceTimersByTime(20);});
+  expect(Number(caption.style.opacity)).toBeLessThan(1);expect(Number(caption.style.opacity)).toBeGreaterThan(0);
   expect(track.style.transform).toContain('px');expect(screen.getByRole('img',{name:/原画/})).toHaveAttribute('alt',first);
-  fireEvent.pointerUp(art,{pointerId:1,clientX:70,clientY:100});expect(art).toHaveAttribute('aria-busy','true');act(()=>{vi.advanceTimersByTime(360);});
+  fireEvent.pointerUp(art,{pointerId:1,clientX:70,clientY:100});expect(caption.style.opacity).toBe('0');expect(art).toHaveAttribute('aria-busy','true');act(()=>{vi.advanceTimersByTime(360);});
+  expect(ui.container.querySelector('.home-portrait__caption-body')).not.toBe(caption);
   expect(screen.getByRole('img',{name:/原画/})).not.toHaveAttribute('alt',first);const second=screen.getByRole('img',{name:/原画/}).getAttribute('alt');
   fireEvent.pointerDown(art,{pointerId:1,button:0,clientX:150,clientY:100});fireEvent.pointerMove(art,{pointerId:1,clientX:70,clientY:100});fireEvent.pointerCancel(art,{pointerId:1});act(()=>{vi.advanceTimersByTime(360);});
-  expect(screen.getByRole('img',{name:/原画/})).toHaveAttribute('alt',second);expect(art).toHaveAttribute('aria-busy','false');
+  expect(screen.getByRole('img',{name:/原画/})).toHaveAttribute('alt',second);expect(art).toHaveAttribute('aria-busy','false');expect((ui.container.querySelector('.home-portrait__caption-body') as HTMLElement).style.opacity).toBe('1');
 });
 test('one arch swipes directly; vertical and canceled gestures do not change the role and entry actions stay available',async()=>{
   vi.mocked(getAccount).mockResolvedValue({signedIn:false,rooms:[],guestClaimAvailable:false});
