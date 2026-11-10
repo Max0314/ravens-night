@@ -20,8 +20,8 @@ img,a{-webkit-user-drag:none;}
 .game-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;width:100%;}.game-tabs{position:static;order:5;flex:none;width:100%;max-width:none;margin:0;z-index:1;padding:5px;}.game-tabs button{min-height:48px;}
 .role-page>.rn-role-card{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin:auto;}.role-page>.rn-button,.role-page>.privacy-warning,.role-page>.screen-back,.role-page>.game-guide-links{flex:none;}.role-page .rn-role-card__portrait-wrap{max-height:34vh;}
 .player-private>.ending{padding-top:calc(60px + env(safe-area-inset-top));}.ending-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;}.game-page>.rn-panel{min-height:0;overflow:auto;}.game-page>.inline-waiting{flex:1;min-height:0;overflow:auto;}.player-session>.privacy-curtain{flex:1;min-height:0;}.player-session>.session-status{position:absolute;}
-.guide-sheet{height:100%;max-height:100%;overflow:hidden;display:flex;flex-direction:column;}.guide-sheet__header,.guide-tabs{flex:none;}.guide-sheet>:last-child:not(.guide-sheet__header):not(.guide-tabs){flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;}.guide-sheet .role-detail{display:block;}.guide-backdrop,.account-backdrop,.event-stage{height:var(--viewport-height,100dvh);bottom:auto;}
-.guide-sheet>.guide-tutorial{align-content:start;}
+.guide-sheet{height:100%;max-height:100%;overflow:hidden;display:flex;flex-direction:column;}.guide-sheet__header,.guide-tabs{flex:none;}.guide-sheet>.guide-book{flex:1;min-height:0;overflow:hidden;overscroll-behavior:contain;}.guide-sheet .role-detail{display:block;}.guide-backdrop,.account-backdrop,.event-stage{height:var(--viewport-height,100dvh);bottom:auto;}
+.guide-book>.guide-tutorial{align-content:start;}
 .display{height:100%;min-height:0!important;overflow:hidden;grid-template-rows:auto minmax(0,1fr) minmax(0,25%);}.display__town{min-height:0;overflow:auto;overscroll-behavior:contain;display:block;}.display__canvas{position:relative;display:grid;place-items:center;width:fit-content;max-width:none;margin:0 auto;}.display__village-feed,.display__notice{min-height:0;max-height:100%;overflow:auto;overscroll-behavior:contain;}.display__village-feed ol{max-height:none;}
 .app-viewport>.portrait-gallery,.app-viewport>.effects-preview{height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;}
 .home.home--compact{height:100%;}
@@ -30,13 +30,14 @@ img,a{-webkit-user-drag:none;}
 .home-portrait{grid-template-rows:minmax(0,1fr) 128px 44px;}
 .home-portrait__viewport{width:100%;height:100%;min-height:0;overflow:hidden;touch-action:pan-y;outline-offset:-2px;}
 .home-portrait__arch{width:auto;max-width:100%;height:100%;aspect-ratio:3/4;touch-action:pan-y;flex-shrink:1;background:#100e0a;box-shadow:0 0 0 4px #080705,0 0 0 5px #a68c4533,0 12px 30px #0009;}
-.home-portrait__track{display:flex;height:100%;width:100%;transform:translate3d(-100%,0,0);will-change:transform;pointer-events:none;}
-.home-portrait__slide{flex:0 0 100%;width:100%;height:100%;min-width:0;display:flex;align-items:center;justify-content:center;padding:8px 14px;overflow:visible;box-sizing:border-box;}
+.home-portrait__track{position:relative;height:100%;width:100%;pointer-events:none;}
+.home-portrait__slide{position:absolute;left:50%;top:50%;height:auto;aspect-ratio:3/4;min-width:0;padding:0;overflow:visible;box-sizing:border-box;}
+.home-portrait__slide>.home-portrait__arch{width:100%;height:100%;max-width:none;}
 .home-portrait__slide img{animation:none;filter:brightness(.8) saturate(.74);}
-.home-portrait__caption{height:128px;min-height:0;overflow:hidden;padding-top:4px;}
-.home-portrait__caption-body{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);align-content:start;animation:role-caption-enter 240ms ease-out both;}
+.home-portrait__caption{position:relative;height:128px;min-height:0;overflow:hidden;padding-top:4px;}
+.home-portrait__caption-body{position:absolute;inset:4px 0 0;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);align-content:start;opacity:0;animation:none;}
 .home-portrait__caption-body>span{font-size:10px;letter-spacing:.23em;color:#b3a078;}
-@keyframes role-caption-enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
 .home-portrait__caption p{overflow:auto;overscroll-behavior:contain;margin-bottom:0;align-self:stretch;}
 .home-entry-grid{grid-template-columns:minmax(0,1.5fr) minmax(100px,.85fr);gap:8px 24px;align-items:center;}
 .home-entry-grid>.rn-button{border-radius:8px;min-height:50px;box-shadow:0 6px 20px #0005;}
@@ -59,17 +60,19 @@ img,a{-webkit-user-drag:none;}
 .guide-tabs{padding:4px 12px;gap:10px;}
 .guide-tabs button{min-height:44px;border-radius:0;padding:7px 10px;font-size:13px;}
 .guide-tabs button.is-active{background:transparent;box-shadow:inset 0 -2px #bea166;color:#e1c38d;}
-.guide-sheet>.guide-tutorial{display:flex;flex-direction:column;align-items:stretch;overflow:hidden;text-align:left;padding:18px 20px;}
-.guide-step-count{flex:none;margin:0 0 16px;}
-.guide-tutorial__body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;}
-.guide-tutorial__symbol{font-size:26px;line-height:1.2;}
+.guide-book>.guide-tutorial{height:100%;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;text-align:center;padding:16px 20px;}
+.guide-step-count{flex:none;margin:0 0 8px;text-align:center;}
+.guide-tutorial__body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;}
+.tutorial-page{flex:none;width:min(100%,560px);margin:auto;padding:18px 0;}
+.guide-tutorial__symbol{font-size:42px;line-height:1.3;margin-bottom:12px;}
 .guide-tutorial h1{font:400 26px/1.3 var(--rn-serif);letter-spacing:.06em;margin:12px 0 18px;}
-.guide-tutorial__body>p,.guide-tutorial .tutorial__points{font-size:15px;line-height:1.8;color:#c9c2b4;max-width:42em;}
-.guide-tutorial .tutorial__points{padding-left:20px;text-align:left;}
-.guide-tutorial .tutorial__points li{padding-left:2px;margin:12px 0;}
+.tutorial-page>p,.guide-tutorial .tutorial__points{font-size:15px;line-height:1.8;color:#c9c2b4;max-width:42em;}
+.guide-tutorial .tutorial__points{padding:0;text-align:left;gap:14px;margin:20px auto 0;}
+.guide-tutorial .tutorial__points li{padding-left:22px;margin:0;}.guide-tutorial .tutorial__points li::before{left:0;top:.4em;font-size:8px;}
 .guide-tutorial__actions{flex:none;margin-top:18px;gap:12px;}
 .guide-tutorial__actions button{flex:1;min-height:46px;}
-.guide-sheet>.role-compendium{padding:0;}
+.guide-book>.role-compendium{height:100%;min-height:0;overflow-y:auto;padding:0;}
+.guide-book>.own-role-guide{height:100%;overflow-y:auto;}
 .role-browser{padding:0 16px 20px;}
 .role-category-tabs{position:sticky;top:0;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:0 -16px;padding:12px 16px 10px;background:#100f0df5;border-bottom:1px solid #a78c4826;}
 .role-category-tabs button{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:44px;padding:6px 3px;border:1px solid transparent;border-radius:7px;background:transparent;color:#a39a87;font-size:14px;cursor:pointer;}
@@ -77,7 +80,7 @@ img,a{-webkit-user-drag:none;}
 .role-category-tabs small{font:10px var(--rn-mono);opacity:.7;}
 .role-category-summary{font-size:12px;line-height:1.6;color:#a69d8e;margin:12px 0 16px;}
 .role-browser .role-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
-.role-browser .role-grid>button{padding:0;gap:0;overflow:hidden;border:1px solid #b59b582e;border-radius:12px;background:linear-gradient(145deg,#242017,#14120e);box-shadow:0 5px 14px #0004;cursor:pointer;transition:border-color .16s,transform .16s;}
+.role-browser .role-grid>button{padding:0;gap:0;overflow:hidden;border:1px solid #b59b582e;border-radius:48% 48% 9px 9px / 26% 26% 9px 9px;background:linear-gradient(145deg,#242017,#14120e);box-shadow:0 5px 14px #0004;cursor:pointer;transition:border-color .16s,transform .16s;}
 .role-browser .role-grid>button:active{transform:scale(.97);border-color:#cdb071;}
 .role-browser .role-index__portrait{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:0;background:#0b0a08;box-shadow:none;filter:brightness(.88) saturate(.75);}
 .role-browser .role-index__copy{width:100%;padding:10px 3px;color:#e3d2b0;}
@@ -97,5 +100,32 @@ img,a{-webkit-user-drag:none;}
 .role-detail__advice h3{font-size:14px;font-weight:500;color:#cdb585;margin:16px 0 8px;}
 @media(min-width:600px){.role-browser .role-grid{grid-template-columns:repeat(4,minmax(0,1fr));}.role-browser{padding:0 24px 24px;}.role-category-tabs{margin:0 -24px;padding-left:24px;padding-right:24px;}}
 @media(min-width:900px){.role-browser .role-grid{grid-template-columns:repeat(5,minmax(0,1fr));}}
-@media(max-height:600px){.guide-sheet>.guide-tutorial{padding:12px 16px;}.guide-step-count{margin-bottom:8px;}.guide-tutorial h1{font-size:23px;margin:8px 0 12px;}.guide-tutorial__symbol{display:none;}.guide-tutorial__actions{margin-top:10px;}}
+@media(max-height:600px){.guide-book>.guide-tutorial{padding:12px 16px;}.guide-step-count{margin-bottom:8px;}.guide-tutorial h1{font-size:23px;margin:8px 0 12px;}.guide-tutorial__symbol{display:none;}.guide-tutorial__actions{margin-top:10px;}}
 @media(prefers-reduced-motion:reduce){.home-portrait__caption-body{animation:none!important;transition:none!important;}}
+
+.guide-book{position:relative;isolation:isolate;transform-origin:left center;}
+.guide-book[data-turn=forward]{animation:book-forward 340ms ease-out;}
+.guide-book[data-turn=back]{animation:book-back 340ms ease-out;transform-origin:right center;}
+.guide-book[data-turn]::after{content:"";position:absolute;inset:0;z-index:8;pointer-events:none;background:linear-gradient(100deg,transparent 20%,#d1b17816 48%,#0007 53%,transparent 80%);animation:book-shadow 340ms ease-out both;}
+@keyframes book-forward{from{transform:perspective(1200px) rotateY(-9deg);opacity:.65}to{transform:perspective(1200px) rotateY(0);opacity:1}}
+@keyframes book-back{from{transform:perspective(1200px) rotateY(9deg);opacity:.65}to{transform:perspective(1200px) rotateY(0);opacity:1}}
+@keyframes book-shadow{from{opacity:.8;transform:translateX(-40%)}to{opacity:0;transform:translateX(50%)}}
+.guide-sheet__header>.guide-header-actions{gap:4px;letter-spacing:0;}
+.guide-header-actions button{min-width:44px;min-height:44px;border:0;background:none;color:#bcb19a;cursor:pointer;}
+.guide-header-actions button[aria-pressed=false]{opacity:.5;}
+.account-dialog{max-height:calc(var(--viewport-height,100dvh) - 32px);padding:0;display:flex;flex-direction:column;overflow:hidden;}
+.account-dialog>header{flex:none;margin:0;padding:16px 20px 12px;border-bottom:1px solid #a98b4c26;}
+.account-dialog__body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:16px 20px;}
+.account-dialog__footer{flex:none;padding:12px 20px;background:#13130f;border-top:1px solid #a98b4c33;}
+.account-dialog__footer>[role]{font-size:12px;line-height:1.5;margin:6px 0 0;max-height:54px;overflow:auto;}
+.account-dialog__footer>[role]:empty{display:none;}
+.account-dialog__footer .account-security{padding-top:6px;}
+.account-avatar-expander{width:100%;display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
+.account-avatar-expander span{font-size:12px;color:#b0a188;}
+.account-avatar-heading{display:flex;align-items:center;justify-content:space-between;font-size:12px;padding-top:8px;}
+.account-dialog .account-avatar-heading button{font-size:12px;border:0;background:transparent;}
+.account-avatar-grid{max-height:min(260px,30vh);overflow-y:auto;overscroll-behavior:contain;align-content:start;padding:6px 3px;margin-top:4px;}
+.account-avatar-grid button{min-width:0;aspect-ratio:1;display:grid;place-items:center;}
+.account-avatar-grid img{height:auto;object-fit:cover;}
+.account-avatar-grid span{font-size:10px;line-height:1.4;}
+@media(max-height:520px){.account-dialog>header{padding:8px 16px;}.account-dialog header small{display:none;}.account-dialog h2{font-size:20px;margin:0;}.account-dialog__body{padding:10px 16px;}.account-dialog__footer{padding:8px 16px;}}

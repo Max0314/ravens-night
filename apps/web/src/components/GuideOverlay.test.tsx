@@ -3,7 +3,9 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { GuideOverlay } from "./GuideOverlay.js";
-afterEach(()=>{cleanup();window.history.replaceState({},"","/");});
+const audio=vi.hoisted(()=>({turn:vi.fn(),silence:vi.fn(),dispose:vi.fn()}));
+vi.mock("./book-audio.js",()=>({createBookAudio:()=>audio}));
+afterEach(()=>{cleanup();vi.clearAllMocks();localStorage.clear();window.history.replaceState({},"","/");});
 
 test("live room refreshes preserve help focus and Escape uses the current close handler", () => {
   const firstClose = vi.fn();
@@ -37,4 +39,13 @@ test("role category tabs expose one group, support keyboard switching and constr
   fireEvent.click(screen.getByRole("button",{name:"查看小恶魔详情"}));
   expect(screen.getByRole("button",{name:"上一位"})).toBeDisabled();
   expect(screen.getByRole("button",{name:"下一位"})).toBeDisabled();
+});
+
+
+test('page turns follow actual navigation, allow muting and retain top-focused role artwork',()=>{
+  render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);
+  fireEvent.click(screen.getByRole('button',{name:'下一条'}));expect(audio.turn).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole('button',{name:'关闭翻页音效'}));fireEvent.click(screen.getByRole('button',{name:'角色表'}));expect(audio.turn).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole('tab',{name:/镇民/}));expect(audio.turn).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole('button',{name:'查看洗衣妇详情'}));expect(screen.getByRole('img',{name:'洗衣妇角色立绘'})).toHaveStyle({objectPosition:'50% 0%'});
 });

@@ -48,7 +48,7 @@ test("the home screen exposes an interactive tutorial and the complete role comp
   fireEvent.click(screen.getByRole("button", { name: "查看教程" }));
   expect(screen.getByRole("dialog", { name: "游戏帮助" })).toBeVisible();
   expect(screen.getByRole("heading", { name: "阵营与胜负" })).toBeVisible();
-  const tutorialBody=screen.getByRole("heading", {name:"阵营与胜负"}).parentElement!;tutorialBody.scrollTop=160;
+  const tutorialBody=screen.getByRole("heading", {name:"阵营与胜负"}).closest(".guide-tutorial__body")!;tutorialBody.scrollTop=160;
   fireEvent.click(screen.getByRole("button", { name: "下一条" }));
   expect(screen.getByRole("heading", { name: "昼夜流程" })).toBeVisible();
   expect(tutorialBody.scrollTop).toBe(0);

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PrivateView } from "../api.js";
 import { rolePlayGuides, roleTypeGuidance, roleTypeNames, tutorialSteps } from "../guide-content.js";
 import { roleArt } from "../role-art.js";
+import { createBookAudio } from "./book-audio.js";
 
 export type GuideMode = "tutorial" | "roles" | "mine";
 const roleTypes = ["TOWNSFOLK", "OUTSIDER", "MINION", "DEMON"] as const;
@@ -20,11 +21,22 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
   const compendiumRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLElement>(null);
   const tutorialRef = useRef<HTMLDivElement>(null);
+  const bookRef = useRef<HTMLDivElement>(null);
+  const bookAudio = useRef<ReturnType<typeof createBookAudio> | null>(null);
+  const [sound, setSound] = useState(() => { try { const saved=localStorage.getItem('ravens_book_audio');return saved==='on'||saved!=='off'&&!ownRole; } catch { return !ownRole; } });
+  useEffect(()=>{bookAudio.current=createBookAudio();return()=>{bookAudio.current?.dispose();bookAudio.current=null;};},[]);
+  function turn(direction: number, change: ()=>void, audible=true) {
+    if(bookRef.current&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+      delete bookRef.current.dataset.turn;void bookRef.current.offsetWidth;bookRef.current.dataset.turn=direction<0?'back':'forward';
+    }
+    if(sound&&audible)bookAudio.current?.turn();change();
+  }
+  function changeMode(next: GuideMode) { if(next!==activeMode)turn(next==='tutorial'?-1:1,()=>setActiveMode(next)); }
   const scroll = useRef(0);
   const filtered = beginnerRoles.filter(role => role.type === category);
   useEffect(() => { if(tutorialRef.current)tutorialRef.current.scrollTop=0; }, [step, activeMode]);
-  function selectCategory(type: RoleType) { setCategory(type); if(compendiumRef.current)compendiumRef.current.scrollTop=0; }
-  function selectRole(id: string) { scroll.current = compendiumRef.current?.scrollTop ?? 0; setSelectedRoleId(id); }
+  function selectCategory(type: RoleType) { if(type===category)return;turn(roleTypes.indexOf(type)-roleTypes.indexOf(category),()=>{setCategory(type); if(compendiumRef.current)compendiumRef.current.scrollTop=0;}); }
+  function selectRole(id: string) { scroll.current = compendiumRef.current?.scrollTop ?? 0;turn(1,()=>setSelectedRoleId(id)); }
   function closeDetail() { const id=selectedRef.current; setSelectedRoleId(undefined); requestAnimationFrame(() => { if (compendiumRef.current) compendiumRef.current.scrollTop = scroll.current; gridRef.current?.querySelector<HTMLButtonElement>(`[data-role-id="${id}"]`)?.focus({preventScroll:true}); }); }
   const closeDetailRef = useRef(closeDetail); closeDetailRef.current = closeDetail;
   useEffect(() => { if (selectedRoleId) { if(compendiumRef.current)compendiumRef.current.scrollTop=0; detailRef.current?.focus({preventScroll:true}); } }, [selectedRoleId]);
@@ -74,12 +86,12 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
     <section ref={dialogRef} className="guide-sheet" role="dialog" aria-modal="true" aria-label="游戏帮助" tabIndex={-1}>
       <header className="guide-sheet__header">
         <div><span className="guide-sheet__mark">☾</span><strong>钟楼手册</strong></div>
-        <button type="button" onClick={onClose} aria-label="关闭游戏帮助">关闭 ×</button>
+        <div className="guide-header-actions"><button type="button" aria-label={sound?'关闭翻页音效':'开启翻页音效'} aria-pressed={sound} onClick={()=>{if(sound)bookAudio.current?.silence();setSound(value=>!value);try{localStorage.setItem('ravens_book_audio',sound?'off':'on');}catch{/* Optional preference. */}}}>{sound?'♪':'♩'}</button><button type="button" onClick={onClose} aria-label="关闭游戏帮助">关闭 ×</button></div>
       </header>
       <nav className="guide-tabs" aria-label="手册页面">
-        {tabs.map((tab) => <button type="button" key={tab.id} className={activeMode === tab.id ? "is-active" : ""} onClick={() => setActiveMode(tab.id)}>{tab.label}</button>)}
+        {tabs.map((tab) => <button type="button" key={tab.id} className={activeMode === tab.id ? "is-active" : ""} onClick={() => changeMode(tab.id)}>{tab.label}</button>)}
       </nav>
-
+      <div className="guide-book" ref={bookRef} onAnimationEnd={event=>{if(event.target===event.currentTarget)delete event.currentTarget.dataset.turn;}}>
       {activeMode === "mine" && ownRole ? <div className="own-role-guide">
         <p className={`role-alignment role-alignment--${ownRole.alignment.toLowerCase()}`}>{ownRole.alignment === "GOOD" ? "善良阵营" : "邪恶阵营"} · {roleTypeNames[ownRole.type as keyof typeof roleTypeNames]}</p>
         <h1>{ownRole.name}</h1>
@@ -92,15 +104,17 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
       {activeMode === "tutorial" ? <div className="guide-tutorial">
         <p className="guide-step-count">规则 {step + 1} / {tutorialSteps.length}</p>
         <div className="guide-tutorial__body" ref={tutorialRef}>
+        <div className="tutorial-page">
         <div className="guide-tutorial__symbol" aria-hidden="true">{tutorialSteps[step]!.symbol}</div>
         <h1>{tutorialSteps[step]!.title}</h1>
         <p>{tutorialSteps[step]!.detail}</p>
         {tutorialSteps[step]!.points ? <ul className="tutorial__points">{tutorialSteps[step]!.points!.map((point) => <li key={point}>{point}</li>)}</ul> : null}
         {tutorialSteps[step]!.example ? <aside className="tutorial__example"><span>{tutorialSteps[step]!.example!.label}</span><p>{tutorialSteps[step]!.example!.text}</p></aside> : null}
         </div>
+        </div>
         <div className="guide-tutorial__actions">
-          <button type="button" disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))}>上一条</button>
-          <button type="button" onClick={() => step === tutorialSteps.length - 1 ? setActiveMode("roles") : setStep((value) => value + 1)}>{step === tutorialSteps.length - 1 ? "继续看角色表" : "下一条"}</button>
+          <button type="button" disabled={step === 0} onClick={() => turn(-1,()=>setStep(value=>Math.max(0,value-1)))}>上一条</button>
+          <button type="button" onClick={() => turn(1,()=>step === tutorialSteps.length - 1 ? setActiveMode("roles") : setStep(value=>value+1))}>{step === tutorialSteps.length - 1 ? "继续看角色表" : "下一条"}</button>
         </div>
       </div> : null}
 
@@ -121,12 +135,13 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
           </section>
         </div>
         {selectedRole ? <article className="role-detail" ref={detailRef} tabIndex={-1} aria-label={`${selectedRole.name}详情`}>
-          <header className="role-detail-nav"><button type="button" onClick={closeDetail}>返回角色表</button><strong>{selectedRole.name}</strong><span>{roleTypeNames[selectedRole.type]}</span></header>
-          <RolePortrait className="role-detail__portrait" label={`${selectedRole.name}角色立绘`} url={selectedRoleArt!.portraitUrl} srcSet={selectedRoleArt!.portraitSrcSet} sizes="(max-width: 820px) 90vw, 390px" position={selectedRoleArt!.portraitPosition} />
+          <header className="role-detail-nav"><button type="button" onClick={()=>turn(-1,closeDetail)}>返回角色表</button><strong>{selectedRole.name}</strong><span>{roleTypeNames[selectedRole.type]}</span></header>
+          <RolePortrait className="role-detail__portrait" label={`${selectedRole.name}角色立绘`} url={selectedRoleArt!.portraitUrl} srcSet={selectedRoleArt!.portraitSrcSet} sizes="(max-width: 820px) 90vw, 390px" position="50% 0%" />
           <div className="role-detail__copy"><h2>能力</h2><p>{selectedRole.summary}</p>{selectedPlayGuide ? <><h2>规则细节</h2><p>{selectedPlayGuide.mechanics}</p></> : null}<details className="role-detail__advice"><summary>游玩建议与示例</summary><p>{selectedRole.beginnerTip}</p>{selectedPlayGuide ? <><p>{selectedPlayGuide.play}</p><h3>实战例子</h3><p>{selectedPlayGuide.example}</p><h3>冒充与反制</h3><p>{selectedPlayGuide.bluff}</p></> : null}</details></div>
-          <footer className="role-detail-nav"><button type="button" disabled={filtered.findIndex(r=>r.id===selectedRole.id)<=0} onClick={()=>setSelectedRoleId(filtered[filtered.findIndex(r=>r.id===selectedRole.id)-1]!.id)}>上一位</button><button type="button" disabled={filtered.findIndex(r=>r.id===selectedRole.id)>=filtered.length-1} onClick={()=>setSelectedRoleId(filtered[filtered.findIndex(r=>r.id===selectedRole.id)+1]!.id)}>下一位</button></footer>
+          <footer className="role-detail-nav"><button type="button" disabled={filtered.findIndex(r=>r.id===selectedRole.id)<=0} onClick={()=>turn(-1,()=>setSelectedRoleId(filtered[filtered.findIndex(r=>r.id===selectedRole.id)-1]!.id))}>上一位</button><button type="button" disabled={filtered.findIndex(r=>r.id===selectedRole.id)>=filtered.length-1} onClick={()=>turn(1,()=>setSelectedRoleId(filtered[filtered.findIndex(r=>r.id===selectedRole.id)+1]!.id))}>下一位</button></footer>
         </article> : null}
       </div> : null}
+      </div>
     </section>
   </div>;
 }
