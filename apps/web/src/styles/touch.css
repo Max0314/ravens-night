@@ -1,0 +1,44 @@
+/* The document never pans; only bounded content panels scroll. */
+html,body,#root{width:100%;height:100%;min-height:0!important;overflow:hidden!important;overscroll-behavior:none;}
+body{position:fixed;inset:0;margin:0;}
+.app-viewport{height:100vh;height:100dvh;height:var(--viewport-height,100dvh);width:100%;overflow:hidden;position:relative;}
+*,*::before,*::after{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+*:not(input):not(textarea):not([contenteditable="true"]){-webkit-user-select:none!important;user-select:none!important;}
+input,textarea,[contenteditable="true"]{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default;touch-action:manipulation;}
+.app-viewport [contenteditable="true"] *{-webkit-user-select:text!important;user-select:text!important;}
+img,a{-webkit-user-drag:none;}
+.app-viewport>.app-loading{height:100%;min-height:0;}
+.app-viewport>.center-page,.app-viewport>.login-page{height:100%;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:calc(64px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom));}
+.center-page>.form-panel,.center-page>.tutorial__panel,.login-page>.login-panel{max-height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;flex-shrink:1;}
+.center-page.tutorial{gap:8px;}.tutorial>.tutorial__progress,.tutorial>p{flex:none;margin:0;}.tutorial__panel{width:min(100%,560px);align-content:start;}.tutorial__actions{position:sticky;bottom:0;background:#101620e8;padding-top:8px;}
+.login-page>.login-panel{margin:0;}.login-page__art{pointer-events:none;}
+.compact-lobby{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom);}
+.compact-lobby>header{flex:none;}.lobby-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 2px 8px;}.lobby-primary{position:static;flex:none;}
+.player-session{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;}.player-session>.public-ballot,.player-session>.public-command-error{flex:none;position:relative;}
+.player-private{flex:1;min-height:0;overflow:hidden;}.player-private>main{height:100%;min-height:0!important;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:calc(8px + env(safe-area-inset-top)) 12px calc(8px + env(safe-area-inset-bottom));}
+.game-header,.game-utility{flex:none;}.game-header{margin:0;width:100%;}.game-utility{width:100%;max-height:110px;overflow:auto;}
+.game-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;width:100%;}.game-tabs{position:static;order:5;flex:none;width:100%;max-width:none;margin:0;z-index:1;padding:5px;}.game-tabs button{min-height:48px;}
+.role-page>.rn-role-card{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin:auto;}.role-page>.rn-button,.role-page>.privacy-warning,.role-page>.screen-back,.role-page>.game-guide-links{flex:none;}.role-page .rn-role-card__portrait-wrap{max-height:34vh;}
+.player-private>.ending{padding-top:calc(60px + env(safe-area-inset-top));}.ending-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;}.game-page>.rn-panel{min-height:0;overflow:auto;}.game-page>.inline-waiting{flex:1;min-height:0;overflow:auto;}.player-session>.privacy-curtain{flex:1;min-height:0;}.player-session>.session-status{position:absolute;}
+.guide-sheet{height:100%;max-height:100%;overflow:hidden;display:flex;flex-direction:column;}.guide-sheet__header,.guide-tabs{flex:none;}.guide-sheet>:last-child:not(.guide-sheet__header):not(.guide-tabs){flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;}.guide-sheet .role-detail{display:block;}.guide-backdrop,.account-backdrop,.event-stage{height:var(--viewport-height,100dvh);bottom:auto;}
+.guide-sheet>.guide-tutorial{align-content:start;}
+.display{height:100%;min-height:0!important;overflow:hidden;grid-template-rows:auto minmax(0,1fr) minmax(0,25%);}.display__town{min-height:0;overflow:auto;overscroll-behavior:contain;display:block;}.display__canvas{position:relative;display:grid;place-items:center;width:fit-content;max-width:none;margin:0 auto;}.display__village-feed,.display__notice{min-height:0;max-height:100%;overflow:auto;overscroll-behavior:contain;}.display__village-feed ol{max-height:none;}
+.app-viewport>.portrait-gallery,.app-viewport>.effects-preview{height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;}
+.home.home--compact{height:100%;}
+.home--compact::before{background:url('/assets/ravens/home-scene-v1.webp') 34% center/cover no-repeat;}
+.home--compact::after{background:linear-gradient(180deg,#050a1026,#050a1070 55%,#050a10e8),radial-gradient(ellipse at 50% 40%,transparent 15%,#050a1077 85%);}
+.home-portrait{grid-template-rows:minmax(0,1fr) 128px 44px;}
+.home-portrait__arch{width:auto;max-width:100%;height:100%;aspect-ratio:3/4;touch-action:pan-y;}
+.home-portrait__track{display:flex;height:100%;width:100%;transform:translate3d(-100%,0,0);will-change:transform;pointer-events:none;}
+.home-portrait__slide{flex:0 0 100%;width:100%;height:100%;overflow:hidden;}
+.home-portrait__slide img{animation:none;filter:brightness(.8) saturate(.74);}
+.home-portrait__caption{height:128px;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden;align-content:start;padding-top:4px;}
+.home-portrait__caption p{overflow:auto;overscroll-behavior:contain;margin-bottom:0;align-self:stretch;}
+.home-entry-grid{grid-template-columns:minmax(0,1.5fr) minmax(100px,.85fr);gap:8px 24px;align-items:center;}
+.home-entry-grid>.rn-button{border-radius:8px;min-height:50px;box-shadow:0 6px 20px #0005;}
+.home-entry-grid>.rn-button:first-child{background:linear-gradient(135deg,#c0a26b,#96713b);border-color:#dfc49366;color:#121820;}
+.home-entry-grid>.rn-button:nth-child(3){background:#1a222cc9;border-color:#a58b554a;color:#d9c498;}
+.home-guide-entry{display:flex;align-items:center;justify-content:flex-start;gap:9px;min-height:44px;padding:7px 0;border:0;background:transparent;color:#cfbd9b;font-size:13px;cursor:pointer;}
+.home-guide-entry svg{height:20px;width:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+@media(max-height:660px){.home-portrait{grid-template-rows:minmax(0,1fr) 112px 44px;}.home-portrait__caption{height:112px;}}
+@media(orientation:landscape) and (max-height:540px){.home-portrait{grid-template-rows:minmax(0,1fr) 96px 44px;}.home-portrait__caption{height:96px;}.home-portrait__caption p{font-size:12px;}}

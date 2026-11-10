@@ -15,13 +15,14 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
   const [filter, setFilter] = useState("ALL");
   const selectedRef = useRef(selectedRoleId); selectedRef.current = selectedRoleId;
   const gridRef = useRef<HTMLDivElement>(null);
+  const compendiumRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLElement>(null);
   const scroll = useRef(0);
   const filtered = beginnerRoles.filter(role => filter === "ALL" || role.type === filter);
-  function selectRole(id: string) { scroll.current = dialogRef.current?.scrollTop ?? 0; setSelectedRoleId(id); }
-  function closeDetail() { const id=selectedRef.current; setSelectedRoleId(undefined); requestAnimationFrame(() => { if (dialogRef.current) dialogRef.current.scrollTop = scroll.current; gridRef.current?.querySelector<HTMLButtonElement>(`[data-role-id="${id}"]`)?.focus({preventScroll:true}); }); }
+  function selectRole(id: string) { scroll.current = compendiumRef.current?.scrollTop ?? 0; setSelectedRoleId(id); }
+  function closeDetail() { const id=selectedRef.current; setSelectedRoleId(undefined); requestAnimationFrame(() => { if (compendiumRef.current) compendiumRef.current.scrollTop = scroll.current; gridRef.current?.querySelector<HTMLButtonElement>(`[data-role-id="${id}"]`)?.focus({preventScroll:true}); }); }
   const closeDetailRef = useRef(closeDetail); closeDetailRef.current = closeDetail;
-  useEffect(() => { if (selectedRoleId) detailRef.current?.focus(); }, [selectedRoleId]);
+  useEffect(() => { if (selectedRoleId) { if(compendiumRef.current)compendiumRef.current.scrollTop=0; detailRef.current?.focus({preventScroll:true}); } }, [selectedRoleId]);
   useBackLayer(true,onClose);
   useBackLayer(Boolean(selectedRoleId),closeDetail);
   const dialogRef = useRef<HTMLElement>(null);
@@ -96,7 +97,7 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
         </div>
       </div> : null}
 
-      {activeMode === "roles" ? <div className="role-compendium">
+      {activeMode === "roles" ? <div className="role-compendium" ref={compendiumRef}>
         <div hidden={Boolean(selectedRole)} ref={gridRef}>
           <label className="role-filter">角色类型<select value={filter} onChange={event => setFilter(event.target.value)}><option value="ALL">全部角色</option>{(["TOWNSFOLK","OUTSIDER","MINION","DEMON"] as const).map(type => <option key={type} value={type}>{roleTypeNames[type]}</option>)}</select></label>
           <div className="role-grid">{filtered.map(role => <RoleIndexButton key={role.id} role={role} onSelect={selectRole}/>)}</div>

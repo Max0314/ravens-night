@@ -22,6 +22,8 @@ import "./styles/portraits.css";
 import "./styles/account.css";
 import "./styles/mobile.css";
 import "./styles/home.css";
+import "./styles/touch.css";
+import { installTouchPolicy } from './touch-policy.js';
 import { roomSnapshot } from "./room-snapshot.js";
 import {roomSessionKey} from './account-context.js';
 import {getAccount,resumeAccountRoom} from './api.js';
@@ -33,8 +35,14 @@ const SESSION_KEY = roomSessionKey();
 
 
 export function App() {
+  useEffect(()=>{
+    const dispose=installTouchPolicy();
+    const viewport=()=>document.documentElement.style.setProperty('--viewport-height',`${window.visualViewport?.height??window.innerHeight}px`);
+    viewport();window.addEventListener('resize',viewport);window.visualViewport?.addEventListener('resize',viewport);
+    return()=>{dispose();window.removeEventListener('resize',viewport);window.visualViewport?.removeEventListener('resize',viewport);};
+  },[]);
   const preview = new URLSearchParams(window.location.search).get("preview");
-  return preview === "effects" ? <EffectsPreview /> : preview === "portraits" ? <PortraitsPreview /> : <RoomApp />;
+  return <div className="app-viewport">{preview === "effects" ? <EffectsPreview /> : preview === "portraits" ? <PortraitsPreview /> : <RoomApp />}</div>;
 }
 
 function RoomApp() {
@@ -99,10 +107,8 @@ function RoomApp() {
       if (roomSessionKey() === SESSION_KEY) return;
       beginSession(); resetAccountContext(); setParticipantId(undefined); setReceipt(undefined); setGuide(undefined); setScreen("LOADING");
     };
-    const viewport = () => document.documentElement.style.setProperty("--viewport-height", `${window.visualViewport?.height ?? window.innerHeight}px`);
-    viewport(); window.visualViewport?.addEventListener("resize",viewport);
     window.addEventListener("popstate",back); document.addEventListener("visibilitychange",hide); window.addEventListener("fribench:account-change",account);
-    return () => { window.removeEventListener("popstate",back); document.removeEventListener("visibilitychange",hide); window.removeEventListener("fribench:account-change",account); window.visualViewport?.removeEventListener("resize",viewport); };
+    return () => { window.removeEventListener("popstate",back); document.removeEventListener("visibilitychange",hide); window.removeEventListener("fribench:account-change",account); };
   }, []);
 
   useEffect(() => {

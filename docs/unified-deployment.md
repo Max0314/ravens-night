@@ -1,5 +1,7 @@
 # 鸦钟夜话统一账号部署
 
+2026-11-10全局触摸与背景改进候选：只修改Web页面结构、触摸策略、轮播和静态素材，没有后端/数据/依赖或公共底座变化；沿用上一版资料表。原始首页美术保留，新home-scene-v1.webp为生成的无人物背景。Web60项、角色滚动定向11项、类型/构建及独立review通过，未使用浏览器。规范已读取ops `964c0ba2357810506ba4d9e883d217f377ea0615`，固定服务版本发布并做备份/健康/公网资源哈希核对。服务器盘余量偏低时只清理已确认无容器引用的本游戏旧镜像，禁止全局prune或删除数据。
+
 2026-11-10 16:05（北京时间）单拱门首页与本游戏资料已发布，运行提交 `dd4581188f90b9f11e4ac6e26b55c381d3116621`。新增本业务库 `room_account_profiles(account_id,revision,profile)`，payload复用AES-GCM加密；初始化CREATE TABLE IF NOT EXISTS为增量兼容，不改schemaVersion=2或旧表。加载在初始化成功/时钟启动前完成，资料与大厅变更共用事务及单写锁。复用原DATABASE_URL/DATA_ENCRYPTION_KEY，无新配置或公共底座更新。回退代码可保留新增表；旧代码忽略本游戏覆盖，禁止为回退DROP资料或恢复整个库覆盖新局。
 
 本轮读取规范ops `964c0ba2357810506ba4d9e883d217f377ea0615`；资料权限/并发/错误/加密/PG恢复及首页DOM已验证，执行范围见开发阶段文档。固定ops控制a5145d4在全局锁内完成目标库备份恢复与仅游戏服务发布。备份回执 `/srv/fribench/backups/unified-platform/ravens-night-20261110T080341Z/receipt.json`，秘密配置备份为同目录root专用app.env，完整验收记录 `/var/lib/fribench/ravens-home-20261110/result.json`。

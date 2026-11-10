@@ -99,9 +99,11 @@ test("pointer reorder commits once on release, cancels on interruption and reset
   fireEvent.pointerDown(handle,{pointerId:1,button:0,clientX:0,clientY:0});fireEvent.pointerMove(handle,{pointerId:1,clientX:20,clientY:0});ui.rerender(<Lobby {...props} room={{...props.room,setupId:"new"}}/>);fireEvent.pointerUp(handle,{pointerId:1});expect(reorder).toHaveBeenCalledOnce();
 });
 test("role filter and focused card survive detail close without a second dialog",async()=>{
-  render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);fireEvent.change(screen.getByRole("combobox"),{target:{value:"OUTSIDER"}});
+  const ui=render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);fireEvent.change(screen.getByRole("combobox"),{target:{value:"OUTSIDER"}});
+  const scroller=ui.container.querySelector('.role-compendium')!;scroller.scrollTop=180;
   fireEvent.click(screen.getByRole("button",{name:/管家/}));expect(screen.getAllByRole("dialog")).toHaveLength(1);expect(screen.getByRole("article",{name:"管家详情"})).toHaveFocus();
-  fireEvent.keyDown(window,{key:"Escape"});expect(screen.getByRole("combobox")).toHaveValue("OUTSIDER");await waitFor(()=>expect(screen.getByRole("button",{name:/管家/})).toHaveFocus());
+  expect(scroller.scrollTop).toBe(0);
+  fireEvent.keyDown(window,{key:"Escape"});expect(screen.getByRole("combobox")).toHaveValue("OUTSIDER");await waitFor(()=>expect(screen.getByRole("button",{name:/管家/})).toHaveFocus());expect(scroller.scrollTop).toBe(180);
 });
 test("privacy cover retains public ghost-vote confirmation, resets old ballots and preserves tab choice",()=>{
   const {mine}=fixture(),vote=vi.fn();const ui=render(<PlayerGame {...handlers} view={mine} onVote={vote}/>);

@@ -34,7 +34,7 @@ export function Lobby({ room, onBegin, onLeave, onTutorial, onRoles, canBegin, b
   }
   return <main className="compact-lobby">
     <header><button type="button" onClick={onLeave} disabled={busy}>离开房间</button><h1>等待开局</h1><span>{players.length}/{room.playerCount} 人</span></header>
-    <p className="lobby-readiness">{players.filter(p => p.ready).length}/{room.playerCount} 已准备{offline.length ? ` · 离线：${offline.map(p => p.nickname).join("、")}` : ""}</p>
+    <div className="lobby-content"><p className="lobby-readiness">{players.filter(p => p.ready).length}/{room.playerCount} 已准备{offline.length ? ` · 离线：${offline.map(p => p.nickname).join("、")}` : ""}</p>
     <div className="lobby-seat-grid" aria-label="玩家座位">
       {Array.from({length:room.playerCount},(_,index) => { const p=players.find(p=>p.id===order[index]); return p ? <article data-player-id={p.id} key={p.id} className={preview && drag.current?.id===p.id ? "is-dragging" : ""}>
         <button className="seat-card" type="button" onClick={()=>setSelected(p.id)} aria-label={`${index+1}号 ${p.nickname} ${p.ready ? "已准备" : "未准备"}`}><span className="seat-number">{index+1}{p.id===room.organizerId ? " ♛" : ""}</span><Avatar id={p.id} name={p.nickname} url={p.avatar}/><strong title={p.nickname}>{p.nickname}</strong><small>{!p.connected ? "离线" : p.ready ? "已准备" : "未准备"}</small></button>
@@ -45,6 +45,6 @@ export function Lobby({ room, onBegin, onLeave, onTutorial, onRoles, canBegin, b
     <div className="lobby-help"><button type="button" onClick={onRoles}>角色表</button><button type="button" onClick={onTutorial}>规则</button></div>
     {canBegin ? <label className="tutorial-choice"><input type="checkbox" checked={tutorial} onChange={e=>setTutorial(e.target.checked)}/>开局前看简短教学</label> : null}
     {notice ? <p role="status">{notice}</p> : null}{error ? <p role="alert" className="form-error">{error}</p> : null}
-    <footer className="lobby-primary">{canBegin ? <Button onClick={()=>onBegin(tutorial ? "OPTIONAL" : "SKIP")} disabled={!canStart}>{busy ? "正在提交…" : mine?.ready ? "开始游戏" : "准备并开始"}</Button> : mine && onReady ? <><Button disabled={busy} onClick={()=>onReady(!mine.ready)}>{mine.ready ? "取消准备" : "我已准备"}</Button><small>等待房主开始</small></> : null}</footer>
+    </div><footer className="lobby-primary">{canBegin ? <Button onClick={()=>onBegin(tutorial ? "OPTIONAL" : "SKIP")} disabled={!canStart}>{busy ? "正在提交…" : mine?.ready ? "开始游戏" : "准备并开始"}</Button> : mine && onReady ? <><Button disabled={busy} onClick={()=>onReady(!mine.ready)}>{mine.ready ? "取消准备" : "我已准备"}</Button><small>等待房主开始</small></> : null}</footer>
   </main>;
 }
