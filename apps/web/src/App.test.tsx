@@ -25,6 +25,22 @@ test("the first screen gives an authorized newcomer one clear way to join", asyn
   expect(screen.getByLabelText("六位邀请码")).toHaveAttribute("inputMode", "text");
 });
 
+test("the initial account notification cannot return a loaded home screen to the moon loader",async()=>{
+  vi.stubGlobal("fetch",vi.fn(async(url:string)=>({ok:true,json:async()=>url==="/api/auth/session"?{authorized:true}:{signedIn:false,rooms:[]}})));
+  render(<App/>);await screen.findByRole("heading",{name:"5–12 人阵营推理"});
+  fireEvent(window,new CustomEvent("fribench:account-change",{detail:{authenticated:false,accountKey:null}}));
+  expect(screen.getByRole("heading",{name:"5–12 人阵营推理"})).toBeVisible();
+  expect(screen.queryByLabelText("正在进入钟楼")).not.toBeInTheDocument();
+});
+
+test("an unchanged account notification during initial requests still finishes entering the game",async()=>{
+  let finish!:(value:unknown)=>void;
+  vi.stubGlobal("fetch",vi.fn(async(url:string)=>url==="/api/auth/session"?new Promise(resolve=>{finish=resolve;}):{ok:true,json:async()=>({signedIn:false,rooms:[]})}));
+  render(<App/>);fireEvent(window,new CustomEvent("fribench:account-change",{detail:{authenticated:false,accountKey:null}}));
+  finish({ok:true,json:async()=>({authorized:true})});
+  expect(await screen.findByRole("heading",{name:"5–12 人阵营推理"})).toBeVisible();
+});
+
 test("the home screen exposes an interactive tutorial and the complete role compendium", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);

@@ -92,7 +92,12 @@ function RoomApp() {
   useEffect(() => {
     const back = (event: PopStateEvent) => { const next=event.state?.ravensScreen ?? "HOME"; screenRef.current=next;applyScreen(next); };
     const hide = () => { if (document.hidden) setGuide(undefined); };
-    const account = () => { beginSession(); resetAccountContext(); setParticipantId(undefined); setReceipt(undefined); setGuide(undefined); setScreen("LOADING"); };
+    const account = () => {
+      // The SDK also announces its initial identity. Only an actual namespace
+      // change needs clearing here; account-context already reloads that case.
+      if (roomSessionKey() === SESSION_KEY) return;
+      beginSession(); resetAccountContext(); setParticipantId(undefined); setReceipt(undefined); setGuide(undefined); setScreen("LOADING");
+    };
     const viewport = () => document.documentElement.style.setProperty("--viewport-height", `${window.visualViewport?.height ?? window.innerHeight}px`);
     viewport(); window.visualViewport?.addEventListener("resize",viewport);
     window.addEventListener("popstate",back); document.addEventListener("visibilitychange",hide); window.addEventListener("fribench:account-change",account);
