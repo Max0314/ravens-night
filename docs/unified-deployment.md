@@ -1,12 +1,16 @@
 # 鸦钟夜话统一账号部署
 
-## 2026-11-11 协议3/快照3发布准备
+## 2026-11-11 协议3/快照3已发布
 
-全流程交互与正式房间人机已实施，部署尚未完成；当前线上版本仍以下方89e4b68记录为准。新前后端必须同时发布：所有房间HTTP读写携带X-Ravens-Protocol:3，WebSocket携带protocol=3；旧客户端426并显示实际刷新入口。创建先GET /api/room-create-ticket，再用原x-command-id与createTicket POST /api/rooms；响应未知继续原意图，已创建后加入失败继续原房。
+固定源码构建和数据库迁移启动通过，全局锁内完成本游戏目标库备份及隔离恢复、单服务切换、HTTPS与WebSocket验证及30秒观察。备份回执 `/srv/fribench/backups/unified-platform/ravens-night-20261111T014204Z/receipt.json`，同目录app.env为root专用秘密备份；验收与清理证据 `/var/lib/fribench/ravens-fullflow-bots-20261111/result.json`、cleanup.json。仅清理已核实的本游戏2026-11-10 09:11旧构建缓存一条，回收372.2MB，未全局prune或删除数据/卷。
+
+公网实际通过创建同票同ID重试、人机补满/暂停/单步、单真人冻结/推进真实节点、开局与身份确认、同房重开、正常离房及私密/匿名权限检查，验证房已销毁。45个非目标容器与49份路由摘要不变，房间前后0，近期应用无错误。首页实际引用index-DMHO3AQj.js、index-BaZNOrgP.css及原背景哈希与本机已测构建完全一致。未打开本地游戏页面或运行浏览器，真机体验仍待用户验收。
+
+2026-11-11 09:42（北京时间）全流程交互与正式房间人机已发布并验证，当前运行提交 `9e20e678631ae177971085d3ab16cb466a80c86e`，ops控制固定a5145d4。下方89e4b68及更早记录只保留历史意义。新前后端必须同时发布：所有房间HTTP读写携带X-Ravens-Protocol:3，WebSocket携带protocol=3；旧客户端426并显示实际刷新入口。创建先GET /api/room-create-ticket，再用原x-command-id与createTicket POST /api/rooms；响应未知继续原意图，已创建后加入失败继续原房。
 
 新增业务库room_creation_requests，payload沿用AES-GCM；v1/v2房间启动全量预检并单事务升级快照3，保留已计票、截止、公开进度及原密钥。新增HUMAN/BOT、任务/脑状态、单房游戏时间；没有新环境变量或公共服务升级。schema3写入后禁止直接启schema2程序；接收新写入后优先前向修复，恢复旧库丢新进度须另行授权。旧历史版本的“可直接回退代码”说明不适用于本次schema3。
 
-隔离PG新增RAVENS_BOT_DATABASE_URL，验证创建/空大厅重启恢复、加密创建表、人机单步回滚与v2迁移；与RAVENS_TEST_DATABASE_URL、RAVENS_REPAIR_DATABASE_URL共用一次性空测试库时串行执行，禁止指向业务库。此次5项真实PG已通过，测试库已删除且本机临时PG已停止。发布仍按最新ops规范、全局锁、固定提交、目标库备份恢复验证和仅本服务更新执行。
+隔离PG新增RAVENS_BOT_DATABASE_URL，验证创建/空大厅重启恢复、加密创建表、人机单步回滚与v2迁移；与RAVENS_TEST_DATABASE_URL、RAVENS_REPAIR_DATABASE_URL共用一次性空测试库时串行执行，禁止指向业务库。此次5项真实PG已通过，测试库已删除且本机临时PG已停止。发布已按最新ops规范 `964c0ba2357810506ba4d9e883d217f377ea0615`、全局锁、固定提交、目标库备份恢复验证和仅本服务更新完成。
 
 2026-11-10 17:42（北京时间）连续轮播与头像修复已发布，运行提交 `89e4b68979d6b9a88ef5a0e32d71fb708b7aa436`。固定节点轮播、居中教程、拱门角色卡及人脸取景、翻书效果/可关音效、固定账号操作和头像目录修正。变更仅Web及业务头像静态白名单，无数据迁移、新配置、依赖或公共底座更新；有效旧版本头像兼容，历史无效头像可更换，不自动改写存档。42项相关测试及后续9项定向、最终Web类型/构建与独立review通过；35个现行头像资源HTTP HEAD通过，没有浏览器验证，真机视觉/手感/音效尚未验收。
 
