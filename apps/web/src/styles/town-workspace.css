@@ -1,0 +1,80 @@
+/* The table fits the available viewport; long explanations live in sheets. */
+.game-page--town .game-content--town{display:flex;flex-direction:column;overflow:hidden;min-height:0;padding-top:4px;gap:4px}
+.game-content--town>.remote-town-board{flex:1;min-height:0;width:100%;max-width:660px;display:flex;flex-direction:column;padding:4px 6px;margin:0 auto;overflow:hidden;container-type:normal}
+.game-content--town .remote-town-board>header{display:flex;align-items:center;gap:8px;padding:0 4px;min-height:34px;flex:none;font-size:12px}
+.game-content--town .remote-town-board>header>small{margin-left:auto}
+.town-clue-entry{min-height:36px;padding:4px 9px;border:0;border-radius:8px;background:#ad915119;color:#d3c29a;font-size:11px}
+.town-stage{position:relative;flex:1;min-height:0;isolation:isolate;container-type:size;container-name:town-stage}
+.game-content--town .town-stage>.rn-seat-ring{position:absolute;inset:0;width:100%;height:100%;max-width:none;aspect-ratio:auto;margin:0}
+.town-stage>.rn-seat-ring--fluid>.rn-seat{transform:translate(-50%,-50%);width:48px;z-index:3}
+.town-stage>.rn-seat-ring--fluid .rn-seat__avatar{width:clamp(26px,8vw,42px);height:clamp(26px,8vw,42px)}
+.town-stage .rn-seat__number{position:absolute;top:0;left:2px;padding:2px 3px;border-radius:5px;background:#0b100fdd;z-index:3;font-size:9px!important;pointer-events:none}
+.game-content--town .town-stage .rn-seat>.rn-seat__private-mark{position:absolute;top:0;left:auto;right:-3px;transform:translateY(-45%);width:auto;min-width:28px;min-height:24px;padding:3px 5px;font-size:9px;border:1px solid #c5a66a80;border-radius:8px;background:#33291cee;color:#e7cd95;pointer-events:auto;z-index:4}
+.town-stage .rn-seat__name{font-size:10px!important;line-height:1.2}
+.town-center{position:absolute;left:28%;right:28%;top:24%;bottom:24%;display:flex;flex-direction:column;justify-content:center;gap:6px;z-index:2;text-align:center;min-width:0;pointer-events:none}
+.town-center>*{pointer-events:auto;min-width:0;flex:none}
+.town-center-block,.town-center-clue,.town-center-task{width:100%;min-height:44px;border:0;border-radius:11px;padding:6px;background:#15181191;color:#d8c395;display:grid;gap:3px;text-align:center}
+.town-center-block>span{font-size:24px;color:#a98d52}.town-center-block strong{font-size:12px;line-height:1.4;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.town-center-block small,.town-center-clue small{font-size:10px;color:#ad9d76}
+.town-center-clue>span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;font-size:11px;line-height:1.5}
+.town-center-wait{font-size:12px;line-height:1.6;color:#aaa18b}
+.town-center .town-night-confirm{gap:6px}.town-center .town-night-confirm>div{justify-content:center;font-size:11px;min-height:0}.town-center .town-night-confirm>div>button{display:flex;align-items:center;gap:3px;padding:3px;max-width:none;border-radius:9px;font-size:10px;min-height:36px}.town-center .town-night-confirm .player-avatar{width:24px;height:24px}.town-center .town-night-confirm>.rn-button{padding:7px 3px;min-height:44px;font-size:11px;white-space:normal}
+.game-content--town>.town-night-prompt{flex:none;display:flex;align-items:center;gap:7px;padding:4px 9px;margin:0;min-height:38px;border-radius:8px}
+.game-content--town>.town-night-prompt>span{font-size:9px;white-space:nowrap}.game-content--town>.town-night-prompt>strong{flex:1;min-width:0;font-size:12px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.4}.game-content--town>.town-night-prompt>button{min-height:36px;font-size:10px;padding:3px 6px}
+.town-vote-entry{flex:none;min-height:36px;background:#ae915118;border:0;border-radius:8px;font-size:11px;color:#c9b784}
+.game-content--town .town-instruction{display:none}
+.game-content--town .town-relations{flex:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;max-height:44px;margin:0;overscroll-behavior:contain}
+.game-content--town .town-relations>*{flex:0 0 235px;min-height:36px}
+.game-content--town .town-chat-recover{flex:none;min-height:32px;margin:0;padding:3px;font-size:11px}
+.town-known-team>div{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px}.town-known-team .player-avatar{width:36px;height:36px}.town-known-team h3{font-size:13px;color:#c9b27a}.town-known-team p{font-size:12px;line-height:1.8}
+.game-content--town .town-view-switch{flex:none;margin:2px 0;padding:2px}.game-content--town .town-view-switch>button{min-height:32px;font-size:11px}
+.game-content--town .spy-town{flex:1;min-height:0;display:flex;flex-direction:column}.game-content--town .spy-town__heading{flex:none}.game-content--town .spy-town__table{flex:1;min-height:0;aspect-ratio:auto;margin:0;width:100%;max-width:440px}.game-content--town .spy-town__legend{flex:none;padding:4px}.game-content--town .spy-town__heading button{min-height:32px}.game-content--town .spy-town__heading small{margin:0}
+.town-role-advice .room-sheet{width:min(440px,100%);height:auto}.town-role-advice p{font-size:14px;line-height:1.9;color:#d4c6aa;margin:8px 0 16px}.town-role-advice h3{font-size:13px;color:#bca16b;margin:15px 0 4px}
+.ending-page>.room-page__content{display:flex;flex-direction:column;overflow:hidden;min-height:0}.ending-page .ending-reason{flex:none;margin:2px 0 6px;font-size:12px;color:#b9aa8b}.ending-review-trigger{flex:none;min-height:40px;background:#b69a4b18;border:1px solid #a78c4c38;border-radius:9px;color:#cbb78a}
+@supports(height:1cqh){.town-stage>.rn-seat-ring--fluid .rn-seat__avatar{width:clamp(24px,14cqh,42px);height:clamp(24px,14cqh,42px)}.town-center-block>span{font-size:clamp(14px,8cqh,25px)}.town-center-clue>span{-webkit-line-clamp:2}}
+@media(max-height:620px){.game-page--town .game-header{min-height:42px;padding-block:2px}.game-page--town .game-utility{margin:0;font-size:10px;max-height:44px}.game-page--town .game-tabs{margin:0;padding:2px}.game-page--town .game-tabs button{min-height:36px}.game-page--town>.room-action-bar{padding-block:4px}.town-center{gap:3px;top:19%;bottom:19%}.town-center-block>span{display:none}.town-center-clue>span{-webkit-line-clamp:1}.game-content--town .remote-town-board>header{min-height:28px}.town-clue-entry{min-height:28px}.game-content--town>.town-night-prompt{min-height:30px}.game-content--town .town-stage .rn-seat>.rn-seat__private-mark{font-size:8px;min-height:22px;min-width:22px;padding:2px 3px}.game-content--town .spy-town__portrait{width:30px;height:30px}.game-content--town .spy-town__player{gap:2px;min-height:44px}.game-content--town .spy-town__legend{font-size:9px}}
+
+.town-center-gallows{position:relative;display:block;height:64px;width:84px;margin:auto}.town-center-gallows svg{width:100%;height:100%;stroke:#ab935c;stroke-width:2;opacity:.65}.town-center-gallows>.player-avatar{position:absolute;right:0;top:20px;width:30px;height:30px;filter:grayscale(.65);border:1px solid #b89b5c}
+@media(max-height:620px){.town-center-block>.town-center-gallows{display:block;height:34px;width:55px}.town-center-gallows>.player-avatar{width:22px;height:22px;top:9px}.town-center-block{gap:1px;padding:3px}.town-center-block small{font-size:9px}}
+
+/* Six seats per arc keep a 44px touch target in a 280px-wide table. */
+@container town-stage (max-height:360px) or (max-width:340px){
+  .town-stage>.rn-seat-ring--fluid>.rn-seat{left:var(--compact-x)!important;top:var(--compact-y)!important;width:44px}
+  .town-stage>.rn-seat-ring--fluid .rn-seat__avatar{width:30px;height:30px}
+  .town-stage>.rn-seat-ring--fluid>.rn-seat>button:not(.rn-seat__private-mark){height:44px;gap:0}
+  .town-stage .rn-seat__name{max-width:44px;font-size:9px!important}
+  .game-content--town .town-stage .rn-seat>.rn-seat__private-mark{max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;right:0}
+  .town-center{left:8%;right:8%;top:50%;bottom:auto;transform:translateY(-50%);align-items:center}
+  .town-center>.town-center-block,.town-center>.town-center-task{width:min(100%,200px);min-height:44px}
+  .town-center-block>.town-center-gallows,.town-center>.town-center-clue{display:none}
+  .town-center .town-night-confirm{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,1fr);align-items:center;gap:6px}
+  .town-center .town-night-confirm>div{flex-wrap:nowrap;gap:3px}
+  .town-center .town-night-confirm>div>button{min-width:44px;min-height:44px}
+}
+/* Older embedded browsers use the same compact footprint without container queries. */
+@supports not(container-type:size){@media(max-height:700px){
+  .town-stage>.rn-seat-ring--fluid>.rn-seat{left:var(--compact-x)!important;top:var(--compact-y)!important;width:44px}
+  .town-stage>.rn-seat-ring--fluid .rn-seat__avatar{width:30px;height:30px}
+  .town-stage>.rn-seat-ring--fluid>.rn-seat>button:not(.rn-seat__private-mark){height:44px;gap:0}
+  .town-stage .rn-seat__name{max-width:44px;font-size:9px!important}
+  .town-center{left:8%;right:8%;top:50%;bottom:auto;transform:translateY(-50%);align-items:center}
+  .town-center>.town-center-block,.town-center>.town-center-task{width:min(100%,200px);min-height:44px}
+  .town-center-block>.town-center-gallows,.town-center>.town-center-clue{display:none}
+  .town-center .town-night-confirm{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,1fr);align-items:center}
+}}
+@media(max-height:620px){
+  .player-private>.game-page--town{gap:3px;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+  .game-page--town .game-utility>span{display:none}
+  .game-page--town>.room-action-bar:empty{display:none}
+}
+@media(orientation:landscape) and (max-height:540px){
+  .player-session{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:minmax(0,1fr)}
+  .player-session>.player-private,.player-session>.privacy-curtain{grid-column:1;grid-row:1;min-width:0}
+  .player-session>.public-ballot{grid-column:2;grid-row:1;width:clamp(200px,34vw,300px);max-height:100%;overflow:auto;align-self:center;padding:10px;border-top:0;border-left:1px solid #b8995544;border-radius:12px}
+  .public-ballot__controls{grid-template-columns:1fr 1fr}
+  .public-ballot__controls>[role=status]{grid-column:1/-1;text-align:center}
+  .player-session>.public-command-error{position:absolute;left:8px;bottom:4px;z-index:80}
+  .player-private>.game-page--town{padding-inline:8px;gap:2px}
+  .game-page--town .game-header{min-height:36px}
+  .game-page--town .game-tabs button{min-height:32px}
+}
+.clue-target-portraits{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.clue-target-portraits>span{display:flex;align-items:center;gap:5px;font-size:11px;color:#bdae8e}.clue-target-portraits .player-avatar{width:28px;height:28px}

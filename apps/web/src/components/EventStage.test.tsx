@@ -121,6 +121,7 @@ test("storyteller decisions remain hidden until the final public presentation en
   const content = render(<PlayerGame {...handlers} view={view} />);
   expect(screen.queryByText(/说书人裁量复盘/)).not.toBeInTheDocument();
   content.rerender(<PlayerGame {...handlers} view={{ ...view, game: { ...view.game!, serverNow: view.game!.presentationUntil } }} />);
+  fireEvent.click(screen.getByRole("button",{name:"查看本局复盘"}));
   fireEvent.click(screen.getByText(/说书人裁量复盘/));
   expect(screen.getByText("该信息受中毒影响。")).toBeVisible();
 });

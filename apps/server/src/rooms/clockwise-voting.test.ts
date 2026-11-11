@@ -143,6 +143,56 @@ test("equal highest timed vote totals clear the execution block through a tie", 
   expect(t.game().events.filter((event) => event.kind === "EXECUTION").at(-1)!.outcome).toBe("NONE");
 });
 
+test("daytime death keeps earlier below-majority votes as the high-water mark; only a higher later ballot breaks the tie", () => {
+  const t = timedTable(["slayer", "chef", "empath", "soldier", "undertaker", "saint", "recluse", "scarlet_woman", "imp"]);
+  t.nominate(2, 3);
+  for (const seat of [1, 2, 3, 4]) t.vote(seat, true);
+  t.finish();
+  expect(t.game().events.at(-1)!).toMatchObject({ votes: 4, threshold: 5, outcome: "NONE" });
+  expect(t.game().onBlock).toBeUndefined();
+  t.advance(4000); t.service.useDayAbility(t.room.code, t.players[0]!.token, 9); t.advance(8000);
+  expect(t.game().aliveCount).toBe(8);
+  expect(t.game().winner).toBeUndefined();
+  t.nominate(3, 4);
+  for (const seat of [1, 2, 3, 4]) t.vote(seat, true);
+  t.advance(t.game().nomination!.voteEndsAt! - t.now());
+  expect(t.service.snapshot(t.room.code).game!.executionTied).toBe(true);
+  expect(t.game().executionTied).toBe(false);
+  expect(t.game().onBlock).toBeUndefined();
+  t.advance(1499); expect(t.game().executionTied).toBe(false);
+  t.advance(1);
+  expect(t.game().executionTied).toBe(true);
+  expect(t.game().events.at(-1)!).toMatchObject({ votes: 4, threshold: 4, outcome: "TIED" });
+  t.advance(4000); t.nominate(4, 5);
+  for (const seat of [1, 2]) t.vote(seat, true);
+  t.finish();
+  expect(t.game().executionTied).toBe(true);
+  expect(t.game().onBlock?.votes).toBe(4);
+  expect(t.game().events.at(-1)!).toMatchObject({ votes: 2, outcome: "NONE" });
+  t.advance(4000); t.nominate(5, 6);
+  for (const seat of [1, 2, 3, 4, 5]) t.vote(seat, true);
+  t.finish();
+  expect(t.game().executionTied).toBe(false);
+  expect(t.game().onBlock).toEqual({ seat: 6, votes: 5 });
+  expect(t.game().events.at(-1)!).toMatchObject({ votes: 5, outcome: "ON_BLOCK" });
+  t.advance(4000); t.nominate(6, 7);
+  for (const seat of [1, 2, 3, 4]) t.vote(seat, true);
+  t.finish();
+  expect(t.game().onBlock).toEqual({ seat: 6, votes: 5 });
+  expect(t.game().events.at(-1)!).toMatchObject({ votes: 4, outcome: "NONE" });
+});
+
+test("restored legacy block still sets the comparison floor when vote events have no structured tally", () => {
+  const t = timedTable();
+  t.mutate(room => { room.game!.onBlock = { seat: 6, votes: 4 }; room.game!.executionTied = true; });
+  t.nominate(1, 4);
+  for (const seat of [1, 2, 3]) t.vote(seat, true);
+  t.finish();
+  expect(t.game().onBlock).toEqual({ seat: 6, votes: 4 });
+  expect(t.game().executionTied).toBe(true);
+  expect(t.game().events.at(-1)!).toMatchObject({ votes: 3, outcome: "NONE" });
+});
+
 test("a scheduler delay cannot let a master's hand change rewrite an earlier Butler count", () => {
   const t = timedTable(["butler", "chef", "empath", "saint", "baron", "imp"]);
   t.mutate((state) => { state.game!.butlerMasterSeat = 4; });

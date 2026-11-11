@@ -1016,12 +1016,16 @@ export class RoomService {
     const votes = validRaisedSeats.length;
     const threshold = Math.ceil(game.aliveSeats.length / 2);
     const nomineeSeat = game.nomination.nomineeSeat;
+    // A daytime death may lower the majority threshold, but cannot erase an earlier
+    // tally. Compare every completed ballot today; old snapshots retain onBlock.
+    const highest = game.events.reduce((maximum, event) => event.kind === "VOTE_RESULT" && event.day === game.day && event.votes !== undefined ? Math.max(maximum, event.votes) : maximum, game.onBlock?.votes ?? 0);
+    let outcome: "NONE" | "TIED" | "ON_BLOCK" = "NONE";
     if (votes >= threshold) {
-      if (!game.onBlock || votes > game.onBlock.votes) { game.onBlock = { seat: nomineeSeat, votes }; game.executionTied = false; }
-      else if (votes === game.onBlock.votes) game.executionTied = true;
+      if (votes > highest) { game.onBlock = { seat: nomineeSeat, votes }; game.executionTied = false; outcome = "ON_BLOCK"; }
+      else if (votes === highest) { game.onBlock ??= { seat: nomineeSeat, votes }; game.executionTied = true; outcome = "TIED"; }
     }
     game.contextId = randomUUID();
-    this.event(room, `${this.nickname(room, nomineeSeat)} 获得 ${votes} 票（至少一半需 ${threshold} 票）。${game.executionTied ? "最高票平票，暂时无人处决。" : ""}`, "VOTE_RESULT", { targetSeat: nomineeSeat, seats: validRaisedSeats, votes, threshold, outcome: game.executionTied ? "TIED" : game.onBlock?.seat === nomineeSeat ? "ON_BLOCK" : "NONE" });
+    this.event(room, `${this.nickname(room, nomineeSeat)} 获得 ${votes} 票（至少一半需 ${threshold} 票）。${game.executionTied ? "最高票平票，暂时无人处决。" : ""}`, "VOTE_RESULT", { targetSeat: nomineeSeat, seats: validRaisedSeats, votes, threshold, outcome });
     delete game.nomination;
     game.phase = "NOMINATION";
     game.readySeats = [];

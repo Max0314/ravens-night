@@ -33,14 +33,19 @@ interface SeatRingProps {
   countedVotes?: Record<number, boolean>;
   raisedSeats?: number[];
   privateMarks?: Record<number, string>;
+  onPrivateMark?: (seat:number)=>void;
+  fluid?: boolean;
   threatenedSeats?: number[];
   selectedSeats?: number[];
   selectableSeats?: number[];
 }
 
-export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, privateMarks, threatenedSeats, selectedSeats, selectableSeats }: SeatRingProps) {
-  return <ol className="rn-seat-ring" style={{ "--seat-count": seats.length } as CSSProperties}>
+export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, privateMarks, onPrivateMark, fluid=false, threatenedSeats, selectedSeats, selectableSeats }: SeatRingProps) {
+  return <ol className={`rn-seat-ring${fluid?" rn-seat-ring--fluid":""}`} style={{ "--seat-count": seats.length } as CSSProperties}>
     {seats.map((seat, index) => {
+      const upperCount=Math.ceil(seats.length/2),upper=index<upperCount,rowCount=upper?upperCount:seats.length-upperCount;
+      const rowPosition=((upper?index:seats.length-index-1)+.5)/rowCount;
+      const edgeInset=28+Math.abs(rowPosition-.5)*16;
       const state = !seat.alive ? "DEAD" : threatenedSeats?.includes(seat.seat) ? "THREATENED" : undefined;
       const selected = selectedSeats?.includes(seat.seat);
       const selectable = selectableSeats?.includes(seat.seat);
@@ -51,11 +56,11 @@ export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, r
       </span>;
       return <li key={seat.seat} data-seat-number={seat.seat}
         className={`rn-seat ${state === "DEAD" ? "rn-seat--dead" : state === "THREATENED" ? "rn-seat--threatened" : ""} ${seat.connected ? "" : "rn-seat--offline"} ${seat.seat === ownSeat ? "rn-seat--mine" : ""} ${seat.seat === activeSeat ? "rn-seat--counting" : ""} ${countedVotes?.[seat.seat] === true ? "rn-seat--raised" : ""} ${selected ? "rn-seat--selected" : ""} ${selectable ? "rn-seat--selectable" : ""}`}
-        style={{ "--seat-index": index } as CSSProperties}>
+        style={{ "--seat-index": index,...(fluid?{left:`${50+Math.sin(index/seats.length*2*Math.PI)*39}%`,top:`${50-Math.cos(index/seats.length*2*Math.PI)*38}%`,"--compact-x":`${rowPosition*100}%`,"--compact-y":upper?`${edgeInset}px`:`calc(100% - ${edgeInset}px)`}:{}) } as CSSProperties}>
         {onSelect ? <button type="button" onClick={event => onSelect(seat.seat, event.currentTarget)} aria-pressed={selected} aria-label={`${seat.seat}号 ${seat.nickname} ${seat.alive ? "存活" : "已死亡"}${seat.seat === ownSeat ? "，你" : ""}${state === "THREATENED" ? "，候选席" : ""}`}>
           {avatar}<span className="rn-seat__number">{seat.seat}{seat.seat === ownSeat ? " · 你" : ""}</span><span className="rn-seat__name">{seat.nickname}</span>
         </button> : <>{avatar}<span className="rn-seat__number">{seat.seat}</span><span className="rn-seat__name">{seat.nickname}</span></>}
-        {privateMarks?.[seat.seat] ? <span className="rn-seat__private-mark" aria-label={`我的线索：${privateMarks[seat.seat]}`}>{privateMarks[seat.seat]}</span> : null}
+        {privateMarks?.[seat.seat] ? onPrivateMark?<button type="button" className="rn-seat__private-mark" aria-label={`我的线索：${privateMarks[seat.seat]}`} onClick={()=>onPrivateMark?.(seat.seat)}>{privateMarks[seat.seat]}</button>:<span className="rn-seat__private-mark" aria-label={`我的线索：${privateMarks[seat.seat]}`}>{privateMarks[seat.seat]}</span> : null}
         {!seat.alive ? <small className="rn-seat__ghost">{seat.ghostVoteAvailable ? "◈ 鬼票尚在" : "鬼票已用"}</small> : null}
         {countedVotes?.[seat.seat] !== undefined ? <small className="rn-seat__ballot">{countedVotes[seat.seat] ? "举手 · 已计票" : "未举手 · 已计票"}</small> : null}
         {raisedSeats?.includes(seat.seat) ? <span className="rn-seat__hand" aria-label="已举手">✋</span> : null}

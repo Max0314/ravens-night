@@ -113,7 +113,7 @@ test("privacy cover retains public ghost-vote confirmation, resets old ballots a
   fireEvent.click(ballot.getByRole("button",{name:/3号/}));expect(screen.getByLabelText("私密内容已遮住")).toBeVisible();
   fireEvent.click(ballot.getByRole("button",{name:"举手"}));expect(vote).not.toHaveBeenCalled();
   ui.rerender(<PlayerGame {...handlers} view={{...mine,game:{...mine.game!,nomination:{...mine.game!.nomination!,ballotId:"new"}}}} onVote={vote}/>);expect(screen.queryByRole("alertdialog",{name:"使用鬼票"})).not.toBeInTheDocument();
-  fireEvent.click(ballot.getByRole("button",{name:"举手"}));fireEvent.click(ballot.getByRole("button",{name:"确认使用鬼票"}));expect(vote).toHaveBeenCalledWith(true);
+  fireEvent.click(ballot.getByRole("button",{name:"举手"}));fireEvent.click(screen.getByRole("button",{name:"确认使用鬼票"}));expect(vote).toHaveBeenCalledWith(true);
   fireEvent.click(screen.getByRole("button",{name:"显示私密内容"}));expect(screen.getByRole("button",{name:"记录"})).toHaveAttribute("aria-pressed","true");
 });
 test("a failed foreground refresh keeps voting locked until a later valid snapshot arrives",async()=>{

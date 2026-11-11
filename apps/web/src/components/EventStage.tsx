@@ -5,8 +5,9 @@ import {experienceTiming, type ExperienceEvent } from "@ravens/contracts";
 import type { GameView } from "../api.js";
 import { effectsAudioEnabled, enableEffectsAudio, scheduleCue, silenceEffects } from "./experience-audio.js";
 import "../styles/experience.css";
+import {Avatar} from "./Avatar.js";
 
-export interface PrivateReceipt { id: string; kind: "POISON" | "PROTECT" | "DIVINE" | "SEALED"; target: string }
+export interface PrivateReceipt { id: string; kind: "POISON" | "PROTECT" | "DIVINE" | "SEALED"; target: string; targetSeats?:number[] }
 type PublicEvent = Partial<ExperienceEvent> & { seq: number; message: string };
 export function isCinematic(event: PublicEvent): event is ExperienceEvent { return Boolean(event.id && event.kind && event.kind !== "NOTICE" && event.startsAt && event.durationMs); }
 export function eventAt(events: PublicEvent[], now: number, seen: Set<string>): ExperienceEvent | undefined {
@@ -66,7 +67,7 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
     // boundary. Only completion or an explicit skip is allowed to advance the cursor.
     if (previousEvent.current && previousEvent.current.id !== active?.id && now >= previousEvent.current.startsAt + previousEvent.current.durationMs) { remember(previousEvent.current.id); previousEvent.current = undefined; }
     if (active) previousEvent.current = active;
-    if(active&&!seen.current.has(active.id)&&!reduced&&!frozen&&!hidden)scheduleCue(active.id,active.kind,elapsed,active.timingVersion??1);
+    if(active&&!seen.current.has(active.id)&&!reduced&&!frozen&&!hidden)scheduleCue(active.id,active.kind,elapsed,active.timingVersion??1,active.kind==="EXECUTION"&&active.targetSeat===undefined);
     return()=>silenceEffects();
   }, [active?.id,reduced,frozen,sound,hidden,room?.timeline?.epoch]);
   useLayoutEffect(()=>{
@@ -98,35 +99,48 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
     try { sessionStorage.setItem(`ravens_events_${gameKey}`, JSON.stringify([...seen.current].slice(-150))); } catch { /* Deduplication still works in this tab. */ }
   }
   function skip() { silenceEffects(); if (active) { remember(active.id); setDismissed((all) => [...all, active.id]); } setPrivateScene(undefined); }
-  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !reduced && !frozen) scheduleCue(active.id, active.kind, elapsed,active.timingVersion??1); }); }
+  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !reduced && !frozen) scheduleCue(active.id, active.kind, elapsed,active.timingVersion??1,active.kind==="EXECUTION"&&active.targetSeat===undefined); }); }
   const event = active;
   const showResult = Boolean(event?.outcome) && (reducedOrLate || elapsed >= (event?experienceTiming(event.kind,event.timingVersion??1).resultOffset:0));
   const target = game?.seats.find((seat) => seat.seat === event?.targetSeat);
   const actor = game?.seats.find((seat) => seat.seat === event?.actorSeat);
   const deaths = event?.seats ?? [];
-  const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${actor?.nickname ?? `${event.actorSeat ?? "?"} 号玩家`} 举起了枪`, EXECUTION: showResult ? event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !event.outcome ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
+  const emptyExecution=event?.kind==="EXECUTION"&&event.targetSeat===undefined;
+  const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${actor?.nickname ?? `${event.actorSeat ?? "?"} 号玩家`} 举起了枪`, EXECUTION: showResult ? emptyExecution ? "今天无人被处决" : event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !event.outcome ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
   return <>
     <button className="effects-audio" type="button" aria-pressed={sound} onClick={toggleSound} title={sound ? "关闭演出音效" : "点击启用演出音效"}>{sound ? "♪ 音效开" : "♪ 音效关"}</button>
-    {event ? <section key={event.id} data-timing-version={event.timingVersion??1} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${staticMotion ? " is-reduced" : ""}${frozen?" is-frozen":""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": canSeek?"0ms":`${animationAnchor.current?.delay??0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
+    {event ? <section key={event.id} data-timing-version={event.timingVersion??1} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${staticMotion ? " is-reduced" : ""}${frozen?" is-frozen":""}${emptyExecution?" is-empty-execution":""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": canSeek?"0ms":`${animationAnchor.current?.delay??0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
       <div className="event-stage__grain" aria-hidden="true" /><div className="event-stage__halo" aria-hidden="true" />
       <header><span>RAVENS AT MIDNIGHT</span><span>{preview ? "演出预览" : "全员公开事件"}</span></header>
       <div className="event-stage__body">
         <p className="event-stage__eyebrow">{event.kind === "DAWN" ? `第 ${event.day ?? game?.day ?? 1} 天 · 黎明` : event.kind === "SHOT" ? "猎魔人 · 公开宣称" : event.kind === "EXECUTION" ? "城镇公决" : "钟声回响"}</p>
         <h1>{elapsed<0?"即将开始":title}</h1>
         <div className="event-stage__theatre" aria-hidden="true">
-          {event.kind === "SHOT" ? <><div className="shot-smoke"><i /><i /><i /></div><div className="shot-gun"><Pistol /></div><div className="shot-flare" /><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><span>{target?.seat ?? event.targetSeat}</span><b>☾</b><strong>{target?.nickname ?? "目标玩家"}</strong><div className="seal-fracture" /></div></> : null}
-          {event.kind === "EXECUTION" ? <><div className="execution-arch"><div className="execution-blade" /><span>⚜</span><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><span>{target?.seat ?? event.targetSeat}</span><b>☾</b><strong>{target?.nickname ?? "被处决者"}</strong></div></div><div className="execution-dust" /></> : null}
-          {event.kind === "DAWN" ? <div className="dawn-tableau"><div className="dawn-sun" /><div className="dawn-windows"><i /><i /><i /></div>{showResult ? <div className="dawn-memorial">{deaths.length ? deaths.map((seat) => <div key={seat}><span className="memorial-candle" /><strong>{game?.seats.find((player) => player.seat === seat)?.nickname ?? `${seat} 号`}</strong><small>{seat} 号 · 已死亡</small></div>) : <div><span className="memorial-candle is-lit" /><strong>所有灯火，仍然亮着</strong></div>}</div> : null}</div> : null}
-          {!['SHOT', 'EXECUTION', 'DAWN'].includes(event.kind) ? <div className={`ceremony-seal ceremony-seal--${event.kind.toLowerCase()}`}><span>{event.kind === "VOTE_RESULT" ? `${event.votes ?? "—"}` : event.kind === "NOMINATION" ? event.targetSeat : event.kind === "NIGHT_FALLS" ? "☾" : "⚜"}</span><small>{event.kind === "VOTE_RESULT" ? "票" : "RAVENS"}</small></div> : null}
+          {event.kind === "SHOT" ? <><div className="shot-smoke"><i /><i /><i /></div><div className="shot-gun"><Pistol /></div><div className="shot-flare" /><ScenePerson game={game} seat={event.actorSeat} label="开枪者" className="shot-actor"/><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><ScenePerson game={game} seat={event.targetSeat} label="射击目标"/><div className="seal-fracture" /></div></> : null}
+          {event.kind === "EXECUTION" ? emptyExecution?<EmptyGallows/>:<><div className="execution-arch"><div className="execution-blade" /><span>⚜</span><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><ScenePerson game={game} seat={event.targetSeat} label="被处决者"/></div></div><div className="execution-dust" /></> : null}
+          {event.kind === "DAWN" ? <div className="dawn-tableau"><div className="dawn-sun" /><div className="dawn-windows"><i /><i /><i /></div>{showResult ? <div className="dawn-memorial">{deaths.length ? deaths.map((seat) => <div key={seat}><ScenePerson game={game} seat={seat} label="已死亡" className="dawn-person"/><span className="memorial-candle" /></div>) : <div><span className="memorial-candle is-lit" /><strong>所有灯火，仍然亮着</strong></div>}</div> : null}</div> : null}
+          {event.kind==="NOMINATION"?<div className="nomination-tableau"><div className="nomination-orbit"/><ScenePerson game={game} seat={event.actorSeat} label="提名" className="nomination-actor"/><div className="nomination-summons"><svg viewBox="0 0 100 100"><path d="M21 16H70L81 27V84H21Z"/><path d="M70 16V29H81M32 39H67M32 48H63M32 57H51"/><circle cx="63" cy="72" r="11"/><path d="M57 81L54 93L63 88L72 93L69 81"/></svg><span>→</span></div><ScenePerson game={game} seat={event.targetSeat} label="被提名" className="nomination-target"/></div>:null}
+          {event.kind==="VOTE_RESULT"?<ScenePerson game={game} seat={event.targetSeat} label="本轮被提名" className="vote-result-person"/>:null}
+          {!['SHOT', 'EXECUTION', 'DAWN', 'NOMINATION'].includes(event.kind) ? <div className={`ceremony-seal ceremony-seal--${event.kind.toLowerCase()}`}><span>{event.kind === "VOTE_RESULT" ? `${event.votes ?? "—"}` : event.kind === "NIGHT_FALLS" ? "☾" : "⚜"}</span><small>{event.kind === "VOTE_RESULT" ? "票" : "RAVENS"}</small></div> : null}
         </div>
-        <p className="event-stage__result" aria-live="polite">{showResult || !["SHOT", "EXECUTION", "DAWN"].includes(event.kind) ? event.message : event.kind === "SHOT" ? `枪口指向 ${target?.nickname ?? `${event.targetSeat} 号玩家`}` : event.kind === "EXECUTION" ? `${target?.nickname ?? `${event.targetSeat} 号玩家`} 走向钟楼` : "每个人都屏住呼吸，等待今夜的消息。"}</p>
+        <p className="event-stage__result" aria-live="polite">{showResult || !["SHOT", "EXECUTION", "DAWN"].includes(event.kind) ? event.message : event.kind === "SHOT" ? `枪口指向 ${target?.nickname ?? `${event.targetSeat} 号玩家`}` : event.kind === "EXECUTION" ? emptyExecution ? "晚风穿过刑架，等待判决公布。" : `${target?.nickname ?? "被处决者"} 走向钟楼` : "每个人都屏住呼吸，等待今夜的消息。"}</p>
         {showResult && deaths.length > 0 && ["DAWN", "SHOT", "EXECUTION"].includes(event.kind) && event.outcome !== "NO_DEATH" ? <small className="event-stage__aftercare">死亡不等于离场。你仍可讨论，并保留一枚幽灵票。身份继续保密。</small> : null}
       </div>
       <footer><button type="button" onClick={toggleSound}>{sound ? "关闭音效" : "启用音效"}</button><span>{reduced ? "已尊重减少动态效果偏好" : "所有屏幕共享同一段钟声"}</span><button type="button" onClick={skip}>跳过演出</button></footer>
       <div className="event-stage__progress" style={{ transform: `scaleX(${Math.min(1, Math.max(0, 1 - elapsed / event.durationMs))})` }} />
     </section> : null}
-    {privateScene ? <section className={`private-ritual private-ritual--${privateScene.kind.toLowerCase()}${event && elapsed >= 0 ? " private-ritual--compact" : ""}`} style={{ "--private-duration": preview ? "3600ms" : "1200ms" } as CSSProperties} role="status" aria-label="仅你可见的行动回执"><button type="button" onClick={() => setPrivateScene(undefined)}>收起 ×</button><p>PRIVATE · 仅你可见</p><div className="private-ritual__art" aria-hidden="true">{privateScene.kind === "POISON" ? <><div className="poison-vial"><span /></div><div className="poison-drop" /><div className="poison-mist"><i /><i /><i /></div></> : <div className="private-sigil">{privateScene.kind === "PROTECT" ? "◇" : privateScene.kind === "DIVINE" ? "✧" : "☾"}</div>}</div><h2>{privateScene.kind === "POISON" ? "毒液已悄然倾下" : privateScene.kind === "PROTECT" ? "守护的烛火已点亮" : privateScene.kind === "DIVINE" ? "你的问题已交给星辰" : "选择已经封存"}</h2><strong>{privateScene.target}</strong><small>行动已记录。实际结果以规则结算为准。</small></section> : null}
+    {privateScene ? <section className={`private-ritual private-ritual--${privateScene.kind.toLowerCase()}${event && elapsed >= 0 ? " private-ritual--compact" : ""}`} style={{ "--private-duration": preview ? "3600ms" : "1200ms" } as CSSProperties} role="status" aria-label="仅你可见的行动回执"><button type="button" onClick={() => setPrivateScene(undefined)}>收起 ×</button><p>PRIVATE · 仅你可见</p><div className="private-ritual__art" aria-hidden="true">{privateScene.kind === "POISON" ? <><div className="poison-vial"><span /></div><div className="poison-drop" /><div className="poison-mist"><i /><i /><i /></div></> : <div className="private-sigil">{privateScene.kind === "PROTECT" ? "◇" : privateScene.kind === "DIVINE" ? "✧" : "☾"}</div>}</div><h2>{privateScene.kind === "POISON" ? "毒液已悄然倾下" : privateScene.kind === "PROTECT" ? "守护的烛火已点亮" : privateScene.kind === "DIVINE" ? "你的问题已交给星辰" : "选择已经封存"}</h2><div className="private-ritual__players">{privateScene.targetSeats?.map(seat=><ScenePerson key={seat} game={game} seat={seat}/>)}</div><strong>{privateScene.target}</strong><small>行动已记录。实际结果以规则结算为准。</small></section> : null}
   </>;
+}
+
+
+function ScenePerson({game,seat,label,className=""}:{game:GameView|undefined;seat:number|undefined;label?:string;className?:string}){
+  if(seat===undefined)return null;
+  const player=game?.seats.find(p=>p.seat===seat),name=player?.nickname??`${seat}号玩家`;
+  return <div className={`scene-person ${className}`}><Avatar id={`seat-${seat}`} name={name} url={player?.avatar}/><span className="scene-person__seat">{seat}号</span><strong>{name}</strong>{label?<small>{label}</small>:null}</div>;
+}
+function EmptyGallows(){
+  return <div className="empty-gallows"><svg viewBox="0 0 320 320"><path className="empty-gallows__timber" d="M70 294V30H239M70 93L132 30M42 294H153"/><g className="empty-gallows__rope"><path d="M221 32V142"/><path d="M221 142C184 175 194 207 221 207C248 207 258 175 221 142Z"/><path d="M214 132H228M214 138H228M214 144H228"/></g></svg><div className="empty-gallows__wind"><i/><i/><i/></div><div className="empty-gallows__leaves"><i/><i/></div></div>;
 }
 
 function Pistol() {

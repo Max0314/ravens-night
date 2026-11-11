@@ -18,7 +18,7 @@ export async function enableEffectsAudio(value = true): Promise<void> {
   await audioContext.resume();
 }
 
-export function scheduleCue(id: string, kind: string, elapsedMs: number,version:PresentationVersion=1): void {
+export function scheduleCue(id: string, kind: string, elapsedMs: number,version:PresentationVersion=1,emptyExecution=false): void {
   const ctx = audioContext;
   if (!enabled || !ctx || ctx.state !== "running") return;
   const cues=experienceTiming(kind as ExperienceKind,version).cues;
@@ -30,7 +30,7 @@ export function scheduleCue(id: string, kind: string, elapsedMs: number,version:
     scheduled.set(key,time);if(scheduled.size>500)scheduled.delete(scheduled.keys().next().value!);
     if (cue === "bell") bell(ctx, time);
     else if (cue === "shot") { noise(ctx, time, .24, .2, 650); tone(ctx, time, 84, .6, .13); }
-    else if (cue === "mechanism") { noise(ctx, time, .3, .1, 350); tone(ctx, time, 72, .4, .1); }
+    else if (cue === "mechanism") { if(emptyExecution)noise(ctx,time,1.3,.035,380);else{noise(ctx, time, .3, .1, 350); tone(ctx, time, 72, .4, .1);} }
     else noise(ctx, time, cue === "paper" ? .18 : .06, .055, 1_800);
   }
 }

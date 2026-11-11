@@ -27,6 +27,9 @@ import "./styles/touch.css";
 import "./styles/room-flow.css";
 import "./styles/avatar-interactions.css";
 import "./styles/nomination-stage.css";
+import "./styles/town-workspace.css";
+import "./styles/result-town.css";
+import "./styles/village-records.css";
 import {installMobileViewport} from './mobile-viewport.js';
 import { installTouchPolicy } from './touch-policy.js';
 import { roomSnapshot } from "./room-snapshot.js";
@@ -282,7 +285,7 @@ function RoomApp() {
   async function runGameMutation(operation: (code: string) => Promise<PrivateView>, privateTargets?: number[]) {
     if (!room) return;
     setBusy(true); setError(undefined);
-    try { const updated = await guard(operation(room.code)); acceptPrivateView(updated);  setConnectionState("ONLINE"); if (privateTargets) { const roleId = privateView?.role?.roleId; setReceipt({ id: crypto.randomUUID(), kind: roleId === "poisoner" ? "POISON" : roleId === "monk" ? "PROTECT" : ["fortune_teller", "ravenkeeper"].includes(roleId ?? "") ? "DIVINE" : "SEALED", target: privateTargets.map((seat) => `${seat}号 ${privateView?.game?.seats.find((player) => player.seat === seat)?.nickname ?? ""}`).join("、") }); } }
+    try { const updated = await guard(operation(room.code)); acceptPrivateView(updated);  setConnectionState("ONLINE"); if (privateTargets) { const roleId = privateView?.role?.roleId; setReceipt({ id: crypto.randomUUID(), kind: roleId === "poisoner" ? "POISON" : roleId === "monk" ? "PROTECT" : ["fortune_teller", "ravenkeeper"].includes(roleId ?? "") ? "DIVINE" : "SEALED", targetSeats:[...privateTargets], target: privateTargets.map((seat) => `${seat}号 ${privateView?.game?.seats.find((player) => player.seat === seat)?.nickname ?? ""}`).join("、") }); } }
     catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return; await handleSessionFailure(caught); setError(caught instanceof Error ? caught.message : "操作没有成功，请重试"); }
     finally { setBusy(false); }
   }
