@@ -296,8 +296,8 @@ export class RoomService {
   assertHost(code:string,token:string){return this.requireHost(this.find(code),token);}
   botControlView(room:RoomRecord){const c=room.botControl;return{requestedMode:c.mode,effectiveMode:c.mode==='PAUSED'?'PAUSED' as const:humans(room).some(p=>p.connected&&this.#now()-p.lastSeenAt<ONLINE_MS)?'RUNNING' as const:'SUSPENDED' as const,pace:c.pace,version:c.version,attentionRequired:c.attentionRequired};}
   private rememberBotTeam(room:RoomRecord,seat:number,knownTeamSeats:number[]){const p=bots(room).find(p=>p.seat===seat);if(p)room.botControl.memory[p.id]={...(room.game?{gameId:room.game.gameId}:{}),knownTeamSeats,ackedHumanMessageIds:[]};}
-  validateControlCommand(code:string,token:string,context:RoomCommandContext,expectedControlVersion:number,bindGame=false){
-    const room=this.find(code);this.requireHost(room,token);this.validateCommand(code,token,context,'ROOM');
+  validateControlCommand(code:string,token:string,context:RoomCommandContext,expectedControlVersion:number,bindGame=false,accountId?:string){
+    const room=this.find(code);this.requireHost(room,token);this.validateCommand(code,token,context,'ROOM',accountId);
     if(room.botControl.version!==expectedControlVersion)throw new RoomError('BOT_CONTROL_CHANGED','人机控制状态已变化，请重新操作');
     if(bindGame&&room.game){const projection=room.game.publicProjection!;if(context.gameId!==room.game.gameId||context.contextId!==projection.contextId)throw new RoomError('CONTEXT_CHANGED','游戏阶段已变化，请重新操作');if(projection.phase==='VOTING'?context.ballotId!==projection.nomination?.ballotId:context.ballotId!==undefined)throw new RoomError('BALLOT_CHANGED','表决状态已变化，请重新操作');}
   }

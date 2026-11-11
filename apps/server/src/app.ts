@@ -206,7 +206,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   function control(path:string,properties:Record<string,unknown>,required:string[],bindGame:boolean,apply:(rooms:RoomService,code:string,token:string,body:Record<string,unknown>)=>ControlResult){
     app.post<RoomRequest>(`/api/rooms/:code/${path}`,{schema:{body:bodySchema({...roomCommandProperties,expectedControlVersion,...properties},[...roomCommandRequired,'expectedControlVersion',...required])}},async request=>{
       const token=organizerCredential(request,request.body.token as string|undefined);
-      const controlResult=await runtime.execute(rooms=>{rooms.validateControlCommand(request.params.code,token,request.body as unknown as RoomCommandContext,request.body.expectedControlVersion as number,bindGame);return apply(rooms,request.params.code,token,request.body);},{...receipt(request,token),requireHost:true,resultKind:'result'});
+      const controlResult=await runtime.execute(rooms=>{rooms.validateControlCommand(request.params.code,token,request.body as unknown as RoomCommandContext,request.body.expectedControlVersion as number,bindGame,accounts.get(request)?.sub);return apply(rooms,request.params.code,token,request.body);},{...receipt(request,token),requireHost:true,resultKind:'result'});
       return{...privateView(runtime.service,request.params.code,token),controlResult};
     });
   }

@@ -52,3 +52,23 @@ test('account creation tickets never become guest bearer recovery after logout o
  const create=(cookie:string)=>app.inject({method:'POST',url:'/api/rooms',headers:{...protocol,cookie,'x-command-id':id},payload});expect((await create('fixture=owner')).statusCode).toBe(201);
  for(const cookie of ['','fixture=other']){const denied=await create(cookie);expect(denied.statusCode).toBe(403);expect(denied.json().code).toBeUndefined();expect(denied.json().organizerToken).toBeUndefined();}expect((await create('fixture=owner')).statusCode).toBe(201);
 });
+
+test('all bot controls accept the trusted account host and still reject logged-out, switched and non-host accounts',async()=>{
+ const app=buildApp({timers:false,resolveAccount:async cookie=>cookie?.includes('fixture=owner')?{sub:'owner',name:'甲'}:cookie?.includes('fixture=other')?{sub:'other',name:'乙'}:null});apps.push(app);
+ const headers={...protocol,cookie:'fixture=owner'},ticket=(await app.inject({url:'/api/room-create-ticket',headers})).json().createTicket;
+ const created=await app.inject({method:'POST',url:'/api/rooms',headers:{...headers,'x-command-id':randomUUID()},payload:{playerCount:5,organizerName:'甲',createTicket:ticket}});expect(created.statusCode).toBe(201);const code=created.json().code as string;
+ async function joinAccount(account:string){const headers={...protocol,cookie:`fixture=${account}`},joinTicket=(await app.inject({url:`/api/rooms/${code}/join-ticket?mode=PLAYER`,headers})).json().joinTicket;const joined=await app.inject({method:'POST',url:`/api/rooms/${code}/join`,headers,payload:{nickname:account,mode:'PLAYER',joinTicket}});expect(joined.statusCode).toBe(201);return cookies(joined);}
+ const memberCookie=await joinAccount('owner'),ownerCookie=`fixture=owner; ${memberCookie}`;
+ expect((await control(app,code,ownerCookie,'bots',{fill:true})).json().controlResult.added).toBe(4);
+ expect((await control(app,code,ownerCookie,'bots/control',{mode:'PAUSED'})).statusCode).toBe(200);
+ expect((await control(app,code,ownerCookie,'rehearsal/clock',{mode:'MANUAL'})).json().room.timeline.mode).toBe('MANUAL');
+ expect((await control(app,code,ownerCookie,'bots/step')).json().controlResult.status).toBe('APPLIED');
+ expect((await control(app,code,ownerCookie,'rehearsal/advance')).json().controlResult.status).toBe('WAITING');
+ for(const [path,extra] of [['bots',{fill:true}],['bots/control',{mode:'PAUSED'}],['bots/step',{}],['rehearsal/clock',{mode:'WALL'}],['rehearsal/advance',{}]] as const){
+  const body=await intent(app,code,ownerCookie,extra);
+  for(const cookie of [memberCookie,`fixture=other; ${memberCookie}`])expect((await app.inject({method:'POST',url:`/api/rooms/${code}/${path}`,headers:{...protocol,cookie,'x-command-id':randomUUID()},payload:body})).statusCode).toBe(403);
+ }
+ const otherCookie=`fixture=other; ${await joinAccount('other')}`;
+ expect((await control(app,code,otherCookie,'bots',{fill:true})).json().errorCode).toBe('HOST_REQUIRED');
+ expect((await control(app,code,ownerCookie,'bots',{clear:true})).json().controlResult.removed).toBe(3);
+});
