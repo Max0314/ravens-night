@@ -1,5 +1,6 @@
 /* The document never pans; only bounded content panels scroll. */
-html,body,#root{width:100%;height:100%;min-height:0!important;overflow:hidden!important;overscroll-behavior:none;}
+html{color-scheme:dark;background:#0b0c09}
+html,body,#root{background-color:#0b0c09;width:100%;height:100%;min-height:0!important;overflow:hidden!important;overscroll-behavior:none;}
 body{position:fixed;inset:0;margin:0;}
 .app-viewport{height:100vh;height:100dvh;height:var(--viewport-height,100dvh);width:100%;overflow:hidden;position:relative;}
 *,*::before,*::after{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}

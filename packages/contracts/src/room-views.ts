@@ -1,7 +1,7 @@
 import type {PlayerController,BotControlView,RoomTimeline,ControlResult} from "./bot-control.js";
 import type { ExperienceEvent, StorytellerDecision } from "./experience.js";
 import type { RoomProtocolView } from "./room-protocol.js";
-export interface RoomParticipant { controller?:PlayerController; id: string; nickname: string; avatar?: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
+export interface RoomParticipant { controller?:PlayerController; left?:boolean; id: string; nickname: string; avatar?: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface GameView {
   presentationVersion?: 1 | 2;
@@ -30,6 +30,7 @@ export interface RoomView extends Partial<RoomProtocolView> { botControl?:BotCon
 export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
 export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 export interface PrivateHistoryEntry {
+  candidateGroup?: {kind:"ONE_OF";roleName:string;seats:number[]};
   grimoire?: { entries: Array<{seat:number;nickname:string;avatar?:string;roleName:string;alive:boolean;reminders:string[]}> };
   targetSeats?:number[];
   seq: number;

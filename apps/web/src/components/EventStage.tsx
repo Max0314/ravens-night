@@ -1,3 +1,4 @@
+import {playerLabel} from '@ravens/ui';
 import {useGameClock} from "../use-game-clock.js";
 import type {RoomView} from "../api.js";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
@@ -16,7 +17,7 @@ export function eventAt(events: PublicEvent[], now: number, seen: Set<string>): 
 export function publicEventsAt(events: PublicEvent[], now: number): PublicEvent[] { return events.filter((event) => (event.startsAt ?? 0) <= now); }
 function loadCursor(gameKey: string): Set<string> { try { return new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { return new Set(); } }
 
-export function EventStage({ game, receipt, preview = false, room }: { game?: GameView; receipt?: PrivateReceipt; preview?: boolean; room?: RoomView|undefined }) {
+export function EventStage({ game, receipt, preview = false, room, reading=false }: { game?: GameView; receipt?: PrivateReceipt; preview?: boolean; room?: RoomView|undefined; reading?:boolean }) {
   const now=useGameClock(game,room);
   const frozen=room?.timeline?.mode==="MANUAL";
   const [sound, setSound] = useState(effectsAudioEnabled);
@@ -33,6 +34,8 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
   const previousEvent = useRef<ExperienceEvent | undefined>(undefined);
   const stageRef = useRef<HTMLElement>(null);
   const receiptIds = useRef(new Set<string>());
+  const quietEvents = useRef(new Set<string>()),quietKey=useRef(gameKey);
+  if(quietKey.current!==gameKey){quietKey.current=gameKey;quietEvents.current.clear();}
   const animationAnchor = useRef<{ id: string; delay: number } | undefined>(undefined);
   useEffect(() => {
     try { seen.current = new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { seen.current = new Set(); }
@@ -56,6 +59,8 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
   }, [receipt?.id]);
 
   const active = eventAt(game?.events ?? [], now, new Set([...seen.current, ...dismissed]));
+  const quiet=!!active&&(active.kind==='DAWN'||active.kind==='NIGHT_FALLS')&&(reading||quietEvents.current.has(active.id));
+  if(quiet&&active)quietEvents.current.add(active.id);
   const elapsed = active ? now - active.startsAt : 0;
   if (active && (frozen || animationAnchor.current?.id !== `${active.id}:${room?.timeline?.epoch??0}`)) animationAnchor.current = { id: `${active.id}:${room?.timeline?.epoch??0}`, delay: -elapsed };
   if (!active) animationAnchor.current = undefined;
@@ -67,9 +72,9 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
     // boundary. Only completion or an explicit skip is allowed to advance the cursor.
     if (previousEvent.current && previousEvent.current.id !== active?.id && now >= previousEvent.current.startsAt + previousEvent.current.durationMs) { remember(previousEvent.current.id); previousEvent.current = undefined; }
     if (active) previousEvent.current = active;
-    if(active&&!seen.current.has(active.id)&&!reduced&&!frozen&&!hidden)scheduleCue(active.id,active.kind,elapsed,active.timingVersion??1,active.kind==="EXECUTION"&&active.targetSeat===undefined);
+    if(active&&!quiet&&!seen.current.has(active.id)&&!reduced&&!frozen&&!hidden)scheduleCue(active.id,active.kind,elapsed,active.timingVersion??1,active.kind==="EXECUTION"&&active.targetSeat===undefined);
     return()=>silenceEffects();
-  }, [active?.id,reduced,frozen,sound,hidden,room?.timeline?.epoch]);
+  }, [active?.id,reduced,frozen,sound,hidden,quiet,room?.timeline?.epoch]);
   useLayoutEffect(()=>{
     if(!active)return;
     for(const animation of stageRef.current?.getAnimations?.({subtree:true})??[]){
@@ -80,7 +85,7 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
     }
   },[active?.id,frozen,hidden,room?.timeline?.epoch,frozen?now:0]);
   useEffect(() => {
-    if (!active) return;
+    if (!active || quiet) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
     stageRef.current?.focus();
     const keyboard = (event: KeyboardEvent) => {
@@ -93,23 +98,24 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
     };
     document.addEventListener("keydown", keyboard);
     return () => { document.removeEventListener("keydown", keyboard); if (previous?.isConnected) previous.focus(); };
-  }, [active?.id]);
+  }, [active?.id,quiet]);
   function remember(id: string) {
     seen.current.add(id);
     try { sessionStorage.setItem(`ravens_events_${gameKey}`, JSON.stringify([...seen.current].slice(-150))); } catch { /* Deduplication still works in this tab. */ }
   }
   function skip() { silenceEffects(); if (active) { remember(active.id); setDismissed((all) => [...all, active.id]); } setPrivateScene(undefined); }
-  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !reduced && !frozen) scheduleCue(active.id, active.kind, elapsed,active.timingVersion??1,active.kind==="EXECUTION"&&active.targetSeat===undefined); }); }
+  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !quiet && !reduced && !frozen) scheduleCue(active.id, active.kind, elapsed,active.timingVersion??1,active.kind==="EXECUTION"&&active.targetSeat===undefined); }); }
   const event = active;
   const showResult = Boolean(event?.outcome) && (reducedOrLate || elapsed >= (event?experienceTiming(event.kind,event.timingVersion??1).resultOffset:0));
   const target = game?.seats.find((seat) => seat.seat === event?.targetSeat);
   const actor = game?.seats.find((seat) => seat.seat === event?.actorSeat);
   const deaths = event?.seats ?? [];
   const emptyExecution=event?.kind==="EXECUTION"&&event.targetSeat===undefined;
-  const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${actor?.nickname ?? `${event.actorSeat ?? "?"} 号玩家`} 举起了枪`, EXECUTION: showResult ? emptyExecution ? "今天无人被处决" : event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !event.outcome ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
+  const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${playerLabel(event.actorSeat,actor?.nickname)} 举起了枪`, EXECUTION: showResult ? emptyExecution ? "今天无人被处决" : event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !event.outcome ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
   return <>
     <button className="effects-audio" type="button" aria-pressed={sound} onClick={toggleSound} title={sound ? "关闭演出音效" : "点击启用演出音效"}>{sound ? "♪ 音效开" : "♪ 音效关"}</button>
-    {event ? <section key={event.id} data-timing-version={event.timingVersion??1} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${staticMotion ? " is-reduced" : ""}${frozen?" is-frozen":""}${emptyExecution?" is-empty-execution":""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": canSeek?"0ms":`${animationAnchor.current?.delay??0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
+    {event&&quiet?<aside className="phase-reading-notice" role="status"><span>{elapsed<0?event.kind==='DAWN'?'即将天亮':'即将入夜':title}</span><button type="button" onClick={skip}>知道了</button></aside>:null}
+    {event&&!quiet ? <section key={event.id} data-timing-version={event.timingVersion??1} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${staticMotion ? " is-reduced" : ""}${frozen?" is-frozen":""}${emptyExecution?" is-empty-execution":""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": canSeek?"0ms":`${animationAnchor.current?.delay??0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
       <div className="event-stage__grain" aria-hidden="true" /><div className="event-stage__halo" aria-hidden="true" />
       <header><span>RAVENS AT MIDNIGHT</span><span>{preview ? "演出预览" : "全员公开事件"}</span></header>
       <div className="event-stage__body">
@@ -123,7 +129,7 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
           {event.kind==="VOTE_RESULT"?<ScenePerson game={game} seat={event.targetSeat} label="本轮被提名" className="vote-result-person"/>:null}
           {!['SHOT', 'EXECUTION', 'DAWN', 'NOMINATION'].includes(event.kind) ? <div className={`ceremony-seal ceremony-seal--${event.kind.toLowerCase()}`}><span>{event.kind === "VOTE_RESULT" ? `${event.votes ?? "—"}` : event.kind === "NIGHT_FALLS" ? "☾" : "⚜"}</span><small>{event.kind === "VOTE_RESULT" ? "票" : "RAVENS"}</small></div> : null}
         </div>
-        <p className="event-stage__result" aria-live="polite">{showResult || !["SHOT", "EXECUTION", "DAWN"].includes(event.kind) ? event.message : event.kind === "SHOT" ? `枪口指向 ${target?.nickname ?? `${event.targetSeat} 号玩家`}` : event.kind === "EXECUTION" ? emptyExecution ? "晚风穿过刑架，等待判决公布。" : `${target?.nickname ?? "被处决者"} 走向钟楼` : "每个人都屏住呼吸，等待今夜的消息。"}</p>
+        <p className="event-stage__result" aria-live="polite">{showResult || !["SHOT", "EXECUTION", "DAWN"].includes(event.kind) ? event.message : event.kind === "SHOT" ? `枪口指向 ${playerLabel(event.targetSeat,target?.nickname)}` : event.kind === "EXECUTION" ? emptyExecution ? "晚风穿过刑架，等待判决公布。" : `${playerLabel(event.targetSeat,target?.nickname)} 走向钟楼` : "每个人都屏住呼吸，等待今夜的消息。"}</p>
         {showResult && deaths.length > 0 && ["DAWN", "SHOT", "EXECUTION"].includes(event.kind) && event.outcome !== "NO_DEATH" ? <small className="event-stage__aftercare">死亡不等于离场。你仍可讨论，并保留一枚幽灵票。身份继续保密。</small> : null}
       </div>
       <footer><button type="button" onClick={toggleSound}>{sound ? "关闭音效" : "启用音效"}</button><span>{reduced ? "已尊重减少动态效果偏好" : "所有屏幕共享同一段钟声"}</span><button type="button" onClick={skip}>跳过演出</button></footer>
@@ -137,7 +143,7 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
 function ScenePerson({game,seat,label,className=""}:{game:GameView|undefined;seat:number|undefined;label?:string;className?:string}){
   if(seat===undefined)return null;
   const player=game?.seats.find(p=>p.seat===seat),name=player?.nickname??`${seat}号玩家`;
-  return <div className={`scene-person ${className}`}><Avatar id={`seat-${seat}`} name={name} url={player?.avatar}/><span className="scene-person__seat">{seat}号</span><strong>{name}</strong>{label?<small>{label}</small>:null}</div>;
+  return <div className={`scene-person ${className}`}><Avatar id={`seat-${seat}`} name={name} url={player?.avatar}/><span className="scene-person__seat">{seat}号</span><strong>{playerLabel(seat,player?.nickname)}</strong>{label?<small>{label}</small>:null}</div>;
 }
 function EmptyGallows(){
   return <div className="empty-gallows"><svg viewBox="0 0 320 320"><path className="empty-gallows__timber" d="M70 294V30H239M70 93L132 30M42 294H153"/><g className="empty-gallows__rope"><path d="M221 32V142"/><path d="M221 142C184 175 194 207 221 207C248 207 258 175 221 142Z"/><path d="M214 132H228M214 138H228M214 144H228"/></g></svg><div className="empty-gallows__wind"><i/><i/><i/></div><div className="empty-gallows__leaves"><i/><i/></div></div>;

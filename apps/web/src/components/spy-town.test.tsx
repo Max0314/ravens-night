@@ -9,9 +9,9 @@ function entry(seq:number,day:number,role='僧侣'):PrivateHistoryEntry{return {
 test('private town defaults to latest night, shows received markers and switches to the preserved previous snapshot',()=>{
  const first=entry(1,0),second=entry(2,1);render(<SpyTownBoard entries={[first,second]} onReturn={vi.fn()}/>);
  expect(screen.getByText('第 2 夜 · 魔典')).toBeVisible();expect(screen.getByRole('button',{name:'下一夜魔典'})).toBeDisabled();
- fireEvent.click(screen.getByRole('button',{name:/2号 乙，魔典所示僧侣，已死亡/}));expect(screen.getByText('当夜已死亡')).toBeVisible();expect(within(screen.getByRole('list',{name:'2号魔典标记'})).getByText('中毒')).toBeVisible();expect(screen.getByText('洗衣妇线索目标')).toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:/【玩家2-乙】，魔典所示僧侣，已死亡/}));expect(screen.getByText('当夜已死亡')).toBeVisible();expect(within(screen.getByRole('list',{name:'2号魔典标记'})).getByText('中毒')).toBeVisible();expect(screen.getByText('洗衣妇线索目标')).toBeVisible();
  fireEvent.click(screen.getByRole('button',{name:'上一夜魔典'}));expect(screen.getByText('首夜 · 魔典')).toBeVisible();expect(screen.queryByText('当夜已死亡')).not.toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:/2号 乙，魔典所示僧侣，存活/}));expect(screen.getByText('当夜存活')).toBeVisible();expect(screen.getByText('红鲱鱼')).toBeVisible();expect(screen.getByText('僧侣保护')).toBeVisible();expect(screen.getByRole('button',{name:/1号 甲/}).querySelector('img')?.getAttribute('src')).toBe('/night-1.webp');
+ fireEvent.click(screen.getByRole('button',{name:/【玩家2-乙】，魔典所示僧侣，存活/}));expect(screen.getByText('当夜存活')).toBeVisible();expect(screen.getByText('红鲱鱼')).toBeVisible();expect(screen.getByText('僧侣保护')).toBeVisible();expect(screen.getByRole('button',{name:/【玩家1-甲】/}).querySelector('img')?.getAttribute('src')).toBe('/night-1.webp');
 });
 test('new snapshots do not overwrite an explicitly selected earlier night or invent data for old text records',()=>{
  const first=entry(1,0),second=entry(2,1),legacy:PrivateHistoryEntry={seq:0,phase:'FIRST_NIGHT',day:0,kind:'INFORMATION',text:'旧文本没有结构'};
@@ -22,4 +22,12 @@ test('new snapshots do not overwrite an explicitly selected earlier night or inv
 test('text-only legacy history offers return instead of manufacturing a live grimoire',()=>{
  const back=vi.fn();render(<SpyTownBoard entries={[{seq:1,day:0,phase:'FIRST_NIGHT',kind:'INFORMATION',text:'旧魔典文本'}]} onReturn={back}/>);
  expect(screen.getByText('尚未收到魔典快照。')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'返回公开城镇'}));expect(back).toHaveBeenCalledOnce();
+});
+
+test('opening the latest grimoire pins that night while the next snapshot arrives',()=>{
+ const first=entry(1,0),ui=render(<SpyTownBoard entries={[first]} onReturn={vi.fn()}/>);
+ fireEvent.click(screen.getByRole('button',{name:/玩家2-乙/}));
+ ui.rerender(<SpyTownBoard entries={[first,entry(2,1,'士兵')]} onReturn={vi.fn()}/>);
+ expect(screen.getByText('首夜 · 魔典')).toBeVisible();expect(screen.queryByRole('button',{name:/魔典所示士兵/})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'下一夜魔典'}));expect(screen.getByRole('button',{name:/魔典所示士兵/})).toBeVisible();
 });

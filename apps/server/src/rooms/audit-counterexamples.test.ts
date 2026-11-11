@@ -113,7 +113,7 @@ describe("reviewed rule counterexamples", () => {
     const t = table(["librarian", "drunk", "chef", "empath", "baron", "imp"], { 2: "washerwoman" }); t.day();
     const clue = t.service.privateView(t.room.code, t.players[0]!.token).messages.find((message) => message.startsWith("图书管理员信息"));
     expect(clue).toContain("有一位是酒鬼");
-    expect(clue).toContain("玩家2（2号）");
+    expect(clue).toContain("【玩家2-玩家2】");
   });
 
   test("poisoned Spy cannot register as a Townsfolk to Washerwoman", () => {
@@ -121,7 +121,7 @@ describe("reviewed rule counterexamples", () => {
     t.day({ 6: [5] });
     const clue = t.service.privateView(t.room.code, t.players[0]!.token).messages.find((message) => message.startsWith("洗衣妇信息"))!;
     expect(clue).toContain("有一位是洗衣妇");
-    expect(clue).toContain("玩家1（1号）");
+    expect(clue).toContain("【玩家1-玩家1】");
     expect(clue).not.toContain("有一位是间谍");
   });
 

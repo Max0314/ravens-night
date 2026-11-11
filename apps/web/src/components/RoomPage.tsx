@@ -2,8 +2,11 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { useBackLayer } from "../use-back-layer.js";
 import { Avatar } from "./Avatar.js";
 
-export function RoomPageShell({ title, onBack, subtitle, children, actions, className="" }: {title:string;onBack:()=>void;subtitle?:ReactNode;children:ReactNode;actions?:ReactNode;className?:string}) {
-  return <main className={`room-page ${className}`}><header className="room-page__header"><button type="button" onClick={onBack} aria-label="返回首页">←</button><div><h1>{title}</h1>{subtitle ? <small>{subtitle}</small> : null}</div></header><div className="room-page__content">{children}</div>{actions ? <RoomActionBar>{actions}</RoomActionBar> : null}</main>;
+// Portal placement does not express which sheet the user opened most recently.
+const sheetStack:HTMLElement[]=[];
+
+export function RoomPageShell({ title, onBack, subtitle, children, actions, className="",hideBack=false }: {hideBack?:boolean;title:string;onBack:()=>void;subtitle?:ReactNode;children:ReactNode;actions?:ReactNode;className?:string}) {
+  return <main className={`room-page ${className}`}><header className="room-page__header">{hideBack?null:<button type="button" onClick={onBack} aria-label="返回首页">←</button>}<div><h1>{title}</h1>{subtitle ? <small>{subtitle}</small> : null}</div></header><div className="room-page__content">{children}</div>{actions ? <RoomActionBar>{actions}</RoomActionBar> : null}</main>;
 }
 export function RoomActionBar({children}:{children:ReactNode}){return <footer className="room-action-bar">{children}</footer>;}
 export function OperationStatus({busy,error,notice}:{busy?:boolean;error?:string|undefined;notice?:string|undefined}) {return <>{busy?<p className="operation-status" role="status">正在提交…</p>:null}{error?<p className="form-error" role="alert">{error}</p>:notice?<p className="operation-status" role="status">{notice}</p>:null}</>;}
@@ -13,6 +16,29 @@ export function PlayerTile({player,selected,disabled,onClick,detail}:{player:{id
 export function RoomSheet({title,onClose,children,actions,confirmation=false}:{title:string;onClose:()=>void;children:ReactNode;actions?:ReactNode;confirmation?:boolean}){
   const ref=useRef<HTMLElement>(null); const close=useRef(onClose);close.current=onClose;
   useBackLayer(true,()=>close.current());
-  useEffect(()=>{const previous=document.activeElement instanceof HTMLElement?document.activeElement:undefined;ref.current?.focus({preventScroll:true});const trap=(event:KeyboardEvent)=>{if(event.key!=="Tab"||!ref.current||document.querySelectorAll(".room-sheet").item(document.querySelectorAll(".room-sheet").length-1)!==ref.current||!ref.current.contains(document.activeElement))return;const buttons=[...ref.current.querySelectorAll<HTMLElement>('button:not([disabled]), input, textarea, a[href], [tabindex="0"]')].filter(element=>element.closest('.room-sheet')===ref.current);const first=buttons[0],last=buttons.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===ref.current)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}};document.addEventListener("keydown",trap);return()=>{document.removeEventListener("keydown",trap);if(previous?.isConnected)previous.focus({preventScroll:true});};},[]);
+  useEffect(()=>{
+    const node=ref.current;if(node)sheetStack.push(node);
+    const previous=document.activeElement instanceof HTMLElement?document.activeElement:undefined;node?.focus({preventScroll:true});
+    const tabbable=(element:HTMLElement)=>{
+      if(element.tabIndex<0&&!(element.tagName==='SUMMARY'&&!element.hasAttribute('tabindex'))||element.matches(':disabled,[type="hidden"]'))return false;
+      for(let parent:HTMLElement|null=element;parent;parent=parent.parentElement){
+        if(parent.hidden||parent.inert||parent.getAttribute('aria-hidden')==='true')return false;
+        const style=getComputedStyle(parent);if(style.display==='none'||style.visibility==='hidden')return false;
+        if(parent instanceof HTMLDetailsElement&&!parent.open&&!parent.querySelector(':scope > summary')?.contains(element))return false;
+      }
+      return true;
+    };
+    const trap=(event:KeyboardEvent)=>{
+      const active=document.activeElement;
+      if(event.key!=='Tab'||!node||sheetStack.at(-1)!==node||!node.contains(active)&&!(active instanceof Element&&active.closest('.private-action-notice')))return;
+      const buttons=[...node.querySelectorAll<HTMLElement>('button,input,textarea,select,summary,a[href],[tabindex="0"]')].filter(element=>element.closest('.room-sheet')===node&&tabbable(element));
+      buttons.push(...[...document.querySelectorAll<HTMLElement>('.private-action-notice button')].filter(tabbable));
+      event.preventDefault();if(!buttons.length)return;
+      const index=buttons.indexOf(active as HTMLElement),next=event.shiftKey?(index<=0?buttons.length-1:index-1):(index<0||index===buttons.length-1?0:index+1);
+      buttons[next]?.focus();
+    };
+    document.addEventListener('keydown',trap);
+    return()=>{if(node){const index=sheetStack.indexOf(node);if(index>=0)sheetStack.splice(index,1);}document.removeEventListener('keydown',trap);if(previous?.isConnected)previous.focus({preventScroll:true});};
+  },[]);
   return <div className={`room-sheet-backdrop${confirmation?" room-sheet-backdrop--confirm":""}`} onClick={event=>{if(event.target===event.currentTarget)onClose();}}><section className="room-sheet" ref={ref} tabIndex={-1} role={confirmation?"alertdialog":"dialog"} aria-modal="true" aria-label={title}><header><h2>{title}</h2><button type="button" onClick={onClose} aria-label={`关闭${title}`}>×</button></header><div className="room-sheet__body">{children}</div>{actions?<RoomActionBar>{actions}</RoomActionBar>:null}</section></div>;
 }

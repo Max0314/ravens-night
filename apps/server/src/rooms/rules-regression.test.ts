@@ -58,7 +58,7 @@ test("the Butler must choose exactly one other player", () => {
   expect(butlerAction?.legalSeats).not.toContain(4);
   expect(() => service.submitAction(room.code, players[3]!.token, [])).toThrow(/Invalid number of targets/);
   service.submitAction(room.code, players[3]!.token, [2]);
-  expect(service.privateView(room.code, players[3]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择二（2号）作为明天的主人。" }));
+  expect(service.privateView(room.code, players[3]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择【玩家2-二】作为明天的主人。" }));
 });
 
 test("the Butler may choose a dead player as master on a later night", () => {
@@ -76,14 +76,14 @@ test("the Butler may choose a dead player as master on a later night", () => {
   const butlerAction = service.privateView(room.code, players[3]!.token).action;
   expect(butlerAction?.legalSeats).toContain(1);
   service.submitAction(room.code, players[3]!.token, [1]);
-  expect(service.privateView(room.code, players[3]!.token).history).toContainEqual(expect.objectContaining({ phase: "OTHER_NIGHT", kind: "ACTION", text: "你选择一（1号）作为明天的主人。" }));
+  expect(service.privateView(room.code, players[3]!.token).history).toContainEqual(expect.objectContaining({ phase: "OTHER_NIGHT", kind: "ACTION", text: "你选择【玩家1-一】作为明天的主人。" }));
 });
 
 test("an investigator may see the Recluse as an in-play Minion instead of being told Recluse", () => {
   const { service, room, players } = controlledSixPlayerRoom(["investigator", "recluse", "saint", "butler", "baron", "imp"]);
   reachFirstDay(service, room.code, players);
   const information = service.privateView(room.code, players[0]!.token).messages.find((message) => message.startsWith("调查员信息"));
-  expect(information).toMatch(/调查员信息：.+（\d号）与.+（\d号）中，有一位是(?:男爵|投毒者|间谍|猩红女郎)。/);
+  expect(information).toMatch(/调查员信息：【玩家\d-.+】与【玩家\d-.+】中，有一位是(?:男爵|投毒者|间谍|猩红女郎)。/);
   expect(information).not.toContain("有一位是隐士");
 });
 
@@ -97,7 +97,7 @@ test("a Drunk's believed role stays secret until the final identity reveal", () 
   service.useDayAbility(room.code, players[1]!.token, 6);
 
   expect(service.publicView(room.code).game?.phase).toBe("GAME_OVER");
-  expect(service.privateView(room.code, players[1]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你以猎魔人身份公开射击了六（6号）。" }));
+  expect(service.privateView(room.code, players[1]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你以猎魔人身份公开射击了【玩家6-六】。" }));
   expect(service.privateView(room.code, players[0]!.token).role).toMatchObject({ roleId: "drunk", name: "酒鬼", perceivedAs: "调查员" });
   expect(service.publicView(room.code).game?.events.at(-1)?.message).toContain("酒鬼（本局以为自己是调查员）");
 });
@@ -127,20 +127,20 @@ test("private history keeps each player's submitted night targets and informatio
   const fortuneHistory = service.privateView(room.code, players[0]!.token).history;
   expect(fortuneHistory.map((entry) => entry.seq)).toEqual(fortuneHistory.map((_, index) => index + 1));
   expect(fortuneHistory).toEqual(expect.arrayContaining([
-    expect.objectContaining({ phase: "FIRST_NIGHT", day: 0, kind: "ACTION", text: "你选择查验二（2号）与三（3号）。" }),
+    expect.objectContaining({ phase: "FIRST_NIGHT", day: 0, kind: "ACTION", text: "你选择查验【玩家2-二】与【玩家3-三】。" }),
     expect.objectContaining({ phase: "FIRST_NIGHT", day: 0, kind: "INFORMATION", text: expect.stringMatching(/^占卜结果：[是否]。$/) }),
   ]));
   expect(fortuneHistory.map((entry) => entry.text).join(" ")).not.toMatch(/酒鬼|中毒|失能/);
-  expect(service.privateView(room.code, players[2]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择二（2号）作为明天的主人。" }));
-  expect(service.privateView(room.code, players[4]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择投毒一（1号）。" }));
+  expect(service.privateView(room.code, players[2]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择【玩家2-二】作为明天的主人。" }));
+  expect(service.privateView(room.code, players[4]!.token).history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择投毒【玩家1-一】。" }));
 
   for (const player of players) service.readyToEndDay(room.code, player.token);
   expect(service.publicView(room.code).game?.phase).toBe("OTHER_NIGHT");
   service.submitAction(room.code, players[1]!.token, [1]);
   service.submitAction(room.code, players[5]!.token, [1]);
 
-  expect(service.privateView(room.code, players[1]!.token).history).toContainEqual(expect.objectContaining({ phase: "OTHER_NIGHT", day: 1, kind: "ACTION", text: "你选择保护一（1号）免受恶魔攻击。" }));
-  expect(service.privateView(room.code, players[5]!.token).history).toContainEqual(expect.objectContaining({ phase: "OTHER_NIGHT", day: 1, kind: "ACTION", text: "你选择袭击一（1号）。" }));
+  expect(service.privateView(room.code, players[1]!.token).history).toContainEqual(expect.objectContaining({ phase: "OTHER_NIGHT", day: 1, kind: "ACTION", text: "你选择保护【玩家1-一】免受恶魔攻击。" }));
+  expect(service.privateView(room.code, players[5]!.token).history).toContainEqual(expect.objectContaining({ phase: "OTHER_NIGHT", day: 1, kind: "ACTION", text: "你选择袭击【玩家1-一】。" }));
 });
 
 test("equal top vote totals produce no execution", () => {
@@ -199,7 +199,7 @@ test("a ravenkeeper killed at night acts before dawn", () => {
   service.submitAction(room.code, players[0]!.token, [2]);
   expect(service.publicView(room.code).game?.phase).toBe("DAY_DISCUSSION");
   const history = service.privateView(room.code, players[0]!.token).history;
-  expect(history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择查验二（2号）的角色。" }));
+  expect(history).toContainEqual(expect.objectContaining({ kind: "ACTION", text: "你选择查验【玩家2-二】的角色。" }));
   expect(history).toContainEqual(expect.objectContaining({ kind: "INFORMATION", text: expect.stringContaining("守鸦人信息") }));
 });
 
@@ -220,5 +220,5 @@ test("a Drunk who believes they are an Investigator does not trigger the Virgin"
   service.nominate(room.code, players[1]!.token, 1);
   expect(service.publicView(room.code).game?.seats.find((seat) => seat.seat === 2)?.alive).toBe(true);
   expect(service.publicView(room.code).game?.phase).toBe("VOTING");
-  expect(service.publicView(room.code).game?.events.at(-1)?.message).toBe("二 提名了 一。");
+  expect(service.publicView(room.code).game?.events.at(-1)?.message).toBe("【玩家2-二】 提名了 【玩家1-一】。");
 });

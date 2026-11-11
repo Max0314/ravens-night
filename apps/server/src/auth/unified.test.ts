@@ -36,7 +36,7 @@ test('guest claims require signed preview and explicit confirmation; duplicates 
   expect((await post('guest-preview',{})).statusCode).toBe(400);
 });
 
-test('account avatar refreshes in lobby and stays fixed after starting the game',async()=>{
+test('account reconnect preserves its room avatar while an explicit profile change updates it',async()=>{
   let picture='https://auth.fribench.cn/assets/avatars/v3/banana-cat-crying.webp';
   const app=buildApp({timers:false,presentation:false,resolveAccount:async header=>header?.includes('fixture=avatar')?{sub:'avatar-owner',name:'头像玩家',picture}:null});apps.push(app);
   const code=(await app.inject({method:'POST',url:'/api/rooms',payload:{playerCount:5,organizerName:'头像玩家'}})).json().code;
@@ -46,7 +46,8 @@ test('account avatar refreshes in lobby and stays fixed after starting the game'
   expect(await avatar()).toBe(picture);
   picture='https://auth.fribench.cn/assets/avatars/v3/lara-adventurer.webp';
   const resume=async()=>app.inject({method:'POST',url:`/api/rooms/${code}/account/resume`,headers:{cookie:owner},payload:{participantId:joined.json().id}});
-  owner='fixture=avatar; '+cookieOf(await resume());expect(await avatar()).toBe(picture);
+  owner='fixture=avatar; '+cookieOf(await resume());expect(await avatar()).toBe('https://auth.fribench.cn/assets/avatars/v3/banana-cat-crying.webp');
+  expect((await app.inject({method:'POST',url:'/api/account/profile',headers:{cookie:owner},payload:{nickname:null,avatar:picture,expectedRevision:0}})).statusCode).toBe(200);expect(await avatar()).toBe(picture);
   const cookies=[owner];for(let i=1;i<5;i++)cookies.push(cookieOf(await app.inject({method:'POST',url:`/api/rooms/${code}/join`,payload:{nickname:`玩家${i}`,mode:'PLAYER'}})));
   for(const cookie of cookies)expect((await app.inject({method:'POST',url:`/api/rooms/${code}/ready`,headers:{cookie},payload:{ready:true}})).statusCode).toBe(200);
   expect((await app.inject({method:'POST',url:`/api/rooms/${code}/start`,headers:{cookie:owner},payload:{tutorialMode:'SKIP'}})).statusCode).toBe(200);

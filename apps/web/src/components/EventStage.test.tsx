@@ -44,6 +44,24 @@ test("skipping a public event persists per game and does not replay after remoun
   expect(screen.queryByRole("dialog", { name: "城镇公开演出" })).not.toBeInTheDocument();
 });
 
+test('a dawn received while reading stays lightweight, preserves focus, and does not replay when reading closes',()=>{
+ vi.useFakeTimers();vi.setSystemTime(epoch);
+ const dawn=shot({id:'reading-dawn',kind:'DAWN',startsAt:epoch,outcome:'NO_DEATH',seats:[]});
+ const ui=render(<><button type="button">阅读位置</button><EventStage game={game([dawn])} reading/></>);
+ const anchor=screen.getByRole('button',{name:'阅读位置'});anchor.focus();
+ expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'知道了'})).toBeVisible();
+ ui.rerender(<><button type="button">阅读位置</button><EventStage game={game([dawn])}/></>);
+ expect(anchor).toHaveFocus();expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'知道了'}));ui.unmount();render(<EventStage game={game([dawn])}/>);
+ expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();
+});
+
+test('ordinary town retains its full nightfall presentation',()=>{
+ vi.useFakeTimers();vi.setSystemTime(epoch);
+ render(<EventStage game={game([shot({id:'town-night',kind:'NIGHT_FALLS',startsAt:epoch})])}/>);
+ expect(screen.getByRole('dialog',{name:'城镇公开演出'})).toBeVisible();
+});
+
 test("a small server clock correction cannot prematurely consume a public gunshot", () => {
   vi.useFakeTimers(); vi.setSystemTime(epoch);
   const event = shot(); const stage = render(<EventStage game={game([event])} />);
@@ -78,7 +96,7 @@ test("in-person players have the complete town and can inspect a dead player's g
   render(<PlayerGame {...handlers} view={player()} />);
   fireEvent.click(screen.getByRole("button", { name: "城镇" }));
   expect(screen.getByRole("region", { name: "公开城镇" })).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "3号 3号玩家 已死亡" }));
+  fireEvent.click(screen.getByRole("button", { name: "【玩家3-3号玩家】 已死亡" }));
   fireEvent.click(screen.getByRole("button",{name:"详情"}));
   expect(screen.getByText("仍可讨论，保留一枚幽灵票。")).toBeVisible();
 });
@@ -100,7 +118,7 @@ test("a dead player confirms the single ghost vote before sending it", () => {
 
 test("non-slayer living players can make the same public claim without leaking their role", () => {
   const onUseAbility = vi.fn(); render(<PlayerGame {...handlers} onUseAbility={onUseAbility} view={player()} />);
-  fireEvent.click(screen.getByRole("button", { name: "3号 3号玩家 已死亡" }));
+  fireEvent.click(screen.getByRole("button", { name: "【玩家3-3号玩家】 已死亡" }));
   fireEvent.click(screen.getByRole("button", { name: "开枪" })); expect(onUseAbility).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "确认公开开枪" })); expect(onUseAbility).toHaveBeenCalledWith(3);
 });

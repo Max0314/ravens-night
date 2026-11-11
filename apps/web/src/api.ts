@@ -27,7 +27,7 @@ function commandBinding(code: string, path: string): Omit<RoomCommandContext, "e
   const view = contexts.get(contextKey(code));
   if (!view?.roomInstanceId || !view.setupId || !view.self) throw new ApiError("正在同步房间，请稍后重新操作", 409, "SYNC_REQUIRED");
   const base = { roomInstanceId: view.roomInstanceId, setupId: view.setupId };
-  if (["bots/step", "rehearsal/advance"].includes(path)) return { ...base, ...(view.game?.gameId ? { gameId: view.game.gameId, contextId: view.game.contextId } : {}), ...(view.game?.nomination?.ballotId ? { ballotId: view.game.nomination.ballotId } : {}) };
+  if (["bots/step", "bots/command", "rehearsal/advance"].includes(path)) return { ...base, ...(view.game?.gameId ? { gameId: view.game.gameId, contextId: view.game.contextId } : {}), ...(view.game?.nomination?.ballotId ? { ballotId: view.game.nomination.ballotId } : {}) };
   if (["vote", "nomination/cancel", "nomination/defense/complete"].includes(path))
     return { ...base, ...(view.game?.gameId ? { gameId: view.game.gameId } : {}), ...(view.game?.nomination?.ballotId ? { ballotId: view.game.nomination.ballotId } : {}) };
   if (["role/confirm", "first-night-info/ack", "action", "nominate", "day/ready", "day/ability", "resume", "abort", "reopen", "reset"].includes(path) || path.startsWith("whispers"))
@@ -101,7 +101,7 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
   new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
   const options = { ...init, credentials: "same-origin" as const, headers };
   // Only receipt-backed commands can be safely retried after an ambiguous disconnect.
-  const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step)?|rehearsal\/(?:clock|advance|role)|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|first-night-info\/ack|profile|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
+  const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step|\/command)?|rehearsal\/(?:clock|advance|role)|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|first-night-info\/ack|profile|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
   for (let attempt = 0; ; attempt++) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10_000);
@@ -160,9 +160,10 @@ export function createRoom(playerCount:number,organizerName:string,playMode:Room
     catch(error){if(error instanceof ApiError&&error.status<500&&error.status!==429)finishCreationIntent();throw error;}
   })().finally(()=>{if(creationFlights.get(key)===flight)creationFlights.delete(key);});creationFlights.set(key,flight);return flight.promise;
 }
-export function getRoomSummary(code:string){return request<{canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number}>(`/api/rooms/${encodeURIComponent(code)}/summary`);}
+export function getRoomSummary(code:string){return request<{canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number;occupiedAvatars:string[]}>(`/api/rooms/${encodeURIComponent(code)}/summary`);}
 export function manageBots(code:string,intent:{count?:number;fill?:boolean;clear?:boolean}){return request<PrivateView>(`/api/rooms/${code}/bots`,{method:"POST",body:JSON.stringify(intent)});}
 export function controlBots(code:string,intent:{autoNominate?:boolean;mode?:"RUNNING"|"PAUSED";pace?:"NORMAL"|"SLOW"}){return request<PrivateView>(`/api/rooms/${code}/bots/control`,{method:"POST",body:JSON.stringify(intent)});}
+export function runBotCommand(code:string,command:import('@ravens/contracts').BotTestCommand,targetSeat?:number){return request<PrivateView>(`/api/rooms/${code}/bots/command`,{method:'POST',body:JSON.stringify({command,...(targetSeat!==undefined?{targetSeat}:{})})});}
 export function stepBots(code:string){return request<PrivateView>(`/api/rooms/${code}/bots/step`,{method:"POST",body:"{}"});}
 export function setRehearsalRole(code:string,roleId:string|null){return request<PrivateView>(`/api/rooms/${code}/rehearsal/role`,{method:"POST",body:JSON.stringify({roleId})});}
 export function setRehearsalClock(code:string,mode:"WALL"|"MANUAL"){return request<PrivateView>(`/api/rooms/${code}/rehearsal/clock`,{method:"POST",body:JSON.stringify({mode})});}
@@ -199,7 +200,7 @@ async function performJoin(code:string,mode:'PLAYER'|'DISPLAY',key:string,frozen
       try { sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent'); } catch { /* The seat is already committed. */ }
       return result;
     } catch (error) {
-      if(error instanceof ApiError&&['PROFILE_STALE','NICKNAME_TAKEN'].includes(error.errorCode??'')){joinTickets.delete(key);joinIntents.delete(key);try{sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent');}catch{}}
+      if(error instanceof ApiError&&['PROFILE_STALE','NICKNAME_TAKEN','AVATAR_TAKEN'].includes(error.errorCode??'')){joinTickets.delete(key);joinIntents.delete(key);try{sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent');}catch{}}
       if (error instanceof ApiError && ["SETUP_CHANGED", "JOIN_TICKET_EXPIRED", "JOIN_TICKET_REVOKED"].includes(error.errorCode ?? "")) {
         joinTickets.delete(key); ticket = undefined;
         try { sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent'); } catch { /* Retry still has the in-memory decision. */ }

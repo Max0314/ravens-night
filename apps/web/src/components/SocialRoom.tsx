@@ -1,3 +1,4 @@
+import {playerLabel} from '@ravens/ui';
 import { RoomSheet } from "./RoomPage.js";
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { acknowledgeDraft, editDraft, type WhisperDrafts } from "../whisper-drafts.js";
@@ -19,7 +20,7 @@ export function SocialRoom({ code, view, open, onClose, onRefresh, drafts, setDr
   useEffect(() => { if (night && open) close.current(); }, [night, open]);
   useEffect(() => { setError(undefined); }, [active?.id, open]);
   const draft = active ? drafts[active.id]?.text ?? "" : "";
-  const names = (seat: number) => view.game?.seats.find(player => player.seat === seat)?.nickname ?? `${seat}号`;
+  const names = (seat: number) => playerLabel(seat,view.game?.seats.find(player => player.seat === seat)?.nickname);
   const partner = active?.participants.filter(seat => seat !== view.participant.seat).map(names).join("、");
   const closedDrafts = Object.entries(drafts).filter(([id, item]) => id !== active?.id && item.text);
   async function run(operation: () => Promise<unknown>) {

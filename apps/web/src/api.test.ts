@@ -2,7 +2,7 @@
 import { webcrypto } from "node:crypto";
 import { TextEncoder } from "node:util";
 import { beforeEach, afterEach, expect, test, vi } from "vitest";
-import { observeRoomView, resetAccountContext, ApiError, createRoom, joinRoom, leaveRoom, recoverRoom, submitGameAction } from "./api.js";
+import { observeRoomView, resetAccountContext, ApiError, createRoom, joinRoom, leaveRoom, recoverRoom, submitGameAction, runBotCommand } from "./api.js";
 
 beforeEach(()=>{resetAccountContext();observeRoomView("ABCDEF",{roomInstanceId:"instance",setupId:"setup",revision:1,self:{participantId:"p1",mode:"PLAYER",commandVersion:0},contextId:"context",game:{gameId:"game",phase:"OTHER_NIGHT",day:1,seats:[],events:[],readyCount:0,aliveCount:5}});});
 afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear(); });
@@ -42,4 +42,18 @@ test("manual recovery retry retains its command id without storing the recovery 
   await expect(recoverRoom("ABCDEF", secret)).resolves.toEqual({ id: "restored-seat" });
   expect(commandId(fetcher, 2)).toBe(commandId(fetcher, 0));
   expect(sessionStorage.length).toBe(0);
+});
+
+
+test("bot test commands bind public game/ballot and retry only the original id and payload",async()=>{
+ observeRoomView('ABCDEF',{roomInstanceId:'instance',setupId:'setup',revision:2,self:{participantId:'p1',mode:'PLAYER',commandVersion:3},botControl:{requestedMode:'PAUSED',effectiveMode:'PAUSED',pace:'NORMAL',version:9,attentionRequired:false},contextId:'public-context',game:{gameId:'game',contextId:'public-context',phase:'VOTING',day:1,seats:[],events:[],readyCount:0,aliveCount:5,nomination:{ballotId:'ballot',nominatorSeat:1,nomineeSeat:2,votesReceived:0,votesRaised:0,threshold:3}}});
+ const fetcher=vi.fn().mockRejectedValueOnce(new TypeError('lost response')).mockResolvedValueOnce({ok:true,json:async()=>({controlResult:{status:'APPLIED',executedCount:1}})});vi.stubGlobal('fetch',fetcher);
+ await runBotCommand('ABCDEF','SHOOT_ONCE',2);expect(fetcher).toHaveBeenCalledTimes(2);expect(commandId(fetcher,1)).toBe(commandId(fetcher,0));const first=JSON.parse(fetcher.mock.calls[0]![1].body);expect(first).toMatchObject({command:'SHOOT_ONCE',targetSeat:2,expectedControlVersion:9,expectedCommandVersion:3,gameId:'game',contextId:'public-context',ballotId:'ballot'});expect(fetcher.mock.calls[1]![1].body).toBe(fetcher.mock.calls[0]![1].body);
+});
+
+test('confirmed avatar collision clears an unused join intent so a new avatar may be submitted',async()=>{
+ const ticket={ok:true,json:async()=>({joinTicket:'fixture-join-ticket',expiresAt:Date.now()+600000})};
+ const fetcher=vi.fn().mockResolvedValueOnce(ticket).mockResolvedValueOnce({ok:false,status:409,json:async()=>({error:'头像已被使用',errorCode:'AVATAR_TAKEN'})}).mockResolvedValueOnce(ticket).mockResolvedValueOnce(success());vi.stubGlobal('fetch',fetcher);
+ await expect(joinRoom('ABCDEF','甲','PLAYER',{nickname:'甲',avatar:'avatar-one'})).rejects.toMatchObject({errorCode:'AVATAR_TAKEN'});
+ await expect(joinRoom('ABCDEF','甲','PLAYER',{nickname:'甲',avatar:'avatar-two'})).resolves.toEqual({id:'restored-seat'});expect(JSON.parse(fetcher.mock.calls[3]![1].body).avatar).toBe('avatar-two');
 });

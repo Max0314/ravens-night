@@ -90,7 +90,8 @@ ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与�
 ## 房间与恢复接口
 
 - GET /api/account返回本人本游戏资料及默认值；POST /api/account/profile仅可信登录账号可写nickname/avatar和expectedRevision，不能指定他人账号。恢复默认提交两字段null；头像仅允许已有Fribench目录URL。相同目标值重试不重复推进资料版本，不同值旧版本返回409。
-- 资料在既有runtime队列中与大厅快照原子提交。大厅即时更新本账号昵称/头像；教学和进行中局保持当时资料，返回大厅（含撤销教学）应用待更新值；正常战报不回写。资料更新不改变座位、秘密身份或准备周期。
+- 资料在既有runtime队列中与房间快照原子提交；大厅、教学及进行中局即时同步本游戏显示，已保存战报/魔典快照不回写。资料更新不改变座位、秘密身份或准备周期。重连保留当前头像，明确修改资料时才更新。
+- 活动PLAYER头像按稳定目录ID在房内判重（兼容v1/v2/v3）；随机真人/人机分配排除占用，显式冲突返回AVATAR_TAKEN且不发生部分加入/人机替换/资料版本变动。本席精确当前URL与既存重复可保留；旧pending头像冲突时保留当前头像并清pending。summary只额外公开occupiedAvatars，不附昵称或席位身份。
 
 - startTutorial 仅大厅、人数齐备且全员 ready/30秒内在线；可跳过教学但不能跳过身份确认。reset 仅接受正常终局演出完成或 ABORTED；RUNNING 必须先由现任房主明确中止。
 - setReady(code, token, ready)：大厅准备；reorderSeats 仅房主可用；阵容或座序变动清空准备并轮换 setupId。公共大屏只读。
@@ -113,6 +114,9 @@ ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与�
 醉毒间谍从完整真魔典与完整扰动候选中确定性选择，每夜固定一次。扰动只交换相同生死的善良身份包和对应提醒，冻结本人、邪恶角色及死亡旧小恶魔；保留真实角色多重集合，禁止假候选直接标出间谍自身中毒，无合法扰动时使用完整真候选。
 
 快照 schemaVersion=2，旧库在监听前、单写锁内先全量预检再单事务迁移；未知版本或不可还原快照拒绝启动。v1投票保留绝对时间、已冻结票和已耗鬼票，不追溯改票。普通回执只保存指纹与小结果，保留256条；淘汰后的旧请求仍因成员命令版本过期被拒绝。
+
+- POST /api/rooms/:code/bots/command 沿用现任房主CONTROL授权、game/context/ballot版本、命令ID与队列事务；END_DAY仅让可结束白天的机器人同意，真人不变。NOMINATE_ONCE/SHOOT_ONCE各选一名公开有资格的机器人执行一次正常命令；射击包含VOTING，不按真实角色选执行者。无资格/非法目标明确409；重试回原回执及最新视图。反馈仅公开执行者、数量与提交结果，不提前公开死亡/隐藏身份。
+- 新洗衣妇、图书管理员及调查员二选一线索在本人历史保存candidateGroup（ONE_OF、shown角色名与实际告知的两席）；醉毒使用实际误信息，不增强为后台真值。旧文本不解析补标记，公共视图不包含该字段。
 
 ## 验证
 

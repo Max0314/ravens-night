@@ -1,4 +1,5 @@
 import {expect,test} from 'vitest';
+import {avatarChoices} from '@ravens/contracts';
 import {protocolApp as buildApp} from '../test-fixtures/protocol-app.js';
 import {RoomService,type RoomRecord,type AccountClaim} from '../rooms/service.js';
 import type {RoomRepository} from '../game/live-runtime.js';
@@ -33,7 +34,7 @@ test('game profile is account-scoped, validated, idempotent and survives restart
 
 test('profile changes immediately update lobbies, teaching and active games',()=>{
   const service=new RoomService({presentation:false}),{room}=service.create(5,'房主');
-  const players=Array.from({length:5},(_,i)=>service.join(room.code,`玩家${i+1}`,'PLAYER'));
+  const players=Array.from({length:5},(_,i)=>service.join(room.code,`玩家${i+1}`,'PLAYER',i===0?avatar:avatarChoices[i-1]!.url));
   service.bindAccount(room.code,players[0]!.token,account.sub,players[0]!.token);
   service.updateAccountProfile(account,'大厅昵称',avatar,0);
   expect(service.publicView(room.code).participants[0]!.nickname).toBe('大厅昵称');

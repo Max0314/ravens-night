@@ -1,1 +1,1 @@
-export { avatarChoices, trustedAvatar } from '@ravens/contracts';
+export { avatarChoices, trustedAvatar, avatarIdentity, avatarSelectionUrl } from '@ravens/contracts';

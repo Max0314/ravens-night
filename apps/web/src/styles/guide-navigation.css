@@ -1,0 +1,9 @@
+/* The return control stays outside both the scrolling page and its turn animation. */
+.guide-sheet>.guide-detail-toolbar{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 16px;border-bottom:1px solid #b79c4933;background:#12110ef5;color:#d8c69e}
+.guide-sheet>.guide-detail-toolbar>div{display:flex;align-items:baseline;gap:8px;min-width:0}
+.guide-sheet>.guide-detail-toolbar strong{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guide-sheet>.guide-detail-toolbar>div>span{font-size:11px;color:#a99b7c;white-space:nowrap}
+.guide-sheet>.guide-detail-toolbar>button{flex:none;min-height:44px;padding:6px 10px;border:1px solid #b79c4938;border-radius:9px;background:#b79c4912;color:#e4c994;font-size:13px}
+.guide-sheet>.guide-detail-toolbar>button>span{margin-right:4px}
+.guide-sheet>.guide-book{touch-action:pan-y}
+@media(max-width:359px){.guide-sheet>.guide-detail-toolbar{padding-inline:12px;gap:6px}.guide-sheet>.guide-detail-toolbar>div{gap:5px}.guide-sheet>.guide-detail-toolbar>button{padding-inline:7px}}

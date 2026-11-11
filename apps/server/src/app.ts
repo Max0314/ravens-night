@@ -1,3 +1,4 @@
+import {runBotCommand} from './rooms/bot-commands.js';
 import cookie from "@fastify/cookie";
 import websocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
@@ -13,7 +14,7 @@ import { roomCommandProperties, roomCommandRequired, type RoomCommandContext,typ
 import { RoomError, PUBLICATION_TICK_MS } from "./rooms/errors.js";
 import { issueJoinTicket, validateJoinTicket, assertJoinCapacity, revokeJoinTicket } from "./rooms/join-ticket.js";
 import { profileView } from './auth/game-profile.js';
-import { avatarChoices, trustedAvatar } from './auth/avatar.js';
+import { avatarChoices, trustedAvatar, avatarSelectionUrl } from './auth/avatar.js';
 
 import {runBots,stepBot} from './rooms/bot-scheduler.js';
 import {activePlayers,bots,humans} from './rooms/bot-types.js';
@@ -202,7 +203,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     });
     reply.setCookie('ravens_organizer',result.organizerToken,cookieOptions(roomPath(result.code)));if(guestContext)reply.setCookie('ravens_create_context',guestContext,{...cookieOptions('/'),sameSite:'lax'});return reply.code(201).send(result);
   });
-  app.get<RoomRequest>('/api/rooms/:code/summary',async request=>{const room=runtime.service.find(request.params.code),roster=activePlayers(room),canJoin=room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);return{code:room.code,playerCount:room.playerCount,activeHumanCount:humans(room).length,botCount:bots(room).length,canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};});
+  app.get<RoomRequest>('/api/rooms/:code/summary',async request=>{const room=runtime.service.find(request.params.code),roster=activePlayers(room),canJoin=room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);return{code:room.code,playerCount:room.playerCount,activeHumanCount:humans(room).length,botCount:bots(room).length,occupiedAvatars:[...new Set(roster.flatMap(p=>p.avatarSnapshot?[avatarSelectionUrl(p.avatarSnapshot)]:[]))],canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};});
   const expectedControlVersion={type:'integer',minimum:0};
   function control(path:string,properties:Record<string,unknown>,required:string[],bindGame:boolean,apply:(rooms:RoomService,code:string,token:string,body:Record<string,unknown>)=>ControlResult){
     app.post<RoomRequest>(`/api/rooms/:code/${path}`,{schema:{body:bodySchema({...roomCommandProperties,expectedControlVersion,...properties},[...roomCommandRequired,'expectedControlVersion',...required])}},async request=>{
@@ -214,6 +215,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   control('bots',{count:{type:'integer',minimum:1,maximum:11},fill:{const:true},clear:{const:true}},[],false,(rooms,code,token,body)=>rooms.changeBots(code,token,body));
   control('bots/control',{autoNominate:{type:'boolean'},mode:{enum:['RUNNING','PAUSED']},pace:{enum:['NORMAL','SLOW']}},[],false,(rooms,code,token,body)=>rooms.changeBotControl(code,token,body.mode as 'RUNNING'|'PAUSED'|undefined,body.pace as 'NORMAL'|'SLOW'|undefined,body.autoNominate as boolean|undefined));
   control('bots/step',{},[],true,(rooms,code,token)=>stepBot(rooms,code,token));
+  control('bots/command',{command:{enum:['END_DAY','NOMINATE_ONCE','SHOOT_ONCE']},targetSeat:{type:'integer',minimum:1,maximum:12}},['command'],true,(rooms,code,token,body)=>runBotCommand(rooms,code,token,body.command as import('@ravens/contracts').BotTestCommand,body.targetSeat as number|undefined));
   control('rehearsal/role',{roleId:{anyOf:[{type:'string',minLength:1,maxLength:50},{type:'null'}]}},['roleId'],false,(rooms,code,token,body)=>rooms.changeRehearsalRole(code,token,body.roleId as string|null));
   control('rehearsal/clock',{mode:{enum:['MANUAL','WALL']}},['mode'],false,(rooms,code,token,body)=>rooms.changeRehearsalClock(code,token,body.mode as 'MANUAL'|'WALL'));
   control('rehearsal/advance',{},[],true,(rooms,code,token)=>rooms.advanceRehearsal(code,token));
@@ -262,12 +264,12 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       if(mode==='PLAYER'&&!account&&request.body.avatar!==undefined&&!guestAvatar)throw new RoomError('INVALID_PROFILE','请选择可用头像',400);
       if(typeof request.body.nickname!=='string'||!request.body.nickname.trim()||/[\u0000-\u001f\u007f]/.test(request.body.nickname))throw new RoomError('INVALID_PROFILE','请输入有效昵称',400);
       assertJoinCapacity(room, now());
-      const result = rooms.join(room.code,mode==='DISPLAY'?'公共大屏':account?rooms.accountProfile(account.sub)?.nickname??request.body.nickname as string:request.body.nickname as string,mode);
+      const result = rooms.join(room.code,mode==='DISPLAY'?'公共大屏':account?rooms.accountProfile(account.sub)?.nickname??request.body.nickname as string:request.body.nickname as string,mode,mode==='PLAYER'?(account?profileView(account,rooms.accountProfile(account.sub)).avatar??undefined:guestAvatar):undefined);
       const participant = room.participants.find(p => p.id === result.participant.id)!;
       const token = account ? accountToken(account.sub, room.code, participant.id) : ticket.token;
       if (account) rooms.bindAccount(room.code, result.token, account.sub, token);
       participant.tokenHash = hashOpaqueToken(token);
-      if(guestAvatar)participant.avatarSnapshot=guestAvatar;
+
       if (account) rooms.syncAccountProfile(room,participant,account);
       participant.joinTicket = { hash: ticket.hash, expiresAt: ticket.expiresAt, credentialHash: participant.tokenHash };
       if (room.organizerParticipantId === participant.id) room.organizerTokenHash = participant.tokenHash;
