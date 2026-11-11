@@ -78,7 +78,7 @@ test("evil first-night intelligence prominently shows teammate names and seat nu
   view.history=[];delete view.action;
   view.startInfo={infoId:'private-info',gameId:'game',team:[{seat:6,nickname:'小陈',kind:'DEMON'}],bluffs:[],acknowledged:false,canAcknowledge:true};
   const acknowledge=vi.fn();render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onConfirmStartInfo={acknowledge} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()}/>);
-  expect(screen.getByRole('heading',{name:'首夜信息'})).toBeVisible();expect(screen.getByText('6号 · 小陈')).toBeVisible();expect(screen.getByText('恶魔')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'已知晓'}));expect(acknowledge).toHaveBeenCalledWith('private-info');
+  expect(screen.getByRole('heading',{name:'首夜信息 · 仅你可见'})).toBeVisible();expect(screen.getByText('6号 · 小陈')).toBeVisible();expect(screen.getByText('恶魔')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'已知晓'}));expect(acknowledge).toHaveBeenCalledWith('private-info');
 
 });
 
@@ -166,13 +166,15 @@ test("a nomination is confirmed before submission and may be abandoned", () => {
   const onNominate = vi.fn();
   render(<PlayerGame view={playerView("DAY_DISCUSSION")} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={onNominate} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
 
-  fireEvent.click(screen.getByText("按列表选择玩家"));
-  fireEvent.click(screen.getByRole("button", { name: /被提名人.*提名/ }));
-  expect(screen.getByText("确认提名 被提名人（2号）？")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "2号 被提名人 存活" }));
+  fireEvent.click(screen.getByRole("button", { name: "提名" }));
+  expect(screen.getByRole("alertdialog",{name:"确认提名"})).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "取消" }));
-  expect(screen.queryByText("确认提名 被提名人（2号）？")).not.toBeInTheDocument();
+  expect(screen.queryByRole("alertdialog",{name:"确认提名"})).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button",{name:"关闭玩家操作"}));
 
-  fireEvent.click(screen.getByRole("button", { name: /被提名人.*提名/ }));
+  fireEvent.click(screen.getByRole("button", { name: "2号 被提名人 存活" }));
+  fireEvent.click(screen.getByRole("button", { name: "提名" }));
   fireEvent.click(screen.getByRole("button", { name: "确认提名 2号" }));
   expect(onNominate).toHaveBeenCalledWith(2);
 });
@@ -225,7 +227,7 @@ test("a submitted night action explains when its information will appear", () =>
   view.history.push({ seq: 2, phase: "FIRST_NIGHT", day: 0, kind: "ACTION", text: "你选择查验二号与三号。" });
 
   render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
-  expect(screen.getByText("已提交，等待其他玩家。线索见记录。")).toBeVisible();
+  expect(screen.getByText("已提交，等待其他玩家")).toBeVisible();
 });
 
 function playerView(phase: "DAY_DISCUSSION" | "VOTING"): PrivateView {

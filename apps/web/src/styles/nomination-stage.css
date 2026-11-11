@@ -45,3 +45,10 @@
 @media(prefers-reduced-motion:reduce){.nomination-notice,.gallows__portrait{animation:none}}
 
 .guide-host.has-ballot-notice .guide-backdrop{height:calc(var(--viewport-height,100dvh) - var(--nomination-notice-height,150px));bottom:auto}
+
+/* Keep rope/skull legible above grayscale portraits and preserve living/ghost controls. */
+.rn-seat__avatar[data-avatar-state]{overflow:visible}
+.remote-town-board .rn-seat--dead .rn-seat__avatar{filter:none;opacity:1}
+.rn-seat__avatar[data-avatar-state]>img{border-radius:50%}
+.gallows__portrait[data-avatar-state] .player-avatar{filter:grayscale(1);opacity:.65}
+.gallows__portrait>.rn-avatar-state{inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px)}

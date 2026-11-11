@@ -29,9 +29,17 @@ function canTalk(room: RoomRecord): void { if (room.game && ["FIRST_NIGHT", "OTH
 export function socialView(room: RoomRecord, token: string) {
   const id = member(room, token, "PLAYER").id;
   const seatFor = (participantId: string) => room.participants.find((p) => p.id === participantId)?.seat ?? 0;
-  const whispers = data(room).whispers.filter((w) => w.fromId === id || w.toId === id);
+  const allWhispers = data(room).whispers;
+  // Public relationships never carry conversation IDs, timestamps, or private messages.
+  const relations = allWhispers.flatMap((w) => {
+    if (w.status !== "PENDING" && w.status !== "ACTIVE") return [];
+    const from = room.participants.find((p) => p.id === w.fromId && !p.left && p.mode === "PLAYER");
+    const to = room.participants.find((p) => p.id === w.toId && !p.left && p.mode === "PLAYER");
+    return from?.seat && to?.seat ? [{ fromSeat: from.seat, toSeat: to.seat, status: w.status }] : [];
+  });
+  const whispers = allWhispers.filter((w) => w.fromId === id || w.toId === id);
   const active = whispers.find((w) => w.status === "ACTIVE");
-  return { social: { invitations: whispers.filter((w) => w.status === "PENDING").map((w) => ({ id: w.id, fromSeat: seatFor(w.fromId), toSeat: seatFor(w.toId), status: w.status, createdAt: w.createdAt })), ...(active ? { activeWhisper: { id: active.id, participants: [seatFor(active.fromId), seatFor(active.toId)], messages: active.messages.map((m) => ({ id: m.id, seat: seatFor(m.authorId), text: m.text, createdAt: m.createdAt })) } } : {}) } };
+  return { social: { relations, invitations: whispers.filter((w) => w.status === "PENDING").map((w) => ({ id: w.id, fromSeat: seatFor(w.fromId), toSeat: seatFor(w.toId), status: w.status, createdAt: w.createdAt })), ...(active ? { activeWhisper: { id: active.id, participants: [seatFor(active.fromId), seatFor(active.toId)], messages: active.messages.map((m) => ({ id: m.id, seat: seatFor(m.authorId), text: m.text, createdAt: m.createdAt })) } } : {}) } };
 }
 export function inviteWhisper(room: RoomRecord, token: string, targetSeat: number): void {
   canTalk(room);

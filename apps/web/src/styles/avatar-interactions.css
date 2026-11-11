@@ -74,7 +74,7 @@ input,textarea,select{font-size:max(16px,1em)}
 .rn-seat__avatar>img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
 .remote-town-board .rn-seat__number{font:10px/1.2 var(--rn-mono);color:#c0b18e}
 .remote-town-board .rn-seat__name{font-size:11px;line-height:1.2;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d5c9ac}
-.remote-town-board .rn-seat--dead .rn-seat__avatar{filter:grayscale(1);opacity:.55}
+.remote-town-board .rn-seat--dead .rn-seat__avatar{filter:none;opacity:1}
 .remote-town-board .rn-seat--mine .rn-seat__avatar{border-color:#dfbd76;box-shadow:0 0 0 2px #b9a06433}
 .remote-town-board .rn-seat--counting .rn-seat__avatar{box-shadow:0 0 0 3px #d5b46b77,0 0 20px #c6a66b55}
 .remote-town-board .rn-seat__ghost{font-size:0;position:absolute;left:2px;top:33px}

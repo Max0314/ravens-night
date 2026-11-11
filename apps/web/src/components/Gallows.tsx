@@ -2,6 +2,7 @@ import {useLayoutEffect,useRef} from 'react';
 import type {GameView,RoomView} from '../api.js';
 import {useGameClock} from '../use-game-clock.js';
 import {Avatar} from './Avatar.js';
+import {SeatAvatarDecoration} from '@ravens/ui';
 
 /** Public nomination and execution-candidate board; nomination never implies death. */
 export function Gallows({game,room}:{game:GameView;room?:RoomView|undefined}){
@@ -32,7 +33,7 @@ export function Gallows({game,room}:{game:GameView;room?:RoomView|undefined}){
   const threshold=ballot?.threshold??lastCandidate?.threshold??Math.ceil(game.aliveCount/2);
   const label=ballot?(now<(ballot.defenseUntil??0)?'当前提名 · 辩护中':'当前提名 · 表决中'):block?'当前处决候选':game.executionTied?'最高票持平 · 暂无处决候选':'暂无处决候选';
   const total=ballot?.voterOrder?.length??ballot?.votersRequired??game.seats.length;
-  return <section className="gallows" aria-label="提名与处决席"><div className="gallows__stage"><div className="gallows__drawing" aria-hidden="true"><svg viewBox="0 0 140 120" fill="none"><path d="M12 111h110M34 111V12h64M34 39 61 12M98 12v30"/><path className="gallows__rope" d="M98 42c-10 0-10 19 0 19s10-19 0-19Z"/></svg>{nominee?<span key={portraitKey} ref={portrait} className="gallows__portrait"><Avatar id={nominee.id??String(nominee.seat)} name={nominee.nickname} url={nominee.avatar}/></span>:null}</div><div className="gallows__content"><small>{label}</small>{nominee?<><strong>{nominee.seat}号 · {nominee.nickname}</strong><p className="gallows__votes">{ballot?<><b>{ballot.votesRaised}/{total}</b> 赞同</>:<><b>{block?.votes??0}</b> 票</>}</p><span>{threshold}票达标{ballot?.currentVoterSeat?` · 正在计 ${ballot.currentVoterSeat}号`:''}</span></>:<p>头像将在提名时移入此处</p>}</div></div>
+  return <section className="gallows" aria-label="提名与处决席"><div className="gallows__stage"><div className="gallows__drawing" aria-hidden="true"><svg viewBox="0 0 140 120" fill="none"><path d="M12 111h110M34 111V12h64M34 39 61 12M98 12v30"/><path className="gallows__rope" d="M98 42c-10 0-10 19 0 19s10-19 0-19Z"/></svg>{nominee?<span key={portraitKey} ref={portrait} className="gallows__portrait" data-avatar-state={nominee.alive?"THREATENED":"DEAD"}><Avatar id={nominee.id??String(nominee.seat)} name={nominee.nickname} url={nominee.avatar}/><SeatAvatarDecoration state={nominee.alive?"THREATENED":"DEAD"}/></span>:null}</div><div className="gallows__content"><small>{label}</small>{nominee?<><strong>{nominee.seat}号 · {nominee.nickname}</strong><p className="gallows__votes">{ballot?<><b>{ballot.votesRaised}/{total}</b> 赞同</>:<><b>{block?.votes??0}</b> 票</>}</p><span>{threshold}票达标{ballot?.currentVoterSeat?` · 正在计 ${ballot.currentVoterSeat}号`:''}</span></>:<p>头像将在提名时移入此处</p>}</div></div>
     {ballot&&leader&&block?<p className="gallows__leader">当前处决候选：{leader.seat}号 · {leader.nickname}<b>{block.votes}票</b></p>:null}
     {records.length?<div className="gallows__history"><h3>今日提名</h3><ol>{records.map(e=>{const p=game.seats.find(s=>s.seat===e.targetSeat),result=e.outcome==='TIED'?'最高票持平':e.outcome==='ON_BLOCK'?'当轮成为候选':e.votes!<(e.threshold??Infinity)?'未达标':'未超过最高票';return <li key={e.id??e.seq}><Avatar id={p?.id??String(e.targetSeat)} name={p?.nickname??'玩家'} url={p?.avatar}/><span><strong>{e.targetSeat}号 · {p?.nickname??'玩家'}</strong><small>{result}</small></span><b>{e.votes}票<small>达标{e.threshold??'—'}票</small></b></li>;})}</ol></div>:null}
   </section>;

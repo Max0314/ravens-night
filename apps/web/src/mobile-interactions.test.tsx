@@ -124,7 +124,7 @@ test("a failed foreground refresh keeps voting locked until a later valid snapsh
 test("whisper acknowledgement never erases newer text; a closed conversation retains a readonly draft",async()=>{
   let finish!:()=>void;vi.mocked(sendWhisper).mockImplementation((_code,_id,_text,committed)=>new Promise(resolve=>{finish=()=>{committed?.();resolve({});};}));
   const {mine}=fixture();mine.game!.phase="DAY_DISCUSSION";mine.social={invitations:[],activeWhisper:{id:"w1",participants:[1,2],messages:[]}};
-  function Harness({view}:{view:PrivateView}){const[drafts,setDrafts]=useState<WhisperDrafts>({});return <SocialRoom code="ABCDEF" view={view} drafts={drafts} setDrafts={setDrafts} onRefresh={vi.fn()}/>;}
+  function Harness({view}:{view:PrivateView}){const[drafts,setDrafts]=useState<WhisperDrafts>({});return <SocialRoom open onClose={vi.fn()} code="ABCDEF" view={view} drafts={drafts} setDrafts={setDrafts} onRefresh={vi.fn()}/>;}
   const ui=render(<Harness view={mine}/>);const input=screen.getByRole("textbox",{name:"私聊内容"});fireEvent.change(input,{target:{value:"第一条"}});fireEvent.click(screen.getByRole("button",{name:"发送"}));fireEvent.change(input,{target:{value:"新草稿"}});finish();await waitFor(()=>expect(screen.getByRole("button",{name:"发送"})).toBeEnabled());expect(input).toHaveValue("新草稿");
   ui.rerender(<Harness view={{...mine,social:{invitations:[]}}}/>);expect(screen.getByRole("textbox",{name:"已结束耳语草稿"})).toHaveValue("新草稿");expect(screen.queryByRole("button",{name:"发送"})).not.toBeInTheDocument();
 });

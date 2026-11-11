@@ -9,7 +9,7 @@ import {
   type RoleAssignment,
   grimoireCandidates, trueGrimoire, type Grimoire,
 } from "@ravens/game-engine";
-import type { ExperienceEvent, StorytellerDecision, RoomCommandContext } from "@ravens/contracts";
+import type { ExperienceEvent, StorytellerDecision, RoomCommandContext, PrivateHistoryEntry as HistoryView } from "@ravens/contracts";
 import { FIRST_NIGHT_ORDER, OTHER_NIGHT_ORDER, shuffled } from "@ravens/game-engine";
 import { createOpaqueToken, hashOpaqueToken } from "../auth/session.js";
 import { createRoomCode, normalizeRoomCode } from "./codes.js";
@@ -86,6 +86,7 @@ type PrivateHistoryPhase = RuntimePhase | "HISTORY";
 type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 
 interface PrivateHistoryEntry {
+  grimoire?: NonNullable<HistoryView["grimoire"]>;
   targetSeatsRevealDay?:number;
   publishAfterEventId?: string;
   seq: number;
@@ -1245,7 +1246,7 @@ export class RoomService {
     }
   }
 
-  private privateMessage(game: GameRuntime, seat: number, text: string, kind: PrivateHistoryKind, effect?: PrivateHistoryEntry["effect"], targetSeats?: number[],targetSeatsRevealDay?:number): void {
+  private privateMessage(game: GameRuntime, seat: number, text: string, kind: PrivateHistoryKind, effect?: PrivateHistoryEntry["effect"], targetSeats?: number[],targetSeatsRevealDay?:number, grimoire?: HistoryView["grimoire"]): void {
     const message = text.trim();
     (game.messages[seat] ??= []).push(message);
     const history = game.privateHistory[seat] ??= [];
@@ -1255,6 +1256,7 @@ export class RoomService {
       day: game.day,
       kind,
       text: message,
+      ...(grimoire ? { grimoire } : {}),
       ...(effect ? { effect } : {}), ...(targetSeats ? { targetSeats } : {}), ...(targetSeatsRevealDay!==undefined?{targetSeatsRevealDay}:{}),
     });
   }
@@ -1433,6 +1435,7 @@ export class RoomService {
     const first = game.phase === "FIRST_NIGHT";
     let message: string | undefined;
     let informationTargets:number[]|undefined;
+    let spySnapshot: HistoryView["grimoire"];
     if (roleId === "chef" && first) {
       const evil = room.assignments.filter((assignment) => this.registeredAlignment(room, assignment.seat, `chef-${seat}`) === "EVIL").map((assignment) => assignment.seat);
       const count = evil.filter((candidate) => evil.includes(candidate === room.playerCount ? 1 : candidate + 1)).length;
@@ -1486,16 +1489,19 @@ export class RoomService {
           ...grimoire.reminders.filter(reminder => reminder.targetSeats.includes(entry.seat)).map(reminder => reminder.kind === "PAIR"
             ? `${roleById(grimoire.entries.find(own => own.seat === reminder.ownerSeat)!.perceivedRoleId).name}线索${reminder.targetSeats[0] === entry.seat ? "目标" : "干扰"}`
             : labels[reminder.kind])];
-        return `${this.playerLabel(room, entry.seat)} ${roleById(entry.roleId).name} [${reminders.join("、")}]`;
+        const avatar=room.participants.find(player=>player.mode==="PLAYER"&&player.seat===entry.seat)?.avatarSnapshot;
+        return {seat:entry.seat,nickname:this.nickname(room,entry.seat),...(avatar?{avatar}:{}),roleName:roleById(entry.roleId).name,alive:entry.alive,reminders};
       });
-      message = `魔典：${entries.join("；")}。`;
+      // Store the already selected (possibly impaired) night snapshot, never a live grimoire.
+      spySnapshot={entries};
+      message = `魔典：${entries.map(entry=>`${this.playerLabel(room,entry.seat)} ${entry.roleName} [${entry.reminders.join("、")}]`).join("；")}。`;
     } else if (roleId === "undertaker" && !first && game.lastExecutedSeat !== undefined) {
       informationTargets=[game.lastExecutedSeat];
       const truthful = this.registeredRole(room, game.lastExecutedSeat, "undertaker");
       const shown = this.information(room, seat, roleId, truthful, ROLE_CATALOG.map((role) => role.id));
       message = `送葬信息：今天因处决死亡的是${roleById(shown).name}。`;
     }
-    if (message) this.privateMessage(game, seat, message, "INFORMATION",undefined,informationTargets,roleId==="empath"?game.day+1:undefined);
+    if (message) this.privateMessage(game, seat, message, "INFORMATION",undefined,informationTargets,roleId==="empath"?game.day+1:undefined,spySnapshot);
   }
 
   private finishNight(room: RoomRecord): void {

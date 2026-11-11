@@ -30,6 +30,7 @@ export interface RoomView extends Partial<RoomProtocolView> { botControl?:BotCon
 export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
 export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 export interface PrivateHistoryEntry {
+  grimoire?: { entries: Array<{seat:number;nickname:string;avatar?:string;roleName:string;alive:boolean;reminders:string[]}> };
   targetSeats?:number[];
   seq: number;
   phase: PrivateHistoryPhase;
@@ -51,7 +52,7 @@ export interface PrivateView extends Partial<RoomProtocolView> {
   canCancelTutorial?: boolean;
   canClaimHost?: boolean;
   butler?: { masterSeat?: number; masterRaised: boolean };
-  social?: { invitations: Array<{ id: string; fromSeat: number; toSeat: number; status: string; createdAt: number }>; activeWhisper?: { id: string; participants: number[]; messages: Array<{ id: string; seat: number; text: string; createdAt: number }> } };
+  social?: { relations?: Array<{ fromSeat: number; toSeat: number; status: "PENDING" | "ACTIVE" }>; invitations: Array<{ id: string; fromSeat: number; toSeat: number; status: string; createdAt: number }>; activeWhisper?: { id: string; participants: number[]; messages: Array<{ id: string; seat: number; text: string; createdAt: number }> } };
   participant: { id: string; nickname: string; seat: number; tutorialComplete?: boolean };
   storytellerDecisions?: StorytellerDecision[];
   state: string;

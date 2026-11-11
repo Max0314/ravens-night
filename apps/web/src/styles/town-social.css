@@ -1,0 +1,21 @@
+.room-sheet:has(.social-room--town){height:min(620px,100%)}
+.room-sheet .social-room--town{padding:0;margin:0;max-width:none;border:0;background:transparent}
+.social-room--town .town-whisper-privacy{margin:0 0 12px;font-size:12px;color:#b5a98f}
+.town-whisper-messages{display:flex;flex-direction:column;gap:12px;list-style:none;margin:0;padding:4px 0}
+.town-whisper-messages li{max-width:90%;align-self:flex-start}
+.town-whisper-messages li.is-mine{align-self:flex-end;text-align:right}
+.town-whisper-messages li small{color:#a79d88;font-size:11px}
+.town-whisper-messages li p{white-space:pre-wrap;overflow-wrap:anywhere;text-align:left;margin:4px 0;padding:10px 12px;background:#15150ebd;border:1px solid #ac915236;border-radius:10px;font-size:14px;line-height:1.6}
+.town-whisper-messages li.is-mine p{background:#86704426;border-color:#ba9d5359}
+.room-sheet .town-whisper-compose{display:flex;gap:8px;flex:1 0 100%;min-width:0;margin:0}
+.town-whisper-compose input{flex:1;min-width:0;min-height:44px;padding:10px 12px;font-size:16px;color:#e4d9be;background:#0e100edb;border:1px solid #a68c4d55;border-radius:8px}
+.town-whisper-compose .rn-button{flex:none;min-width:68px}
+.town-whisper-leave{min-height:44px;margin:0 auto;background:none;border:0;color:#c5af78}
+.town-whisper-response{display:flex;gap:8px;width:100%}
+.town-whisper-response>.rn-button{flex:1}
+.town-whisper-drafts{margin-top:16px;color:#b5aa96;font-size:13px}
+.town-whisper-drafts summary{min-height:44px;display:flex;align-items:center}
+.town-whisper-drafts button{min-height:44px;padding:8px 14px;margin-right:8px;color:#dcc48e;background:#272319;border:1px solid #a68c4d44;border-radius:8px}
+
+.room-sheet:has(.social-room--town)>.room-action-bar{flex-wrap:wrap}
+.room-sheet:has(.social-room--town)>header h2{min-width:0;overflow-wrap:anywhere}

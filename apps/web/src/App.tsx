@@ -10,7 +10,7 @@ import { Home } from "./pages/Home.js";
 import { Join, type JoinValues } from "./pages/Join.js";
 import { Lobby } from "./pages/Lobby.js";
 import { Login } from "./pages/Login.js";
-import { PlayerGame } from "./pages/PlayerGame.js";
+import { PlayerGame, hasPrivateTownTask } from "./pages/PlayerGame.js";
 import { Tutorial } from "./pages/Tutorial.js";
 import { EffectsPreview } from "./pages/EffectsPreview.js";
 import { PortraitsPreview } from "./pages/PortraitsPreview.js";
@@ -270,7 +270,7 @@ function RoomApp() {
 
   const withStatus = (page: ReactNode) => <>{page}{storageNotice?<p className="session-status" role="status">浏览器未保存恢复资料，请勿关闭或刷新此页面。</p>:null}{upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
   const roomTools=!guide&&room&&participantId?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={setGuide}/>:null;
-  const withGuide = (page: ReactNode) => withStatus(<>{page}{screen!=='HOME'?roomTools:null}{guide ? <div className={`guide-host${screen==="GAME"&&privateView?.game?.phase==="VOTING"?" has-ballot-notice":""}`}><GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /></div> : null}</>);
+  const withGuide = (page: ReactNode) => withStatus(<>{page}{screen!=='HOME'?roomTools:null}{guide ? <div className={`guide-host${screen==="GAME"&&privateView?.game?.phase==="VOTING"?" has-ballot-notice":screen==="GAME"&&hasPrivateTownTask(privateView)?" has-private-action-notice":""}`}><GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /></div> : null}</>);
 
   if (screen === "LOADING") return withStatus(<main className="app-loading" aria-label="正在进入钟楼"><span>☾</span>{connectionState === "OFFLINE" ? <button type="button" onClick={() => void initialize()}>重新连接钟楼</button> : null}</main>);
   if (screen === "LOGIN") return withStatus(<Login onSubmit={submitLogin} busy={busy} {...(error ? { error } : {})} />);

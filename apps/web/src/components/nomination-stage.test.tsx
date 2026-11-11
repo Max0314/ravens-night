@@ -59,3 +59,15 @@ test('gallows respects reduced motion and keeps the avatar when animation is una
   const ui=render(<section className="remote-town-board"><div data-seat-number="3"><span className="rn-seat__avatar"/></div><Gallows game={view.game!} room={view.room}/></section>);expect(animate).not.toHaveBeenCalled();expect(ui.container.querySelector('.gallows__portrait')).not.toBeNull();
   delete (HTMLElement.prototype as unknown as {animate?:unknown}).animate;
 });
+
+test('gallows uses a rope for a living candidate and only the public death flag replaces it with a skull',()=>{
+  const view=fixture(),game=view.game!,ui=render(<Gallows game={game} room={view.room}/>);
+  expect(ui.container.querySelector('.gallows__portrait .rn-avatar-state--threatened')).not.toBeNull();
+  expect(ui.container.querySelector('.gallows__portrait .rn-avatar-state--dead')).toBeNull();
+  ui.rerender(<Gallows game={{...game,seats:game.seats.map(p=>p.seat===3?{...p,alive:false}:p)}} room={view.room}/>);
+  expect(ui.container.querySelector('.gallows__portrait .rn-avatar-state--threatened')).toBeNull();
+  expect(ui.container.querySelector('.gallows__portrait .rn-avatar-state--dead')).not.toBeNull();
+  const ended={...game,phase:'NOMINATION' as const};delete ended.nomination;
+  ui.rerender(<Gallows game={ended} room={view.room}/>);
+  expect(ui.container.querySelector('.gallows__portrait')).toBeNull();
+});

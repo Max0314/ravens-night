@@ -58,7 +58,7 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
       if (event.key !== "Tab" || !dialogRef.current) return;
       if(document.activeElement instanceof Element&&document.activeElement.closest('.room-sheet'))return;
       const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(element=>!element.closest('[hidden]'));
-      focusable.push(...document.querySelectorAll<HTMLElement>('.nomination-notice button:not([disabled])'));
+      focusable.push(...document.querySelectorAll<HTMLElement>('.nomination-notice button:not([disabled]), .private-action-notice button:not([disabled])'));
       if (focusable.length === 0) { event.preventDefault(); return; }
       const first = focusable[0]!;
       const last = focusable.at(-1)!;

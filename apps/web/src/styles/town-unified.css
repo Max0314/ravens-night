@@ -1,0 +1,45 @@
+/* One town workspace; only the bounded content and sheet bodies may scroll. */
+.game-page--town .game-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+.game-page--town>.room-action-bar:empty{display:none}
+.town-night-prompt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;margin:0 0 8px;padding:8px 12px;border-left:2px solid #bba166;background:#080d0bbb;color:#d2c39f}
+.town-night-prompt>span{grid-column:1/-1;font-size:10px;color:#ac996f}
+.town-night-prompt>strong{font-size:13px;font-weight:500;line-height:1.6}
+.town-night-prompt>button,.town-confirm-entry,.town-chat-recover{min-height:44px;border:0;border-radius:9px;background:#ae91511a;color:#dac495;font-size:12px;padding:7px 12px}
+.town-confirm-entry{width:100%;margin-bottom:8px}
+.town-night-confirm{width:100%;display:grid;gap:6px}
+.town-night-confirm>div{display:flex;gap:6px;flex-wrap:wrap;min-height:24px;align-items:center;color:#b8a77e;font-size:12px}
+.town-night-confirm>div>button{min-height:32px;padding:4px 9px;max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #c9a85455;border-radius:16px;background:#252213;color:#e1c78e}
+.town-night-confirm>.rn-button{width:100%;min-height:46px}
+.town-vote-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;color:#b7a67d;font-size:12px}
+.town-vote-actions>p,.town-vote-actions>details{width:100%;margin:0}
+.town-vote-actions summary{min-height:40px;display:flex;align-items:center}
+.town-vote-actions>.rn-button{flex:1;font-size:12px;min-height:44px}
+.town-relations{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.town-relations>button,.town-relations>div{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr) auto;align-items:center;gap:5px;min-height:40px;border:1px solid #af955126;border-radius:9px;background:#060a08a8;color:#beaf8c;padding:5px 8px;font-size:11px;text-align:left}
+.town-relations>button{border-color:#b79d5166;background:#28231388}
+.town-relations span{min-width:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.town-relations b{text-align:center;color:#ccb17b;font-weight:400}
+.town-relations small{font-size:10px;color:#ad986c}
+.town-chat-recover{display:block;width:100%;margin-top:8px}
+.town-private-clue .town-spy-entry{font-size:13px;min-height:44px;text-align:left;color:#dfc489}
+.private-action-notice{position:fixed;z-index:170;bottom:calc(12px + env(safe-area-inset-bottom));left:12px;right:12px;max-width:440px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;border:1px solid #bda36666;border-radius:13px;background:#0b100ef5;color:#d9c596;box-shadow:0 10px 30px #0009;font-size:12px}
+.private-action-notice button{min-height:44px;border:0;border-radius:8px;background:#c4a15c;color:#171309;padding:6px 12px;flex:none}
+.guide-host.has-private-action-notice .guide-backdrop{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.town-role-confirm .room-sheet{height:min(680px,100%)}
+.town-role-confirm .room-sheet__body{overflow:hidden;display:flex;flex-direction:column;gap:5px;flex:1}
+.town-role-confirm .rn-role-card{display:grid;grid-template-rows:minmax(0,1fr) auto;min-height:0;flex:1;overflow:hidden;background:#05090888;border-color:#b49a4833}
+.town-role-confirm .rn-role-card__portrait-wrap{height:auto;max-height:none;min-height:0;overflow:hidden}
+.town-role-confirm .rn-role-card__portrait{height:100%;width:100%;object-fit:cover;object-position:center 24%}
+.town-role-confirm .rn-role-card__copy{padding:8px 12px;display:grid;gap:4px}
+.town-role-confirm .rn-role-card__copy h2{font-size:23px;margin:0}
+.town-role-confirm .rn-role-card__copy p{font-size:13px;line-height:1.5;margin:0}
+.town-role-confirm .rn-role-card__copy .rn-button{min-height:32px;font-size:11px;padding:4px}
+@media(max-height:570px){.town-role-confirm .room-sheet__body{padding:6px}.town-role-confirm .rn-role-card__copy h2{font-size:20px}.town-role-confirm .role-advice-trigger{min-height:30px}.town-night-prompt{padding:5px 8px}.town-night-confirm{gap:3px}}
+@media(orientation:landscape) and (max-height:540px){.town-role-confirm .rn-role-card{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}.town-role-confirm .rn-role-card__copy{align-content:center}.town-night-confirm{grid-template-columns:minmax(0,1fr) auto;align-items:center}}
+
+.rn-seat__avatar[data-avatar-state]{overflow:visible}
+.rn-seat__avatar[data-avatar-state]>img{border-radius:inherit}
+
+.town-view-switch{display:flex;gap:4px;padding:4px;margin:8px 0;background:#06090899;border:1px solid #ad915430;border-radius:12px}
+.town-view-switch>button{min-height:42px;flex:1;border:0;border-radius:9px;background:transparent;color:#a99975;font-size:13px}
+.town-view-switch>button[aria-pressed=true]{background:#9f824b26;color:#e3ca92;box-shadow:inset 0 0 0 1px #b2995a44}

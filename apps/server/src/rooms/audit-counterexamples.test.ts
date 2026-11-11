@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { roleById } from "@ravens/game-engine";
+import {avatarChoices} from "@ravens/contracts";
 import { RoomService, type RoomRecord } from "./service.js";
 
 function table(roleIds: string[], perceived: Record<number, string> = {}, cinematic = false) {
@@ -329,6 +330,34 @@ describe("information privacy and recovery invariants", () => {
     expect(grimoire).toContain("红鲱鱼");
     expect(grimoire).toContain("酒鬼自认厨师");
     expect(grimoire).toContain("洗衣妇线索目标");
+  });
+
+  test("Spy structured snapshots stay owner-only and preserve night state after live changes and death", () => {
+    const t = table(["washerwoman", "drunk", "empath", "saint", "spy", "poisoner", "imp", "chef", "soldier", "librarian"], { 2: "chef" });
+    t.service.find(t.room.code).participants[1]!.avatarSnapshot=avatarChoices[0]!.url;
+    t.day({ 6: [3] });
+    const history=()=>t.service.privateView(t.room.code,t.players[4]!.token).history.filter(entry=>entry.grimoire);
+    const snapshot=structuredClone(history()[0]!.grimoire!);
+    expect(snapshot.entries).toHaveLength(10);
+    expect(snapshot.entries[1]).toMatchObject({seat:2,nickname:'玩家2',avatar:avatarChoices[0]!.url,roleName:'酒鬼',alive:true,reminders:expect.arrayContaining(['酒鬼自认厨师'])});
+    expect(snapshot.entries[2]!.reminders).toContain('中毒');
+    expect(JSON.stringify(t.service.publicView(t.room.code))).not.toContain('grimoire');
+    expect(t.service.privateView(t.room.code,t.players[0]!.token).history.every(entry=>!entry.grimoire)).toBe(true);
+    t.mutate(room=>{delete room.game!.poisonedSeat;room.participants[1]!.nickname='新名字';room.participants[1]!.avatarSnapshot=avatarChoices[1]!.url;});
+    expect(history()[0]!.grimoire).toEqual(snapshot);
+    t.endDay();t.settle({6:[3],7:[5]});
+    expect(t.service.publicView(t.room.code).game!.seats[4]!.alive).toBe(false);
+    expect(history()).toHaveLength(1);
+    expect(history()[0]!.grimoire).toEqual(snapshot);
+  });
+
+  test("poisoned Spy structure is the selected impaired snapshot, not reconstructed true state", () => {
+    const t=table(["washerwoman","drunk","empath","saint","spy","poisoner","imp"],{2:'chef'});
+    t.day({6:[5]});
+    const entry=t.service.privateView(t.room.code,t.players[4]!.token).history.find(item=>item.grimoire)!;
+    const selected=Object.values(t.service.snapshot(t.room.code).game!.spyGrimoires!)[0]!;
+    expect(entry.grimoire!.entries.map(player=>({seat:player.seat,roleName:player.roleName,alive:player.alive}))).toEqual(selected.entries.map(player=>({seat:player.seat,roleName:roleById(player.roleId).name,alive:player.alive})));
+    for(const player of entry.grimoire!.entries)expect(entry.text).toContain(`${player.roleName} [${player.reminders.join('、')}]`);
   });
 
   test("a restored Ravenkeeper interrupt continues once without prematurely publishing the death", () => {
