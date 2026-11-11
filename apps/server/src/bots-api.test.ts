@@ -72,3 +72,10 @@ test('all bot controls accept the trusted account host and still reject logged-o
  expect((await control(app,code,otherCookie,'bots',{fill:true})).json().errorCode).toBe('HOST_REQUIRED');
  expect((await control(app,code,ownerCookie,'bots',{clear:true})).json().controlResult.removed).toBe(3);
 });
+
+test('auto nomination opt-in is host-only, versioned, persistent in views and receipt-idempotent',async()=>{
+ const app=appFixture(),{code}=await create(app),host=await join(app,code),other=await join(app,code,'Other');expect((await app.inject({url:`/api/rooms/${code}/me`,headers:{...protocol,cookie:host.cookie}})).json().room.botControl.autoNominate).toBe(false);
+ expect((await control(app,code,other.cookie,'bots/control',{autoNominate:true})).statusCode).toBe(403);
+ const payload=await intent(app,code,host.cookie,{autoNominate:true}),headers={...protocol,cookie:host.cookie,'x-command-id':randomUUID()},request={method:'POST' as const,url:`/api/rooms/${code}/bots/control`,headers,payload};const first=await app.inject(request);expect(first.statusCode).toBe(200);expect(first.json().room.botControl.autoNominate).toBe(true);expect((await app.inject(request)).statusCode).toBe(200);
+ expect((await app.inject({...request,headers:{...headers,'x-command-id':randomUUID()}})).statusCode).toBe(409);const off=await control(app,code,host.cookie,'bots/control',{autoNominate:false});expect(off.statusCode).toBe(200);expect(off.json().room.botControl.autoNominate).toBe(false);
+});

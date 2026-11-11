@@ -85,4 +85,4 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   </main>;
 }
 
-export function SeatOrderEditor({players,busy,onReorder}:{players:RoomParticipant[];busy:boolean;onReorder:(ids:string[])=>void}){return <SeatOrderGrid items={players} enabled busy={busy} onCommit={onReorder} renderCard={(p,i)=><div className="seat-card"><span className="seat-number">{i+1}号</span><Avatar id={p.id} name={p.nickname} url={p.avatar}/><strong>{p.nickname}</strong></div>}/>;}
+export function SeatOrderEditor({players,busy,onReorder}:{players:RoomParticipant[];busy:boolean;onReorder:(ids:string[])=>void}){return <SeatOrderGrid items={players} enabled busy={busy} onCommit={onReorder} renderCard={(p,i)=><button type="button" className="seat-card" aria-label={`${i+1}号 ${p.nickname}`}><span className="seat-number">{i+1}号</span><Avatar id={p.id} name={p.nickname} url={p.avatar}/><strong>{p.nickname}</strong></button>}/>;}

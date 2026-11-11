@@ -9,7 +9,7 @@ function memory(room:RoomRecord,bot:ParticipantRecord):BotMemory{return room.bot
 function observe(service:RoomService,room:RoomRecord,bot:ParticipantRecord){const token=service.internalBotToken(room,bot);return{...service.privateView(room.code,token),room:service.publicView(room.code),...socialView(room,token)} as unknown as PrivateView;}
 function stale(room:RoomRecord,task:BotTask){
   const p=bots(room).find(p=>p.id===task.botId),projection=room.game?.publicProjection;
-  return !p||task.controlGeneration!==room.botControl.generation||task.roomInstanceId!==room.roomInstanceId||task.setupId!==room.setupId||task.expectedBotCommandVersion!==p.commandVersion||task.gameId!==room.game?.gameId||(task.kind==='VOTE'?task.ballotId!==projection?.nomination?.ballotId:task.contextId!==projection?.contextId);
+  return task.kind==='NOMINATE'&&room.botControl.autoNominate!==true||!p||task.controlGeneration!==room.botControl.generation||task.roomInstanceId!==room.roomInstanceId||task.setupId!==room.setupId||task.expectedBotCommandVersion!==p.commandVersion||task.gameId!==room.game?.gameId||(task.kind==='VOTE'?task.ballotId!==projection?.nomination?.ballotId:task.contextId!==projection?.contextId);
 }
 function prepare(service:RoomService,room:RoomRecord){
   const c=room.botControl,before=c.pending.length;c.pending=c.pending.filter(t=>!stale(room,t));if(c.pending.length!==before)service.touchScheduling(room);

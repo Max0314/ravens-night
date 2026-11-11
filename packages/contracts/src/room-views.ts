@@ -30,6 +30,7 @@ export interface RoomView extends Partial<RoomProtocolView> { botControl?:BotCon
 export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
 export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 export interface PrivateHistoryEntry {
+  targetSeats?:number[];
   seq: number;
   phase: PrivateHistoryPhase;
   day: number;

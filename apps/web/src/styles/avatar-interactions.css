@@ -1,0 +1,114 @@
+/* One visible viewport. Keyboard changes compress content, never the document. */
+.app-viewport{position:fixed;top:var(--viewport-top,0px);left:0;right:0}
+.room-sheet-backdrop,.guide-backdrop,.account-backdrop{top:var(--viewport-top,0px);bottom:auto}
+input,textarea,select{font-size:max(16px,1em)}
+.room-page.room-scene,.compact-lobby{background-image:linear-gradient(#030406a6,#030406c9),url('/art/rooms/courtyard-night.webp')}
+.room-scene .room-form,.compact-lobby .lobby-seat-grid>article{background:rgba(8,8,7,.65);border-color:#8b744543}
+.lobby-primary,.room-action-bar,.game-tabs{background:#080908c9;backdrop-filter:blur(8px)}
+.seat-sort-grid>article{touch-action:pan-y}
+.seat-card{position:relative;gap:7px}
+.seat-card .seat-number{position:absolute;top:7px;left:9px;font-size:12px;color:#c7b386}
+.seat-avatar{position:relative;display:inline-flex;padding:3px;border:1px solid #92866a55;border-radius:50%;transition:border-color .2s,box-shadow .2s}
+.seat-avatar.is-ready{border-color:#d9b367;box-shadow:0 0 0 2px #ac87451c}
+.seat-ready-mark{position:absolute;bottom:-2px;right:-5px;border-radius:50%;width:19px;height:19px;display:grid;place-items:center;background:#15130f;color:#807763;font:13px/1 sans-serif;border:1px solid #695f4844}
+.is-ready .seat-ready-mark{background:#caa35f;color:#17120a;border-color:#e7ce9c}
+.seat-card strong{font-size:13px;font-weight:500}
+.seat-sort-placeholder>.seat-card{visibility:visible;opacity:0;pointer-events:none}
+.seat-sort-overlay{background:#17150fe8;transform:scale(1.035);outline:1px solid #d3b47733;box-shadow:0 20px 45px #000a}
+.room-sheet:has(.room-profile-form) .room-sheet__body{display:flex;flex-direction:column;overflow:hidden}
+.room-profile-form{display:flex;flex-direction:column;min-height:0;flex:1;gap:12px}
+.profile-fields{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.profile-actions{flex:none;border-top:1px solid #a58a4d22;padding-top:12px}
+.profile-actions button{width:100%;min-height:48px;background:#c8a05c;border:0;border-radius:10px;color:#17120b}
+.profile-actions p{font-size:13px;line-height:1.5;margin:6px 0 0}
+/* Identity is a fitted card. Extra advice opens separately. */
+.role-confirm-page .room-page__content{overflow:hidden;display:flex;flex-direction:column;gap:6px;padding:6px 0}
+.role-confirm-page .rn-role-card{flex:1;min-height:0;overflow:hidden;display:grid;grid-template-rows:minmax(0,1fr) auto;border-color:#9b814244;background:#0809088c}
+.role-confirm-page .rn-role-card__portrait-wrap{min-height:0;height:auto;max-height:none;overflow:hidden}
+.role-confirm-page .rn-role-card__portrait{height:100%;width:100%;object-fit:cover;object-position:center 24%}
+.role-confirm-page .rn-role-card__copy{padding:8px 16px;display:grid;gap:5px}
+.role-confirm-page .rn-role-card__copy h2{font-size:24px;margin:0}
+.role-confirm-page .rn-role-card__copy p{margin:0;font-size:14px;line-height:1.6}
+.role-confirm-page .rn-role-card__copy .rn-button{min-height:36px;padding:4px 10px;font-size:12px;justify-self:center}
+.role-advice-trigger{min-height:36px;flex:none;border:0;background:transparent;color:#bda77d}
+.role-confirm-page .game-guide-links{margin:0;flex:none;gap:12px}
+.role-confirm-page .game-guide-links button{min-height:32px}
+.game-page--day,.game-page--night,.role-confirm-page{background:#050706}
+.game-page::before{background:linear-gradient(#0405079c,#040507bd),url('/art/rooms/courtyard-night.webp') center/cover!important}
+.game-content .rn-panel,.remote-town-board{background:#090b0ba8;border-color:#ad91542e;box-shadow:none}
+.game-header,.game-utility{background:transparent}
+.game-header{padding-right:48px!important}
+.room-tools-trigger,.room-tools-trigger:has(small){position:fixed;top:calc(var(--viewport-top,0px) + env(safe-area-inset-top) + 6px);right:10px;z-index:110;width:44px;height:44px;min-width:44px;max-width:44px;padding:0;border:0;border-radius:50%;background:#12130db3;color:#d3bc8c;display:grid;place-content:center}
+.menu-dots{font:20px/1 sans-serif;letter-spacing:2px;transform:translateY(-3px)}
+.room-tools-trigger small{position:absolute;right:3px;top:3px;width:7px;height:7px;overflow:hidden;font-size:0!important;border-radius:50%;background:#d3b577}
+.room-tools-body{display:flex;flex-direction:column;gap:9px}
+.room-tools-body>button,.room-tools-body>div>button,.room-tools-body summary{min-height:44px;text-align:left;padding:10px 12px;border:0;border-radius:9px;background:#bda1670a;color:#d8c9aa}
+.room-menu-label{font-size:12px;font-weight:400;color:#a48b59;margin:14px 4px 0;letter-spacing:.12em}
+.room-menu-group{border-bottom:1px solid #bda16722;padding-bottom:10px}
+.room-menu-group summary{cursor:pointer}
+.bot-nomination-toggle{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px}
+.bot-nomination-toggle input{width:20px;height:20px;accent-color:#c8a05c}
+/* Public voting remains reachable when private content is covered. */
+.player-session>.public-ballot{order:3;flex:none;margin:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:block;border:0;border-top:1px solid #b8995544;background:#0a0c0aeb;backdrop-filter:blur(10px)}
+.player-private{order:1}
+.public-ballot__target{display:grid!important;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:center;width:100%;max-width:none!important;gap:7px;background:transparent;border:0;color:#e1d4b9;text-align:left;padding:0}
+.ballot-player{min-width:0;display:flex;align-items:center;gap:8px}
+.ballot-player>.player-avatar{width:34px;height:34px;flex:none}
+.ballot-player>span:last-child{min-width:0;display:grid;gap:2px}
+.ballot-player small{font-size:10px;color:#b5a783}
+.ballot-player strong{max-width:none!important;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ballot-arrow{text-align:center;color:#bca16a}
+.public-ballot__progress{display:flex!important;justify-content:space-between;gap:10px;color:#baa980;font-size:11px;margin:7px 0}
+.public-ballot__controls{display:grid!important;grid-template-columns:minmax(64px,1fr) 1.3fr 1fr;align-items:center;gap:8px}
+.public-ballot__controls>[role=status]{font-size:12px;color:#d6c396}
+.public-ballot__controls button{min-height:46px;border:1px solid #947b4144;border-radius:10px;background:#131610;color:#c4b591;font-size:15px}
+.public-ballot__controls button[aria-pressed=true]{background:#c49d58;color:#15120c;border-color:#e1bf80}
+.public-ballot__controls button:disabled{opacity:.55}
+.public-ballot__details{font-size:11px;padding:8px 0 0}
+.public-ballot .ghost-confirm{padding-top:8px}
+/* Avatar seats share a circular footprint, keeping twelve players readable. */
+.remote-town-board .rn-seat-ring{width:100%;max-width:440px;aspect-ratio:1;margin:12px auto;--rn-seat-radius:min(33vw,165px)}
+.remote-town-board .rn-seat{width:60px;min-height:0;padding:0!important;background:transparent!important;border:0!important;box-shadow:none;filter:none;opacity:1}
+.remote-town-board .rn-seat>button{display:grid;justify-items:center;gap:2px;width:100%;padding:0;min-height:44px;background:transparent;border:0}
+.rn-seat__avatar{display:grid;place-items:center;position:relative;isolation:isolate;width:44px;height:44px;overflow:hidden;border-radius:50%;border:1px solid #a38a5555;background:#24251d;color:#d6c49d;font-size:20px}
+.rn-seat__avatar>img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover}
+.remote-town-board .rn-seat__number{font:10px/1.2 var(--rn-mono);color:#c0b18e}
+.remote-town-board .rn-seat__name{font-size:11px;line-height:1.2;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d5c9ac}
+.remote-town-board .rn-seat--dead .rn-seat__avatar{filter:grayscale(1);opacity:.55}
+.remote-town-board .rn-seat--mine .rn-seat__avatar{border-color:#dfbd76;box-shadow:0 0 0 2px #b9a06433}
+.remote-town-board .rn-seat--counting .rn-seat__avatar{box-shadow:0 0 0 3px #d5b46b77,0 0 20px #c6a66b55}
+.remote-town-board .rn-seat__ghost{font-size:0;position:absolute;left:2px;top:33px}
+.remote-town-board .rn-seat__ghost:before{content:'◈';font-size:12px;color:#b8ac91}
+.remote-town-board .rn-seat__ballot{font-size:0}
+.remote-town-board .rn-seat__hand{top:0;right:0;width:20px;height:20px;font-size:12px;z-index:2}
+.player-wheel-backdrop{position:fixed;inset:0;z-index:480;background:#0008;animation:wheel-fade 140ms ease-out;touch-action:none}
+.player-wheel{position:fixed;transform:translate(-50%,-50%);border-radius:50%;border:1px solid #b89a5355;background:radial-gradient(circle,#292416ee 0 28%,#0b0e0df5 29%);box-shadow:0 15px 60px #0009;color:#dcc89e}
+.player-wheel__center{position:absolute;inset:34%;display:grid;place-items:center;align-content:center;gap:5px}
+.player-wheel__center .player-avatar{width:48px;height:48px}
+.player-wheel__center strong{font-size:11px;white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis}
+.player-wheel__center button{min-height:30px;min-width:44px;border:0;background:transparent;color:#bca879;font-size:22px}
+.player-wheel__item{position:absolute;display:grid;place-content:center;gap:3px;width:64px;height:64px;border:0;border-radius:50%;background:transparent;color:#dbc28e;font-size:12px;transition:background 140ms}
+.player-wheel__item span{font-size:24px;line-height:1}
+.player-wheel__item:active{background:#b99a5133}.player-wheel__item:disabled{opacity:.28}
+.player-wheel__item.is-top{left:calc(50% - 32px);top:9px}.player-wheel__item.is-right{right:9px;top:calc(50% - 32px)}.player-wheel__item.is-bottom{left:calc(50% - 32px);bottom:9px}.player-wheel__item.is-left{left:9px;top:calc(50% - 32px)}
+.player-wheel__error{position:absolute;top:100%;left:0;right:0;font-size:12px;text-align:center;background:#0b0e0d;padding:10px;border-radius:8px}
+@keyframes wheel-fade{from{opacity:0}to{opacity:1}}
+html[data-keyboard=open] .room-page__header{min-height:40px;padding:4px 48px 4px 0}
+html[data-keyboard=open] .room-page__header small,html[data-keyboard=open] .room-form>p,html[data-keyboard=open] .profile-random{display:none}
+html[data-keyboard=open] .room-form{gap:10px;padding:10px}
+html[data-keyboard=open] .room-sheet-backdrop{padding:6px}
+html[data-keyboard=open] .room-sheet>header{padding:4px 12px}
+html[data-keyboard=open] .profile-avatar-button .player-avatar{width:40px;height:40px}
+html[data-keyboard=open] .profile-avatar-button{min-height:44px;gap:0}
+html[data-keyboard=open] .room-action-bar{padding-top:6px;padding-bottom:6px}
+@media(max-height:570px){.role-confirm-page .room-page__header{min-height:40px;padding-top:0;padding-bottom:0}.role-confirm-page .rn-role-card__copy h2{font-size:20px}.role-confirm-page .rn-role-card__copy p{font-size:13px}.role-confirm-page .game-guide-links{display:none}.role-confirm-page .room-action-bar{padding-top:5px;padding-bottom:5px}}
+@media(orientation:landscape) and (max-height:540px){.role-confirm-page .rn-role-card{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}.role-confirm-page .rn-role-card__copy{align-content:center}.public-ballot__target .player-avatar{width:24px;height:24px}.public-ballot__target .ballot-player small{font-size:9px}.player-session>.public-ballot{padding-top:5px;padding-bottom:5px}.public-ballot__progress{margin:0 0 3px}}
+@media(prefers-reduced-motion:reduce){.player-wheel-backdrop{animation:none}.seat-avatar,.player-wheel__item{transition:none}}
+
+.rn-seat__private-mark{position:absolute;top:-4px;left:0;z-index:3;padding:2px 5px;border-radius:8px;background:#8e7240;color:#fff0cc;font-size:9px;pointer-events:none}
+.town-private-clue{border:1px solid #b89a5444;border-radius:12px;padding:10px 12px;background:#0b100ed4;font-size:13px;line-height:1.7}
+.town-private-clue>header{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#c1a873}.town-private-clue>header>span:last-child{display:flex;align-items:center;gap:8px}.town-private-clue button{min-width:36px;min-height:36px;border:0;background:transparent;color:#d8c28d;font-size:22px}.town-private-clue p{margin:4px 0 8px}.town-clue-targets{display:flex;align-items:center;gap:12px}.town-clue-targets>span{display:flex;align-items:center;gap:5px;font-size:11px;color:#c9b98f}.town-clue-targets .player-avatar{width:30px;height:30px}
+
+.room-sheet{background:linear-gradient(145deg,#13140feb,#070a08ed);backdrop-filter:blur(10px)}
+.remote-town-board{container-type:inline-size}
+@supports(width:1cqw){.remote-town-board .rn-seat-ring{--rn-seat-radius:min(165px,calc(50cqw - 36px))}}

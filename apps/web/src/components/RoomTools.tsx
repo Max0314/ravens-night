@@ -40,14 +40,16 @@ export function RoomTools({ room, participantId, view, onChanged, onLeft, onGuid
     catch (failure) { setError(failure instanceof Error ? failure.message : "操作失败"); await onChanged().catch(() => undefined); }
     finally { setBusy(false); }
   }
-  return <><button className="room-tools-trigger" type="button" onClick={()=>setOpen(true)}>更多{room.timeline?.mode==="MANUAL"?<small>演练计时已冻结</small>:room.botControl?.requestedMode==="PAUSED"?<small>人机暂停，计时继续</small>:room.botControl?.effectiveMode==="SUSPENDED"?<small>人机已悬置</small>:null}</button>{open?<RoomSheet title={`房间 ${room.code}`} onClose={()=>setOpen(false)}><section className="room-tools-body" aria-label="房间操作">
-    {host?<BotControls room={room} view={view} busy={busy} run={run}/>:null}
-    <strong>房间 {room.code}</strong>
+  return <><button className="room-tools-trigger" type="button" aria-label="房间菜单" onClick={()=>setOpen(true)}><span aria-hidden="true" className="menu-dots">•••</span><span className="sr-only">更多</span>{room.timeline?.mode==="MANUAL"?<small>演练计时已冻结</small>:room.botControl?.requestedMode==="PAUSED"?<small>人机暂停，计时继续</small>:room.botControl?.effectiveMode==="SUSPENDED"?<small>人机已悬置</small>:null}</button>{open?<RoomSheet title={`房间 ${room.code}`} onClose={()=>setOpen(false)}><section className="room-tools-body" aria-label="房间操作">
+    {host?<details className="room-menu-group" open><summary>人机与测试</summary><BotControls room={room} view={view} busy={busy} run={run}/></details>:null}
+    <h3 className="room-menu-label">邀请与连接</h3>
     <InviteTools code={room.code} voiceRoomUrl={room.voiceRoomUrl}/>
+    <h3 className="room-menu-label">帮助与偏好</h3>
     {onGuide ? <div>{(["roles","tutorial",...(view?.role?["mine"]:[])] as GuideMode[]).map(mode=><button type="button" key={mode} onClick={event=>{setOpen(false);onGuide(mode);}}>{mode==="mine"?"我的角色":mode==="roles"?"角色表":"规则帮助"}</button>)}</div> : null}
     {room.game ? <button type="button" onClick={event=>{setOpen(false);window.dispatchEvent(new Event("ravens:cover-private"));}}>遮住私密内容</button> : null}
     <label><input type="checkbox" checked={sound} onChange={event=>{setSound(event.target.checked);void enableEffectsAudio(event.target.checked);}}/>演出音效</label><GramophonePlayer/>
     {room.state === "LOBBY" ? <details><summary>上局战报</summary><ResultBoard code={room.code}/></details> : null}
+    <h3 className="room-menu-label">房间管理</h3>
     <button type="button" disabled={busy} onClick={() => void run(async () => setRecovery(await createRecoveryCode(room.code)))}>{recovery && recovery.expiresAt <= Date.now() ? "重新生成恢复码" : "换设备恢复码"}</button>
     {recovery ? <div className="room-tools__recovery"><code>{recovery.recoveryCode}</code><small>10分钟内在新设备输入；请私下保存</small></div> : null}
     {!host && room.organizerId && (room.hostClaimAt ?? Infinity) <= (room.serverNow ?? Date.now()) ? <button type="button" disabled={busy} onClick={() => setConfirmation({ text: "房主已离线5分钟，接任后你可以中止或重开本局。", run: () => claimRoomHost(room.code, room.organizerId!) })}>接任房主</button> : null}

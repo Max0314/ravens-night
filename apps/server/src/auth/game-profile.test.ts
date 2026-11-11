@@ -31,7 +31,7 @@ test('game profile is account-scoped, validated, idempotent and survives restart
   }finally{await app.close();}
 });
 
-test('profile changes update lobbies, freeze active games, and apply at the next lobby including canceled teaching',()=>{
+test('profile changes immediately update lobbies, teaching and active games',()=>{
   const service=new RoomService({presentation:false}),{room}=service.create(5,'房主');
   const players=Array.from({length:5},(_,i)=>service.join(room.code,`玩家${i+1}`,'PLAYER'));
   service.bindAccount(room.code,players[0]!.token,account.sub,players[0]!.token);
@@ -39,10 +39,10 @@ test('profile changes update lobbies, freeze active games, and apply at the next
   expect(service.publicView(room.code).participants[0]!.nickname).toBe('大厅昵称');
   for(const p of players)service.setReady(room.code,p.token,true);service.startTutorial(room.code,players[0]!.token,'OPTIONAL');
   service.updateAccountProfile(account,'教学后昵称',null,1);
-  expect(service.publicView(room.code).participants[0]!.nickname).toBe('大厅昵称');
+  expect(service.publicView(room.code).participants[0]!.nickname).toBe('教学后昵称');
   expect(JSON.stringify(service.publicView(room.code))).not.toContain('pendingProfile');
   service.cancelTutorial(room.code,players[0]!.token);expect(service.publicView(room.code).participants[0]!.nickname).toBe('教学后昵称');
   for(const p of players)service.setReady(room.code,p.token,true);service.startTutorial(room.code,players[0]!.token,'SKIP');
-  service.updateAccountProfile(account,'下局昵称',null,2);expect(service.publicView(room.code).participants[0]!.nickname).toBe('教学后昵称');
+  service.updateAccountProfile(account,'下局昵称',null,2);expect(service.publicView(room.code).participants[0]!.nickname).toBe('下局昵称');
   service.abort(room.code,players[0]!.token);service.reset(room.code,players[0]!.token);expect(service.publicView(room.code).participants[0]!.nickname).toBe('下局昵称');
 });

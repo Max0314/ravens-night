@@ -79,7 +79,8 @@ test("in-person players have the complete town and can inspect a dead player's g
   fireEvent.click(screen.getByRole("button", { name: "城镇" }));
   expect(screen.getByRole("region", { name: "公开城镇" })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "3号 3号玩家 已死亡" }));
-  expect(screen.getByText("仍可讨论 · 保留一枚幽灵票")).toBeVisible();
+  fireEvent.click(screen.getByRole("button",{name:"详情"}));
+  expect(screen.getByText("仍可讨论，保留一枚幽灵票。")).toBeVisible();
 });
 
 test("private cover removes the poison animation and private target from view", () => {
@@ -99,7 +100,7 @@ test("a dead player confirms the single ghost vote before sending it", () => {
 
 test("non-slayer living players can make the same public claim without leaking their role", () => {
   const onUseAbility = vi.fn(); render(<PlayerGame {...handlers} onUseAbility={onUseAbility} view={player()} />);
-  fireEvent.click(screen.getByText("公开宣称猎魔人能力"));
+  fireEvent.click(screen.getByText("按列表公开宣称猎魔人能力"));
   fireEvent.click(screen.getByRole("button", { name: "3号3号玩家已死亡" }));
   fireEvent.click(screen.getByRole("button", { name: "公开射击所选玩家" })); expect(onUseAbility).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "确认公开开枪" })); expect(onUseAbility).toHaveBeenCalledWith(3);

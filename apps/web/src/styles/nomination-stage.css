@@ -1,0 +1,47 @@
+.nomination-notice{position:fixed;z-index:170;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));width:auto;max-width:440px;box-sizing:border-box;margin:0 auto;padding:9px 12px;border:1px solid #b89a5366;border-radius:13px;background:#0c0e0df5;color:#d7c39a;box-shadow:0 9px 32px #0009;backdrop-filter:blur(12px);animation:nomination-notice-enter 180ms ease-out}
+.nomination-notice__heading{display:flex;align-items:center;gap:8px}
+.nomination-notice__subject{display:flex;align-items:center;gap:8px;flex:1;min-width:0;text-align:left;padding:0;border:0;background:none;color:#e4d3af;min-height:32px}
+.nomination-notice__subject strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500}
+.nomination-notice__subject>span{color:#a78c55;flex:none}
+.nomination-notice__collapse{width:40px;min-height:36px;flex:none;border:0;background:transparent;color:#d5ba7d;font-size:20px}
+.nomination-notice__summary{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;line-height:1.6;color:#bba77d}
+.nomination-notice__summary b{color:#efd9a8;font-size:14px}
+.nomination-notice__summary [role=status]{white-space:nowrap;color:#d6c396}
+.nomination-notice__controls{display:grid;grid-template-columns:minmax(0,1fr) 76px 64px;align-items:center;gap:7px;margin-top:7px}
+.nomination-notice__controls small{font-size:11px;color:#a99b7e}
+.nomination-notice__controls button{min-height:42px;padding:7px;border:1px solid #b59a5755;border-radius:8px;background:#191b15;color:#d6c297}
+.nomination-notice__controls button[aria-pressed=true]{background:#c19a56;color:#15120c;border-color:#dabc80}
+.nomination-notice__controls button:disabled{opacity:.45}
+.nomination-notice__error{font-size:11px;line-height:1.4;margin:7px 0 0;color:#dcb4a3}
+.nomination-notice-confirmation{position:relative;z-index:250}
+.nomination-notice-confirmation .room-sheet-backdrop{z-index:250}
+.nomination-notice-confirmation .room-action-bar button{min-height:44px}
+.gallows{margin:12px 0 0;padding:10px 12px;border:1px solid #ab8d4930;border-radius:13px;background:#080a088c;color:#d4c29b}
+.gallows__stage{display:grid;grid-template-columns:112px minmax(0,1fr);align-items:center;gap:10px}
+.gallows__drawing{position:relative;width:112px;height:104px;opacity:.92}
+.gallows__drawing>svg{display:block;width:100%;height:100%;stroke:#8e7544;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.gallows__drawing .gallows__rope{stroke:#9f8a60;stroke-width:1.5;opacity:.6}
+.gallows__portrait{position:absolute;left:58%;top:42%;transform:translate(-50%,-15%);animation:gallows-avatar-enter 260ms ease-out}
+.gallows__portrait .player-avatar{width:43px;height:43px;border:1px solid #cfb172;box-shadow:0 3px 12px #0008}
+.gallows__content{min-width:0;display:grid;gap:5px}
+.gallows__content>small{font-size:10px;color:#b79f6d}
+.gallows__content>strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.gallows__content>span,.gallows__content>p:not(.gallows__votes){font-size:11px;color:#a79c80;margin:0;line-height:1.5}
+.gallows__votes{margin:0;font-size:12px;color:#bba77c}
+.gallows__votes b{font:24px/1.2 var(--rn-mono);color:#edcf91}
+.gallows__leader{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#b7a47a;border-top:1px solid #b3985926;padding-top:8px;margin:4px 0}.gallows__leader b{white-space:nowrap;color:#dec38a;font-weight:500}
+.gallows__history{padding-top:9px;border-top:1px solid #b3985926;margin-top:5px}
+.gallows__history h3{margin:0 0 7px;font-size:11px;font-weight:400;color:#a7956e}
+.gallows__history ol{display:grid;gap:6px;margin:0;padding:0;list-style:none;max-height:156px;overflow:auto;overscroll-behavior:contain}
+.gallows__history li{display:flex;align-items:center;gap:8px;min-height:40px}
+.gallows__history .player-avatar{width:30px;height:30px;flex:none}
+.gallows__history li>span{min-width:0;display:grid;gap:2px;flex:1}
+.gallows__history strong{font-size:11px;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gallows__history small{display:block;font-size:10px;color:#a29372;font-weight:400}
+.gallows__history li>b{font-size:13px;color:#d9c28a;font-weight:500;text-align:right;flex:none}
+@keyframes nomination-notice-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gallows-avatar-enter{from{opacity:0;transform:translate(-50%,8%) scale(.9)}to{opacity:1;transform:translate(-50%,-15%) scale(1)}}
+@media(max-width:350px){.nomination-notice{left:8px;right:8px;padding:7px 9px}.nomination-notice__controls{grid-template-columns:minmax(0,1fr) 62px 56px}.gallows__stage{grid-template-columns:90px minmax(0,1fr)}.gallows__drawing{width:90px;height:96px}}
+@media(prefers-reduced-motion:reduce){.nomination-notice,.gallows__portrait{animation:none}}
+
+.guide-host.has-ballot-notice .guide-backdrop{height:calc(var(--viewport-height,100dvh) - var(--nomination-notice-height,150px));bottom:auto}

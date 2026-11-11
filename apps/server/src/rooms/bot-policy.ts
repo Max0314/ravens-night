@@ -39,7 +39,7 @@ export function chooseBotAction({view:v,memory:m,seed,now,slow}:BotObservation):
   if(['DAY_DISCUSSION','NOMINATION'].includes(g.phase)){
     const since=now-(g.publishedPhaseStartedAt??now);
     if(v.role?.roleId==='slayer'&&v.action?.kind==='SLAYER'&&g.day>=2){const targets=select(v.action.legalSeats,1,false);if(targets[0]!==undefined&&score(targets[0])>=2)return make('SLAYER',{targets},delay(1200,2500));}
-    if(v.canNominate&&since>=10000){let legal=v.nominationTargets??[];if(v.role?.alignment==='EVIL'){const others=legal.filter(s=>!m.knownTeamSeats.includes(s));if(others.length)legal=others;}const targets=select(legal,1,false);if(targets.length)return make('NOMINATE',{targets},0);}
+    if(v.room?.botControl?.autoNominate===true&&v.canNominate&&since>=10000){let legal=v.nominationTargets??[];if(v.role?.alignment==='EVIL'){const others=legal.filter(s=>!m.knownTeamSeats.includes(s));if(others.length)legal=others;}const targets=select(legal,1,false);if(targets.length)return make('NOMINATE',{targets},0);}
     if(v.canEndDay&&!v.dayReady&&since>=18000)return make('DAY_READY',{},0);
     const invite=v.social?.invitations.find(i=>i.toSeat===seat&&v.room?.participants.some(p=>p.seat===i.fromSeat&&p.controller!=='BOT'));
     if(invite)return make('WHISPER_ACCEPT',{whisperId:invite.id},delay(800,1200));

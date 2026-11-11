@@ -212,7 +212,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     });
   }
   control('bots',{count:{type:'integer',minimum:1,maximum:11},fill:{const:true},clear:{const:true}},[],false,(rooms,code,token,body)=>rooms.changeBots(code,token,body));
-  control('bots/control',{mode:{enum:['RUNNING','PAUSED']},pace:{enum:['NORMAL','SLOW']}},[],false,(rooms,code,token,body)=>rooms.changeBotControl(code,token,body.mode as 'RUNNING'|'PAUSED'|undefined,body.pace as 'NORMAL'|'SLOW'|undefined));
+  control('bots/control',{autoNominate:{type:'boolean'},mode:{enum:['RUNNING','PAUSED']},pace:{enum:['NORMAL','SLOW']}},[],false,(rooms,code,token,body)=>rooms.changeBotControl(code,token,body.mode as 'RUNNING'|'PAUSED'|undefined,body.pace as 'NORMAL'|'SLOW'|undefined,body.autoNominate as boolean|undefined));
   control('bots/step',{},[],true,(rooms,code,token)=>stepBot(rooms,code,token));
   control('rehearsal/clock',{mode:{enum:['MANUAL','WALL']}},['mode'],false,(rooms,code,token,body)=>rooms.changeRehearsalClock(code,token,body.mode as 'MANUAL'|'WALL'));
   control('rehearsal/advance',{},[],true,(rooms,code,token)=>rooms.advanceRehearsal(code,token));

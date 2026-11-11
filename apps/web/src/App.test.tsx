@@ -101,7 +101,7 @@ test("the public display reorders seats by drag or keyboard before the game", ()
   ];
   render(<SeatOrderEditor players={players} busy={false} onReorder={onReorder} />);
 
-  const handle=screen.getByRole('button',{name:'拖动二号'});fireEvent.keyDown(handle,{key:' '});fireEvent.keyDown(handle,{key:'ArrowLeft'});fireEvent.keyDown(handle,{key:' '});expect(onReorder).toHaveBeenLastCalledWith(['p2','p1','p3']);
+  const handle=screen.getByRole('button',{name:'2号 二号'});fireEvent.keyDown(handle,{key:' '});fireEvent.keyDown(handle,{key:'ArrowLeft'});fireEvent.keyDown(handle,{key:' '});expect(onReorder).toHaveBeenLastCalledWith(['p2','p1','p3']);
 
 });
 
@@ -166,6 +166,7 @@ test("a nomination is confirmed before submission and may be abandoned", () => {
   const onNominate = vi.fn();
   render(<PlayerGame view={playerView("DAY_DISCUSSION")} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={onNominate} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
 
+  fireEvent.click(screen.getByText("按列表选择玩家"));
   fireEvent.click(screen.getByRole("button", { name: /被提名人.*提名/ }));
   expect(screen.getByText("确认提名 被提名人（2号）？")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "取消" }));

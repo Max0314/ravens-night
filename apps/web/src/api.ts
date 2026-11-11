@@ -162,7 +162,7 @@ export function createRoom(playerCount:number,organizerName:string,playMode:Room
 }
 export function getRoomSummary(code:string){return request<{canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number}>(`/api/rooms/${encodeURIComponent(code)}/summary`);}
 export function manageBots(code:string,intent:{count?:number;fill?:boolean;clear?:boolean}){return request<PrivateView>(`/api/rooms/${code}/bots`,{method:"POST",body:JSON.stringify(intent)});}
-export function controlBots(code:string,intent:{mode?:"RUNNING"|"PAUSED";pace?:"NORMAL"|"SLOW"}){return request<PrivateView>(`/api/rooms/${code}/bots/control`,{method:"POST",body:JSON.stringify(intent)});}
+export function controlBots(code:string,intent:{autoNominate?:boolean;mode?:"RUNNING"|"PAUSED";pace?:"NORMAL"|"SLOW"}){return request<PrivateView>(`/api/rooms/${code}/bots/control`,{method:"POST",body:JSON.stringify(intent)});}
 export function stepBots(code:string){return request<PrivateView>(`/api/rooms/${code}/bots/step`,{method:"POST",body:"{}"});}
 export function setRehearsalClock(code:string,mode:"WALL"|"MANUAL"){return request<PrivateView>(`/api/rooms/${code}/rehearsal/clock`,{method:"POST",body:JSON.stringify({mode})});}
 export function advanceRehearsal(code:string){return request<PrivateView>(`/api/rooms/${code}/rehearsal/advance`,{method:"POST",body:"{}"});}

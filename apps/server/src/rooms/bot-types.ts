@@ -4,9 +4,9 @@ import type {RoomRecord,ParticipantRecord} from './service.js';
 export type BotKind='READY'|'TUTORIAL_COMPLETE'|'CONFIRM_ROLE'|'ACK_START_INFO'|'NIGHT_ACTION'|'NOMINATE'|'VOTE'|'DAY_READY'|'SLAYER'|'WHISPER_ACCEPT'|'WHISPER_REPLY';
 export interface BotTask {id:string;botId:string;sequence:number;controlGeneration:string;roomInstanceId:string;setupId:string;gameId?:string;contextId?:string;ballotId?:string;expectedBotCommandVersion:number;kind:BotKind;args:{targets?:number[];raised?:boolean;whisperId?:string;messageId?:string;infoId?:string};dueGameAt:number;latestGameAt?:number}
 export interface BotMemory {gameId?:string;knownTeamSeats:number[];ackedHumanMessageIds:string[];ballot?:{ballotId:string;initialSubmitted:boolean;correctionCount:0|1;lastRaised?:boolean;lastMasterRaised?:boolean}}
-export interface BotControl {mode:'RUNNING'|'PAUSED';pace:'NORMAL'|'SLOW';attentionRequired:boolean;version:number;generation:string;nextSequence:number;seed:string;pending:BotTask[];memory:Record<string,BotMemory>}
+export interface BotControl {autoNominate?:boolean;mode:'RUNNING'|'PAUSED';pace:'NORMAL'|'SLOW';attentionRequired:boolean;version:number;generation:string;nextSequence:number;seed:string;pending:BotTask[];memory:Record<string,BotMemory>}
 export const MAX_BOTS=128;
-export function newBotControl():BotControl{return{mode:'RUNNING',pace:'NORMAL',attentionRequired:false,version:0,generation:randomUUID(),nextSequence:1,seed:randomUUID(),pending:[],memory:{}};}
+export function newBotControl():BotControl{return{autoNominate:false,mode:'RUNNING',pace:'NORMAL',attentionRequired:false,version:0,generation:randomUUID(),nextSequence:1,seed:randomUUID(),pending:[],memory:{}};}
 export const activePlayers=(room:RoomRecord)=>room.participants.filter(p=>p.mode==='PLAYER'&&!p.left);
 export const humans=(room:RoomRecord)=>activePlayers(room).filter(p=>p.controller==='HUMAN');
 export const bots=(room:RoomRecord)=>activePlayers(room).filter(p=>p.controller==='BOT');
@@ -29,6 +29,8 @@ export function upgradeBotRoom(room:RoomRecord,wall:number){
   const fail=(category:string):never=>{throw new Error(`Room ${room.code}: invalid ${category}`);};
   if(!room.botControl||!room.timeline||!['WALL','MANUAL'].includes(room.timeline.mode)||!Number.isFinite(room.timeline.offsetMs)||!Number.isInteger(room.timeline.epoch)||!Number.isFinite(room.lastHumanActivityAt))fail('timeline or bot control');
   const control=room.botControl;
+  control.autoNominate??=false;
+  if(typeof control.autoNominate!=='boolean')fail('auto nomination');
   if(!['RUNNING','PAUSED'].includes(control.mode)||!['NORMAL','SLOW'].includes(control.pace)||!Number.isInteger(control.version)||!Number.isInteger(control.nextSequence)||!control.seed||!control.generation||!control.memory||!Array.isArray(control.pending))fail('bot control');
   if(room.participants.some(p=>!['HUMAN','BOT'].includes(p.controller)||p.controller==='BOT'&&(p.mode!=='PLAYER'||!!p.accountId||!!p.joinTicket)))fail('controllers');
   const people=humans(room),machines=bots(room),players=activePlayers(room);

@@ -17,6 +17,7 @@ test.each([5,6,12])('one human plus bots completes a genuine %i-seat game and re
  let finished=false;
  for(let tick=0;tick<12000;tick++){
   const room=s.find(t.code),v={...s.privateView(t.code,t.host.token),room:s.publicView(t.code),...socialView(room,t.host.token)} as unknown as PrivateView;
+  if(v.room?.botControl)v.room.botControl.autoNominate=true; // Simulate the human choosing nominations; bots retain the room's default.
   const intent=chooseBotAction({view:v,memory:m,seed:'human-test-policy',now:s.gameNow(room),slow:false});
   if(intent){apply(s,t.code,t.host.token,intent);if(intent.kind==='VOTE'){const id=v.game!.nomination!.ballotId!;m.ballot={ballotId:id,initialSubmitted:true,correctionCount:0,lastRaised:intent.args.raised!};}}
   if(v.game?.phase==='GAME_OVER'&&v.game.revealComplete){finished=true;break;}
