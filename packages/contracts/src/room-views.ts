@@ -39,6 +39,7 @@ export interface PrivateHistoryEntry {
   text: string;
 }
 export interface PrivateView extends Partial<RoomProtocolView> {
+  rehearsal?:{eligible:boolean;canChooseRole:boolean;selectedRoleId?:string};
   profileApplication?: 'CURRENT' | 'NEXT_LOBBY';
   startInfo?: { infoId: string; gameId: string; team: Array<{seat:number;nickname:string;avatar?:string;kind:'DEMON'|'MINION'}>; bluffs:Array<{roleId:string;name:string;summary:string}>; acknowledged:boolean;canAcknowledge:boolean };
   controlResult?:ControlResult;

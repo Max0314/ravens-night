@@ -55,6 +55,7 @@ export interface ParticipantRecord {
 export interface RoomResult {releasedWallAt:number;hadBots:boolean;rehearsalUsed:boolean; gameId: string; releasedAt: number; winner: "GOOD" | "EVIL"; reason: string; days: number; participants: Array<{controller:"HUMAN"|"BOT";id: string; nickname: string; avatar?: string; finalRole: string; perceivedRole?: string}> }
 
 export interface RoomRecord {
+  rehearsalRole?:{participantId:string;roleId:string};
   lastResult?: RoomResult;
   schemaVersion: 4;
   timeline:RoomTimeline;
@@ -331,6 +332,19 @@ export class RoomService {
     const c=room.botControl;if((mode===undefined||c.mode===mode)&&(pace===undefined||c.pace===pace)&&(autoNominate===undefined||c.autoNominate===autoNominate)&&!c.attentionRequired)return{status:'UNCHANGED'};
     if(mode)c.mode=mode;if(pace)c.pace=pace;if(autoNominate!==undefined)c.autoNominate=autoNominate;c.attentionRequired=false;invalidateBots(room);this.changed(room);return{status:'APPLIED'};
   }
+  private rehearsalEligible(room:RoomRecord){return humans(room).length===1&&bots(room).length>0;}
+  private clearIneligibleRehearsalRole(room:RoomRecord){
+    if(room.rehearsalRole&&(!this.rehearsalEligible(room)||room.rehearsalRole.participantId!==this.organizer(room)?.id||!humans(room).some(p=>p.id===room.rehearsalRole!.participantId)))delete room.rehearsalRole;
+  }
+  changeRehearsalRole(code:string,token:string,roleId:string|null):ControlResult{
+    const room=this.find(code),host=this.requireHost(room,token);
+    if(room.state!=='LOBBY')throw new RoomError('GAME_IN_PROGRESS','请回到大厅后选择测试身份');
+    if(!this.rehearsalEligible(room))throw new RoomError('REHEARSAL_UNAVAILABLE','仅一名真人与人机游玩时可选择测试身份');
+    if(roleId!==null&&!ROLE_CATALOG.some(role=>role.id===roleId))throw new RoomError('INVALID_ROLE','请选择有效角色或随机身份',400);
+    if((room.rehearsalRole?.roleId??null)===roleId&&(!room.rehearsalRole||room.rehearsalRole.participantId===host.id))return{status:'UNCHANGED'};
+    if(roleId===null)delete room.rehearsalRole;else room.rehearsalRole={participantId:host.id,roleId};
+    this.invalidateSetup(room);this.changed(room);return{status:'APPLIED'};
+  }
   changeRehearsalClock(code:string,token:string,mode:'MANUAL'|'WALL'):ControlResult{
     const room=this.find(code);this.requireHost(room,token);
     if(!['MANUAL','WALL'].includes(mode))throw new RoomError('INVALID_REQUEST','请选择计时方式',400);
@@ -433,7 +447,7 @@ export class RoomService {
 
   private invalidateSetup(room: RoomRecord): void {
     if(room.state==='LOBBY')for(const participant of room.participants){const pending=participant.pendingProfile;if(!pending)continue;participant.nickname=pending.nickname;if(pending.avatar)participant.avatarSnapshot=pending.avatar;else delete participant.avatarSnapshot;delete participant.pendingProfile;if(room.organizerParticipantId===participant.id)room.organizerName=participant.nickname;}
-    exitIneligibleRehearsal(room,this.#now());invalidateBots(room);
+    exitIneligibleRehearsal(room,this.#now());this.clearIneligibleRehearsalRole(room);invalidateBots(room);
     room.setupId = randomUUID();
     for (const player of room.participants) player.ready = false;
   }
@@ -544,6 +558,8 @@ export class RoomService {
         ?? snapshot.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1)?.id;
       const restored=structuredClone({ ...snapshot, playMode: snapshot.playMode ?? "IN_PERSON", lastActivityAt: snapshot.lastActivityAt ?? new Date(this.#now()).toISOString(), ...(organizerParticipantId ? { organizerParticipantId } : {}), ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 });
       upgradeBotRoom(restored,this.#now());
+      if(restored.rehearsalRole!==undefined&&(!restored.rehearsalRole||typeof restored.rehearsalRole!=="object"||typeof restored.rehearsalRole.participantId!=="string"||!restored.rehearsalRole.participantId||!ROLE_CATALOG.some(role=>role.id===restored.rehearsalRole!.roleId)))throw new Error(`Room ${code}: invalid rehearsal role`);
+      this.clearIneligibleRehearsalRole(restored);
       if((snapshot.schemaVersion as number)!==4){
         restored.schemaVersion=4;
         if(restored.game){restored.game.presentationVersion=1;restored.game.startInfo={mode:'LEGACY',stage:restored.game.phase==='ABORTED'?'CANCELLED':'COMPLETE',entries:{}};for(const e of restored.game.events)e.timingVersion??=1;}
@@ -606,7 +622,9 @@ export class RoomService {
     for (const player of players) player.tutorialComplete = false;
     delete room.game;
     room.gameNumber = (room.gameNumber ?? 0) + 1;
-    room.assignments = setupGameRoles(room.playerCount, `${room.id}:${room.code}:game-${room.gameNumber}`);
+    this.clearIneligibleRehearsalRole(room);
+    const forced=room.rehearsalRole?{seat:host.seat!,roleId:room.rehearsalRole.roleId}:undefined;
+    room.assignments = setupGameRoles(room.playerCount, `${room.id}:${room.code}:game-${room.gameNumber}`,forced);
     room.state = "TUTORIAL";
     if (tutorialMode === "SKIP") {
       for (const player of players) player.tutorialComplete = true;
@@ -1097,6 +1115,7 @@ export class RoomService {
       protocolVersion: 4 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
       self: { participantId: participant.id, mode: participant.mode, commandVersion: participant.commandVersion },
       ...(game ? { contextId: game.publicProjection?.contextId ?? game.contextId } : {}),
+      rehearsal:{eligible:this.rehearsalEligible(room),canChooseRole:room.state==='LOBBY'&&this.organizer(room)?.id===participant.id&&this.rehearsalEligible(room),...(room.rehearsalRole?.participantId===participant.id&&this.rehearsalEligible(room)?{selectedRoleId:room.rehearsalRole.roleId}:{})},
       canManageBots:this.organizer(room)?.id===participant.id&&room.state==='LOBBY',
       canStepBots:this.organizer(room)?.id===participant.id&&room.botControl.mode==='PAUSED'&&bots(room).length>0,
       canFreezeRehearsal:this.organizer(room)?.id===participant.id&&humans(room).length===1&&bots(room).length>0&&['LOBBY','TUTORIAL','RUNNING'].includes(this.publicView(codeInput).state),
@@ -1145,7 +1164,7 @@ export class RoomService {
     const seed=randomUUID();
     const game: GameRuntime = {
       presentationVersion:2,startInfo:createStartInfo(room,seed),
-      hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL",
+      hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL"||!!room.rehearsalRole,
       contextId: randomUUID(),
       gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: seed, presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
       phase: "ROLE_REVEAL", day: 0,

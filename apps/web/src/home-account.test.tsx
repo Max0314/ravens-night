@@ -1,3 +1,4 @@
+import {invitationReturnPath} from './invite.js';
 import {avatarChoices} from '@ravens/contracts';
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
@@ -71,4 +72,12 @@ test('all returned avatars stay selectable and profile actions live outside the 
 test('bundled avatar choices remain available without a catalog request and preserve the nickname draft',async()=>{
  vi.mocked(getAccount).mockResolvedValue({signedIn:true,rooms:[],guestClaimAvailable:true,profile});vi.mocked(getAvatarChoices).mockRejectedValue(new Error('offline'));
  render(<AccountPanel onResume={vi.fn()}/>);fireEvent.click(await screen.findByRole('button',{name:'打开账号设置'}));fireEvent.change(screen.getByLabelText('本游戏昵称'),{target:{value:'未保存昵称'}});fireEvent.click(screen.getByRole('button',{name:/更换头像/}));expect(screen.getAllByRole('button',{name:/^头像[0-9]+$/})).toHaveLength(35);fireEvent.click(screen.getByRole('button',{name:'关闭头像选择'}));expect(screen.getByLabelText('本游戏昵称')).toHaveValue('未保存昵称');fireEvent.click(screen.getByRole('button',{name:'关闭账号设置'}));fireEvent.click(screen.getByRole('button',{name:'打开账号设置'}));expect(screen.getByLabelText('本游戏昵称')).toHaveValue('默认昵称');
+});
+
+test('Fribench login and account management return to a validated room invitation',async()=>{
+ window.history.replaceState({},'','/?room=abcdef&display=1&return_to=https://example.com&token=private');
+ expect(invitationReturnPath()).toBe('/?room=ABCDEF&display=1');expect(invitationReturnPath('?room=https://example.com')).toBe('/');expect(invitationReturnPath('?display=1&return_to=//example.com')).toBe('/');
+ vi.mocked(getAccount).mockResolvedValue({signedIn:false,rooms:[],guestClaimAvailable:false});vi.mocked(getAvatarChoices).mockResolvedValue({avatars:avatarChoices});
+ let ui=render(<AccountPanel onResume={vi.fn()}/>);fireEvent.click(await screen.findByRole('button',{name:'打开资料设置'}));const login=await screen.findByRole('link',{name:'登录 Fribench'});expect(new URL(login.getAttribute('href')!,location.origin).searchParams.get('return_to')).toBe('/?room=ABCDEF&display=1');ui.unmount();
+ vi.mocked(getAccount).mockResolvedValue({signedIn:true,rooms:[],guestClaimAvailable:false,profile});ui=render(<AccountPanel onResume={vi.fn()}/>);fireEvent.click(await screen.findByRole('button',{name:'打开账号设置'}));expect(new URL(screen.getByRole('link',{name:'账号安全'}).getAttribute('href')!,location.origin).searchParams.get('return_to')).toBe('/?room=ABCDEF&display=1');
 });

@@ -1,4 +1,6 @@
 import { describe, expect, test } from "vitest";
+import {ROLE_CATALOG,roleById} from "./catalog.js";
+import {distributionFor} from "../setup.js";
 import { setupGameRoles } from "./setup-roles.js";
 
 describe("role assignment", () => {
@@ -41,5 +43,22 @@ test("curated bags preserve distributions while giving larger towns an opening c
     expect(townsfolk.some((roleId) => ["washerwoman", "librarian", "investigator", "chef", "empath", "fortune_teller"].includes(roleId))).toBe(true);
     expect(townsfolk.some((roleId) => ["fortune_teller", "monk", "ravenkeeper", "slayer"].includes(roleId))).toBe(true);
     expect(new Set(assignments.map((assignment) => assignment.roleId)).size).toBe(assignments.length);
+  }
+});
+
+
+test.each([5,6,7,8,9,10,11,12])('single-human rehearsal can force all 22 roles into a legal %i-player bag',count=>{
+  for(const requested of ROLE_CATALOG){
+    for(const seed of ['alpha','beta','gamma']){
+      const chosenSeat=count-1,roles=setupGameRoles(count,seed,{seat:chosenSeat,roleId:requested.id});
+      expect(roles.find(role=>role.seat===chosenSeat)?.roleId).toBe(requested.id);
+      expect(roles).toHaveLength(count);expect(new Set(roles.map(role=>role.roleId)).size).toBe(count);expect(new Set(roles.map(role=>role.seat)).size).toBe(count);
+      const base=distributionFor(count),baron=roles.some(role=>role.roleId==='baron');
+      expect(roles.filter(role=>role.roleType==='TOWNSFOLK')).toHaveLength(base.townsfolk-(baron?2:0));
+      expect(roles.filter(role=>role.roleType==='OUTSIDER')).toHaveLength(base.outsider+(baron?2:0));
+      expect(roles.filter(role=>role.roleType==='MINION')).toHaveLength(base.minion);expect(roles.filter(role=>role.roleType==='DEMON')).toHaveLength(1);
+      for(const role of roles){expect(role.alignment).toBe(['MINION','DEMON'].includes(role.roleType)?'EVIL':'GOOD');if(role.roleId==='drunk'){expect(roleById(role.perceivedRoleId).type).toBe('TOWNSFOLK');expect(roles.some(other=>other.roleId===role.perceivedRoleId)).toBe(false);}else expect(role.perceivedRoleId).toBe(role.roleId);}
+      const town=roles.filter(role=>role.roleType==='TOWNSFOLK').map(role=>role.roleId);if(town.length>=3){expect(town.some(role=>['washerwoman','librarian','investigator','chef','empath','fortune_teller'].includes(role))).toBe(true);expect(town.some(role=>['fortune_teller','monk','ravenkeeper','slayer'].includes(role))).toBe(true);}
+    }
   }
 });

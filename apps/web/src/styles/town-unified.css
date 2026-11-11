@@ -43,3 +43,41 @@
 .town-view-switch{display:flex;gap:4px;padding:4px;margin:8px 0;background:#06090899;border:1px solid #ad915430;border-radius:12px}
 .town-view-switch>button{min-height:42px;flex:1;border:0;border-radius:9px;background:transparent;color:#a99975;font-size:13px}
 .town-view-switch>button[aria-pressed=true]{background:#9f824b26;color:#e3ca92;box-shadow:inset 0 0 0 1px #b2995a44}
+
+/* Night uses the same courtyard under blue-black moonlight; day keeps its existing palette. */
+.game-page.game-page--night{background:#03070d;color:#d8e0e7}
+.game-page.game-page--night::before{background:radial-gradient(ellipse at 74% 8%,#7799bc16,transparent 48%),linear-gradient(180deg,#02060bc4,#02050ddd),url('/art/rooms/courtyard-night.webp') center/cover!important}
+.game-page--night .game-header__phase>span,.game-page--night .game-utility{color:#a1b2c2}
+.game-page--night .game-header__phase>strong{color:#e0e8ed}
+.game-page--night .role-chip{background:#7397b611;border-color:#8aa0b54d;color:#d5dfdf}
+.game-page--night .game-content{border-top-color:#7a94ad29}
+.game-page--night .remote-town-board{background:radial-gradient(ellipse at 50% 28%,#19324729,#03080dbd);border-color:#728da43d}
+.game-page--night .remote-town-board>header{color:#c7d6e1;border-bottom-color:#7690a62e}
+.game-page--night .remote-town-board>header small{color:#9bafbf}
+.game-page--night .remote-town-board .rn-seat__name{color:#d9e2e8}
+.game-page--night .remote-town-board .rn-seat__number{color:#a8b9c7}
+.game-page--night .remote-town-board .rn-seat--mine .rn-seat__avatar{border-color:#bfd1df;box-shadow:0 0 0 2px #8eafc42e}
+.game-page--night .remote-town-board .rn-seat--selectable .rn-seat__avatar{outline-color:#92adc1}
+.game-page--night .remote-town-board .rn-seat--selected .rn-seat__avatar{outline-color:#d7eafa;box-shadow:0 0 0 2px #9abfd32e,0 0 15px #8eb5d366}
+.game-page--night .town-night-prompt{background:#050c14d9;border-left-color:#a8c1d3;color:#d5e3ec}
+.game-page--night .town-night-prompt>span{color:#a6bdcf}
+.game-page--night .town-night-prompt>button,.game-page--night .town-confirm-entry{background:#7496b21c;color:#c3d5e3}
+.game-page--night .town-private-clue{background:#050c13e0;border-color:#71849a4d;color:#d7e0e7}
+.game-page--night .town-private-clue>header{color:#aec3d3}
+.game-page--night .town-private-clue button,.game-page--night .town-clue-targets>span{color:#c8d9e6}
+.game-page--night .game-tabs,.game-page--night>.room-action-bar{background:#04090ff0;border-color:#758ea13b}
+.game-page--night .game-tabs button{color:#a8b9c8}
+.game-page--night .game-tabs button.is-active{background:#6689a12b;color:#dceaf3;box-shadow:inset 0 0 0 1px #91adbf45}
+.game-page--night .town-view-switch{background:#030a11b3;border-color:#7c94a73d}
+.game-page--night .town-view-switch>button{color:#a7b9c7}
+.game-page--night .town-view-switch>button[aria-pressed=true]{background:#708fa32b;color:#dce7ee;box-shadow:inset 0 0 0 1px #92aab94d}
+.game-page--night .town-night-confirm>div{color:#afc2d0}
+.game-page--night .town-night-confirm>div>button{background:#142331;border-color:#a0bac75e;color:#d9e7ef}
+.game-page--night .town-night-confirm>.rn-button--gold{background:linear-gradient(135deg,#dfcfa8,#ba985f);border-color:#e6d4a9;color:#17130d;box-shadow:inset 0 1px 0 #fff5da55,0 5px 18px #0005}
+.game-page--night .room-sheet{background:linear-gradient(145deg,#101c26f0,#04090df2);border-color:#8299ac55}
+.player-wheel-backdrop.player-wheel-backdrop--night{background:#01050bb8}
+.player-wheel.player-wheel--night{background:radial-gradient(circle,#1d2c39f5 0 28%,#050c13fa 29%);border-color:#8da8bc66;color:#d1e0eb;box-shadow:0 15px 60px #000b}
+.player-wheel--night .player-wheel__item,.player-wheel--night .player-wheel__center button{color:#cadce8}
+.player-wheel--night .player-wheel__item:active{background:#86adc633}
+.player-wheel--night .player-wheel__item:disabled{opacity:.38}
+.player-wheel--night .player-wheel__error{background:#070f18;color:#e0b5aa}

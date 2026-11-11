@@ -101,7 +101,7 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
   new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
   const options = { ...init, credentials: "same-origin" as const, headers };
   // Only receipt-backed commands can be safely retried after an ambiguous disconnect.
-  const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step)?|rehearsal\/(?:clock|advance)|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|first-night-info\/ack|profile|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
+  const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step)?|rehearsal\/(?:clock|advance|role)|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|first-night-info\/ack|profile|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
   for (let attempt = 0; ; attempt++) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10_000);
@@ -164,6 +164,7 @@ export function getRoomSummary(code:string){return request<{canJoin:boolean;will
 export function manageBots(code:string,intent:{count?:number;fill?:boolean;clear?:boolean}){return request<PrivateView>(`/api/rooms/${code}/bots`,{method:"POST",body:JSON.stringify(intent)});}
 export function controlBots(code:string,intent:{autoNominate?:boolean;mode?:"RUNNING"|"PAUSED";pace?:"NORMAL"|"SLOW"}){return request<PrivateView>(`/api/rooms/${code}/bots/control`,{method:"POST",body:JSON.stringify(intent)});}
 export function stepBots(code:string){return request<PrivateView>(`/api/rooms/${code}/bots/step`,{method:"POST",body:"{}"});}
+export function setRehearsalRole(code:string,roleId:string|null){return request<PrivateView>(`/api/rooms/${code}/rehearsal/role`,{method:"POST",body:JSON.stringify({roleId})});}
 export function setRehearsalClock(code:string,mode:"WALL"|"MANUAL"){return request<PrivateView>(`/api/rooms/${code}/rehearsal/clock`,{method:"POST",body:JSON.stringify({mode})});}
 export function advanceRehearsal(code:string){return request<PrivateView>(`/api/rooms/${code}/rehearsal/advance`,{method:"POST",body:"{}"});}
 
