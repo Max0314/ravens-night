@@ -1,3 +1,4 @@
+import {useGameClock} from "../use-game-clock.js";
 import { Panel, SeatRing } from "@ravens/ui";
 import { useCallback, useEffect, useState, type CSSProperties, type DragEvent, type KeyboardEvent } from "react";
 import { ApiError, getRoom, type RoomParticipant, type RoomView } from "../api.js";
@@ -55,20 +56,21 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   }, [code]);
 
   const game = room?.game;
+  const now=useGameClock(game,room);
   const players = [...(room?.participants.filter((participant) => participant.mode === "PLAYER") ?? [])]
     .sort((left, right) => left.seat! - right.seat!);
   const seats = game?.seats ?? players.map((participant) => ({ seat: participant.seat!, nickname: participant.nickname, alive: true, connected: participant.connected, ghostVoteAvailable: true }));
   const copy = phaseCopy[game?.phase ?? "ROLE_REVEAL"] ?? phaseCopy.ROLE_REVEAL!;
   const nominee = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nomineeSeat) : undefined;
   const nominator = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nominatorSeat) : undefined;
-  const publicEvents = publicEventsAt(game?.events ?? [], game?.serverNow ?? Date.now()).slice(-3).reverse();
+  const publicEvents = publicEventsAt(game?.events ?? [], now).slice(-3).reverse();
   const isNight = game?.phase === "FIRST_NIGHT" || game?.phase === "OTHER_NIGHT";
-  const finalePending = game?.phase === "GAME_OVER" && (game.presentationUntil ?? 0) > (game.serverNow ?? Date.now());
-  const defending = Boolean(game?.nomination?.defenseUntil && (game.serverNow ?? Date.now()) < game.nomination.defenseUntil);
-  const voteDetail = game?.nomination && nominee ? defending ? `${nominee.nickname} 的辩护时间 · ${Math.max(0, Math.ceil(((game.nomination.defenseUntil ?? 0) - (game.serverNow ?? Date.now())) / 1000))} 秒后开始顺时针计票` : game.nomination.voterOrder ? `${game.nomination.currentVoterSeat ? `正在计 ${game.nomination.currentVoterSeat} 号的票` : "等待钟声"} · 已计 ${game.nomination.countedSeats?.length ?? 0}/${game.nomination.voterOrder.length} 位 · 当前 ${game.nomination.votesRaised} 票 · 达标 ${game.nomination.threshold} 票` : `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 达标需 ${game.nomination.threshold} 票` : copy.detail;
+  const finalePending = game?.phase === "GAME_OVER" && (game.presentationUntil ?? 0) > (now);
+  const defending = Boolean(game?.nomination?.defenseUntil && (now) < game.nomination.defenseUntil);
+  const voteDetail = game?.nomination && nominee ? defending ? `${nominee.nickname} 的辩护时间 · ${Math.max(0, Math.ceil(((game.nomination.defenseUntil ?? 0) - (now)) / 1000))} 秒后开始顺时针计票` : game.nomination.voterOrder ? `${game.nomination.currentVoterSeat ? `正在计 ${game.nomination.currentVoterSeat} 号的票` : "等待钟声"} · 已计 ${game.nomination.countedSeats?.length ?? 0}/${game.nomination.voterOrder.length} 位 · 当前 ${game.nomination.votesRaised} 票 · 达标 ${game.nomination.threshold} 票` : `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 达标需 ${game.nomination.threshold} 票` : copy.detail;
 
   return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
-    {game ? <EventStage game={game} /> : null}
+    {game ? <EventStage game={game} room={room} /> : null}
     <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
     <section className="display__town"><div className="display__canvas"><SeatRing seats={seats} {...(game?.nomination?.currentVoterSeat ? { activeSeat: game.nomination.currentVoterSeat } : {})} {...(game?.nomination?.countedVotes ? { countedVotes: game.nomination.countedVotes } : {})} {...(game?.nomination?.raisedSeats ? { raisedSeats: game.nomination.raisedSeats } : {})} /><div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>请房主在手机上调整座位，准备后开局</small></div> : <><p>{defending ? "辩护时间" : game.phase === "VOTING" ? "顺时针表决" : copy.eyebrow}</p><h1>{finalePending ? "钟声仍在回响" : game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? nominee.nickname : copy.title}</h1><small>{voteDetail}</small></>}</div></div></section>
     {game ? <Panel className="display__village-feed" aria-label="村庄公开信息">

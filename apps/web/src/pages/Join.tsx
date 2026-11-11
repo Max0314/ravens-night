@@ -1,33 +1,14 @@
-import { Button, Panel } from "@ravens/ui";
-import { useEffect, useState, type FormEvent } from "react";
-import { getAccount } from '../api.js';
-
-export interface JoinValues { code: string; nickname: string; mode: "PLAYER" | "DISPLAY"; recoveryCode?: string }
-
-export function Join({ initialCode = "", onBack, onSubmit, busy, error }: { initialCode?: string; onBack: () => void; onSubmit: (values: JoinValues) => void; busy: boolean; error?: string }) {
-  const [code, setCode] = useState(initialCode);
-  const [nickname, setNickname] = useState("");
-  useEffect(()=>{let active=true;void getAccount().then(value=>{if(active&&value.profile)setNickname(current=>current||value.profile!.nickname);}).catch(()=>{});return()=>{active=false;};},[]);
-  const [mode, setMode] = useState<"PLAYER" | "DISPLAY">("PLAYER");
-  const [recovering, setRecovering] = useState(false);
-  const [recoveryCode, setRecoveryCode] = useState("");
-  function submit(event: FormEvent) { event.preventDefault(); onSubmit({ code: code.toUpperCase().replace(/[^A-Z2-9]/g, ""), nickname: mode === "DISPLAY" ? "公共大屏" : nickname, mode, ...(recovering && mode === "PLAYER" ? { recoveryCode: recoveryCode.trim() } : {}) }); }
-  return (
-    <main className="center-page">
-      <button className="back-link" onClick={onBack}>← 返回</button>
-      <Panel className="form-panel">
-        <p className="eyebrow">加入游戏</p><h1>进入村庄</h1><p>输入所有人相同的邀请码。你的身份只会显示在这台设备上。</p>
-        <form onSubmit={submit}>
-          <label>六位邀请码<input aria-label="六位邀请码" inputMode="text" autoCapitalize="characters" maxLength={6} value={code} onChange={(event) => setCode(event.target.value)} placeholder="7K3MQ8" required /></label>
-          <div className="mode-choice" role="group" aria-label="加入方式">
-            <button type="button" aria-pressed={mode === "PLAYER"} className={mode === "PLAYER" ? "is-active" : ""} onClick={() => setMode("PLAYER")}><span aria-hidden="true">♟</span>手机玩家<small>每人一台手机 · 身份与操作仅自己可见</small></button>
-            <button type="button" aria-pressed={mode === "DISPLAY"} className={mode === "DISPLAY" ? "is-active" : ""} onClick={() => setMode("DISPLAY")}><span aria-hidden="true">▣</span>电视公共大屏<small>电脑连接电视 · 只显示公开城镇信息</small></button>
-          </div>
-          {mode === "PLAYER" ? <><button type="button" className="recovery-toggle" onClick={() => setRecovering((value) => !value)}>{recovering ? "以新玩家身份加入" : "从另一台设备恢复座位"}</button>{recovering ? <label>一次性恢复码<input value={recoveryCode} onChange={(event) => setRecoveryCode(event.target.value)} maxLength={32} autoComplete="off" placeholder="原设备在公开城镇中生成" required /></label> : <label>你的昵称<input maxLength={24} value={nickname} onChange={(event) => setNickname(event.target.value)} placeholder="大家认识的名字" required /></label>}</> : null}
-          {error ? <p className="form-error" role="alert">{error}</p> : null}
-          <Button type="submit" disabled={busy || code.length < 6}>{busy ? "正在敲门…" : recovering && mode === "PLAYER" ? "恢复我的座位" : "进入房间"}</Button>
-        </form>
-      </Panel>
-    </main>
-  );
+import { Button } from "@ravens/ui";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import {getAccount,getRoomSummary} from "../api.js";
+import {RoomPageShell,OperationStatus} from "../components/RoomPage.js";
+export interface JoinValues {code:string;nickname:string;mode:"PLAYER"|"DISPLAY";recoveryCode?:string}
+export function Join({initialCode="",onBack,onSubmit,busy,error}:{initialCode?:string;onBack:()=>void;onSubmit:(values:JoinValues)=>void;busy:boolean;error?:string}){
+  const [code,setCode]=useState(initialCode),[name,setName]=useState(""),[mode,setMode]=useState<"PLAYER"|"DISPLAY">("PLAYER"),[recovering,setRecovering]=useState(false),[recovery,setRecovery]=useState(""),[invalid,setInvalid]=useState(""),[replacesBot,setReplacesBot]=useState(false);
+  const normalized=code.toUpperCase().replace(/\s/g,"");const valid=/^[A-Z2-9]{6}$/.test(normalized);
+  const nameEdited=useRef(false);
+  useEffect(()=>{let active=true;void getAccount().then(value=>{if(active&&!nameEdited.current&&value.profile)setName(current=>current||value.profile!.nickname);}).catch(()=>{});return()=>{active=false;};},[]);
+  useEffect(()=>{let active=true;setReplacesBot(false);if(valid)void getRoomSummary(normalized).then(v=>{if(active)setReplacesBot(v.willReplaceBot);}).catch(()=>{});return()=>{active=false;};},[normalized,valid]);
+  function submit(event:FormEvent){event.preventDefault();if(!valid){setInvalid("房间码须为6位字母或2—9");document.getElementById("join-code")?.focus();return;}setInvalid("");onSubmit({code:normalized,nickname:mode==="DISPLAY"?"公共大屏":name.trim(),mode,...(recovering&&mode==="PLAYER"?{recoveryCode:recovery.trim()}:{})});}
+  return <RoomPageShell title={recovering?"恢复座位":"加入房间"} onBack={onBack} actions={<><OperationStatus error={invalid||error} notice={replacesBot&&mode==="PLAYER"&&!recovering?"加入后替换一个人机":undefined}/><Button type="submit" form="join-room" disabled={busy||!valid}>{busy?"正在加入…":recovering?"恢复座位":"加入房间"}</Button></>}><form id="join-room" className="room-form" onSubmit={submit}><label htmlFor="join-code">六位邀请码<input id="join-code" aria-label="六位邀请码" inputMode="text" autoCapitalize="characters" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="7K3MQ8" maxLength={16} required disabled={busy}/></label>{mode==="PLAYER"?(recovering?<label>一次性恢复码<input value={recovery} onChange={e=>setRecovery(e.target.value)} maxLength={32} autoComplete="off" required disabled={busy}/></label>:<label>你的昵称<input value={name} onChange={e=>{nameEdited.current=true;setName(e.target.value);}} maxLength={24} required disabled={busy}/></label>):<p>大屏只显示公开城镇信息。</p>}<div className="join-secondary"><button type="button" aria-pressed={mode==="DISPLAY"} disabled={busy} onClick={()=>{setMode(v=>v==="PLAYER"?"DISPLAY":"PLAYER");setRecovering(false);}}>{mode==="DISPLAY"?"切换手机玩家":"使用公共大屏"}</button>{mode==="PLAYER"?<button type="button" disabled={busy} onClick={()=>setRecovering(v=>!v)}>{recovering?"以新玩家加入":"换设备恢复座位"}</button>:null}</div></form></RoomPageShell>;
 }

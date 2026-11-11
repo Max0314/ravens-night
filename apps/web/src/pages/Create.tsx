@@ -1,21 +1,15 @@
-import { Button, Panel } from "@ravens/ui";
-import { useEffect, useState, type FormEvent } from "react";
-import { getAccount } from '../api.js';
-import type { RoomPlayMode } from "../api.js";
-
-const modeCopy: Record<RoomPlayMode, { title: string; detail: string; symbol: string }> = {
-  IN_PERSON: { title: "围桌线下", detail: "一块公共大屏，所有人围坐讨论", symbol: "⌂" },
-  REMOTE: { title: "纯线上", detail: "每人独立加入，可附上语音或视频链接", symbol: "⌁" },
-  HYBRID: { title: "线上线下混合", detail: "现场大屏与远程玩家共享同一局", symbol: "◐" },
-};
-
-export function Create({ onBack, onSubmit, busy, error }: { onBack: () => void; onSubmit: (name: string, count: number, playMode: RoomPlayMode, voiceRoomUrl?: string) => void; busy: boolean; error?: string }) {
-  const [name, setName] = useState("");
-  useEffect(()=>{let active=true;void getAccount().then(value=>{if(active&&value.profile)setName(current=>current||value.profile!.nickname);}).catch(()=>{});return()=>{active=false;};},[]);
-  const [count, setCount] = useState(8);
-  const [playMode, setPlayMode] = useState<RoomPlayMode>("IN_PERSON");
-  const [voiceRoomUrl, setVoiceRoomUrl] = useState("");
-  const needsVoiceLink = playMode !== "IN_PERSON";
-
-  return <main className="center-page create-page"><button className="back-link" type="button" onClick={onBack}>← 返回</button><Panel className="form-panel form-panel--create"><p className="eyebrow">创建房间</p><h1>设置房间</h1><p>填写昵称、人数和游玩方式，创建后分享房间码邀请玩家。</p><form onSubmit={(event: FormEvent) => { event.preventDefault(); onSubmit(name, count, playMode, needsVoiceLink ? voiceRoomUrl : undefined); }}><div className="form-row"><label>你的昵称<input value={name} maxLength={24} placeholder="大家认识的名字" onChange={(event) => setName(event.target.value)} required /></label><label>玩家人数<select value={count} onChange={(event) => setCount(Number(event.target.value))}>{Array.from({ length: 8 }, (_, index) => index + 5).map((value) => <option key={value} value={value}>{value} 人</option>)}</select></label></div><fieldset className="play-mode-picker"><legend>这局怎么玩</legend><div>{(Object.keys(modeCopy) as RoomPlayMode[]).map((mode) => <button key={mode} type="button" className={playMode === mode ? "is-selected" : ""} aria-pressed={playMode === mode} onClick={() => setPlayMode(mode)}><span aria-hidden="true">{modeCopy[mode].symbol}</span><strong>{modeCopy[mode].title}</strong><small>{modeCopy[mode].detail}</small></button>)}</div></fieldset>{needsVoiceLink ? <label>语音/视频房间链接（可选）<input type="url" inputMode="url" placeholder="https://meeting.example.com/…" value={voiceRoomUrl} onChange={(event) => setVoiceRoomUrl(event.target.value)} /><small>游戏不会监听通话；这里只让远程玩家方便进入同一频道。</small></label> : null}{error ? <p className="form-error">{error}</p> : null}<Button type="submit" disabled={busy}>{busy ? "正在创建房间…" : "创建房间"}</Button></form></Panel></main>;
+import { Button } from "@ravens/ui";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { getAccount, readCreationIntent, type RoomPlayMode } from "../api.js";
+import { RoomPageShell, OperationStatus } from "../components/RoomPage.js";
+const modes:Record<RoomPlayMode,{title:string;detail:string}>={IN_PERSON:{title:"围桌线下",detail:"围坐讨论，手机查看身份"},REMOTE:{title:"纯线上",detail:"各自加入，同步语音讨论"},HYBRID:{title:"线上线下",detail:"现场与远程共同游玩"}};
+export function Create({onBack,onSubmit,busy,error}:{onBack:()=>void;onSubmit:(name:string,count:number,mode:RoomPlayMode,url?:string)=>void;busy:boolean;error?:string}){
+  const saved=readCreationIntent();
+  const [name,setName]=useState(saved?.organizerName??""),[count,setCount]=useState(saved?.playerCount??8),[mode,setMode]=useState<RoomPlayMode>(saved?.playMode??"IN_PERSON"),[url,setUrl]=useState(saved?.voiceRoomUrl??""),[invalid,setInvalid]=useState("");
+  const nameEdited=useRef(false);
+  useEffect(()=>{let active=true;void getAccount().then(value=>{if(active&&!nameEdited.current&&value.profile)setName(current=>current||value.profile!.nickname);}).catch(()=>{});return()=>{active=false;};},[]);
+  function submit(event:FormEvent){event.preventDefault();if(!name.trim()){setInvalid("请填写昵称");document.getElementById("create-name")?.focus();return;}if(mode!=="IN_PERSON"&&url.trim()&&!/^https?:\/\//i.test(url.trim())){setInvalid("语音链接须以 http:// 或 https:// 开头");document.getElementById("create-voice")?.focus();return;}setInvalid("");onSubmit(name.trim(),count,mode,mode!=="IN_PERSON"?url:undefined);}
+  return <RoomPageShell title="创建房间" onBack={onBack} actions={<><OperationStatus error={invalid||error}/><Button form="create-room" type="submit" disabled={busy}>{busy?"正在创建 / 加入…":saved?"继续创建房间":"创建房间"}</Button></>}>
+    <form id="create-room" className="room-form" onSubmit={submit}><label htmlFor="create-name">你的昵称<input id="create-name" value={name} onChange={e=>{nameEdited.current=true;setName(e.target.value);}} maxLength={24} required disabled={busy||Boolean(saved)}/></label><fieldset disabled={busy||Boolean(saved)}><legend>玩家人数</legend><div className="count-picker">{Array.from({length:8},(_,i)=>i+5).map(n=><button type="button" key={n} aria-pressed={count===n} onClick={()=>setCount(n)}>{n}人</button>)}</div></fieldset><fieldset disabled={busy||Boolean(saved)}><legend>游玩方式</legend><div className="room-mode-picker">{(Object.keys(modes) as RoomPlayMode[]).map(value=><button type="button" key={value} aria-pressed={mode===value} onClick={()=>setMode(value)}><strong>{modes[value].title}</strong><small>{modes[value].detail}</small></button>)}</div></fieldset>{mode!=="IN_PERSON"?<details><summary>附加语音链接</summary><label>语音 / 视频链接<input id="create-voice" type="url" value={url} disabled={busy||Boolean(saved)} onChange={e=>setUrl(e.target.value)} placeholder="https://"/></label></details>:null}{saved?<p className="operation-status">正在确认原来的创建结果，保留本次设置。</p>:null}</form>
+  </RoomPageShell>;
 }

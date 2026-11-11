@@ -38,7 +38,7 @@ test("refresh after a lost first join completes the saved ticket before asking f
   sessionStorage.setItem("ravens_room_session",JSON.stringify({roomCode:"ABCDEF",mode:"PLAYER",nickname:"原昵称",pendingJoin:true}));
   sessionStorage.setItem("ravens_join:ravens_room_session:ABCDEF:PLAYER","original-signed-ticket");
   const fetcher=vi.fn(async(url:string,init?:RequestInit)=>({ok:true,status:200,json:async()=>url==="/api/auth/session"?{authorized:true}:url==="/api/account"?{signedIn:false,rooms:[]}:url.endsWith("/join")?{id:"p1",nickname:"原昵称",mode:"PLAYER"}:url.endsWith("/me")?{...mine,room:lobby,state:"LOBBY"}:url.endsWith("/result")?{result:null}:lobby}));vi.stubGlobal("fetch",fetcher);
-  render(<App/>);expect(await screen.findByRole("heading",{name:"等待开局"})).toBeVisible();const join=fetcher.mock.calls.find(call=>call[0].endsWith("/join"))!;expect(JSON.parse(String(join[1]?.body)).joinTicket).toBe("original-signed-ticket");expect(fetcher.mock.calls.some(call=>call[0].includes("join-ticket"))).toBe(false);expect(JSON.parse(sessionStorage.getItem("ravens_room_session")!).participantId).toBe("p1");
+  render(<App/>);expect(await screen.findByRole("heading",{name:"ABCDEF"})).toBeVisible();const join=fetcher.mock.calls.find(call=>call[0].endsWith("/join"))!;expect(JSON.parse(String(join[1]?.body)).joinTicket).toBe("original-signed-ticket");expect(fetcher.mock.calls.some(call=>call[0].includes("join-ticket"))).toBe(false);expect(JSON.parse(sessionStorage.getItem("ravens_room_session")!).participantId).toBe("p1");
 });
 
 test("a replaced host keeps the valid player session after a stale management request is denied",async()=>{
@@ -52,7 +52,7 @@ test("a replaced host keeps the valid player session after a stale management re
   });vi.stubGlobal("fetch",fetcher);
   render(<App/>);fireEvent.click(await screen.findByRole("button",{name:"准备并开始"}));
   expect(await screen.findByText("只有现任房主可以操作")).toBeVisible();
-  expect(screen.getByRole("heading",{name:"等待开局"})).toBeVisible();expect(screen.queryByRole("heading",{name:"进入村庄"})).not.toBeInTheDocument();
+  expect(screen.getByRole("heading",{name:"ABCDEF"})).toBeVisible();expect(screen.queryByRole("heading",{name:"加入房间"})).not.toBeInTheDocument();
   expect(JSON.parse(sessionStorage.getItem("ravens_room_session")!).participantId).toBe("p1");expect(screen.queryByRole("button",{name:"准备并开始"})).not.toBeInTheDocument();
 });
 
@@ -63,8 +63,8 @@ test("browser back closes ghost confirmation and public player detail before nav
     const {mine}=fixture();render(<PlayerGame {...handlers} view={mine}/>);
     fireEvent.click(screen.getByRole("button",{name:"举手"}));expect(window.history.state.ravensLayer).toBeDefined();
     window.history.back();await waitFor(()=>expect(screen.queryByRole("alertdialog",{name:"使用鬼票"})).not.toBeInTheDocument());expect(navigate).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button",{name:"城镇"}));fireEvent.click(screen.getByRole("button",{name:/2号 玩家2.*存活/}));expect(screen.getByRole("button",{name:"关闭玩家公开卡"})).toBeVisible();
-    window.history.back();await waitFor(()=>expect(screen.queryByRole("button",{name:"关闭玩家公开卡"})).not.toBeInTheDocument());expect(navigate).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button",{name:"城镇"}));fireEvent.click(screen.getByRole("button",{name:/2号 玩家2.*存活/}));expect(screen.getByRole("button",{name:"关闭2号 玩家2很长的名字"})).toBeVisible();
+    window.history.back();await waitFor(()=>expect(screen.queryByRole("button",{name:"关闭2号 玩家2很长的名字"})).not.toBeInTheDocument());expect(navigate).not.toHaveBeenCalled();
     expect(window.history.state.ravensScreen).toBe("GAME");
   }finally{window.removeEventListener("popstate",navigate);}
 });

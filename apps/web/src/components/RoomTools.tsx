@@ -1,3 +1,6 @@
+import {RoomSheet} from "./RoomPage.js";
+import {BotControls} from "./BotControls.js";
+import {useGameClock} from "../use-game-clock.js";
 import { useBackLayer } from "../use-back-layer.js";
 import { InviteTools } from "./InviteTools.js";
 import { GramophonePlayer } from "./GramophonePlayer.js";
@@ -13,11 +16,13 @@ export function RoomTools({ room, participantId, view, onChanged, onLeft, onGuid
   const [recovery, setRecovery] = useState<{ recoveryCode: string; expiresAt: number }>();
   const [confirmation, setConfirmation] = useState<{ text: string; run: () => Promise<unknown> }>();
   const [open,setOpen]=useState(false);
-  useBackLayer(open,()=>setOpen(false));
-  useBackLayer(Boolean(confirmation),()=>setConfirmation(undefined));
+
+
   const [sound,setSound]=useState(effectsAudioEnabled);
   const host = room.organizerId === participantId;
-  const locked = (room.game?.presentationUntil ?? 0) > (room.serverNow ?? Date.now());
+  const now=useGameClock(room.game,room);
+  const locked = (room.game?.presentationUntil ?? 0) > now;
+  useEffect(()=>{const open=()=>setOpen(true);window.addEventListener("ravens:bot-controls",open);return()=>window.removeEventListener("ravens:bot-controls",open);},[]);
   useEffect(() => {
     const hide = () => { if (document.hidden) { setRecovery(undefined); setConfirmation(undefined); } };
     document.addEventListener("visibilitychange", hide);
@@ -35,7 +40,8 @@ export function RoomTools({ room, participantId, view, onChanged, onLeft, onGuid
     catch (failure) { setError(failure instanceof Error ? failure.message : "操作失败"); await onChanged().catch(() => undefined); }
     finally { setBusy(false); }
   }
-  return <details className="room-tools" open={open} onToggle={event=>setOpen(event.currentTarget.open)}><summary>更多</summary><section aria-label="房间操作">
+  return <><button className="room-tools-trigger" type="button" onClick={()=>setOpen(true)}>更多{room.timeline?.mode==="MANUAL"?<small>演练计时已冻结</small>:room.botControl?.requestedMode==="PAUSED"?<small>人机暂停，计时继续</small>:room.botControl?.effectiveMode==="SUSPENDED"?<small>人机已悬置</small>:null}</button>{open?<RoomSheet title={`房间 ${room.code}`} onClose={()=>setOpen(false)}><section className="room-tools-body" aria-label="房间操作">
+    {host?<BotControls room={room} view={view} busy={busy} run={run}/>:null}
     <strong>房间 {room.code}</strong>
     <InviteTools code={room.code} voiceRoomUrl={room.voiceRoomUrl}/>
     {onGuide ? <div>{(["roles","tutorial",...(view?.role?["mine"]:[])] as GuideMode[]).map(mode=><button type="button" key={mode} onClick={event=>{setOpen(false);onGuide(mode);}}>{mode==="mine"?"我的角色":mode==="roles"?"角色表":"规则帮助"}</button>)}</div> : null}
@@ -50,7 +56,7 @@ export function RoomTools({ room, participantId, view, onChanged, onLeft, onGuid
     {host && ["GAME_OVER", "ABORTED"].includes(room.state) ? <button type="button" disabled={busy || locked || view?.canRestart === false} onClick={() => void run(() => reopenRoom(room.code))}>{room.state === "GAME_OVER" ? "下一把" : "返回大厅"}</button> : null}
     {host && ["LOBBY", "TUTORIAL"].includes(room.state) ? <details><summary>移除玩家</summary>{room.participants.filter(p => p.mode === "PLAYER" && p.id !== participantId).map(p => <button type="button" key={p.id} disabled={busy} onClick={() => setConfirmation({ text: `移除 ${p.nickname}？${room.state === "TUTORIAL" ? "本次教学会同时取消，" : ""}所有人须重新准备。`, run: () => removeRoomPlayer(room.code, p.id, room.state === "TUTORIAL") })}>{p.seat}号 {p.nickname}</button>)}</details> : null}
     {hasPendingCommand(room.code) ? <button type="button" disabled={busy} onClick={() => void run(() => retryPendingCommand(room.code))}>重试待确认操作</button> : null}
-    {confirmation ? <div role="alertdialog" aria-label="确认房间操作"><p>{confirmation.text}</p><button type="button" disabled={busy} onClick={() => void run(confirmation.run)}>确认</button><button type="button" disabled={busy} onClick={() => setConfirmation(undefined)}>取消</button></div> : null}
+    {confirmation ? <RoomSheet title="确认房间操作" confirmation onClose={()=>setConfirmation(undefined)} actions={<><button type="button" disabled={busy} onClick={()=>void run(confirmation.run)}>确认</button><button type="button" disabled={busy} onClick={()=>setConfirmation(undefined)}>取消</button></>}><p>{confirmation.text}</p></RoomSheet> : null}
     {error ? <p role="alert">{error}</p> : null}
-  </section></details>;
+  </section></RoomSheet>:null}</>;
 }

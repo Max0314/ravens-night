@@ -34,7 +34,7 @@ test.skipIf(!process.env.RAVENS_REPAIR_DATABASE_URL)("v1 migration is atomic in 
     expect((await admin.query(`SELECT count(*)::int n FROM "${schema}".room_public_events WHERE seq=999`)).rows[0].n).toBe(1);
     await admin.query(`ALTER TABLE "${schema}".room_runtime_snapshots DROP CONSTRAINT block_upgrade`);
     repository=open();runtime=new LiveRoomRuntime(repository,{now:t.now,presentation:true});await runtime.initialize();
-    const migrated=runtime.service.snapshot(old.code);expect(migrated.schemaVersion).toBe(2);expect(migrated.revision).toBe(old.revision+1);expect(migrated.game!.nomination).toEqual(old.game!.nomination);expect(migrated.game!.publicProjection!.nomination?.countedVotes?.[6]).toBe(true);expect(migrated.game!.ghostVoteSeats).not.toContain(6);
+    const migrated=runtime.service.snapshot(old.code);expect(migrated.schemaVersion).toBe(3);expect(migrated.revision).toBe(old.revision+1);expect(migrated.game!.nomination).toEqual(old.game!.nomination);expect(migrated.game!.publicProjection!.nomination?.countedVotes?.[6]).toBe(true);expect(migrated.game!.ghostVoteSeats).not.toContain(6);
     expect((await admin.query(`SELECT count(*)::int n FROM "${schema}".room_public_events WHERE seq=999`)).rows[0].n).toBe(0);
     await runtime.close();repository=open();runtime=new LiveRoomRuntime(repository,{now:t.now,presentation:true});await runtime.initialize();
     expect(runtime.service.snapshot(old.code).roomInstanceId).toBe(migrated.roomInstanceId);expect(runtime.service.snapshot(old.code).setupId).toBe(migrated.setupId);

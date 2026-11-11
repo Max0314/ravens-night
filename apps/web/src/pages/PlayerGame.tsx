@@ -1,5 +1,7 @@
+import {RoomPageShell,RoomActionBar,RoomSheet,PlayerTile} from "../components/RoomPage.js";
+import {useGameClock} from "../use-game-clock.js";
 import { Button, Panel, RoleCard, SeatRing } from "@ravens/ui";
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { PrivateHistoryEntry, PrivateHistoryKind, PrivateView } from "../api.js";
 import type { GuideMode } from "../components/GuideOverlay.js";
 import { roleArt } from "../role-art.js";
@@ -59,7 +61,7 @@ export function PlayerGame(props: PlayerGameProps) {
     document.addEventListener("visibilitychange", sync); window.addEventListener("online", sync);
     return () => { window.removeEventListener("ravens:cover-private",cover); document.removeEventListener("visibilitychange", sync); window.removeEventListener("online", sync); };
   }, []);
-  return <div className="player-session">{covered && props.error ? <p role="alert" className="public-command-error">{props.error}</p> : null}{props.view ? <PublicBallot view={props.view} busy={props.busy || syncing} onVote={props.onVote} onDetails={()=>{if(!covered)setShowBallot(n=>n+1);}}/> : null}<div className="player-private" hidden={covered} inert={covered}><PlayerGameContent {...props} drafts={drafts} setDrafts={setDrafts} showBallot={showBallot} busy={props.busy || syncing} /></div>{syncing ? <p role="status" className="session-status">正在同步当前轮次…</p> : null}{props.view?.game ? <><button className="privacy-toggle" type="button" onClick={() => setCovered(true)}>遮住私密内容</button><EventStage game={props.view.game} {...(!covered && props.receipt ? { receipt: props.receipt } : {})} />{covered ? <section className="privacy-curtain" aria-label="私密内容已遮住"><h1>私密内容已遮住</h1><Button onClick={() => setCovered(false)}>显示私密内容</Button></section> : null}</> : null}</div>;
+  return <div className="player-session">{covered && props.error ? <p role="alert" className="public-command-error">{props.error}</p> : null}{props.view ? <PublicBallot view={props.view} busy={props.busy || syncing} onVote={props.onVote} onDetails={()=>{if(!covered)setShowBallot(n=>n+1);}}/> : null}<div className="player-private" hidden={covered} inert={covered}><PlayerGameContent {...props} drafts={drafts} setDrafts={setDrafts} showBallot={showBallot} busy={props.busy || syncing} /></div>{syncing ? <p role="status" className="session-status">正在同步当前轮次…</p> : null}{props.view?.game ? <><button className="privacy-toggle" type="button" onClick={() => setCovered(true)}>遮住私密内容</button><EventStage game={props.view.game} room={props.view.room} {...(!covered && props.receipt ? { receipt: props.receipt } : {})} />{covered ? <section className="privacy-curtain" aria-label="私密内容已遮住"><h1>私密内容已遮住</h1><Button onClick={() => setCovered(false)}>显示私密内容</Button></section> : null}</> : null}</div>;
 }
 
 function PlayerGameContent({ drafts, setDrafts, showBallot, view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onCancelNomination, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide, roomCode, voiceRoomUrl, onLeave, onRefresh, onResumeGame, onFinishDefense }: PlayerGameProps) {
@@ -71,59 +73,55 @@ function PlayerGameContent({ drafts, setDrafts, showBallot, view, busy, error, o
   useBackLayer(pendingShot !== undefined && tab === "ACTION",()=>setPendingShot(undefined));
   useEffect(()=>{if(showBallot)setTab("ACTION");},[showBallot]);
   const game = view?.game;
-  const now=game?.serverNow ?? Date.now();
+  const now=useGameClock(game,view?.room);
+  const content=useRef<HTMLDivElement>(null),positions=useRef<Record<string,number>>({});
+  const [readSeq,setReadSeq]=useState(0);
+  function changeTab(next:typeof tab){positions.current[tab]=content.current?.scrollTop??0;setTab(next);if(next==="RECORD")setReadSeq(view?.history.at(-1)?.seq??0);}
+  useLayoutEffect(()=>{if(content.current)content.current.scrollTop=positions.current[tab]??0;},[tab,game?.phase]);
+  useEffect(()=>{positions.current={};if(content.current)content.current.scrollTop=0;},[game?.contextId,game?.gameId]);
+  useEffect(()=>{const reset=()=>{setSelected([]);setPendingNominee(undefined);setPendingShot(undefined);};const visible=()=>{if(!document.hidden)reset();};window.addEventListener("online",reset);document.addEventListener("visibilitychange",visible);return()=>{window.removeEventListener("online",reset);document.removeEventListener("visibilitychange",visible);};},[]);
   const role = view?.role;
-  const shownEvents = publicEventsAt(game?.events ?? [], game?.serverNow ?? Date.now());
+  const shownEvents = publicEventsAt(game?.events ?? [], now);
   useEffect(() => { setSelected([]); setPendingNominee(undefined); setPendingShot(undefined); }, [view?.roomInstanceId, game?.gameId, view?.contextId, game?.contextId, game?.phase, game?.nomination?.ballotId, view?.action?.kind]);
 
   if (!view || !role || !game) return <main className="game-page"><button className="screen-back" type="button" onClick={onBack}>← 返回首页</button><Waiting title="等待所有玩家" detail={`${view?.room?.tutorialCompleteCount ?? 0}/${view?.room?.playerCount ?? "?"} 人完成教学，等待其他玩家。`} compact /></main>;
 
-  if (game.phase === "ABORTED") return <main className="game-page"><button type="button" onClick={onBack}>返回首页</button><Panel><h1>本局已中止</h1><p>本局不判胜负。等待房主返回大厅后重新准备。</p>{canRestart ? <Button disabled={busy} onClick={onRestart}>返回大厅</Button> : null}{onLeave ? <Button variant="quiet" disabled={busy} onClick={onLeave}>离开房间</Button> : null}</Panel>{error ? <p role="alert">{error}</p> : null}</main>;
+  if (game.phase === "ABORTED") return <RoomPageShell title="本局已中止" onBack={onBack} actions={<>{canRestart?<Button disabled={busy} onClick={onRestart}>返回大厅</Button>:null}{onLeave?<Button variant="quiet" disabled={busy} onClick={onLeave}>离开房间</Button>:null}{error?<p role="alert" className="form-error">{error}</p>:null}</>}><p>本局不判胜负。等待房主返回大厅后重新准备。</p></RoomPageShell>;
 
-  if (game.phase === "ROLE_REVEAL") return <main className="role-page">
-    <button className="screen-back" type="button" onClick={onBack}>← 返回首页</button>
-    <p className="privacy-warning">只有你能看到 · 请勿向外展示屏幕</p>
-    <RoleCard name={role.name} alignment={`${role.alignment === "GOOD" ? "善良" : "邪恶"} · ${role.type === "TOWNSFOLK" ? "镇民" : role.type === "OUTSIDER" ? "外来者" : role.type === "MINION" ? "爪牙" : "恶魔"}`} ability={role.summary} beginnerTip={role.beginnerTip} {...roleArt(role.roleId)} />
-    <Button onClick={onConfirmRole} disabled={busy || view.roleConfirmed}>{view.roleConfirmed ? "等待其他玩家确认…" : "我记住了身份"}</Button>
-    <GameGuideLinks onOpen={onOpenGuide} />{error ? <p className="game-error" role="alert">{error}</p> : null}
-  </main>;
+  if (game.phase === "ROLE_REVEAL") return <RoomPageShell className="role-confirm-page" title="身份确认" subtitle="仅你可见" onBack={onBack} actions={<><Button onClick={onConfirmRole} disabled={busy||view.roleConfirmed}>{view.roleConfirmed?"已确认，等待其他玩家":busy?"正在提交…":"确认身份"}</Button>{error?<p role="alert" className="form-error">{error}</p>:null}</>}><RoleCard name={role.name} alignment={`${role.alignment==="GOOD"?"善良":"邪恶"} · ${role.type==="TOWNSFOLK"?"镇民":role.type==="OUTSIDER"?"外来者":role.type==="MINION"?"爪牙":"恶魔"}`} ability={role.summary} {...roleArt(role.roleId)}/><details className="role-advice"><summary>游玩建议</summary><p>{role.beginnerTip}</p></details><GameGuideLinks onOpen={onOpenGuide}/></RoomPageShell>;
 
-  if (game.phase === "GAME_OVER" && (game.revealComplete === false || (game.presentationUntil ?? 0) > (game.serverNow ?? Date.now()))) return <main className="game-page"><Waiting title={game.winner ? game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜" : "终章将至"} detail="身份与战报将在最后一幕结束后公布。" compact /></main>;
-  if (game.phase === "GAME_OVER") return <main className={`ending ending--${game.winner?.toLowerCase()}`}>
-    <button className="screen-back" type="button" onClick={onBack}>← 返回首页</button>
-    <div className="ending-content"><p>钟声停止</p><h1>{game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜"}</h1>
-    <p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的真实身份</h2><p>{role.name} · {role.summary}</p>{role.perceivedAs ? <p>本局游戏中，你一直以为自己是<strong>{role.perceivedAs}</strong>；因此曾收到的信息可能不真实。</p> : null}</Panel>{roomCode ? <ResultBoard code={roomCode} gameId={game.gameId}/> : null}<StorytellerReview decisions={view.storytellerDecisions ?? []} /><Clues history={view.history} messages={view.messages} /><PublicLog events={game.events} />{canRestart ? <Button onClick={onRestart} disabled={busy}>{busy ? "正在重置房间…" : "下一把"}</Button> : <p className="ending__waiting">想再玩一局？等待当前房主重开即可，无需重新加入。</p>}{onLeave ? <Button variant="quiet" onClick={onLeave} disabled={busy}>退出房间</Button> : null}{error ? <p role="alert">{error}</p> : null}<GameGuideLinks onOpen={onOpenGuide} /></div>
-  </main>;
+  if (game.phase === "GAME_OVER" && (game.revealComplete === false || (game.presentationUntil ?? 0) > now)) return <main className="game-page"><Waiting title={game.winner ? game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜" : "终章将至"} detail="身份与战报将在最后一幕结束后公布。" compact /></main>;
+  if (game.phase === "GAME_OVER") return <RoomPageShell className={`ending-page ending--${game.winner?.toLowerCase()}`} title={game.winner==="GOOD"?"善良阵营获胜":"邪恶阵营获胜"} onBack={onBack} actions={<>{canRestart?<Button onClick={onRestart} disabled={busy}>{busy?"正在重置…":"下一把"}</Button>:<p>等待房主开始下一把</p>}{onLeave?<Button variant="quiet" onClick={onLeave} disabled={busy}>离开房间</Button>:null}{error?<p role="alert">{error}</p>:null}</>}><p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的真实身份</h2><p>{role.name} · {role.summary}</p>{role.perceivedAs?<p>本局自认 {role.perceivedAs}，此前信息可能不真实。</p>:null}</Panel>{roomCode?<ResultBoard code={roomCode} gameId={game.gameId}/>:null}<StorytellerReview decisions={view.storytellerDecisions??[]}/><Clues history={view.history} messages={view.messages}/><PublicLog events={game.events}/></RoomPageShell>;
 
   const action = view.action;
   const isNight = game.phase === "FIRST_NIGHT" || game.phase === "OTHER_NIGHT";
   const mine = game.seats.find((seat) => seat.seat === view.participant.seat);
   const alive = mine?.alive ?? false;
   const canNominate = view.canNominate ?? alive;
-  const locked = Boolean(game.presentationUntil && game.serverNow && game.presentationUntil > game.serverNow);
+  const locked = Boolean(game.presentationUntil && game.presentationUntil > now);
   const disabled = busy || locked;
   const defending = Boolean(game.nomination?.defenseUntil && now < game.nomination.defenseUntil);
   const pendingInvites = view.social?.invitations.filter((invite) => invite.toSeat === view.participant.seat && invite.status.toUpperCase() === "PENDING").length ?? 0;
-  const navigation = <nav className="game-tabs" aria-label="游戏分区">{([['ACTION', '行动'], ['TOWN', '城镇'], ['RECORD', '记录']] as const).map(([key, label]) => <button type="button" key={key} className={tab === key ? "is-active" : ""} aria-pressed={tab === key} onClick={() => setTab(key)}>{label}{key === "TOWN" && pendingInvites ? <small className="invite-badge">{pendingInvites}</small> : null}</button>)}</nav>;
+  const navigation = <nav className="game-tabs" aria-label="游戏分区">{([['ACTION', '行动'], ['TOWN', '城镇'], ['RECORD', '记录']] as const).map(([key, label]) => <button type="button" key={key} className={tab === key ? "is-active" : ""} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}{key === "TOWN" && pendingInvites ? <small className="invite-badge">{pendingInvites}</small> : key==="RECORD"&&view.history.some(e=>e.seq>readSeq&&e.kind==="INFORMATION")?<small className="invite-badge">新</small>:null}</button>)}</nav>;
   const utility = <div className="game-utility"><span>{game.aliveCount} 人存活 · 你是 {view.participant.seat} 号</span>{voiceRoomUrl || view.voiceRoomUrl ? <a href={voiceRoomUrl ?? view.voiceRoomUrl} target="_blank" rel="noreferrer">语音频道 ↗</a> : null}{game.pauseReason ? <p role="status">{game.pauseReason}{onResumeGame ? <button type="button" disabled={busy} onClick={onResumeGame}>延长等待</button> : null}</p> : null}</div>;
   const publicTown = <><RemoteTownBoard game={game} ownSeat={view.participant.seat} />{roomCode ? <SocialRoom code={roomCode} view={view} drafts={drafts ?? {}} setDrafts={setDrafts!} onRefresh={onRefresh ?? (() => undefined)} /> : null}</>;
   const submittedNightAction = isNight && view.history.some((entry) => entry.phase === game.phase && entry.day === game.day && entry.kind === "ACTION");
   if (isNight) return <main className="game-page game-page--night">
     <GameHeader phase={phaseNames[game.phase]!} day={game.day} role={role.name} onBack={onBack} />
-    {utility}{navigation}<div className="game-content">{tab === "TOWN" ? publicTown : null}{tab === "RECORD" ? <><Clues history={view.history} messages={view.messages} /><PublicLog events={shownEvents} /><GameGuideLinks onOpen={onOpenGuide} /></> : null}<div hidden={tab !== "ACTION"}>
+    {utility}{navigation}<div className="game-content" ref={content}>{tab === "TOWN" ? publicTown : null}{tab === "RECORD" ? <><Clues history={view.history} messages={view.messages} /><PublicLog events={shownEvents} /><GameGuideLinks onOpen={onOpenGuide} /></> : null}<div hidden={tab !== "ACTION"}>
 
     {game.phase === "FIRST_NIGHT" && role.alignment === "EVIL" ? <EvilFirstNightIntel entries={view.history.filter((entry) => entry.phase === "ROLE_REVEAL" && (entry.kind === "INFORMATION" || entry.kind === "NOTICE"))} /> : null}
     {action?.kind === "SELECT_ONE" || action?.kind === "SELECT_TWO" ? <Panel className="action-panel">
       <p className="eyebrow">轮到你行动</p><h1>{action.prompt}</h1>
       <SeatChoices seats={game.seats} legalSeats={action.legalSeats} selected={selected} max={action.maxTargets} onChange={setSelected} />
-      <Button disabled={disabled || selected.length !== action.maxTargets} onClick={() => onSubmitAction(selected)}>{busy ? "正在封存选择…" : `确认选择（${selected.length}/${action.maxTargets}）`}</Button>
+
     </Panel> : <Waiting title="村庄已经沉睡" detail={submittedNightAction ? "已提交，等待其他玩家。线索见记录。" : "等待其他玩家，轮到你时会显示操作。"} compact />}
-    </div>{error ? <p className="game-error" role="alert">{error}</p> : null}</div>
+    </div></div>{tab==="ACTION"?<RoomActionBar>{action?.kind==="SELECT_ONE"||action?.kind==="SELECT_TWO"?<Button disabled={disabled||selected.length!==action.maxTargets} onClick={()=>onSubmitAction(selected)}>{busy?"正在提交…":`确认选择（${selected.length}/${action.maxTargets}）`}</Button>:<p>{submittedNightAction?"已提交，等待其他玩家":"等待行动"}</p>}{error?<p className="form-error" role="alert">{error}</p>:null}</RoomActionBar>:null}
   </main>;
 
   return <main className="game-page game-page--day">
     <GameHeader phase={phaseNames[game.phase] ?? game.phase} day={game.day} role={role.name} onBack={onBack} />
-    {utility}{navigation}<div className="game-content">{tab === "TOWN" ? publicTown : null}{tab === "RECORD" ? <><Clues history={view.history} messages={view.messages} /><PublicLog events={shownEvents} /><GameGuideLinks onOpen={onOpenGuide} /></> : null}<div hidden={tab !== "ACTION"}>
+    {utility}{navigation}<div className="game-content" ref={content}>{tab === "TOWN" ? publicTown : null}{tab === "RECORD" ? <><Clues history={view.history} messages={view.messages} /><PublicLog events={shownEvents} /><GameGuideLinks onOpen={onOpenGuide} /></> : null}<div hidden={tab !== "ACTION"}>
 
     {game.phase === "VOTING" && game.nomination ? <Panel className="vote-panel">
       <h1>{defending ? "听取辩护" : "等待计票"}</h1>
@@ -134,13 +132,13 @@ function PlayerGameContent({ drafts, setDrafts, showBallot, view, busy, error, o
     </Panel> : <Panel className="day-panel">
       <p className="eyebrow">第 {game.day} 天</p><h1>{game.phase === "NOMINATION" ? "还可以继续提名" : "自由讨论"}</h1>
 
-      {pendingNominee ? <div className="nomination-confirm"><strong>确认提名 {seatName(game.seats, pendingNominee)}？</strong><p>辩护结束前可撤销，仍消耗今日次数。</p><div><Button onClick={() => onNominate(pendingNominee)} disabled={disabled}>确认提名</Button><Button variant="quiet" onClick={() => setPendingNominee(undefined)} disabled={disabled}>暂不提名</Button></div></div> : canNominate ? <div className="nominee-grid">{game.seats.filter((seat) => view.nominationTargets?.includes(seat.seat) ?? true).map((seat) => <button key={seat.seat} type="button" disabled={disabled} onClick={() => setPendingNominee(seat.seat)}><span>{seat.seat}</span>{seat.nickname}<small>提名{!seat.alive ? " · 已死亡" : ""}</small></button>)}</div> : <p className="ghost-vote-note">{alive ? "你今天已经发起过提名，仍可参与讨论与投票。" : "你已死亡，仍可分享线索、参与讨论，并谨慎使用幽灵票。"}</p>}
+      {pendingNominee ? <div className="nomination-confirm"><strong>确认提名 {seatName(game.seats, pendingNominee)}？</strong><p>辩护结束前可撤销，仍消耗今日次数。</p></div> : canNominate ? <div className="nominee-grid">{game.seats.filter((seat) => view.nominationTargets?.includes(seat.seat) ?? true).map((seat) => <PlayerTile key={seat.seat} player={seat} disabled={disabled} onClick={()=>setPendingNominee(seat.seat)} detail={seat.alive?"提名":"提名 · 已死亡"}/>)}</div> : <p className="ghost-vote-note">{alive ? "你今天已经发起过提名，仍可参与讨论与投票。" : "你已死亡，仍可分享线索、参与讨论，并谨慎使用幽灵票。"}</p>}
       {game.onBlock ? <p className="on-block">当前处决候选：{seatName(game.seats, game.onBlock.seat)} · {game.onBlock.votes} 票</p> : null}
       {game.executionTied ? <p className="on-block">最高票持平，目前无人会被处决。仍可继续提名打破平票。</p> : null}
-      {view.canEndDay ?? alive ? <Button variant="quiet" onClick={onReady} disabled={disabled}>{view.dayReady ? "撤回同意" : "同意结束今天"}（{game.readyCount}/{game.aliveCount}）</Button> : null}
+
     </Panel>}
     {alive && (view.canClaimSlayer ?? action?.kind === "SLAYER") ? <details className="slayer-declaration"><summary>公开宣称猎魔人能力</summary><p>任何存活玩家都可作出宣称，真假身份不会被公开。真实猎魔人的能力每局只有一次。</p><SeatChoices seats={game.seats} legalSeats={view.dayAbilityTargets ?? game.seats.map((seat) => seat.seat)} selected={selected} max={1} onChange={setSelected} />{pendingShot !== undefined ? <div className="nomination-confirm"><strong>向 {seatName(game.seats, pendingShot)} 开枪？</strong><p>所有玩家与公共大屏将同步看到宣称和枪击结果。</p><Button variant="danger" disabled={disabled} onClick={() => { onUseAbility(pendingShot); setPendingShot(undefined); }}>确认公开开枪</Button><Button variant="quiet" onClick={() => setPendingShot(undefined)}>收起武器</Button></div> : <Button variant="danger" disabled={disabled || selected.length !== 1} onClick={() => setPendingShot(selected[0]!)}>公开射击所选玩家</Button>}</details> : null}
-    <p className="latest-event">{shownEvents.at(-1)?.message}</p></div>{error ? <p className="game-error" role="alert">{error}</p> : null}</div>
+    </div></div>{tab==="ACTION"?<RoomActionBar>{pendingNominee!==undefined?<div className="room-action-pair"><Button onClick={()=>onNominate(pendingNominee)} disabled={disabled}>确认提名 {pendingNominee}号</Button><Button variant="quiet" disabled={disabled} onClick={()=>setPendingNominee(undefined)}>取消</Button></div>:game.phase!=="VOTING"&&(view.canEndDay??alive)?<Button variant="quiet" onClick={onReady} disabled={disabled}>{view.dayReady?"撤回同意":"同意结束今天"}（{game.readyCount}/{game.aliveCount}）</Button>:null}{error?<p className="form-error" role="alert">{error}</p>:null}</RoomActionBar>:null}
   </main>;
 }
 
@@ -149,8 +147,8 @@ function GameHeader({ phase, day, role, onBack }: { phase: string; day: number; 
 function RemoteTownBoard({ game, ownSeat }: { game: NonNullable<PrivateView["game"]>; ownSeat?: number }) {
   const [selected, setSelected] = useState<number>();
   const player = game.seats.find((seat) => seat.seat === selected);
-  useBackLayer(Boolean(player),()=>setSelected(undefined));
-  return <section className="remote-town-board" aria-label="公开城镇"><header><span>公开城镇</span><small>{game.aliveCount} 人存活 · {game.seats.length - game.aliveCount} 位亡灵</small></header><SeatRing seats={game.seats} {...(game.nomination?.currentVoterSeat ? { activeSeat: game.nomination.currentVoterSeat } : {})} {...(game.nomination?.countedVotes ? { countedVotes: game.nomination.countedVotes } : {})} {...(game.nomination?.raisedSeats ? { raisedSeats: game.nomination.raisedSeats } : {})} onSelect={setSelected} {...(ownSeat ? { ownSeat } : {})} /><p className="town-instruction">点击座位查看公开状态 · 身份始终保密</p>{player ? <section className="player-public-card"><button type="button" onClick={() => setSelected(undefined)} aria-label="关闭玩家公开卡">×</button><span>{player.seat} 号</span><h3>{player.nickname}</h3><p>{player.alive ? "存活" : "已死亡"} · {player.connected ? "在线" : "暂时离线"}</p><p>{player.alive ? "可以讨论、提名与投票。" : player.ghostVoteAvailable ? "仍可讨论 · 保留一枚幽灵票" : "仍可讨论 · 幽灵票已使用"}</p></section> : null}</section>;
+
+  return <section className="remote-town-board" aria-label="公开城镇"><header><span>公开城镇</span><small>{game.aliveCount} 人存活 · {game.seats.length - game.aliveCount} 位亡灵</small></header><SeatRing seats={game.seats} {...(game.nomination?.currentVoterSeat ? { activeSeat: game.nomination.currentVoterSeat } : {})} {...(game.nomination?.countedVotes ? { countedVotes: game.nomination.countedVotes } : {})} {...(game.nomination?.raisedSeats ? { raisedSeats: game.nomination.raisedSeats } : {})} onSelect={setSelected} {...(ownSeat ? { ownSeat } : {})} /><p className="town-instruction">点击座位查看公开状态 · 身份始终保密</p>{player ? <RoomSheet title={`${player.seat}号 ${player.nickname}`} onClose={()=>setSelected(undefined)}><span>{player.seat} 号</span><h3>{player.nickname}</h3><p>{player.alive ? "存活" : "已死亡"} · {player.connected ? "在线" : "暂时离线"}</p><p>{player.alive ? "可以讨论、提名与投票。" : player.ghostVoteAvailable ? "仍可讨论 · 保留一枚幽灵票" : "仍可讨论 · 幽灵票已使用"}</p></RoomSheet> : null}</section>;
 }
 
 function GameGuideLinks({ onOpen }: { onOpen: (mode: GuideMode) => void }) {
@@ -164,9 +162,7 @@ function EvilFirstNightIntel({ entries }: { entries: PrivateHistoryEntry[] }) {
 
 function Waiting({ title, detail, compact = false }: { title: string; detail: string; compact?: boolean }) { return <section className={compact ? "inline-waiting" : "night-page"}><Panel className="night-action"><h1>{title}</h1><p>{detail}</p><div className="waiting-orbit"><span /></div></Panel></section>; }
 
-function SeatChoices({ seats, legalSeats, selected, max, onChange }: { seats: PrivateView["game"] extends infer _ ? NonNullable<PrivateView["game"]>["seats"] : never; legalSeats: number[]; selected: number[]; max: number; onChange: (seats: number[]) => void }) {
-  return <div className="seat-choices">{seats.map((seat) => { const legal = legalSeats.includes(seat.seat); const active = selected.includes(seat.seat); return <button type="button" key={seat.seat} disabled={!legal} className={active ? "is-selected" : ""} onClick={() => onChange(active ? selected.filter((value) => value !== seat.seat) : [...(selected.length >= max ? selected.slice(1) : selected), seat.seat])}><span>{seat.seat}</span><strong>{seat.nickname}</strong>{!seat.alive ? <small>已死亡</small> : null}</button>; })}</div>;
-}
+function SeatChoices({seats,legalSeats,selected,max,onChange}:{seats:NonNullable<PrivateView["game"]>["seats"];legalSeats:number[];selected:number[];max:number;onChange:(seats:number[])=>void}){return <div className="seat-choices">{seats.map(seat=><PlayerTile key={seat.seat} player={seat} disabled={!legalSeats.includes(seat.seat)} selected={selected.includes(seat.seat)} detail={!legalSeats.includes(seat.seat)?"不可选择":seat.alive?undefined:"已死亡"} onClick={()=>onChange(selected.includes(seat.seat)?selected.filter(s=>s!==seat.seat):[...(selected.length>=max?selected.slice(1):selected),seat.seat])}/>)}</div>;}
 
 const historyKindLabels: Record<PrivateHistoryKind, string> = {
   IDENTITY: "身份",

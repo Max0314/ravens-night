@@ -1,4 +1,4 @@
-import { TICKET_MS } from "./errors.js";
+import { RoomError, TICKET_MS } from "./errors.js";
 import { randomUUID, randomBytes } from "node:crypto";
 import { hashOpaqueToken } from "../auth/session.js";
 import type { RoomRecord, ParticipantRecord, RoomService } from "./service.js";
@@ -89,13 +89,15 @@ export function recoverMembership(service: RoomService, code: string, recoveryCo
   const receipt = receiptKey ? social.recoveryReceipts?.find((r) => r.key === receiptKey && r.expiresAt > now) : undefined;
   if (receipt) {
     const participant = member(room, receipt.result.token, "PLAYER");
-    if(participant.accountId&&participant.accountId!==accountId)throw Error('账号与座位授权不匹配');
+    if(participant.controller==='BOT')throw new RoomError('BOT_EXTERNAL_ACCESS','人机座位不支持外部恢复',403);
+  if(participant.accountId&&participant.accountId!==accountId)throw Error('账号与座位授权不匹配');
     return { ...receipt.result, seat: participant.seat, nickname: participant.nickname };
   }
   const entry = social.recovery.find((r) => r.hash === hashOpaqueToken(recoveryCode) && r.expiresAt > now);
   if (!entry) throw new Error("恢复码无效或已过期");
   const participant = room.participants.find((p) => p.id === entry.participantId && !p.left);
   if (!participant) throw new Error("原座位已离开房间");
+  if(participant.controller==='BOT')throw new RoomError('BOT_EXTERNAL_ACCESS','人机座位不支持外部恢复',403);
   if(participant.accountId&&participant.accountId!==accountId)throw Error('账号与座位授权不匹配');
   const token = randomBytes(32).toString("base64url");
   const oldHash = participant.tokenHash;

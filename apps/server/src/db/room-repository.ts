@@ -1,3 +1,4 @@
+import type {CreationRequest} from '../rooms/creation.js';
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import type { RoomRecord, AccountClaim } from "../rooms/service.js";
@@ -48,6 +49,8 @@ export class PostgresRoomRepository implements RoomRepository {
       CREATE TABLE IF NOT EXISTS room_runtime_journal (code text NOT NULL, revision integer NOT NULL, snapshot jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(code, revision));
       CREATE TABLE IF NOT EXISTS room_public_events (code text NOT NULL, game_id text NOT NULL, seq integer NOT NULL, event jsonb NOT NULL, PRIMARY KEY(code, game_id, seq));
       CREATE TABLE IF NOT EXISTS account_guest_claims(account_id text PRIMARY KEY,room_id text NOT NULL,participant_id text NOT NULL UNIQUE,preview_hash text NOT NULL,completed_at timestamptz NOT NULL DEFAULT now());
+      CREATE TABLE IF NOT EXISTS room_creation_requests(creation_key text PRIMARY KEY,actor_digest text NOT NULL,fingerprint text NOT NULL,payload jsonb NOT NULL,expires_at timestamptz NOT NULL);
+      CREATE INDEX IF NOT EXISTS room_creation_requests_expires_idx ON room_creation_requests(expires_at);
       CREATE TABLE IF NOT EXISTS room_account_profiles(account_id text PRIMARY KEY,revision integer NOT NULL,profile jsonb NOT NULL);
     `);
     } catch (error) {
@@ -64,12 +67,15 @@ export class PostgresRoomRepository implements RoomRepository {
   async health(){if(!this.#writer||this.#writerUnavailable)throw Error('Database writer unavailable');await this.#writer.query('SELECT 1');}
   async loadClaims():Promise<AccountClaim[]>{return(await this.#pool.query('SELECT account_id AS sub,room_id AS "roomId",participant_id AS "participantId",preview_hash AS "previewHash" FROM account_guest_claims')).rows;}
   async loadProfiles():Promise<AccountProfile[]>{return(await this.#pool.query('SELECT profile FROM room_account_profiles')).rows.map(row=>this.#codec.decode<AccountProfile>(row.profile));}
+  async loadCreationRequests():Promise<CreationRequest[]>{return(await this.#pool.query('SELECT creation_key AS key,actor_digest AS "actorDigest",fingerprint,payload,expires_at FROM room_creation_requests')).rows.map(row=>({key:row.key,actorDigest:row.actorDigest,fingerprint:row.fingerprint,payload:this.#codec.decode<CreationRequest['payload']>(row.payload),expiresAt:new Date(row.expires_at).getTime()}));}
   async delete(code: string): Promise<void> { await this.commit([], [code]); }
-  async commit(changed: RoomRecord[], deleted: string[],claims:AccountClaim[]=[],profiles:AccountProfile[]=[]): Promise<void> {
+  async commit(changed: RoomRecord[], deleted: string[],claims:AccountClaim[]=[],profiles:AccountProfile[]=[],creations:CreationRequest[]=[],deletedCreations:string[]=[]): Promise<void> {
     if (!this.#writer || this.#writerUnavailable) throw new Error("Database writer is unavailable; restart to reacquire lock and restore committed rooms");
     const connection = await this.#pool.connect();
     try {
       await connection.query("BEGIN");
+      for(const value of creations)await connection.query('INSERT INTO room_creation_requests(creation_key,actor_digest,fingerprint,payload,expires_at) VALUES($1,$2,$3,$4::jsonb,$5)',[value.key,value.actorDigest,value.fingerprint,JSON.stringify(this.#codec.encode(value.payload)),new Date(value.expiresAt)]);
+      if(deletedCreations.length)await connection.query('DELETE FROM room_creation_requests WHERE creation_key=ANY($1::text[])',[deletedCreations]);
       for(const profile of profiles){const saved=await connection.query('INSERT INTO room_account_profiles(account_id,revision,profile) VALUES($1,$2,$3::jsonb) ON CONFLICT(account_id) DO UPDATE SET revision=EXCLUDED.revision,profile=EXCLUDED.profile WHERE room_account_profiles.revision=EXCLUDED.revision-1',[profile.sub,profile.revision,JSON.stringify(this.#codec.encode(profile))]);if(saved.rowCount!==1)throw new Error('Profile revision conflict');}
       for(const claim of claims)await connection.query('INSERT INTO account_guest_claims(account_id,room_id,participant_id,preview_hash) VALUES($1,$2,$3,$4)',[claim.sub,claim.roomId,claim.participantId,claim.previewHash]);
       for (const snapshot of changed) {

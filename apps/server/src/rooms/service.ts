@@ -21,11 +21,18 @@ import { revokeJoinTicket } from "./join-ticket.js";
 import type { Account } from '../auth/account.js';
 import { profileView, validateProfile, type AccountProfile } from '../auth/game-profile.js';
 
+import {activePlayers,humans,bots,newBotControl,botToken,gameNow,setTimeline,invalidateBots,exitIneligibleRehearsal,upgradeBotRoom,MAX_BOTS,type BotControl} from './bot-types.js';
+import type {RoomTimeline,ControlResult} from '@ravens/contracts';
+import {avatarChoices} from '../auth/avatar.js';
+import type {CreationRequest} from './creation.js';
+const HUMAN_ACTIVITY_CHECKPOINT_MS=60_000;
 export type ParticipantMode = "PLAYER" | "DISPLAY";
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface AccountClaim {sub:string;roomId:string;participantId:string;previewHash:string}
 
 export interface ParticipantRecord {
+  controller:"HUMAN"|"BOT";
+  bot?:{policyVersion:1};
   pendingProfile?: {nickname:string;avatar:string|null};
   avatarSnapshot?: string;
   joinTicket?: { hash: string; expiresAt: number; credentialHash: string };
@@ -43,11 +50,14 @@ export interface ParticipantRecord {
   left?: boolean;
 }
 
-export interface RoomResult { gameId: string; releasedAt: number; winner: "GOOD" | "EVIL"; reason: string; days: number; participants: Array<{id: string; nickname: string; avatar?: string; finalRole: string; perceivedRole?: string}> }
+export interface RoomResult {releasedWallAt:number;hadBots:boolean;rehearsalUsed:boolean; gameId: string; releasedAt: number; winner: "GOOD" | "EVIL"; reason: string; days: number; participants: Array<{controller:"HUMAN"|"BOT";id: string; nickname: string; avatar?: string; finalRole: string; perceivedRole?: string}> }
 
 export interface RoomRecord {
   lastResult?: RoomResult;
-  schemaVersion: 2;
+  schemaVersion: 3;
+  timeline:RoomTimeline;
+  botControl:BotControl;
+  lastHumanActivityAt:number;
   roomInstanceId: string;
   setupId: string;
   organizerAccountId?: string;
@@ -103,6 +113,8 @@ const VOTE_SLOT_MS = 1500;
 const DEFENSE_MS = 20_000;
 
 export interface GameRuntime {
+  hadBots:boolean;
+  rehearsalUsed:boolean;
   spyGrimoires?: Record<string, Grimoire>;
   deferredRoleChanges?: Array<{ seat: number; previous: RoleAssignment; historySeq: number; eventId?: string }>;
   publicProjection?: PublicProjection;
@@ -154,13 +166,16 @@ export interface GameRuntime {
 
 export class RoomService {
   readonly #rooms = new Map<string, RoomRecord>();
+  readonly #creations=new Map<string,CreationRequest>();
   readonly #profiles = new Map<string, AccountProfile>();
   readonly #claims = new Map<string, AccountClaim>();
   readonly #now: () => number;
   readonly #presentation: boolean;
+  readonly #botSecret:string;
 
-  constructor(options: { now?: () => number; presentation?: boolean } = {}) {
+  constructor(options: { now?: () => number; presentation?: boolean; botSecret?:string } = {}) {
     this.#now = options.now ?? Date.now;
+    this.#botSecret=options.botSecret??"local-test-bot-credentials";
     this.#presentation = options.presentation ?? true;
   }
 
@@ -175,7 +190,7 @@ export class RoomService {
     while (this.#rooms.has(code)) code = createRoomCode();
     const organizerToken = createOpaqueToken();
     const room: RoomRecord = {
-      schemaVersion: 2, roomInstanceId: randomUUID(), setupId: randomUUID(),
+      schemaVersion: 3, timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true},roomInstanceId: randomUUID(), setupId: randomUUID(),
       id: randomUUID(),
       code,
       organizerName: organizerName.trim().slice(0, 24) || "组织者",
@@ -203,17 +218,20 @@ export class RoomService {
     if (mode === "PLAYER" && room.participants.some((participant) => participant.mode === "PLAYER" && participant.nickname === nickname)) {
       throw new Error("这个昵称已经有人使用");
     }
-    if (mode === "PLAYER" && room.participants.filter((participant) => participant.mode === "PLAYER").length >= room.playerCount) {
-      throw new Error("Room is full");
+    let replacingSeat:number|undefined;
+    if(mode==='PLAYER'&&activePlayers(room).length>=room.playerCount){
+      const replace=bots(room).sort((a,b)=>b.seat!-a.seat!)[0];
+      if(!replace)throw new RoomError('ROOM_FULL','房间已满');
+      replacingSeat=replace.seat;revokeMembership(room,replace.id);room.participants=room.participants.filter(p=>p.id!==replace.id);delete room.botControl.memory[replace.id];
     }
     const token = createOpaqueToken();
     const players = room.participants.filter((participant) => participant.mode === "PLAYER");
     const participant: ParticipantRecord = {
-      commandVersion: 0,
+      controller:"HUMAN",commandVersion: 0,
       id: randomUUID(),
       nickname,
       mode,
-      ...(mode === "PLAYER" ? { seat: players.length + 1 } : {}),
+      ...(mode === "PLAYER" ? { seat: replacingSeat??players.length + 1 } : {}),
       tokenHash: hashOpaqueToken(token),
       connected: true,
       tutorialComplete: false, ready: false, lastSeenAt: this.#now(),
@@ -224,7 +242,7 @@ export class RoomService {
       room.organizerName = participant.nickname;
       room.organizerTokenHash = participant.tokenHash;
     }
-    if (mode === "PLAYER") this.invalidateSetup(room);
+    if (mode === "PLAYER") {room.metadata={...room.metadata,pendingFirstJoin:false};room.lastHumanActivityAt=this.#now();this.invalidateSetup(room);}
     this.changed(room);
     return { participant: structuredClone(participant), token };
   }
@@ -234,7 +252,7 @@ export class RoomService {
     const participantIndex = room.participants.findIndex((candidate) => candidate.tokenHash === hashOpaqueToken(playerToken));
     if (participantIndex < 0) throw new Error("Player authorization failed");
     const participant = room.participants[participantIndex]!;
-    if (participant.mode === "PLAYER" && room.game && this.#now() < room.game.presentationUntil) throw new RoomError("PRESENTATION_PENDING", "演出正在进行，请稍后操作");
+    if (participant.mode === "PLAYER" && room.game && this.gameNow(room) < room.game.presentationUntil) throw new RoomError("PRESENTATION_PENDING", "演出正在进行，请稍后操作");
     if (participant.mode === "PLAYER" && !["LOBBY", "GAME_OVER", "ABORTED"].includes(this.publicView(codeInput).state)) throw new RoomError("GAME_IN_PROGRESS", "本局仍在进行，可先返回首页，或请房主中止本局");
 
     const previousOrganizerId = this.organizer(room)?.id;
@@ -245,14 +263,14 @@ export class RoomService {
       participant.tokenHash = hashOpaqueToken(createOpaqueToken());
     } else room.participants.splice(participantIndex, 1);
     const players = room.participants
-      .filter((candidate) => candidate.mode === "PLAYER" && !candidate.left)
+      .filter((candidate) => candidate.mode === "PLAYER" && !candidate.left && candidate.controller==="HUMAN")
       .sort((left, right) => left.seat! - right.seat!);
     if (players.length === 0) {
       this.#rooms.delete(room.code);
       return { roomDestroyed: true, organizerChanged: previousOrganizerId === participant.id };
     }
     if (room.state === "LOBBY" && participant.mode === "PLAYER") {
-      players.forEach((candidate, index) => { candidate.seat = index + 1; });
+      activePlayers(room).sort((a,b)=>a.seat!-b.seat!).forEach((candidate, index) => { candidate.seat = index + 1; });
       this.invalidateSetup(room);
     }
     const organizerChanged = previousOrganizerId === participant.id;
@@ -264,6 +282,64 @@ export class RoomService {
     }
     this.changed(room);
     return { roomDestroyed: false, organizerChanged };
+  }
+
+  creationRequests(){return structuredClone([...this.#creations.values()]);}
+  restoreCreationRequests(values:CreationRequest[]){this.#creations.clear();for(const value of values)this.#creations.set(value.key,structuredClone(value));}
+  creationRequest(key:string){return this.#creations.get(key);}
+  putCreationRequest(value:CreationRequest){this.#creations.set(value.key,structuredClone(value));}
+  expireCreations(now=this.#now()){let removed=0;for(const [key,value]of this.#creations){if(value.expiresAt<=now){this.#creations.delete(key);if(++removed>=100)break;}}}
+  wallNow(){return this.#now();}
+  gameNow(room:RoomRecord,wall=this.#now()){return gameNow(room,wall);}
+  internalBotToken(room:RoomRecord,participant:ParticipantRecord){return botToken(this.#botSecret,room,participant);}
+  touchScheduling(room:RoomRecord){room.revision++;}
+  assertHost(code:string,token:string){return this.requireHost(this.find(code),token);}
+  botControlView(room:RoomRecord){const c=room.botControl;return{requestedMode:c.mode,effectiveMode:c.mode==='PAUSED'?'PAUSED' as const:humans(room).some(p=>p.connected&&this.#now()-p.lastSeenAt<ONLINE_MS)?'RUNNING' as const:'SUSPENDED' as const,pace:c.pace,version:c.version,attentionRequired:c.attentionRequired};}
+  private rememberBotTeam(room:RoomRecord,seat:number,knownTeamSeats:number[]){const p=bots(room).find(p=>p.seat===seat);if(p)room.botControl.memory[p.id]={...(room.game?{gameId:room.game.gameId}:{}),knownTeamSeats,ackedHumanMessageIds:[]};}
+  validateControlCommand(code:string,token:string,context:RoomCommandContext,expectedControlVersion:number,bindGame=false){
+    const room=this.find(code);this.requireHost(room,token);this.validateCommand(code,token,context,'ROOM');
+    if(room.botControl.version!==expectedControlVersion)throw new RoomError('BOT_CONTROL_CHANGED','人机控制状态已变化，请重新操作');
+    if(bindGame&&room.game){const projection=room.game.publicProjection!;if(context.gameId!==room.game.gameId||context.contextId!==projection.contextId)throw new RoomError('CONTEXT_CHANGED','游戏阶段已变化，请重新操作');if(projection.phase==='VOTING'?context.ballotId!==projection.nomination?.ballotId:context.ballotId!==undefined)throw new RoomError('BALLOT_CHANGED','表决状态已变化，请重新操作');}
+  }
+  changeBots(code:string,token:string,request:{count?:number;fill?:boolean;clear?:boolean}):ControlResult{
+    const room=this.find(code);this.requireHost(room,token);if(room.state!=='LOBBY')throw new RoomError('GAME_IN_PROGRESS','请回到大厅后调整人机');
+    if([request.count!==undefined,request.fill===true,request.clear===true].filter(Boolean).length!==1)throw new RoomError('INVALID_REQUEST','请选择一种人机操作',400);
+    const current=bots(room),vacancies=room.playerCount-activePlayers(room).length;
+    const count=request.fill?vacancies:request.count??0;
+    if(!Number.isInteger(count)||count<0||request.count!==undefined&&count<1||count>vacancies)throw new RoomError('BOT_CAPACITY_CHANGED','空位已变化，请刷新');
+    if(count+this.listCodes().reduce((n,c)=>n+bots(this.find(c)).length,0)>MAX_BOTS)throw new RoomError('BOT_LIMIT_REACHED','当前人机席位已满，请稍后再试',429);
+    let removed=0;
+    if(request.clear){removed=current.length;for(const p of current){revokeMembership(room,p.id);delete room.botControl.memory[p.id];}room.participants=room.participants.filter(p=>p.controller!=='BOT');}
+    for(let i=0;i<count;i++){
+      let label=1;while(room.participants.some(p=>p.nickname===`人机·${String(label).padStart(2,'0')}`))label++;
+      const participant:ParticipantRecord={id:randomUUID(),controller:'BOT',bot:{policyVersion:1},mode:'PLAYER',nickname:`人机·${String(label).padStart(2,'0')}`,seat:activePlayers(room).length+1,tokenHash:'',commandVersion:0,connected:true,lastSeenAt:this.#now(),ready:false,tutorialComplete:false,avatarSnapshot:avatarChoices[Math.floor(randomAt(room.botControl.seed,label)*avatarChoices.length)]!.url};
+      participant.tokenHash=hashOpaqueToken(this.internalBotToken(room,participant));room.participants.push(participant);
+    }
+    if(!count&&!removed)return{status:'UNCHANGED',added:0,removed:0};
+    activePlayers(room).sort((a,b)=>a.seat!-b.seat!).forEach((p,i)=>p.seat=i+1);this.invalidateSetup(room);this.changed(room);return{status:'APPLIED',added:count,removed};
+  }
+  changeBotControl(code:string,token:string,mode?:'RUNNING'|'PAUSED',pace?:'NORMAL'|'SLOW'):ControlResult{
+    const room=this.find(code);this.requireHost(room,token);
+    if(mode!==undefined&&!['RUNNING','PAUSED'].includes(mode)||pace!==undefined&&!['NORMAL','SLOW'].includes(pace)||mode===undefined&&pace===undefined)throw new RoomError('INVALID_REQUEST','请选择控制方式',400);
+    if(mode==='RUNNING'&&room.timeline.mode==='MANUAL')throw new RoomError('MODE_CONFLICT','请先恢复演练计时');
+    const c=room.botControl;if((mode===undefined||c.mode===mode)&&(pace===undefined||c.pace===pace)&&!c.attentionRequired)return{status:'UNCHANGED'};
+    if(mode)c.mode=mode;if(pace)c.pace=pace;c.attentionRequired=false;invalidateBots(room);this.changed(room);return{status:'APPLIED'};
+  }
+  changeRehearsalClock(code:string,token:string,mode:'MANUAL'|'WALL'):ControlResult{
+    const room=this.find(code);this.requireHost(room,token);
+    if(!['MANUAL','WALL'].includes(mode))throw new RoomError('INVALID_REQUEST','请选择计时方式',400);
+    if(humans(room).length!==1||!bots(room).length||mode==='MANUAL'&&!['LOBBY','TUTORIAL','RUNNING'].includes(this.publicView(code).state))throw new RoomError('REHEARSAL_UNAVAILABLE','仅一名真人与人机游玩时可使用演练计时');
+    if(!setTimeline(room,mode,this.#now()))return{status:'UNCHANGED'};
+    room.botControl.mode=mode==='MANUAL'?'PAUSED':'RUNNING';if(mode==='MANUAL'&&room.game)room.game.rehearsalUsed=true;invalidateBots(room);this.changed(room);return{status:'APPLIED'};
+  }
+  advanceRehearsal(code:string,token:string):ControlResult{
+    const room=this.find(code);this.requireHost(room,token);
+    if(room.timeline.mode!=='MANUAL'||room.botControl.mode!=='PAUSED'||humans(room).length!==1||!bots(room).length)throw new RoomError('REHEARSAL_UNAVAILABLE','请先冻结单人演练计时');
+    const game=room.game;if(!game||game.phase==='ABORTED'||game.publicProjection?.revealComplete)return{status:'WAITING'};
+    const now=this.gameNow(room),ballot=game.nomination;
+    const boundaries=[...(game.pendingPublications??[]).map(n=>n.at),game.presentationUntil,...(ballot?[ballot.defenseUntil,ballot.voteStartsAt,ballot.nextCountAt,ballot.voteEndsAt]:[]),...(!game.pauseReason?[game.phaseDeadlineAt]:[])].filter((value):value is number=>typeof value==='number'&&Number.isFinite(value)&&value>now);
+    if(!boundaries.length)return{status:'WAITING'};
+    room.timeline.manualNowMs=Math.min(...boundaries);room.botControl.version++;room.revision++;this.advanceTime(this.#now(),room.code);return{status:'ADVANCED'};
   }
 
   listCodes(): string[] { return [...this.#rooms.keys()]; }
@@ -336,7 +412,7 @@ export class RoomService {
     if (room.setupId !== context.setupId) throw new RoomError("SETUP_CHANGED", "人数、座序或准备阶段已变化，请重新操作");
     if (scope === "ROOM" || (scope === "OPTIONAL_GAME" && !room.game)) return;
     const game = room.game;
-    if (game && !["ABORTED"].includes(game.phase)) this.assertPresentationComplete(game);
+    if (game && !["ABORTED"].includes(game.phase)) this.assertPresentationComplete(room);
     if (!game || context.gameId !== game.gameId) throw new RoomError("GAME_CHANGED", "本局已结束或重新开始，请重新操作");
     if (scope === "BALLOT") {
       if (!game.nomination || context.ballotId !== game.nomination.ballotId) throw new RoomError("BALLOT_CHANGED", "本轮投票已结束，请查看当前轮次");
@@ -346,18 +422,19 @@ export class RoomService {
   completeCommand(code: string, participantId: string): void {
     const room = this.#rooms.get(normalizeRoomCode(code));
     const participant = room?.participants.find(p => p.id === participantId);
-    if (participant) participant.commandVersion += 1;
+    if (participant) {participant.commandVersion += 1;if(participant.controller==="HUMAN"){participant.lastSeenAt=this.#now();participant.connected=true;room!.lastHumanActivityAt=this.#now();room!.metadata={...room!.metadata,humanActivityCheckpointAt:this.#now()};}}
   }
 
   private invalidateSetup(room: RoomRecord): void {
     if(room.state==='LOBBY')for(const participant of room.participants){const pending=participant.pendingProfile;if(!pending)continue;participant.nickname=pending.nickname;if(pending.avatar)participant.avatarSnapshot=pending.avatar;else delete participant.avatarSnapshot;delete participant.pendingProfile;if(room.organizerParticipantId===participant.id)room.organizerName=participant.nickname;}
+    exitIneligibleRehearsal(room,this.#now());invalidateBots(room);
     room.setupId = randomUUID();
     for (const player of room.participants) player.ready = false;
   }
 
   private requireHost(room: RoomRecord, token: string): ParticipantRecord {
     const host = this.organizer(room);
-    if (!host || host.left || host.tokenHash !== hashOpaqueToken(token)) throw new RoomError("HOST_REQUIRED", "只有现任房主可以操作", 403);
+    if (!host || host.controller!=="HUMAN" || host.left || host.tokenHash !== hashOpaqueToken(token)) throw new RoomError("HOST_REQUIRED", "只有现任房主可以操作", 403);
     return host;
   }
 
@@ -383,6 +460,7 @@ export class RoomService {
     if (room.state !== "LOBBY") throw new RoomError("GAME_IN_PROGRESS", "请先取消教学或中止本局，再移除玩家");
     revokeMembership(room, id);
     room.participants = room.participants.filter(p => p.id !== id);
+    delete room.botControl.memory[id];
     room.participants.filter(p => p.mode === "PLAYER" && !p.left).sort((a, b) => a.seat! - b.seat!).forEach((p, i) => { p.seat = i + 1; });
     this.invalidateSetup(room);
     this.changed(room);
@@ -393,7 +471,7 @@ export class RoomService {
     const host = this.requireHost(room, token);
     if (room.state !== "RUNNING") throw new RoomError("GAME_CHANGED", "本局已结束，请刷新");
     const game = this.requireGame(room);
-    this.assertPresentationComplete(game);
+    this.assertPresentationComplete(room);
     game.contextId = randomUUID();
     game.phase = "ABORTED";
     room.state = "ABORTED";
@@ -401,8 +479,8 @@ export class RoomService {
     delete game.nomination; delete game.nightOrder; delete game.nightStep; delete game.pauseReason;
     delete game.winner; delete game.winReason;
     game.presentationUntil = 0;
-    game.events = game.events.filter(event => event.startsAt <= this.#now() && event.kind !== "GAME_OVER");
-    abortPresentation(game, this.#now());
+    game.events = game.events.filter(event => event.startsAt <= this.gameNow(room) && event.kind !== "GAME_OVER");
+    abortPresentation(game, this.gameNow(room));
     this.changed(room);
   }
 
@@ -444,27 +522,28 @@ export class RoomService {
   restore(snapshots: RoomRecord[]): void {
     for (const snapshot of snapshots) {
       const code = normalizeRoomCode(snapshot.code);
-      if (![undefined, 1, 2].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
+      if (![undefined, 1, 2, 3].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) throw new Error(`Room ${code}: invalid roster snapshot`);
-      if(snapshot.schemaVersion!==2)validateLegacyRoom(snapshot);
-      const game = snapshot.game ? this.restoreGame(snapshot.game, `legacy-game-${snapshot.gameNumber ?? 0}:${randomUUID()}`) : undefined;
-      if (game) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
+      if(![2,3].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
+      const game = snapshot.game ? this.restoreGame(snapshot.game, `legacy-game-${snapshot.gameNumber ?? 0}:${randomUUID()}`, snapshot.timeline ? gameNow(snapshot,this.#now()) : this.#now()) : undefined;
+      if (game && (snapshot.schemaVersion!==3||!game.publicProjection)) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
       migrateReceipts(snapshot);
-      snapshot.schemaVersion = 2;
+
       snapshot.roomInstanceId ??= randomUUID();
       snapshot.setupId ??= randomUUID();
       snapshot.participants = snapshot.participants.map((participant) => ({ ...participant, commandVersion: participant.commandVersion ?? 0, ready: participant.ready ?? false, lastSeenAt: participant.lastSeenAt ?? this.#now() }));
       const organizerParticipantId = snapshot.organizerParticipantId
         ?? snapshot.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1)?.id;
-      this.#rooms.set(code, structuredClone({ ...snapshot, playMode: snapshot.playMode ?? "IN_PERSON", lastActivityAt: snapshot.lastActivityAt ?? new Date(this.#now()).toISOString(), ...(organizerParticipantId ? { organizerParticipantId } : {}), ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 }));
-      this.captureResult(this.#rooms.get(code)!, this.#now());
+      const restored=structuredClone({ ...snapshot, playMode: snapshot.playMode ?? "IN_PERSON", lastActivityAt: snapshot.lastActivityAt ?? new Date(this.#now()).toISOString(), ...(organizerParticipantId ? { organizerParticipantId } : {}), ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 });
+      upgradeBotRoom(restored,this.#now());this.#rooms.set(code,restored);
+      this.captureResult(this.#rooms.get(code)!, this.gameNow(this.#rooms.get(code)!));
     }
   }
 
   expireIdle(now = Date.now(), lobbyTtlMs = 2 * 60 * 60 * 1000, activeTtlMs = 24 * 60 * 60 * 1000): string[] {
     const expired: string[] = [];
     for (const room of this.#rooms.values()) {
-      const age = now - Date.parse(room.lastActivityAt);
+      const age = now - (bots(room).length?room.lastHumanActivityAt:Date.parse(room.lastActivityAt));
       const ttl = room.state === "LOBBY" ? lobbyTtlMs : activeTtlMs;
       if (Number.isFinite(age) && age >= ttl) {
         this.#rooms.delete(room.code);
@@ -486,7 +565,8 @@ export class RoomService {
     const organizer = this.organizer(room);
     return {
       code: room.code,
-      protocolVersion: 2 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
+      timeline:{mode:room.timeline.mode,epoch:room.timeline.epoch},botControl:this.botControlView(room),activeHumanCount:humans(room).length,botCount:bots(room).length,
+      protocolVersion: 3 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
       revision: room.revision, serverNow: this.#now(),
       rulesSummary: room.playerCount < 7 ? "5–6 人采用官方 Teensyville：恶魔与爪牙互不认识，恶魔没有三个伪装。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。" : "暗流涌动标准规则。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。",
       state: room.game && room.state !== "ABORTED" ? room.game.publicProjection?.phase === "GAME_OVER" ? "GAME_OVER" : "RUNNING" : room.state,
@@ -496,7 +576,7 @@ export class RoomService {
       ...(organizer ? { organizerId: organizer.id, organizerName: organizer.nickname } : {}),
       tutorialCompleteCount: room.participants.filter(p => p.mode === "PLAYER" && !p.left && p.tutorialComplete).length,
       hostClaimAt: organizer ? organizer.lastSeenAt + HOST_CLAIM_MS : undefined,
-      participants: room.participants.map(p => ({ id: p.id, nickname: p.nickname, mode: p.mode, seat: p.seat, avatar: p.avatarSnapshot, connected: p.connected && this.#now() - p.lastSeenAt < ONLINE_MS, ready: p.ready, left: p.left ?? false })),
+      participants: room.participants.map(p => ({ controller:p.controller,id: p.id, nickname: p.nickname, mode: p.mode, seat: p.seat, avatar: p.avatarSnapshot, connected: p.controller==="BOT"||p.connected && this.#now() - p.lastSeenAt < ONLINE_MS, ready: p.ready, left: p.left ?? false })),
       ...(room.game ? { game: this.publicGame(room) } : {}),
     };
   }
@@ -507,7 +587,7 @@ export class RoomService {
     const host = this.requireHost(room, organizerToken);
     if (room.state !== "LOBBY") throw new Error("Only a lobby can start; finish or reset the previous game first");
     if (players.length !== room.playerCount) throw new Error("All players must join before starting");
-    if (players.some(player => this.#now() - player.lastSeenAt >= ONLINE_MS)) throw new RoomError("PLAYERS_OFFLINE", "有玩家离线，请等待重连或移除后重新准备");
+    if (players.some(player => player.controller==="HUMAN"&&this.#now() - player.lastSeenAt >= ONLINE_MS)) throw new RoomError("PLAYERS_OFFLINE", "有玩家离线，请等待重连或移除后重新准备");
     if (markHostReady) host.ready = true;
     if (players.some((player) => !player.ready)) throw new Error("所有玩家准备后才能开始");
     for (const player of players) player.tutorialComplete = false;
@@ -528,12 +608,12 @@ export class RoomService {
     this.requireHost(room, organizerToken);
     if (!["GAME_OVER", "ABORTED"].includes(room.state)) throw new RoomError("GAME_IN_PROGRESS", "请先取消教学或中止本局");
     if (room.state === "GAME_OVER" && !room.game?.publicProjection?.revealComplete) throw new RoomError("FINALE_PENDING", "身份公布完成后才能开始下一把");
-    this.captureResult(room, this.#now());
+    this.captureResult(room, this.gameNow(room));
     room.state = "LOBBY";
     room.participants = room.participants.filter((participant) => !participant.left);
     room.participants.filter((participant) => participant.mode === "PLAYER").sort((a, b) => a.seat! - b.seat!).forEach((participant, index) => { participant.seat = index + 1; });
     room.assignments = [];
-    delete room.game;
+    delete room.game;room.timeline={mode:"WALL",offsetMs:0,epoch:room.timeline.epoch+1};room.botControl.memory={};
     if (room.metadata) delete room.metadata.social;
     this.invalidateSetup(room);
     for (const participant of room.participants) { participant.tutorialComplete = false; participant.ready = false; }
@@ -567,9 +647,17 @@ export class RoomService {
     const wasOffline = !participant.connected;
     participant.lastSeenAt = now;
     participant.connected = true;
+    let checkpoint=false;
+    if(participant.controller==="HUMAN"&&participant.mode==="PLAYER"){
+      const saved=room.metadata?.humanActivityCheckpointAt;
+      const previous=typeof saved==='number'&&Number.isFinite(saved)?saved:room.lastHumanActivityAt;
+      checkpoint=wasOffline||now-previous>=HUMAN_ACTIVITY_CHECKPOINT_MS;
+      room.metadata={...room.metadata,humanActivityCheckpointAt:checkpoint?now:previous};
+      room.lastHumanActivityAt=now;
+    }
     room.lastActivityAt = new Date(now).toISOString();
-    if (wasOffline) room.revision += 1;
-    return wasOffline;
+    if (wasOffline||checkpoint) room.revision += 1;
+    return wasOffline||checkpoint;
   }
 
   rotateParticipantToken(codeInput: string, oldToken: string): { participant: ParticipantRecord; token: string } {
@@ -592,31 +680,33 @@ export class RoomService {
     const game = this.requireGame(room);
     if (!game.pauseReason || ["GAME_OVER", "ABORTED"].includes(game.phase)) throw new Error("当前阶段没有暂停，不能延长截止时间");
     delete game.pauseReason;
-    this.deadline(game);
+    this.deadline(room);
     this.changed(room);
   }
 
-  advanceTime(now = this.#now()): string[] {
+  advanceTime(now = this.#now(), onlyCode?:string): string[] {
     const changed: string[] = [];
     for (const room of this.#rooms.values()) {
+      if(onlyCode&&room.code!==onlyCode)continue;
       let dirty = false;
       for (const participant of room.participants) {
-        if (participant.connected && now - participant.lastSeenAt >= ONLINE_MS) { participant.connected = false; dirty = true; }
+        if (participant.controller==="HUMAN" && participant.connected && now - participant.lastSeenAt >= ONLINE_MS) { participant.connected = false; dirty = true; }
       }
+      const time=this.gameNow(room,now);
       const game = room.game;
-      if (game && game.phase !== "ABORTED") dirty = publishDue(game, now) || dirty;
-      if (game?.phase === "VOTING" && game.nomination?.voterOrder && now >= game.presentationUntil) dirty = this.advanceBallot(room, now) || dirty;
-      if (game && !["GAME_OVER", "ABORTED"].includes(game.phase) && now >= game.phaseDeadlineAt && now >= game.presentationUntil && !game.pauseReason) {
+      if (game && game.phase !== "ABORTED") dirty = publishDue(game, time) || dirty;
+      if (game?.phase === "VOTING" && game.nomination?.voterOrder && time >= game.presentationUntil) dirty = this.advanceBallot(room, time) || dirty;
+      if (game && !["GAME_OVER", "ABORTED"].includes(game.phase) && time >= game.phaseDeadlineAt && time >= game.presentationUntil && !game.pauseReason) {
         if (game.phase === "VOTING") {
           for (const seat of this.eligibleVoters(game)) game.voteSubmissions[seat] ??= false;
           this.settleVote(room);
         } else {
           game.pauseReason = "本阶段等待超时。请确认所有玩家已连接并完成手机上的操作；完成操作后继续。";
-          this.event(game, "说书人正在等候玩家，请检查连接并完成当前操作。");
+          this.event(room, "说书人正在等候玩家，请检查连接并完成当前操作。");
         }
         dirty = true;
       }
-      if (dirty) { if (game) { publishDue(game, now); syncImmediate(game, now); } this.captureResult(room, now); room.revision += 1; changed.push(room.code); }
+      if (dirty) { if (game) { publishDue(game, time); syncImmediate(game, time); } this.captureResult(room, time); room.revision += 1; changed.push(room.code); }
     }
     return changed;
   }
@@ -627,11 +717,11 @@ export class RoomService {
     if (game.phase !== "ROLE_REVEAL") return;
     if (!game.confirmedRoleSeats.includes(participant.seat!)) game.confirmedRoleSeats.push(participant.seat!);
     delete game.pauseReason;
-    if (this.#now() >= game.phaseDeadlineAt) this.deadline(game);
+    if (this.gameNow(room) >= game.phaseDeadlineAt) this.deadline(room);
     if (game.confirmedRoleSeats.length === room.playerCount) {
       game.phase = "FIRST_NIGHT";
       game.contextId = randomUUID();
-      this.event(game, "所有身份已确认。村庄进入首夜。", "NIGHT_FALLS");
+      this.event(room, "所有身份已确认。村庄进入首夜。", "NIGHT_FALLS");
       this.initializeNight(room);
       this.settleNightIfReady(room);
     }
@@ -641,7 +731,7 @@ export class RoomService {
   submitAction(codeInput: string, playerToken: string, targetSeats: number[]): void {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
-    this.assertPresentationComplete(game);
+    this.assertPresentationComplete(room);
     if (game.phase !== "FIRST_NIGHT" && game.phase !== "OTHER_NIGHT") throw new Error("No night action is active");
     if (game.nightSubmissions[participant.seat!]) throw new Error("Night action already submitted");
     const requirement = this.nightRequirement(room, participant.seat!);
@@ -653,7 +743,7 @@ export class RoomService {
     this.privateMessage(game, participant.seat!, this.describeNightAction(room, participant.seat!, targetSeats), "ACTION", effect, targetSeats);
     game.nightSubmissions[participant.seat!] = [...targetSeats];
     delete game.pauseReason;
-    if (this.#now() >= game.phaseDeadlineAt) this.deadline(game);
+    if (this.gameNow(room) >= game.phaseDeadlineAt) this.deadline(room);
     this.settleNightIfReady(room);
     this.changed(room);
   }
@@ -661,7 +751,7 @@ export class RoomService {
   nominate(codeInput: string, playerToken: string, nomineeSeat: number): void {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
-    this.assertPresentationComplete(game);
+    this.assertPresentationComplete(room);
     const seat = participant.seat!;
     if (game.phase !== "DAY_DISCUSSION" && game.phase !== "NOMINATION") throw new Error("Nominations are not open");
     if (!game.aliveSeats.includes(seat)) throw new Error("A dead player cannot nominate");
@@ -675,7 +765,7 @@ export class RoomService {
     game.voteSubmissions = {};
     game.readySeats = [];
     game.phase = "VOTING";
-    this.event(game, `${this.nickname(room, seat)} 提名了 ${this.nickname(room, nomineeSeat)}。`, "NOMINATION", { actorSeat: seat, targetSeat: nomineeSeat });
+    this.event(room, `${this.nickname(room, seat)} 提名了 ${this.nickname(room, nomineeSeat)}。`, "NOMINATION", { actorSeat: seat, targetSeat: nomineeSeat });
     if (this.#presentation) this.prepareBallot(room);
     const nominee = this.assignment(room, nomineeSeat);
     const first = nominee.perceivedRoleId === "virgin" && !game.virginSpentSeats.includes(nomineeSeat);
@@ -686,60 +776,60 @@ export class RoomService {
       delete game.nomination;
       if (!this.evaluateWin(room, true)) this.beginOtherNight(room);
     }
-    this.deadline(game);
+    this.deadline(room);
     this.changed(room);
   }
 
   cancelNomination(codeInput: string, playerToken: string): void {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
-    this.assertPresentationComplete(game);
+    this.assertPresentationComplete(room);
     if (game.phase !== "VOTING" || !game.nomination) throw new Error("There is no nomination to cancel");
     if (game.nomination.nominatorSeat !== participant.seat) throw new Error("Only the nominator may cancel this nomination");
-    if (Object.keys(game.voteSubmissions).length > 0 || (game.nomination.voteStartsAt !== undefined && this.#now() >= game.nomination.voteStartsAt)) throw new Error("The nomination cannot be cancelled after voting begins");
+    if (Object.keys(game.voteSubmissions).length > 0 || (game.nomination.voteStartsAt !== undefined && this.gameNow(room) >= game.nomination.voteStartsAt)) throw new Error("The nomination cannot be cancelled after voting begins");
     const { nominatorSeat, nomineeSeat } = game.nomination;
     // A withdrawn public nomination still consumes both daily nomination allowances.
     delete game.nomination;
     game.phase = "NOMINATION";
     game.contextId = randomUUID();
-    this.event(game, `${this.nickname(room, nominatorSeat)} 撤回对 ${this.nickname(room, nomineeSeat)} 的提名；双方今日提名次数已使用。`);
-    this.deadline(game);
+    this.event(room, `${this.nickname(room, nominatorSeat)} 撤回对 ${this.nickname(room, nomineeSeat)} 的提名；双方今日提名次数已使用。`);
+    this.deadline(room);
     this.changed(room);
   }
 
   finishDefense(codeInput: string, playerToken: string): void {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
-    this.assertPresentationComplete(game);
+    this.assertPresentationComplete(room);
     const nomination = game.nomination;
-    if (game.phase !== "VOTING" || !nomination || nomination.defenseUntil === undefined || this.#now() >= nomination.defenseUntil) throw new Error("辩护窗口已经结束");
+    if (game.phase !== "VOTING" || !nomination || nomination.defenseUntil === undefined || this.gameNow(room) >= nomination.defenseUntil) throw new Error("辩护窗口已经结束");
     if (nomination.nomineeSeat !== participant.seat) throw new Error("只有被提名者可以提前结束辩护");
-    const now = this.#now();
+    const now = this.gameNow(room);
     nomination.defenseUntil = now;
     nomination.voteStartsAt = now;
     nomination.nextCountAt = now + VOTE_SLOT_MS;
     nomination.voteEndsAt = now + nomination.voterOrder!.length * VOTE_SLOT_MS;
     nomination.voteStarted = true;
-    this.event(game, `${this.nickname(room, participant.seat!)} 结束了辩护，开始顺时针计票。`);
-    this.deadline(game);
+    this.event(room, `${this.nickname(room, participant.seat!)} 结束了辩护，开始顺时针计票。`);
+    this.deadline(room);
     this.changed(room);
   }
 
   vote(codeInput: string, playerToken: string, raised: boolean): void {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
-    this.assertPresentationComplete(game);
+    this.assertPresentationComplete(room);
     if (game.phase !== "VOTING" || !game.nomination) throw new RoomError("BALLOT_CHANGED", "Voting is not open");
-    if (this.#now() >= game.phaseDeadlineAt) throw new RoomError("BALLOT_CLOSED", "Voting deadline passed");
+    if (this.gameNow(room) >= game.phaseDeadlineAt) throw new RoomError("BALLOT_CLOSED", "Voting deadline passed");
     if (typeof raised !== "boolean") throw new Error("Vote must be boolean");
     const seat = participant.seat!;
     if (!this.eligibleVoters(game).includes(seat)) throw new RoomError("NO_GHOST_VOTE", "No ghost vote remains");
     if (game.nomination.voterOrder) {
-      if (this.voteIsLocked(game, seat)) throw new RoomError("VOTE_LOCKED", "本席已计票，不能再改变举手状态");
+      if (this.voteIsLocked(room, seat)) throw new RoomError("VOTE_LOCKED", "本席已计票，不能再改变举手状态");
       // Freeze any earlier seats before applying a later player's hand change. Otherwise
       // a delayed scheduler tick could retrospectively alter a Butler's already earned vote.
-      this.advanceBallot(room, this.#now());
-      if (game.phase !== "VOTING" || !game.nomination || this.voteIsLocked(game, seat)) throw new RoomError("BALLOT_CHANGED", "本轮或本席已计票，请刷新");
+      this.advanceBallot(room, this.gameNow(room));
+      if (game.phase !== "VOTING" || !game.nomination || this.voteIsLocked(room, seat)) throw new RoomError("BALLOT_CHANGED", "本轮或本席已计票，请刷新");
     }
     game.voteSubmissions[seat] = raised;
     delete game.pauseReason;
@@ -756,17 +846,18 @@ export class RoomService {
     const nomination = game.nomination!;
     const eligible = new Set(this.eligibleVoters(game));
     const voterOrder = Array.from({ length: room.playerCount }, (_, index) => (nomination.nomineeSeat + index) % room.playerCount + 1).filter((seat) => eligible.has(seat));
-    const voteStartsAt = Math.max(this.#now(), game.presentationUntil) + DEFENSE_MS;
+    const voteStartsAt = Math.max(this.gameNow(room), game.presentationUntil) + DEFENSE_MS;
     Object.assign(nomination, { defenseUntil: voteStartsAt, voteStartsAt, voteEndsAt: voteStartsAt + voterOrder.length * VOTE_SLOT_MS, nextCountAt: voteStartsAt + VOTE_SLOT_MS, voterOrder, countedSeats: [], countedVotes: {}, voteStarted: false });
     attachBallotTiming(game);
   }
 
-  private voteIsLocked(game: GameRuntime, seat: number): boolean {
+  private voteIsLocked(room:RoomRecord, seat: number): boolean {
+    const game=this.requireGame(room);
     const nomination = game.nomination;
     if (!nomination?.voterOrder) return false;
     const index = nomination.voterOrder.indexOf(seat);
     const counted = nomination.countedSeats!.length;
-    return index < counted || index < 0 || this.#now() >= nomination.nextCountAt! + (index - counted) * VOTE_SLOT_MS;
+    return index < counted || index < 0 || this.gameNow(room) >= nomination.nextCountAt! + (index - counted) * VOTE_SLOT_MS;
   }
 
   private raisedVoteIsValid(room: RoomRecord, seat: number): boolean {
@@ -818,11 +909,12 @@ export class RoomService {
     return changed;
   }
 
-  private pauseBallotForPresentation(game: GameRuntime): void {
+  private pauseBallotForPresentation(room: RoomRecord): void {
+    const game = this.requireGame(room), now = this.gameNow(room);
     const nomination = game.nomination;
     if (!nomination?.voterOrder) return;
-    const delay = Math.max(0, game.presentationUntil - this.#now());
-    if (this.#now() < nomination.defenseUntil!) {
+    const delay = Math.max(0, game.presentationUntil - now);
+    if (now < nomination.defenseUntil!) {
       nomination.defenseUntil! += delay;
       nomination.voteStartsAt! += delay;
     }
@@ -844,17 +936,17 @@ export class RoomService {
       else if (votes === game.onBlock.votes) game.executionTied = true;
     }
     game.contextId = randomUUID();
-    this.event(game, `${this.nickname(room, nomineeSeat)} 获得 ${votes} 票（至少一半需 ${threshold} 票）。${game.executionTied ? "最高票平票，暂时无人处决。" : ""}`, "VOTE_RESULT", { targetSeat: nomineeSeat, seats: validRaisedSeats, votes, threshold, outcome: game.executionTied ? "TIED" : game.onBlock?.seat === nomineeSeat ? "ON_BLOCK" : "NONE" });
+    this.event(room, `${this.nickname(room, nomineeSeat)} 获得 ${votes} 票（至少一半需 ${threshold} 票）。${game.executionTied ? "最高票平票，暂时无人处决。" : ""}`, "VOTE_RESULT", { targetSeat: nomineeSeat, seats: validRaisedSeats, votes, threshold, outcome: game.executionTied ? "TIED" : game.onBlock?.seat === nomineeSeat ? "ON_BLOCK" : "NONE" });
     delete game.nomination;
     game.phase = "NOMINATION";
     game.readySeats = [];
-    this.deadline(game);
+    this.deadline(room);
   }
 
   readyToEndDay(codeInput: string, playerToken: string, ready = true): void {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
-    this.assertPresentationComplete(game);
+    this.assertPresentationComplete(room);
     if (game.phase !== "DAY_DISCUSSION" && game.phase !== "NOMINATION") throw new Error("The day cannot end now");
     const seat = participant.seat!;
     if (!game.aliveSeats.includes(seat)) throw new Error("Only living players confirm day end");
@@ -862,12 +954,12 @@ export class RoomService {
     if (!game.readySeats.includes(seat)) game.readySeats.push(seat);
     delete game.pauseReason;
     if (!game.aliveSeats.every((candidate) => game.readySeats.includes(candidate))) { this.changed(room); return; }
-    syncImmediate(game, this.#now());
+    syncImmediate(game, this.gameNow(room));
     const executed = game.executionTied ? undefined : game.onBlock?.seat;
     if (executed !== undefined) this.execute(room, executed);
     else {
       delete game.lastExecutedRoleId; delete game.lastExecutedSeat; delete game.executionDeathRoleId;
-      this.event(game, "今天无人被处决。", "EXECUTION", { outcome: "NONE" });
+      this.event(room, "今天无人被处决。", "EXECUTION", { outcome: "NONE" });
     }
     if (!this.evaluateWin(room, executed !== undefined, true)) this.beginOtherNight(room);
     this.changed(room);
@@ -887,17 +979,17 @@ export class RoomService {
       if (!impaired) game.executionDeathRoleId = roleId;
       this.kill(room, seat);
     }
-    this.event(game, `${prefix ? prefix + "：" : ""}${this.nickname(room, seat)} 被处决。${wasAlive ? "" : "该玩家已经死亡。"}`, "EXECUTION", { targetSeat: seat, seats: wasAlive ? [seat] : [], outcome: wasAlive ? "DEATH" : "NO_DEATH" });
+    this.event(room, `${prefix ? prefix + "：" : ""}${this.nickname(room, seat)} 被处决。${wasAlive ? "" : "该玩家已经死亡。"}`, "EXECUTION", { targetSeat: seat, seats: wasAlive ? [seat] : [], outcome: wasAlive ? "DEATH" : "NO_DEATH" });
   }
 
   useDayAbility(codeInput: string, playerToken: string, targetSeat: number): void {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
-    this.assertPresentationComplete(game);
+    this.assertPresentationComplete(room);
     const seat = participant.seat!;
     if (!["DAY_DISCUSSION", "NOMINATION", "VOTING"].includes(game.phase)) throw new Error("Day abilities are not available");
     if (!game.aliveSeats.includes(seat)) throw new Error("A dead player cannot use a day ability");
-    if (game.phase === "VOTING" && game.nomination?.voterOrder) this.advanceBallot(room, this.#now());
+    if (game.phase === "VOTING" && game.nomination?.voterOrder) this.advanceBallot(room, this.gameNow(room));
     const actor = this.assignment(room, seat);
     const target = this.assignment(room, targetSeat);
     if (game.claimDayBySeat[seat] === game.day) throw new Error("今日已经公开宣称过猎魔人");
@@ -910,10 +1002,10 @@ export class RoomService {
     const registeredDemon = target.roleType === "DEMON" || this.registeredRole(room, targetSeat, "slayer", ["DEMON"]) === "imp";
     const death = game.aliveSeats.includes(targetSeat) && actor.roleId === "slayer" && available && !this.isImpaired(room, seat) && registeredDemon;
     if (death) this.kill(room, targetSeat);
-    this.event(game, `${this.nickname(room, seat)} 以猎魔人身份射击了 ${this.nickname(room, targetSeat)}。${death ? `${this.nickname(room, targetSeat)} 倒下了。` : "枪声散去，但无人死亡。"}`, "SHOT", { actorSeat: seat, targetSeat, seats: death ? [targetSeat] : [], outcome: death ? "DEATH" : "NO_DEATH" });
-    if (game.phase === "VOTING") { this.pauseBallotForPresentation(game); attachBallotTiming(game); }
+    this.event(room, `${this.nickname(room, seat)} 以猎魔人身份射击了 ${this.nickname(room, targetSeat)}。${death ? `${this.nickname(room, targetSeat)} 倒下了。` : "枪声散去，但无人死亡。"}`, "SHOT", { actorSeat: seat, targetSeat, seats: death ? [targetSeat] : [], outcome: death ? "DEATH" : "NO_DEATH" });
+    if (game.phase === "VOTING") { this.pauseBallotForPresentation(room); attachBallotTiming(game); }
     if (death) this.evaluateWin(room);
-    this.deadline(game);
+    this.deadline(room);
     this.changed(room);
   }
 
@@ -931,13 +1023,17 @@ export class RoomService {
       (revealActualRole || entry.phase !== "GAME_OVER")
       && (!entry.publishAfterEventId || !game?.deferredRoleChanges?.some(change => change.eventId === entry.publishAfterEventId)))
       .map(({ publishAfterEventId: _publication, ...entry }) => entry);
-    const available = !!game && this.#now() >= game.presentationUntil;
+    const available = !!game && this.gameNow(room) >= game.presentationUntil;
     const alive = !!game?.publicProjection?.aliveSeats.includes(seat);
     const daytime = !!game && ["DAY_DISCUSSION", "NOMINATION"].includes(game.phase);
     return {
-      protocolVersion: 2 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
+      protocolVersion: 3 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
       self: { participantId: participant.id, mode: participant.mode, commandVersion: participant.commandVersion },
       ...(game ? { contextId: game.publicProjection?.contextId ?? game.contextId } : {}),
+      canManageBots:this.organizer(room)?.id===participant.id&&room.state==='LOBBY',
+      canStepBots:this.organizer(room)?.id===participant.id&&room.botControl.mode==='PAUSED'&&bots(room).length>0,
+      canFreezeRehearsal:this.organizer(room)?.id===participant.id&&humans(room).length===1&&bots(room).length>0&&['LOBBY','TUTORIAL','RUNNING'].includes(this.publicView(codeInput).state),
+      canAdvanceRehearsal:this.organizer(room)?.id===participant.id&&room.timeline.mode==='MANUAL',
       canCancelTutorial: this.organizer(room)?.id === participant.id && room.state === "TUTORIAL",
       canAbort: this.organizer(room)?.id === participant.id && room.state === "RUNNING" && available,
       canRestart: this.organizer(room)?.id === participant.id && (room.state === "ABORTED" || (room.state === "GAME_OVER" && revealActualRole)) && available,
@@ -949,9 +1045,9 @@ export class RoomService {
       dayAbilityTargets: room.assignments.map((candidate) => candidate.seat),
       canNominate: available && alive && daytime && !game!.nominatedBySeats.includes(seat),
       nominationTargets: game && available ? room.assignments.map((candidate) => candidate.seat).filter((candidate) => !game.nominatedSeats.includes(candidate)) : [],
-      canVote: available && game?.phase === "VOTING" && this.eligibleVoters(game).includes(seat) && !this.voteIsLocked(game, seat),
-      canFinishDefense: available && game?.phase === "VOTING" && game.nomination?.nomineeSeat === seat && this.#now() < (game.nomination?.defenseUntil ?? 0),
-      canCancelNomination: available && game?.phase === "VOTING" && game.nomination?.nominatorSeat === seat && !Object.keys(game.voteSubmissions).length && (game.nomination.voteStartsAt === undefined || this.#now() < game.nomination.voteStartsAt),
+      canVote: available && game?.phase === "VOTING" && this.eligibleVoters(game).includes(seat) && !this.voteIsLocked(room, seat),
+      canFinishDefense: available && game?.phase === "VOTING" && game.nomination?.nomineeSeat === seat && this.gameNow(room) < (game.nomination?.defenseUntil ?? 0),
+      canCancelNomination: available && game?.phase === "VOTING" && game.nomination?.nominatorSeat === seat && !Object.keys(game.voteSubmissions).length && (game.nomination.voteStartsAt === undefined || this.gameNow(room) < game.nomination.voteStartsAt),
       canEndDay: available && alive && daytime,
       dayReady: visible?.readySeats.includes(seat) ?? false,
       ...(visible && alive && assignment?.perceivedRoleId === "butler" ? { butler: { masterSeat: visible.butlerMasterSeat, masterRaised: this.butlerMasterRaised(visible) } } : {}),
@@ -979,8 +1075,9 @@ export class RoomService {
     const goodSeats = room.assignments.filter((assignment) => assignment.alignment === "GOOD").map((assignment) => assignment.seat);
     const redHerringSeat = goodSeats[Math.floor(randomAt(`${room.id}:red-herring`, 0) * goodSeats.length)];
     const game: GameRuntime = {
+      hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL",
       contextId: randomUUID(),
-      gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: randomUUID(), presentationUntil: 0, phaseDeadlineAt: this.#now() + 180_000, decisions: [], claimDayBySeat: {},
+      gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: randomUUID(), presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
       phase: "ROLE_REVEAL", day: 0,
       aliveSeats: room.assignments.map((candidate) => candidate.seat),
       ghostVoteSeats: room.assignments.map((candidate) => candidate.seat),
@@ -991,9 +1088,10 @@ export class RoomService {
       ...(redHerringSeat ? { redHerringSeat } : {}),
       events: [],
     };
-    initializePresentation(game);
+    room.game=game;room.botControl.memory={};
+    initializePresentation(game,this.gameNow(room));
     game.decisions.push({ id: `${game.gameId}:decision-1`, day: 0, ability: "setup", seat: 0, choice: "暗流涌动基础信息与主动能力组合", reason: "角色数量遵循人数配置与男爵修正；镇民足够时兼顾首夜信息和主动能力，身份随机分配。" });
-    this.event(game, "身份已私密发放，请每位玩家确认。");
+    this.event(room, "身份已私密发放，请每位玩家确认。");
     for (const assignment of room.assignments) {
       const role = roleById(assignment.perceivedRoleId);
       messages[assignment.seat] = [];
@@ -1003,9 +1101,11 @@ export class RoomService {
     const demon = room.assignments.find((candidate) => candidate.roleType === "DEMON");
     const minions = room.assignments.filter((candidate) => candidate.roleType === "MINION");
     if (demon && room.playerCount >= 7) {
+      this.rememberBotTeam(room,demon.seat,minions.map(p=>p.seat));
       this.privateMessage(game, demon.seat, `你的爪牙：${minions.map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "本局没有爪牙"}。`, "INFORMATION");
     }
     for (const minion of room.playerCount >= 7 ? minions : []) {
+      this.rememberBotTeam(room,minion.seat,[...(demon?[demon.seat]:[]),...minions.filter(p=>p.seat!==minion.seat).map(p=>p.seat)]);
       this.privateMessage(game, minion.seat, `恶魔是 ${demon ? this.playerLabel(room, demon.seat) : "未知玩家"}；其他爪牙：${minions.filter((candidate) => candidate.seat !== minion.seat).map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "无"}。`, "INFORMATION");
     }
     if (demon && room.playerCount >= 7) {
@@ -1021,7 +1121,7 @@ export class RoomService {
     return game;
   }
 
-  private restoreGame(snapshot: GameRuntime, gameId: string): GameRuntime {
+  private restoreGame(snapshot: GameRuntime, gameId: string, now:number): GameRuntime {
     const legacy = snapshot as GameRuntime & { privateHistory?: Record<number, PrivateHistoryEntry[]> };
     const privateHistory = legacy.privateHistory ?? Object.fromEntries(
       Object.entries(snapshot.messages ?? {}).map(([seat, messages]) => [seat, messages.map((text, index) => ({
@@ -1040,7 +1140,7 @@ export class RoomService {
       gameId: snapshot.gameId ?? gameId,
       storytellerSeed: snapshot.storytellerSeed ?? randomUUID(),
       presentationUntil: snapshot.presentationUntil ?? 0,
-      phaseDeadlineAt: snapshot.phaseDeadlineAt ?? this.#now() + 180_000,
+      phaseDeadlineAt: snapshot.phaseDeadlineAt ?? now + 180_000,
       decisions: snapshot.decisions ?? [],
       claimDayBySeat: snapshot.claimDayBySeat ?? {},
       ...(snapshot.pendingRavenkeeperSeat !== undefined && !snapshot.nightOrder ? { nightStep: 0, nightOrder: [{ seat: snapshot.pendingRavenkeeperSeat, roleId: "ravenkeeper" }], nightStartAliveSeats: [...new Set([...snapshot.aliveSeats, ...(snapshot.nightDeaths ?? [snapshot.pendingRavenkeeperSeat])])] } : {}),
@@ -1070,10 +1170,11 @@ export class RoomService {
     return participant ? `${participant.nickname}（${seat}号）` : `${seat}号玩家`;
   }
 
-  private event(game: GameRuntime, message: string, kind: ExperienceEvent["kind"] = "NOTICE", details: Partial<ExperienceEvent> = {}): void {
+  private event(room:RoomRecord, message: string, kind: ExperienceEvent["kind"] = "NOTICE", details: Partial<ExperienceEvent> = {}): void {
+    const game=this.requireGame(room);
     const duration = { NOTICE: 0, NIGHT_FALLS: 2000, SHOT: 4500, NOMINATION: 1000, VOTE_RESULT: 2500, EXECUTION: 4500, DAWN: 5000, GAME_OVER: 5000 }[kind];
     const durationMs = this.#presentation ? duration : 0;
-    const occurredAt = this.#now();
+    const occurredAt = this.gameNow(room);
     const startsAt = durationMs ? Math.max(occurredAt + 1500, game.presentationUntil) : Math.max(occurredAt, game.presentationUntil);
     const seq = game.events.length + 1;
     game.events.push({ ...details, seq, id: `${game.gameId}:${seq}`, gameId: game.gameId, kind, message: message.trim(), occurredAt, startsAt, durationMs, day: game.day });
@@ -1117,24 +1218,24 @@ export class RoomService {
   }
 
   private changed(room: RoomRecord): void {
-    if (room.game) { publishDue(room.game, this.#now()); syncImmediate(room.game, this.#now()); }
-    this.captureResult(room, this.#now());
+    if (room.game) { publishDue(room.game, this.gameNow(room)); syncImmediate(room.game, this.gameNow(room)); }
+    this.captureResult(room, this.gameNow(room));
     room.revision += 1; room.lastActivityAt = new Date(this.#now()).toISOString();
   }
 
   private captureResult(room: RoomRecord, now: number): void {
     const game = room.game;
     if (!game?.publicProjection?.revealComplete || !game.winner || room.state !== "GAME_OVER" || room.lastResult?.gameId === game.gameId) return;
-    room.lastResult = { gameId: game.gameId, releasedAt: now, winner: game.winner, reason: game.winReason ?? "本局结束", days: game.day,
+    room.lastResult = { hadBots:game.hadBots,rehearsalUsed:game.rehearsalUsed,releasedWallAt:this.#now(),gameId: game.gameId, releasedAt: now, winner: game.winner, reason: game.winReason ?? "本局结束", days: game.day,
       participants: room.participants.filter(p => p.mode === "PLAYER").map(p => {
         const role = room.assignments.find(a => a.seat === p.seat)!;
-        return { id: p.id, nickname: p.nickname, ...(p.avatarSnapshot ? { avatar: p.avatarSnapshot } : {}), finalRole: role.roleId, ...(role.perceivedRoleId !== role.roleId ? { perceivedRole: role.perceivedRoleId } : {}) };
+        return { controller:p.controller,id: p.id, nickname: p.nickname, ...(p.avatarSnapshot ? { avatar: p.avatarSnapshot } : {}), finalRole: role.roleId, ...(role.perceivedRoleId !== role.roleId ? { perceivedRole: role.perceivedRoleId } : {}) };
       }) };
   }
 
   private organizer(room: RoomRecord): ParticipantRecord | undefined {
-    return room.participants.find((participant) => participant.mode === "PLAYER" && !participant.left && participant.id === room.organizerParticipantId)
-      ?? room.participants.find((participant) => participant.mode === "PLAYER" && !participant.left);
+    return room.participants.find((participant) => participant.mode === "PLAYER" && participant.controller==="HUMAN" && !participant.left && participant.id === room.organizerParticipantId)
+      ?? room.participants.find((participant) => participant.mode === "PLAYER" && participant.controller==="HUMAN" && !participant.left);
   }
 
   private publicGame(room: RoomRecord) {
@@ -1143,12 +1244,12 @@ export class RoomService {
     const game = projectedGame(raw);
     const visibleAlive = projection.aliveSeats;
     return {
-      gameId: game.gameId, contextId: game.contextId, revision: room.revision, serverNow: this.#now(),
+      publishedPhaseStartedAt:projection.publishedPhaseStartedAt,gameId: game.gameId, contextId: game.contextId, revision: room.revision, serverNow: this.gameNow(room),
       presentationUntil: game.presentationUntil, phaseDeadlineAt: game.phaseDeadlineAt,
       ...(game.pauseReason ? { pauseReason: game.pauseReason } : {}),
       phase: game.phase, day: game.day, revealComplete: projection.revealComplete,
       seats: room.participants.filter((participant) => participant.mode === "PLAYER").sort((left, right) => left.seat! - right.seat!).map((participant) => ({
-        id: participant.id, avatar: participant.avatarSnapshot, seat: participant.seat!, nickname: participant.nickname, connected: participant.connected,
+        controller:participant.controller,id: participant.id, avatar: participant.avatarSnapshot, seat: participant.seat!, nickname: participant.nickname, connected: participant.connected,
         alive: visibleAlive.includes(participant.seat!), ghostVoteAvailable: game.ghostVoteSeats.includes(participant.seat!),
       })),
       events: game.events,
@@ -1158,7 +1259,7 @@ export class RoomService {
         defenseUntil: game.nomination.defenseUntil, voteStartsAt: game.nomination.voteStartsAt, voteEndsAt: game.nomination.voteEndsAt,
         nextCountAt: game.nomination.nextCountAt, countedSeats: game.nomination.countedSeats, countedVotes: game.nomination.countedVotes, voterOrder: game.nomination.voterOrder,
         votesReceived: Object.keys(game.voteSubmissions).length, votersRequired: game.nomination.voterOrder?.length ?? this.eligibleVoters(game).length,
-        ...(game.nomination.voterOrder && this.#now() >= game.nomination.voteStartsAt! && this.#now() >= game.presentationUntil && game.nomination.countedSeats!.length < game.nomination.voterOrder.length ? { currentVoterSeat: game.nomination.voterOrder[game.nomination.countedSeats!.length] } : {}),
+        ...(game.nomination.voterOrder && this.gameNow(room) >= game.nomination.voteStartsAt! && this.gameNow(room) >= game.presentationUntil && game.nomination.countedSeats!.length < game.nomination.voterOrder.length ? { currentVoterSeat: game.nomination.voterOrder[game.nomination.countedSeats!.length] } : {}),
         raisedSeats: Object.entries(game.voteSubmissions).filter(([, raised]) => raised).map(([seat]) => Number(seat)),
         votesRaised: game.nomination.countedVotes ? Object.values(game.nomination.countedVotes).filter(Boolean).length : this.eligibleVoters(game).filter(seat => game.voteSubmissions[seat]).length, threshold: Math.ceil(game.aliveSeats.length / 2) } } : {}),
       ...(game.onBlock ? { onBlock: game.onBlock } : {}),
@@ -1169,14 +1270,14 @@ export class RoomService {
 
   private privateAction(room: RoomRecord, seat: number) {
     const game = this.requireGame(room);
-    if (this.#now() < game.presentationUntil) return undefined;
+    if (this.gameNow(room) < game.presentationUntil) return undefined;
     if (game.phase === "ROLE_REVEAL" && !game.confirmedRoleSeats.includes(seat)) return { kind: "CONFIRM_ROLE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: "确认你已记住身份" };
     if (game.phase === "FIRST_NIGHT" || game.phase === "OTHER_NIGHT") {
       if (game.nightSubmissions[seat]) return undefined;
       const requirement = this.nightRequirement(room, seat);
       if (requirement) return { kind: requirement.count === 2 ? "SELECT_TWO" : "SELECT_ONE", legalSeats: requirement.legalSeats, minTargets: requirement.count, maxTargets: requirement.count, prompt: requirement.prompt };
     }
-    if (game.phase === "VOTING" && this.eligibleVoters(game).includes(seat) && !this.voteIsLocked(game, seat)) return { kind: "VOTE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: "提前举手或放下；顺时针数到本席时锁票，未举手不消耗鬼票" };
+    if (game.phase === "VOTING" && this.eligibleVoters(game).includes(seat) && !this.voteIsLocked(room, seat)) return { kind: "VOTE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: "提前举手或放下；顺时针数到本席时锁票，未举手不消耗鬼票" };
     if ((game.phase === "DAY_DISCUSSION" || game.phase === "NOMINATION") && game.aliveSeats.includes(seat)) {
       if (this.assignment(room, seat).perceivedRoleId === "slayer" && !game.usedAbilitySeats.includes(seat)) return { kind: "SLAYER", legalSeats: room.assignments.map((assignment) => assignment.seat), minTargets: 1, maxTargets: 1, prompt: "你可以公开选择任意玩家发动猎魔人能力（整局一次）" };
       return { kind: "DAY", legalSeats: room.assignments.map((assignment) => assignment.seat), minTargets: 0, maxTargets: 1, prompt: "讨论、提名，或确认结束今天" };
@@ -1209,7 +1310,7 @@ export class RoomService {
     const order = game.phase === "FIRST_NIGHT" ? FIRST_NIGHT_ORDER : OTHER_NIGHT_ORDER;
     game.nightOrder = order.flatMap((roleId) => room.assignments.filter((assignment) => assignment.perceivedRoleId === roleId && game.aliveSeats.includes(assignment.seat)).map((assignment) => ({ seat: assignment.seat, roleId })));
     delete game.protectedSeat;
-    this.deadline(game);
+    this.deadline(room);
   }
 
   private settleNightIfReady(room: RoomRecord): void {
@@ -1342,10 +1443,10 @@ export class RoomService {
     game.nightSubmissions = {};
     delete game.nightOrder; delete game.nightStep; delete game.pendingRavenkeeperSeat;
     delete game.nightStartAliveSeats; delete game.protectedSeat;
-    this.event(game, deaths.length ? `黎明时发现 ${deaths.map((seat) => this.nickname(room, seat)).join("、")} 死亡。` : "黎明到来，昨夜无人死亡。", "DAWN", { seats: deaths, outcome: deaths.length ? "DEATH" : "NO_DEATH" });
+    this.event(room, deaths.length ? `黎明时发现 ${deaths.map((seat) => this.nickname(room, seat)).join("、")} 死亡。` : "黎明到来，昨夜无人死亡。", "DAWN", { seats: deaths, outcome: deaths.length ? "DEATH" : "NO_DEATH" });
     delete game.nightDeaths;
-    if (!this.evaluateWin(room)) this.event(game, `第 ${game.day} 天开始，自由讨论。`);
-    this.deadline(game);
+    if (!this.evaluateWin(room)) this.event(room, `第 ${game.day} 天开始，自由讨论。`);
+    this.deadline(room);
   }
 
   private beginOtherNight(room: RoomRecord): void {
@@ -1355,7 +1456,7 @@ export class RoomService {
     game.readySeats = []; game.nominatedBySeats = []; game.nominatedSeats = []; game.nightSubmissions = {};
     game.executionTied = false;
     delete game.nomination; delete game.onBlock; delete game.poisonedSeat; delete game.poisonSourceSeat; delete game.pendingRavenkeeperSeat;
-    this.event(game, "夜幕再次降临。请查看自己的手机。", "NIGHT_FALLS");
+    this.event(room, "夜幕再次降临。请查看自己的手机。", "NIGHT_FALLS");
     this.initializeNight(room);
     this.settleNightIfReady(room);
   }
@@ -1391,8 +1492,8 @@ export class RoomService {
     game.phase = "GAME_OVER"; delete game.nomination; game.winner = result.winner; game.winReason = result.reason; room.state = "GAME_OVER";
     game.contextId = randomUUID();
     delete game.pauseReason;
-    this.event(game, `${result.winner === "GOOD" ? "善良" : "邪恶"}阵营获胜。`, "GAME_OVER", { outcome: result.winner });
-    this.event(game, `身份揭晓：${room.assignments.map((assignment) => {
+    this.event(room, `${result.winner === "GOOD" ? "善良" : "邪恶"}阵营获胜。`, "GAME_OVER", { outcome: result.winner });
+    this.event(room, `身份揭晓：${room.assignments.map((assignment) => {
       const actual = roleById(assignment.roleId).name;
       const mistaken = assignment.roleId !== assignment.perceivedRoleId ? `（本局以为自己是${roleById(assignment.perceivedRoleId).name}）` : "";
       return `${this.playerLabel(room, assignment.seat)} ${actual}${mistaken}`;
@@ -1444,12 +1545,14 @@ export class RoomService {
     game.decisions.push({ id: `${game.gameId}:decision-${game.decisions.length + 1}`, day: game.day, ability, seat, choice, reason });
   }
 
-  private assertPresentationComplete(game: GameRuntime): void {
-    if (this.#now() < game.presentationUntil) throw new RoomError("PRESENTATION_PENDING", "公开演出正在同步，请稍候再操作");
+  private assertPresentationComplete(room:RoomRecord): void {
+    const game=this.requireGame(room);
+    if (this.gameNow(room) < game.presentationUntil) throw new RoomError("PRESENTATION_PENDING", "公开演出正在同步，请稍候再操作");
   }
 
-  private deadline(game: GameRuntime): void {
-    game.phaseDeadlineAt = game.phase === "VOTING" && game.nomination?.voteEndsAt !== undefined ? game.nomination.voteEndsAt : Math.max(this.#now(), game.presentationUntil) + (game.phase === "VOTING" ? 60_000 : ["DAY_DISCUSSION", "NOMINATION"].includes(game.phase) ? 10 * 60_000 : 180_000);
+  private deadline(room:RoomRecord): void {
+    const game=this.requireGame(room);
+    game.phaseDeadlineAt = game.phase === "VOTING" && game.nomination?.voteEndsAt !== undefined ? game.nomination.voteEndsAt : Math.max(this.gameNow(room), game.presentationUntil) + (game.phase === "VOTING" ? 60_000 : ["DAY_DISCUSSION", "NOMINATION"].includes(game.phase) ? 10 * 60_000 : 180_000);
     delete game.pauseReason;
   }
 

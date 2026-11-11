@@ -230,6 +230,7 @@ test("the organizer can reset a table without making seated players rejoin", () 
   expect(() => service.reset(created.room.code, seated[0]!.token)).toThrow(/中止/);
   const ended = service.snapshot(created.room.code);
   ended.state = "GAME_OVER"; ended.game!.phase = "GAME_OVER";
+  Object.assign(ended.game!.publicProjection!,{phase:"GAME_OVER",revealComplete:true,presentationUntil:0});
   service.restore([ended]);
   service.reset(created.room.code, seated[0]!.token);
   const reset = service.publicView(created.room.code);

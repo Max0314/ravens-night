@@ -100,7 +100,7 @@ test("a dead player confirms the single ghost vote before sending it", () => {
 test("non-slayer living players can make the same public claim without leaking their role", () => {
   const onUseAbility = vi.fn(); render(<PlayerGame {...handlers} onUseAbility={onUseAbility} view={player()} />);
   fireEvent.click(screen.getByText("公开宣称猎魔人能力"));
-  fireEvent.click(screen.getByRole("button", { name: "33号玩家已死亡" }));
+  fireEvent.click(screen.getByRole("button", { name: "3号3号玩家已死亡" }));
   fireEvent.click(screen.getByRole("button", { name: "公开射击所选玩家" })); expect(onUseAbility).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "确认公开开枪" })); expect(onUseAbility).toHaveBeenCalledWith(3);
 });

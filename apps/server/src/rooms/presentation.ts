@@ -2,6 +2,7 @@ import type { ExperienceEvent } from "@ravens/contracts";
 import type { GameRuntime } from "./service.js";
 
 export interface PublicProjection {
+  publishedPhaseStartedAt:number;
   phase: GameRuntime["phase"];
   contextId: string;
   day: number;
@@ -30,8 +31,9 @@ export interface Publication {
   deaths?: number[];
 }
 
-export function initializePresentation(game: GameRuntime): void {
+export function initializePresentation(game: GameRuntime, now?:number): void {
   game.publicProjection ??= {
+    publishedPhaseStartedAt:now??game.events[0]?.occurredAt??0,
     phase: game.phase, contextId: game.contextId, day: game.day,
     aliveSeats: [...(game.nightStartAliveSeats ?? game.aliveSeats)], ghostVoteSeats: [...game.ghostVoteSeats],
     readySeats: [...game.readySeats], voteSubmissions: { ...game.voteSubmissions },
@@ -92,6 +94,7 @@ export function publishDue(game: GameRuntime, now: number): boolean {
   const projection = game.publicProjection!;
   const due = game.pendingPublications!.filter(node => node.at <= now).sort((a, b) => a.at - b.at || a.order - b.order);
   for (const node of due) {
+    if(node.patch.phase&&node.patch.phase!==projection.phase||node.patch.day!==undefined&&node.patch.day!==projection.day)projection.publishedPhaseStartedAt=node.at;
     Object.assign(projection, structuredClone(node.patch));
     if (node.deaths) projection.aliveSeats = projection.aliveSeats.filter(seat => !node.deaths!.includes(seat));
     if (node.eventPatch) {
@@ -109,6 +112,7 @@ export function syncImmediate(game: GameRuntime, now: number): void {
   const projection = game.publicProjection!;
   // Future deaths/finales cannot change publicly inferable fields during the choreography.
   if (now < game.presentationUntil) return;
+  if(projection.phase!==game.phase||projection.day!==game.day)projection.publishedPhaseStartedAt=now;
   projection.phase = game.phase;
   projection.contextId = game.contextId;
   projection.day = game.day;

@@ -1,3 +1,5 @@
+import {useGameClock} from "../use-game-clock.js";
+import type {RoomView} from "../api.js";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { ExperienceEvent } from "@ravens/contracts";
 import type { GameView } from "../api.js";
@@ -13,13 +15,14 @@ export function eventAt(events: PublicEvent[], now: number, seen: Set<string>): 
 export function publicEventsAt(events: PublicEvent[], now: number): PublicEvent[] { return events.filter((event) => (event.startsAt ?? 0) <= now); }
 function loadCursor(gameKey: string): Set<string> { try { return new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { return new Set(); } }
 
-export function EventStage({ game, receipt, preview = false }: { game?: GameView; receipt?: PrivateReceipt; preview?: boolean }) {
-  const [clock, setClock] = useState(Date.now());
+export function EventStage({ game, receipt, preview = false, room }: { game?: GameView; receipt?: PrivateReceipt; preview?: boolean; room?: RoomView|undefined }) {
+  const now=useGameClock(game,room);
+  const frozen=room?.timeline?.mode==="MANUAL";
   const [sound, setSound] = useState(effectsAudioEnabled);
   const [reduced, setReduced] = useState(() => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [privateScene, setPrivateScene] = useState<PrivateReceipt>();
-  const offset = useRef(game?.serverNow ? game.serverNow - Date.now() : 0);
+
   const observed = useRef(new Set<string>());
   const gameKey = game?.gameId ?? "legacy";
   const seen = useRef(loadCursor(gameKey));
@@ -33,8 +36,7 @@ export function EventStage({ game, receipt, preview = false }: { game?: GameView
     try { seen.current = new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { seen.current = new Set(); }
     setDismissed([]); observed.current.clear(); previousEvent.current = undefined;
   }, [gameKey]);
-  useEffect(() => { if (game?.serverNow) offset.current = game.serverNow - Date.now(); }, [game?.serverNow]);
-  useEffect(() => { const id = window.setInterval(() => setClock(Date.now()), 80); return () => window.clearInterval(id); }, []);
+  useEffect(()=>{if(frozen)silenceEffects();},[frozen]);
   useEffect(() => () => silenceEffects(), []);
   useEffect(() => { const sync = () => setSound(effectsAudioEnabled()); window.addEventListener("ravens-effects-audio", sync); return () => window.removeEventListener("ravens-effects-audio", sync); }, []);
   useEffect(() => {
@@ -50,10 +52,10 @@ export function EventStage({ game, receipt, preview = false }: { game?: GameView
     const timer = window.setTimeout(() => setPrivateScene(undefined), preview ? 3_600 : 1_200);
     return () => window.clearTimeout(timer);
   }, [receipt?.id]);
-  const now = clock + offset.current;
+
   const active = eventAt(game?.events ?? [], now, new Set([...seen.current, ...dismissed]));
   const elapsed = active ? now - active.startsAt : 0;
-  if (active && animationAnchor.current?.id !== active.id) animationAnchor.current = { id: active.id, delay: -elapsed };
+  if (active && (frozen || animationAnchor.current?.id !== `${active.id}:${room?.timeline?.epoch??0}`)) animationAnchor.current = { id: `${active.id}:${room?.timeline?.epoch??0}`, delay: -elapsed };
   if (!active) animationAnchor.current = undefined;
   const reducedOrLate = reduced || Boolean(active && elapsed > active.durationMs - 1_000);
   useEffect(() => {
@@ -63,8 +65,8 @@ export function EventStage({ game, receipt, preview = false }: { game?: GameView
     if (active) previousEvent.current = active;
     if (!active || seen.current.has(active.id) || observed.current.has(active.id)) return;
     observed.current.add(active.id);
-    if (!reduced) scheduleCue(active.id, active.kind, elapsed);
-  }, [active?.id, reduced]);
+    if (!reduced && !frozen) scheduleCue(active.id, active.kind, elapsed);
+  }, [active?.id, reduced, frozen]);
   useEffect(() => {
     if (!active) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
@@ -85,7 +87,7 @@ export function EventStage({ game, receipt, preview = false }: { game?: GameView
     try { sessionStorage.setItem(`ravens_events_${gameKey}`, JSON.stringify([...seen.current].slice(-150))); } catch { /* Deduplication still works in this tab. */ }
   }
   function skip() { silenceEffects(); if (active) { remember(active.id); setDismissed((all) => [...all, active.id]); } setPrivateScene(undefined); }
-  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !reduced) scheduleCue(active.id, active.kind, elapsed); }); }
+  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !reduced && !frozen) scheduleCue(active.id, active.kind, elapsed); }); }
   const event = active;
   const showResult = Boolean(event?.outcome) && (reducedOrLate || elapsed >= (event?.kind === "SHOT" ? 2_800 : event?.kind === "EXECUTION" ? 2_800 : 2_100));
   const target = game?.seats.find((seat) => seat.seat === event?.targetSeat);
@@ -94,7 +96,7 @@ export function EventStage({ game, receipt, preview = false }: { game?: GameView
   const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${actor?.nickname ?? `${event.actorSeat ?? "?"} 号玩家`} 举起了枪`, EXECUTION: showResult ? event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !event.outcome ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
   return <>
     <button className="effects-audio" type="button" aria-pressed={sound} onClick={toggleSound} title={sound ? "关闭演出音效" : "点击启用演出音效"}>{sound ? "♪ 音效开" : "♪ 音效关"}</button>
-    {event ? <section key={event.id} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${reduced ? " is-reduced" : ""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": `${animationAnchor.current?.delay ?? 0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
+    {event ? <section key={`${event.id}:${room?.timeline?.epoch??0}:${frozen?now:"live"}`} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${reduced ? " is-reduced" : ""}${frozen?" is-frozen":""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": `${animationAnchor.current?.delay ?? 0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
       <div className="event-stage__grain" aria-hidden="true" /><div className="event-stage__halo" aria-hidden="true" />
       <header><span>RAVENS AT MIDNIGHT</span><span>{preview ? "演出预览" : "全员公开事件"}</span></header>
       <div className="event-stage__body">

@@ -21,7 +21,7 @@ test("the first screen gives an authorized newcomer one clear way to join", asyn
   expect(screen.getByRole("link", { name: "渝ICP备2026016967号-1" })).toHaveAttribute("href", "https://beian.miit.gov.cn/");
   expect(screen.getByRole("link", { name: "渝公网安备 50010502504754号" })).toHaveAttribute("href", "https://beian.mps.gov.cn/#/query/webSearch?code=50010502504754");
   fireEvent.click(screen.getByRole("button", { name: "加入房间" }));
-  expect(screen.getByRole("heading", { name: "进入村庄" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "加入房间" })).toBeVisible();
   expect(screen.getByLabelText("六位邀请码")).toHaveAttribute("inputMode", "text");
 });
 
@@ -94,9 +94,9 @@ test("joining from a television has a distinct public-display choice", async () 
   render(<App />);
   await screen.findByRole("heading", { name: "鸦钟夜话" });
   fireEvent.click(screen.getByRole("button", { name: "加入房间" }));
-  fireEvent.click(screen.getByRole("button", { name: /电视公共大屏/ }));
+  fireEvent.click(screen.getByRole("button", { name: /使用公共大屏/ }));
   expect(screen.queryByLabelText("你的昵称")).not.toBeInTheDocument();
-  expect(screen.getByText("电脑连接电视 · 只显示公开城镇信息")).toBeVisible();
+  expect(screen.getByText("大屏只显示公开城镇信息。")).toBeVisible();
 });
 
 test("the public display reorders seats by drag or keyboard before the game", () => {
@@ -128,7 +128,7 @@ test("a scanned invitation opens the join form with its room code filled in", as
   window.history.replaceState({}, "", "/?room=C8TME8");
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  expect(await screen.findByRole("heading", { name: "进入村庄" })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: "加入房间" })).toBeVisible();
   expect(screen.getByLabelText("六位邀请码")).toHaveValue("C8TME8");
 });
 
@@ -158,27 +158,26 @@ test("the home screen preserves an active game and offers a clear resume action"
 test("tutorial and game waiting screens always provide a safe return", () => {
   const tutorialBack = vi.fn();
   const { unmount } = render(<Tutorial onBack={tutorialBack} onDone={vi.fn()} />);
-  fireEvent.click(screen.getByRole("button", { name: "← 返回首页" }));
+  fireEvent.click(screen.getByRole("button", { name: /返回首页/ }));
   expect(tutorialBack).toHaveBeenCalledOnce();
   unmount();
 
   const gameBack = vi.fn();
   render(<PlayerGame busy={false} canRestart={false} onBack={gameBack} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
-  fireEvent.click(screen.getByRole("button", { name: "← 返回首页" }));
+  fireEvent.click(screen.getByRole("button", { name: /返回首页/ }));
   expect(gameBack).toHaveBeenCalledOnce();
 });
 
 test("the room tutorial can be skipped with one action", () => {
   const onDone = vi.fn();
   render(<Tutorial onBack={vi.fn()} onDone={onDone} />);
-  expect(screen.getByText("跳过后，游戏中仍可随时打开教程和角色表。")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "跳过教学" }));
   expect(onDone).toHaveBeenCalledOnce();
 });
 
 test("the optional tutorial finishes in three cards and can be skipped from every card", () => {
   const done=vi.fn();render(<Tutorial onBack={vi.fn()} onDone={done}/>);
-  for(let step=0;step<2;step++){expect(screen.getByRole("button",{name:"跳过教学"})).toBeEnabled();fireEvent.click(screen.getByRole("button",{name:"我明白了"}));}
+  for(let step=0;step<2;step++){expect(screen.getByRole("button",{name:"跳过教学"})).toBeEnabled();fireEvent.click(screen.getByRole("button",{name:"下一步"}));}
   fireEvent.click(screen.getByRole("button",{name:"完成教学"}));expect(done).toHaveBeenCalledOnce();
 });
 
@@ -188,11 +187,11 @@ test("a nomination is confirmed before submission and may be abandoned", () => {
 
   fireEvent.click(screen.getByRole("button", { name: /被提名人.*提名/ }));
   expect(screen.getByText("确认提名 被提名人（2号）？")).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "暂不提名" }));
+  fireEvent.click(screen.getByRole("button", { name: "取消" }));
   expect(screen.queryByText("确认提名 被提名人（2号）？")).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("button", { name: /被提名人.*提名/ }));
-  fireEvent.click(screen.getByRole("button", { name: "确认提名" }));
+  fireEvent.click(screen.getByRole("button", { name: "确认提名 2号" }));
   expect(onNominate).toHaveBeenCalledWith(2);
 });
 
@@ -224,7 +223,7 @@ test("private identity, actions, and clues are grouped into a readable timeline"
   ];
   render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
 
-  fireEvent.click(screen.getByRole("button",{name:"记录"}));
+  fireEvent.click(screen.getByRole("button",{name:/^记录/}));
   const drawer = screen.getByText("我的身份与线索记录").closest("details");
   expect(drawer).not.toHaveAttribute("open");
   fireEvent.click(screen.getByText("我的身份与线索记录"));

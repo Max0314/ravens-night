@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "vitest";
-import { buildApp } from "../app.js";
+import { protocolApp as buildApp } from "../test-fixtures/protocol-app.js";
 const apps: ReturnType<typeof buildApp>[] = [];
 afterEach(async () => { await Promise.all(apps.splice(0).map(app => app.close())); });
 async function lobby() {
@@ -7,7 +7,7 @@ async function lobby() {
   const app = buildApp({ timers: false, now:()=>now, resolveAccount: async () => null }); apps.push(app); await app.ready();
   const { code } = (await app.inject({ method: "POST", url: "/api/rooms", payload: { playerCount: 5, organizerName: "房主" } })).json();
   const ticket = async () => (await app.inject({ url: `/api/rooms/${code}/join-ticket?mode=PLAYER` })).json().joinTicket;
-  const join = (joinTicket: string, nickname = "原昵称", cookie?: string) => app.inject({ method: "POST", url: `/api/rooms/${code}/join`, headers: { "x-ravens-protocol": "2", ...(cookie ? { cookie } : {}) }, payload: { nickname, mode: "PLAYER", joinTicket } });
+  const join = (joinTicket: string, nickname = "原昵称", cookie?: string) => app.inject({ method: "POST", url: `/api/rooms/${code}/join`, headers: { "x-ravens-protocol": "3", ...(cookie ? { cookie } : {}) }, payload: { nickname, mode: "PLAYER", joinTicket } });
   return { app, code, ticket, join, advance(ms:number){now+=ms;} };
 }
 test("lost first join response and concurrent retry reuse one seat even after setup changes", async () => {
@@ -37,7 +37,7 @@ test("unused ticket conflicts when another join changes the roster; used ticket 
 
 test("tickets cannot cross rooms or modes, expire at ten minutes, and rotation revokes used tickets",async()=>{
   const t=await lobby(),ticket=await t.ticket();const joined=await t.join(ticket);const token=joined.json().token;
-  const headers={"x-ravens-protocol":"2"};const other=(await t.app.inject({method:"POST",url:"/api/rooms",payload:{playerCount:5,organizerName:"另一个房"}})).json();
+  const headers={"x-ravens-protocol":"3"};const other=(await t.app.inject({method:"POST",url:"/api/rooms",payload:{playerCount:5,organizerName:"另一个房"}})).json();
   expect((await t.app.inject({method:"POST",url:`/api/rooms/${other.code}/join`,headers,payload:{nickname:"甲",mode:"PLAYER",joinTicket:ticket}})).statusCode).toBe(409);
   expect((await t.app.inject({method:"POST",url:`/api/rooms/${t.code}/join`,headers,payload:{nickname:"电视",mode:"DISPLAY",joinTicket:ticket}})).statusCode).toBe(409);
   const view=(await t.app.inject(`/api/rooms/${t.code}/me?token=${token}`)).json();

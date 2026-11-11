@@ -1,8 +1,10 @@
+import type {PlayerController,BotControlView,RoomTimeline,ControlResult} from "./bot-control.js";
 import type { ExperienceEvent, StorytellerDecision } from "./experience.js";
 import type { RoomProtocolView } from "./room-protocol.js";
-export interface RoomParticipant { id: string; nickname: string; avatar?: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
+export interface RoomParticipant { controller?:PlayerController; id: string; nickname: string; avatar?: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface GameView {
+  publishedPhaseStartedAt?:number;
   revealComplete?: boolean;
   contextId?: string;
   gameId?: string;
@@ -13,7 +15,7 @@ export interface GameView {
   pauseReason?: string;
   phase: "ROLE_REVEAL" | "FIRST_NIGHT" | "DAY_DISCUSSION" | "NOMINATION" | "VOTING" | "OTHER_NIGHT" | "GAME_OVER" | "ABORTED";
   day: number;
-  seats: Array<{ id?: string; avatar?: string; seat: number; nickname: string; connected: boolean; alive: boolean; ghostVoteAvailable: boolean }>;
+  seats: Array<{ controller?:PlayerController; id?: string; avatar?: string; seat: number; nickname: string; connected: boolean; alive: boolean; ghostVoteAvailable: boolean }>;
   events: Array<Partial<ExperienceEvent> & { seq: number; message: string }>;
   readyCount: number;
   aliveCount: number;
@@ -23,7 +25,7 @@ export interface GameView {
   winner?: "GOOD" | "EVIL";
   winReason?: string;
 }
-export interface RoomView extends Partial<RoomProtocolView> { code: string; state: string; playerCount: number; playMode?: RoomPlayMode; voiceRoomUrl?: string; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView; rulesSummary?: string; hostClaimAt?: number; tutorialCompleteCount?: number }
+export interface RoomView extends Partial<RoomProtocolView> { botControl?:BotControlView;timeline?:Pick<RoomTimeline,"mode"|"epoch">;activeHumanCount?:number;botCount?:number; code: string; state: string; playerCount: number; playMode?: RoomPlayMode; voiceRoomUrl?: string; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView; rulesSummary?: string; hostClaimAt?: number; tutorialCompleteCount?: number }
 export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
 export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 export interface PrivateHistoryEntry {
@@ -34,6 +36,8 @@ export interface PrivateHistoryEntry {
   text: string;
 }
 export interface PrivateView extends Partial<RoomProtocolView> {
+  controlResult?:ControlResult;
+  canManageBots?:boolean;canStepBots?:boolean;canFreezeRehearsal?:boolean;canAdvanceRehearsal?:boolean;
   room?: RoomView;
   contextId?: string;
   dayReady?: boolean;
@@ -65,4 +69,4 @@ export interface PrivateView extends Partial<RoomProtocolView> {
   action?: { kind: "CONFIRM_ROLE" | "SELECT_ONE" | "SELECT_TWO" | "VOTE" | "DAY" | "SLAYER"; legalSeats: number[]; minTargets: number; maxTargets: number; prompt: string };
 }
 
-export interface RoomResult { gameId: string; releasedAt: number; winner: "GOOD" | "EVIL"; reason: string; days: number; participants: Array<{id: string; nickname: string; avatar?: string; finalRole: string; perceivedRole?: string}> }
+export interface RoomResult {hadBots?:boolean;rehearsalUsed?:boolean;releasedWallAt?:number; gameId: string; releasedAt: number; winner: "GOOD" | "EVIL"; reason: string; days: number; participants: Array<{controller?:PlayerController;id: string; nickname: string; avatar?: string; finalRole: string; perceivedRole?: string}> }

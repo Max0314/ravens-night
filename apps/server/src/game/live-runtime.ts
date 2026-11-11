@@ -1,3 +1,4 @@
+import type {CreationRequest} from '../rooms/creation.js';
 import { createHash } from "node:crypto";
 import { RoomService, type RoomRecord, type AccountClaim } from "../rooms/service.js";
 import type { RoomCommandContext } from "@ravens/contracts";
@@ -6,7 +7,8 @@ import type { AccountProfile } from '../auth/game-profile.js';
 export interface RoomRepository {
   initialize(): Promise<void>;
   loadAll(): Promise<RoomRecord[]>;
-  commit(changed: RoomRecord[], deleted: string[], claims?:AccountClaim[], profiles?:AccountProfile[]): Promise<void>;
+  commit(changed: RoomRecord[], deleted: string[], claims?:AccountClaim[], profiles?:AccountProfile[],creations?:CreationRequest[],deletedCreations?:string[]): Promise<void>;
+  loadCreationRequests?():Promise<CreationRequest[]>;
   loadClaims?():Promise<AccountClaim[]>;
   loadProfiles?():Promise<AccountProfile[]>;
   health?():Promise<void>;
@@ -15,7 +17,7 @@ export interface RoomRepository {
 interface Receipt { fingerprint: string; kind?: "view" | "result"; result?: unknown; actorCommandVersion?: number; contextId?: string; }
 export interface CommandReceipt {
   code: string; id: string; actor: string; fingerprint: string;
-  context?: RoomCommandContext; accountId?: string; resultKind?: "view" | "result";
+  requireHost?:boolean;context?: RoomCommandContext; accountId?: string; resultKind?: "view" | "result";
 }
 export class PersistenceUnavailableError extends Error {
   constructor(cause: unknown) { super("房间状态暂时无法保存，请稍后重试", { cause }); this.name = "PersistenceUnavailableError"; }
@@ -25,16 +27,17 @@ export class LiveRoomRuntime {
   #service: RoomService;
   #tail: Promise<void> = Promise.resolve();
   readonly #listeners = new Set<(changedCodes: string[]) => void>();
-  constructor(readonly repository?: RoomRepository, readonly options: { now?: () => number; presentation?: boolean } = {}) { this.#service = new RoomService(options); }
+  constructor(readonly repository?: RoomRepository, readonly options: { now?: () => number; presentation?: boolean;botSecret?:string } = {}) { this.#service = new RoomService(options); }
   get service(): RoomService { return this.#service; }
   async initialize(): Promise<void> {
     if (!this.repository) return;
     await this.repository.initialize();
     const snapshots = await this.repository.loadAll();
-    const legacyCodes = snapshots.filter(room => room.schemaVersion !== 2).map(room => room.code);
+    const legacyCodes = snapshots.filter(room => room.schemaVersion !== 3).map(room => room.code);
     this.#service.restore(snapshots);
     this.#service.restoreClaims(await this.repository.loadClaims?.()??[]);
     this.#service.restoreProfiles(await this.repository.loadProfiles?.()??[]);
+    this.#service.restoreCreationRequests(await this.repository.loadCreationRequests?.()??[]);
     const migrated = legacyCodes.map(code => this.#service.snapshot(code));
     if (migrated.length) {
       for (const room of migrated) room.revision += 1;
@@ -50,6 +53,7 @@ export class LiveRoomRuntime {
       stage.restore(before);
       stage.restoreClaims(this.#service.accountClaims());
       stage.restoreProfiles(this.#service.accountProfiles());
+      stage.restoreCreationRequests(this.#service.creationRequests());
       const key = receipt ? createHash("sha256").update(`${receipt.actor}:${receipt.id}`).digest("hex") : undefined;
       const receiptRoom = receipt ? stage.find(receipt.code) : undefined;
       const actor = receipt?.context ? stage.authorizeCommand(receipt.code, receipt.actor, receipt.context, receipt.accountId) : undefined;
@@ -57,7 +61,8 @@ export class LiveRoomRuntime {
         const actorHash = createHash("sha256").update(receipt.actor).digest("hex");
         if (!receiptRoom.participants.some((p) => !p.left && p.tokenHash === actorHash)) throw new RoomError("SEAT_REMOVED", "原座位已失效，请重新加入或恢复", 403);
       }
-      const receipts = (receiptRoom?.metadata?.commandReceipts ?? {}) as Record<string, Receipt>;
+      if(receipt?.requireHost)stage.assertHost(receipt.code,receipt.actor);
+      let receipts = (receiptRoom?.metadata?.commandReceipts ?? {}) as Record<string, Receipt>;
       if (key && receipts[key]) {
         if (receipts[key]!.fingerprint !== receipt!.fingerprint) throw new RoomError("COMMAND_ID_REUSED", "同一操作编号不能用于不同请求");
         return structuredClone(receipts[key]!.result) as T;
@@ -65,6 +70,8 @@ export class LiveRoomRuntime {
       const result = mutation(stage);
       if (actor && receipt) stage.completeCommand(receipt.code, actor.participantId);
       if (key && receiptRoom && stage.listCodes().includes(receiptRoom.code)) {
+        const currentReceiptRoom=stage.find(receiptRoom.code);
+        receipts=(currentReceiptRoom.metadata?.commandReceipts??{}) as Record<string,Receipt>;
         receipts[key] = {
           fingerprint: receipt!.fingerprint, kind: receipt!.resultKind ?? "result",
           ...(receipt!.resultKind === "view" ? {} : { result: structuredClone(result) }),
@@ -73,8 +80,8 @@ export class LiveRoomRuntime {
         };
         const keys = Object.keys(receipts);
         for (const old of keys.slice(0, Math.max(0, keys.length - COMMAND_RECEIPT_LIMIT))) delete receipts[old];
-        receiptRoom.metadata = { ...receiptRoom.metadata, commandReceipts: receipts };
-        receiptRoom.revision += 1;
+        currentReceiptRoom.metadata = { ...currentReceiptRoom.metadata, commandReceipts: receipts };
+        currentReceiptRoom.revision += 1;
       }
       const after = stage.listCodes().map((code) => stage.snapshot(code));
       const original = new Map(before.map((room) => [room.code, room]));
@@ -85,8 +92,10 @@ export class LiveRoomRuntime {
       const deleted = before.filter((room) => !remaining.has(room.code)).map((room) => room.code);
       const claims=stage.accountClaims().filter(value=>!this.#service.accountClaim(value.sub));
       const profiles=stage.accountProfiles().filter(value=>value.revision!==this.#service.accountProfile(value.sub)?.revision);
-      if (this.repository && (changed.length || deleted.length || claims.length || profiles.length)) {
-        try { await this.repository.commit(changed, deleted,claims,profiles); }
+      const creations=stage.creationRequests().filter(value=>!this.#service.creationRequest(value.key));
+      const deletedCreations=this.#service.creationRequests().filter(value=>!stage.creationRequest(value.key)).map(value=>value.key);
+      if (this.repository && (changed.length || deleted.length || claims.length || profiles.length || creations.length || deletedCreations.length)) {
+        try { await this.repository.commit(changed, deleted,claims,profiles,creations,deletedCreations); }
         catch (cause) { throw new PersistenceUnavailableError(cause); }
       }
       this.#service = stage;

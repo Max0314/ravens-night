@@ -16,7 +16,7 @@ function table(roleIds: string[], perceived: Record<number, string> = {}, cinema
   });
   service.restore([snapshot]);
   for (const player of players) service.completeTutorial(room.code, player.token);
-  const mutate = (change: (room: RoomRecord) => void) => { const state = service.snapshot(room.code); change(state); service.restore([state]); };
+  const mutate = (change: (room: RoomRecord) => void) => { const state = service.snapshot(room.code); change(state); if(!cinematic&&state.game?.publicProjection&&["DAY_DISCUSSION","NOMINATION"].includes(state.game.phase))state.game.publicProjection.aliveSeats=[...state.game.aliveSeats]; service.restore([state]); };
   const settle = (targets: Record<number, number[]> = {}) => {
     for (let pass = 0; pass < 20; pass += 1) {
       const phase = service.publicView(room.code).game!.phase;
