@@ -1,7 +1,7 @@
 import {useGameClock} from "../use-game-clock.js";
 import type {RoomView} from "../api.js";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import type { ExperienceEvent } from "@ravens/contracts";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import {experienceTiming, type ExperienceEvent } from "@ravens/contracts";
 import type { GameView } from "../api.js";
 import { effectsAudioEnabled, enableEffectsAudio, scheduleCue, silenceEffects } from "./experience-audio.js";
 import "../styles/experience.css";
@@ -23,7 +23,8 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [privateScene, setPrivateScene] = useState<PrivateReceipt>();
 
-  const observed = useRef(new Set<string>());
+  const [hidden,setHidden]=useState(document.hidden);
+  useEffect(()=>{const sync=()=>{setHidden(document.hidden);if(document.hidden)silenceEffects();};document.addEventListener("visibilitychange",sync);return()=>document.removeEventListener("visibilitychange",sync);},[]);
   const gameKey = game?.gameId ?? "legacy";
   const seen = useRef(loadCursor(gameKey));
   const seenKey = useRef(gameKey);
@@ -34,7 +35,7 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
   const animationAnchor = useRef<{ id: string; delay: number } | undefined>(undefined);
   useEffect(() => {
     try { seen.current = new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { seen.current = new Set(); }
-    setDismissed([]); observed.current.clear(); previousEvent.current = undefined;
+    setDismissed([]); previousEvent.current = undefined;
   }, [gameKey]);
   useEffect(()=>{if(frozen)silenceEffects();},[frozen]);
   useEffect(() => () => silenceEffects(), []);
@@ -57,16 +58,26 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
   const elapsed = active ? now - active.startsAt : 0;
   if (active && (frozen || animationAnchor.current?.id !== `${active.id}:${room?.timeline?.epoch??0}`)) animationAnchor.current = { id: `${active.id}:${room?.timeline?.epoch??0}`, delay: -elapsed };
   if (!active) animationAnchor.current = undefined;
+  const canSeek=typeof Element!=="undefined"&&typeof Element.prototype.getAnimations==="function";
+  const staticMotion=reduced||!canSeek;
   const reducedOrLate = reduced || Boolean(active && elapsed > active.durationMs - 1_000);
   useEffect(() => {
     // A clock correction or stale poll may briefly hide an event near its delivery
     // boundary. Only completion or an explicit skip is allowed to advance the cursor.
     if (previousEvent.current && previousEvent.current.id !== active?.id && now >= previousEvent.current.startsAt + previousEvent.current.durationMs) { remember(previousEvent.current.id); previousEvent.current = undefined; }
     if (active) previousEvent.current = active;
-    if (!active || seen.current.has(active.id) || observed.current.has(active.id)) return;
-    observed.current.add(active.id);
-    if (!reduced && !frozen) scheduleCue(active.id, active.kind, elapsed);
-  }, [active?.id, reduced, frozen]);
+    if(active&&!seen.current.has(active.id)&&!reduced&&!frozen&&!hidden)scheduleCue(active.id,active.kind,elapsed,active.timingVersion??1);
+    return()=>silenceEffects();
+  }, [active?.id,reduced,frozen,sound,hidden,room?.timeline?.epoch]);
+  useLayoutEffect(()=>{
+    if(!active)return;
+    for(const animation of stageRef.current?.getAnimations?.({subtree:true})??[]){
+      const effect=animation.effect as KeyframeEffect|null;
+      if(effect?.target===stageRef.current)continue;
+      animation.currentTime=elapsed;
+      if(frozen||hidden)animation.pause();else animation.play();
+    }
+  },[active?.id,frozen,hidden,room?.timeline?.epoch,frozen?now:0]);
   useEffect(() => {
     if (!active) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
@@ -87,21 +98,21 @@ export function EventStage({ game, receipt, preview = false, room }: { game?: Ga
     try { sessionStorage.setItem(`ravens_events_${gameKey}`, JSON.stringify([...seen.current].slice(-150))); } catch { /* Deduplication still works in this tab. */ }
   }
   function skip() { silenceEffects(); if (active) { remember(active.id); setDismissed((all) => [...all, active.id]); } setPrivateScene(undefined); }
-  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !reduced && !frozen) scheduleCue(active.id, active.kind, elapsed); }); }
+  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next).then(() => { if (next && active && !reduced && !frozen) scheduleCue(active.id, active.kind, elapsed,active.timingVersion??1); }); }
   const event = active;
-  const showResult = Boolean(event?.outcome) && (reducedOrLate || elapsed >= (event?.kind === "SHOT" ? 2_800 : event?.kind === "EXECUTION" ? 2_800 : 2_100));
+  const showResult = Boolean(event?.outcome) && (reducedOrLate || elapsed >= (event?experienceTiming(event.kind,event.timingVersion??1).resultOffset:0));
   const target = game?.seats.find((seat) => seat.seat === event?.targetSeat);
   const actor = game?.seats.find((seat) => seat.seat === event?.actorSeat);
   const deaths = event?.seats ?? [];
   const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${actor?.nickname ?? `${event.actorSeat ?? "?"} 号玩家`} 举起了枪`, EXECUTION: showResult ? event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !event.outcome ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
   return <>
     <button className="effects-audio" type="button" aria-pressed={sound} onClick={toggleSound} title={sound ? "关闭演出音效" : "点击启用演出音效"}>{sound ? "♪ 音效开" : "♪ 音效关"}</button>
-    {event ? <section key={`${event.id}:${room?.timeline?.epoch??0}:${frozen?now:"live"}`} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${reduced ? " is-reduced" : ""}${frozen?" is-frozen":""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": `${animationAnchor.current?.delay ?? 0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
+    {event ? <section key={event.id} data-timing-version={event.timingVersion??1} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${staticMotion ? " is-reduced" : ""}${frozen?" is-frozen":""}`} role="dialog" aria-label="城镇公开演出" aria-modal="true" style={{ "--scene-delay": canSeek?"0ms":`${animationAnchor.current?.delay??0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
       <div className="event-stage__grain" aria-hidden="true" /><div className="event-stage__halo" aria-hidden="true" />
       <header><span>RAVENS AT MIDNIGHT</span><span>{preview ? "演出预览" : "全员公开事件"}</span></header>
       <div className="event-stage__body">
         <p className="event-stage__eyebrow">{event.kind === "DAWN" ? `第 ${event.day ?? game?.day ?? 1} 天 · 黎明` : event.kind === "SHOT" ? "猎魔人 · 公开宣称" : event.kind === "EXECUTION" ? "城镇公决" : "钟声回响"}</p>
-        <h1>{title}</h1>
+        <h1>{elapsed<0?"即将开始":title}</h1>
         <div className="event-stage__theatre" aria-hidden="true">
           {event.kind === "SHOT" ? <><div className="shot-smoke"><i /><i /><i /></div><div className="shot-gun"><Pistol /></div><div className="shot-flare" /><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><span>{target?.seat ?? event.targetSeat}</span><b>☾</b><strong>{target?.nickname ?? "目标玩家"}</strong><div className="seal-fracture" /></div></> : null}
           {event.kind === "EXECUTION" ? <><div className="execution-arch"><div className="execution-blade" /><span>⚜</span><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><span>{target?.seat ?? event.targetSeat}</span><b>☾</b><strong>{target?.nickname ?? "被处决者"}</strong></div></div><div className="execution-dust" /></> : null}

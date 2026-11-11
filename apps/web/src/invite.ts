@@ -14,3 +14,6 @@ export function invitationQr(code: string, width = 280): Promise<string> {
     errorCorrectionLevel: "M",
   });
 }
+
+/** Opens a confirmation form; a display seat is never allocated by following a link. */
+export function displayInvitationUrl(code:string):string{const url=new URL(invitationUrl(code));url.searchParams.set('display','1');return url.toString();}

@@ -75,18 +75,11 @@ test("evil first-night intelligence prominently shows teammate names and seat nu
   view.game!.phase = "FIRST_NIGHT";
   view.game!.day = 0;
   view.role = { roleId: "poisoner", alignment: "EVIL", type: "MINION", name: "投毒者", summary: "每夜选择一人投毒。", beginnerTip: "隐藏你的身份。" };
-  view.history = [
-    { seq: 1, phase: "ROLE_REVEAL", day: 0, kind: "IDENTITY", text: "你的身份是投毒者。" },
-    { seq: 2, phase: "ROLE_REVEAL", day: 0, kind: "INFORMATION", text: "恶魔是 小陈（6号）；其他爪牙：无。" },
-    { seq: 3, phase: "ROLE_REVEAL", day: 0, kind: "NOTICE", text: "本项目小局规则：邪恶玩家会在首夜得知队友姓名与编号；小恶魔不会获得三个安全伪装。" },
-  ];
-  view.action = { kind: "SELECT_ONE", legalSeats: [1, 2, 3, 4, 5, 6], minTargets: 1, maxTargets: 1, prompt: "选择今晚投毒的玩家" };
+  view.history=[];delete view.action;
+  view.startInfo={infoId:'private-info',gameId:'game',team:[{seat:6,nickname:'小陈',kind:'DEMON'}],bluffs:[],acknowledged:false,canAcknowledge:true};
+  const acknowledge=vi.fn();render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onConfirmStartInfo={acknowledge} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()}/>);
+  expect(screen.getByRole('heading',{name:'首夜信息'})).toBeVisible();expect(screen.getByText('6号 · 小陈')).toBeVisible();expect(screen.getByText('恶魔')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'已知晓'}));expect(acknowledge).toHaveBeenCalledWith('private-info');
 
-  render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
-  const intel = screen.getByText("邪恶阵营首夜情报").parentElement!;
-  expect(intel).toBeVisible();
-  expect(within(intel).getByText("恶魔是 小陈（6号）；其他爪牙：无。")).toBeVisible();
-  expect(within(intel).getByText(/邪恶玩家会在首夜得知队友姓名与编号/)).toBeVisible();
 });
 
 test("joining from a television has a distinct public-display choice", async () => {
@@ -108,20 +101,8 @@ test("the public display reorders seats by drag or keyboard before the game", ()
   ];
   render(<SeatOrderEditor players={players} busy={false} onReorder={onReorder} />);
 
-  fireEvent.keyDown(screen.getByLabelText("二号，当前 2 号，可拖动调整座位"), { key: "ArrowLeft" });
-  expect(onReorder).toHaveBeenLastCalledWith(["p2", "p1", "p3"]);
+  const handle=screen.getByRole('button',{name:'拖动二号'});fireEvent.keyDown(handle,{key:' '});fireEvent.keyDown(handle,{key:'ArrowLeft'});fireEvent.keyDown(handle,{key:' '});expect(onReorder).toHaveBeenLastCalledWith(['p2','p1','p3']);
 
-  const transfer = new Map<string, string>();
-  const dataTransfer = {
-    effectAllowed: "none",
-    dropEffect: "none",
-    setData: (type: string, value: string) => transfer.set(type, value),
-    getData: (type: string) => transfer.get(type) ?? "",
-  };
-  fireEvent.dragStart(screen.getByLabelText("三号，当前 3 号，可拖动调整座位"), { dataTransfer });
-  fireEvent.dragOver(screen.getByLabelText("原房主，当前 1 号，可拖动调整座位"), { dataTransfer });
-  fireEvent.drop(screen.getByLabelText("原房主，当前 1 号，可拖动调整座位"), { dataTransfer });
-  expect(onReorder).toHaveBeenLastCalledWith(["p3", "p1", "p2"]);
 });
 
 test("a scanned invitation opens the join form with its room code filled in", async () => {

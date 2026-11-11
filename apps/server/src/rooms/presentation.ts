@@ -1,3 +1,4 @@
+import {experienceTiming} from '@ravens/contracts';
 import type { ExperienceEvent } from "@ravens/contracts";
 import type { GameRuntime } from "./service.js";
 
@@ -51,7 +52,7 @@ const neutral: Record<ExperienceEvent["kind"], string> = {
 function safeStart(event: ExperienceEvent): ExperienceEvent {
   return {
     id: event.id, gameId: event.gameId, seq: event.seq, kind: event.kind,
-    occurredAt: event.occurredAt, startsAt: event.startsAt, durationMs: event.durationMs, ...(event.day === undefined ? {} : { day: event.day }),
+    occurredAt: event.occurredAt, startsAt: event.startsAt, durationMs: event.durationMs, timingVersion:event.timingVersion??1, ...(event.day === undefined ? {} : { day: event.day }),
     message: neutral[event.kind],
     ...(event.actorSeat === undefined ? {} : { actorSeat: event.actorSeat }),
     ...(event.targetSeat === undefined ? {} : { targetSeat: event.targetSeat }),
@@ -60,7 +61,7 @@ function safeStart(event: ExperienceEvent): ExperienceEvent {
 export function enqueuePublication(game: GameRuntime, event: ExperienceEvent): void {
   initializePresentation(game);
   const duration = event.durationMs;
-  const offset = duration === 0 ? 0 : ["SHOT", "EXECUTION"].includes(event.kind) ? 2800 : ["DAWN", "GAME_OVER"].includes(event.kind) ? 2100 : 0;
+  const offset = duration === 0 ? 0 : experienceTiming(event.kind,event.timingVersion??1).resultOffset;
   const end = event.startsAt + duration;
   const startPatch: Publication["patch"] = { presentationUntil: end };
   const resultPatch: Publication["patch"] = {};

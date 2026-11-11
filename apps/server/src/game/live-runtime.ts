@@ -33,7 +33,7 @@ export class LiveRoomRuntime {
     if (!this.repository) return;
     await this.repository.initialize();
     const snapshots = await this.repository.loadAll();
-    const legacyCodes = snapshots.filter(room => room.schemaVersion !== 3).map(room => room.code);
+    const legacyCodes = snapshots.filter(room => room.schemaVersion !== 4).map(room => room.code);
     this.#service.restore(snapshots);
     this.#service.restoreClaims(await this.repository.loadClaims?.()??[]);
     this.#service.restoreProfiles(await this.repository.loadProfiles?.()??[]);

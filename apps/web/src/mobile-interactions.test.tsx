@@ -92,11 +92,12 @@ test("pointer reorder commits once on release, cancels on interruption and reset
   vi.stubGlobal("PointerEvent",Pointer);
   const {room}=fixture();const reorder=vi.fn();const props={room:{...room,state:"LOBBY"},participantId:"p1",onBegin:vi.fn(),onLeave:vi.fn(),onTutorial:vi.fn(),onRoles:vi.fn(),canBegin:true,busy:false,onReorder:reorder};
   const ui=render(<Lobby {...props}/>);const handle=screen.getByRole("button",{name:"拖动玩家1很长的名字"});
-  Object.defineProperty(document,"elementFromPoint",{configurable:true,value:()=>document.querySelector('[data-player-id="p3"]')});
+  for(const node of ui.container.querySelectorAll<HTMLElement>('[data-player-id]')){const index=()=>Array.from(node.parentElement!.children).indexOf(node);Object.defineProperties(node,{offsetLeft:{get:()=>index()%4*100},offsetTop:{get:()=>Math.floor(index()/4)*130},offsetWidth:{get:()=>90},offsetHeight:{get:()=>120}});node.getBoundingClientRect=()=>({left:index()%4*100,top:Math.floor(index()/4)*130,width:90,height:120,right:0,bottom:0,x:0,y:0,toJSON(){}});}
+
   fireEvent.pointerDown(handle,{pointerId:1,button:0,clientX:0,clientY:0});fireEvent.pointerMove(handle,{pointerId:1,clientX:4,clientY:0});fireEvent.pointerUp(handle,{pointerId:1});expect(reorder).not.toHaveBeenCalled();
-  fireEvent.pointerDown(handle,{pointerId:1,button:0,clientX:0,clientY:0});fireEvent.pointerMove(handle,{pointerId:1,clientX:20,clientY:0});fireEvent.pointerCancel(handle,{pointerId:1});expect(reorder).not.toHaveBeenCalled();
-  fireEvent.pointerDown(handle,{pointerId:1,button:0,clientX:0,clientY:0});fireEvent.pointerMove(handle,{pointerId:1,clientX:20,clientY:0});fireEvent.pointerUp(handle,{pointerId:1});fireEvent.pointerUp(handle,{pointerId:1});expect(reorder).toHaveBeenCalledOnce();expect(reorder.mock.calls[0]![0].slice(0,3)).toEqual(["p2","p3","p1"]);
-  fireEvent.pointerDown(handle,{pointerId:1,button:0,clientX:0,clientY:0});fireEvent.pointerMove(handle,{pointerId:1,clientX:20,clientY:0});ui.rerender(<Lobby {...props} room={{...props.room,setupId:"new"}}/>);fireEvent.pointerUp(handle,{pointerId:1});expect(reorder).toHaveBeenCalledOnce();
+  fireEvent.pointerDown(handle,{pointerId:1,button:0,clientX:0,clientY:0});fireEvent.pointerMove(handle,{pointerId:1,clientX:210,clientY:0});fireEvent.pointerCancel(handle,{pointerId:1});expect(reorder).not.toHaveBeenCalled();
+  fireEvent.pointerDown(handle,{pointerId:1,button:0,clientX:0,clientY:0});fireEvent.pointerMove(handle,{pointerId:1,clientX:210,clientY:0});fireEvent.pointerUp(handle,{pointerId:1,clientX:210,clientY:0});fireEvent.pointerUp(handle,{pointerId:1,clientX:210,clientY:0});expect(reorder).toHaveBeenCalledOnce();expect(reorder.mock.calls[0]![0].slice(0,3)).toEqual(["p2","p3","p1"]);
+  fireEvent.pointerDown(handle,{pointerId:1,button:0,clientX:0,clientY:0});fireEvent.pointerMove(handle,{pointerId:1,clientX:210,clientY:0});ui.rerender(<Lobby {...props} room={{...props.room,setupId:"new"}}/>);fireEvent.pointerUp(handle,{pointerId:1});expect(reorder).toHaveBeenCalledOnce();
 });
 test("role category and focused card survive detail close without a second dialog",async()=>{
   const ui=render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);fireEvent.click(screen.getByRole("tab",{name:/外来者/}));

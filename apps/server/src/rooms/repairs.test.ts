@@ -64,17 +64,17 @@ afterEach(async () => { await Promise.all(apps.splice(0).map(app => app.close())
 async function httpTable() {
   const t = table(); t.start();
   const snapshot = t.service.snapshot(t.code);
-  snapshot.game!.phase = "DAY_DISCUSSION"; snapshot.game!.day = 1;
+  snapshot.game!.presentationVersion=1;snapshot.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};snapshot.game!.phase = "DAY_DISCUSSION"; snapshot.game!.day = 1;
   snapshot.game!.aliveSeats = [1, 2, 3, 4, 5];
   snapshot.assignments = ["chef", "empath", "soldier", "saint", "baron", "imp"].map((id, index) => ({ seat: index + 1, roleId: id, perceivedRoleId: id, roleType: roleById(id).type, alignment: index >= 4 ? "EVIL" : "GOOD" }));
   const repository = new MemoryRepository([snapshot]);
   const app = buildApp({ repository, now: t.now, presentation: false, timers: false, resolveAccount: async () => null });
   apps.push(app); await app.ready();
   async function body(seat: number) {
-    const view = (await app.inject({ url: `/api/rooms/${t.code}/me?token=${t.players[seat - 1]!.token}`,headers:{"x-ravens-protocol":"3"} })).json();
+    const view = (await app.inject({ url: `/api/rooms/${t.code}/me?token=${t.players[seat - 1]!.token}`,headers:{"x-ravens-protocol":"4"} })).json();
     return { token: t.players[seat - 1]!.token, roomInstanceId: view.roomInstanceId, setupId: view.setupId, expectedCommandVersion: view.self.commandVersion, gameId: view.game.gameId, contextId: view.contextId, ...(view.game.nomination ? { ballotId: view.game.nomination.ballotId } : {}) };
   }
-  const send = (path: string, payload: object, id = randomUUID()) => app.inject({ method: "POST", url: `/api/rooms/${t.code}/${path}`, headers: { "x-ravens-protocol": "3", "x-command-id": id }, payload });
+  const send = (path: string, payload: object, id = randomUUID()) => app.inject({ method: "POST", url: `/api/rooms/${t.code}/${path}`, headers: { "x-ravens-protocol": "4", "x-command-id": id }, payload });
   return { ...t, app, repository, body, send };
 }
 
@@ -113,13 +113,13 @@ test("save failure rolls back a vote and its receipt; same command can safely re
 test("legacy writes require refresh; public participants never include command versions", async () => {
   const t = await httpTable();
   expect((await t.app.inject({ method: "POST", url: `/api/rooms/${t.code}/vote`, payload: { raised: true } })).statusCode).toBe(426);
-  const publicRoom = (await t.app.inject({ url: `/api/rooms/${t.code}`,headers:{"x-ravens-protocol":"3"} })).json();
+  const publicRoom = (await t.app.inject({ url: `/api/rooms/${t.code}`,headers:{"x-ravens-protocol":"4"} })).json();
   expect(JSON.stringify(publicRoom.participants)).not.toMatch(/commandVersion|tokenHash|accountId|joinTicket/);
 });
 
 test("all public snapshots for equal hands are identical for ordinary, healthy and poisoned Butler", () => {
   const t = table(); t.start();
-  const initial = t.service.snapshot(t.code); initial.game!.phase = "DAY_DISCUSSION"; initial.game!.day = 1;
+  const initial = t.service.snapshot(t.code); initial.game!.presentationVersion=1;initial.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};initial.game!.phase = "DAY_DISCUSSION"; initial.game!.day = 1;
   const traces = ["chef", "butler", "poisoned-butler"].map(kind => {
     const snapshot = structuredClone(initial);
     snapshot.assignments[0]!.roleId = kind === "chef" ? "chef" : "butler";

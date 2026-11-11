@@ -1,3 +1,4 @@
+import {Avatar} from '../components/Avatar.js';
 import {RoomPageShell,RoomActionBar,RoomSheet,PlayerTile} from "../components/RoomPage.js";
 import {useGameClock} from "../use-game-clock.js";
 import { Button, Panel, RoleCard, SeatRing } from "@ravens/ui";
@@ -20,6 +21,7 @@ interface PlayerGameProps {
   busy: boolean;
   error?: string;
   onBack: () => void;
+  onConfirmStartInfo?: (infoId:string)=>void;
   onConfirmRole: () => void;
   onSubmitAction: (seats: number[]) => void;
   onNominate: (seat: number) => void;
@@ -64,7 +66,7 @@ export function PlayerGame(props: PlayerGameProps) {
   return <div className="player-session">{covered && props.error ? <p role="alert" className="public-command-error">{props.error}</p> : null}{props.view ? <PublicBallot view={props.view} busy={props.busy || syncing} onVote={props.onVote} onDetails={()=>{if(!covered)setShowBallot(n=>n+1);}}/> : null}<div className="player-private" hidden={covered} inert={covered}><PlayerGameContent {...props} drafts={drafts} setDrafts={setDrafts} showBallot={showBallot} busy={props.busy || syncing} /></div>{syncing ? <p role="status" className="session-status">正在同步当前轮次…</p> : null}{props.view?.game ? <><button className="privacy-toggle" type="button" onClick={() => setCovered(true)}>遮住私密内容</button><EventStage game={props.view.game} room={props.view.room} {...(!covered && props.receipt ? { receipt: props.receipt } : {})} />{covered ? <section className="privacy-curtain" aria-label="私密内容已遮住"><h1>私密内容已遮住</h1><Button onClick={() => setCovered(false)}>显示私密内容</Button></section> : null}</> : null}</div>;
 }
 
-function PlayerGameContent({ drafts, setDrafts, showBallot, view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onCancelNomination, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide, roomCode, voiceRoomUrl, onLeave, onRefresh, onResumeGame, onFinishDefense }: PlayerGameProps) {
+function PlayerGameContent({ drafts, setDrafts, showBallot, view, busy, error, onBack, onConfirmStartInfo, onConfirmRole, onSubmitAction, onNominate, onCancelNomination, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide, roomCode, voiceRoomUrl, onLeave, onRefresh, onResumeGame, onFinishDefense }: PlayerGameProps) {
   const [selected, setSelected] = useState<number[]>([]);
   const [pendingNominee, setPendingNominee] = useState<number>();
   const [pendingShot, setPendingShot] = useState<number>();
@@ -75,7 +77,10 @@ function PlayerGameContent({ drafts, setDrafts, showBallot, view, busy, error, o
   const game = view?.game;
   const now=useGameClock(game,view?.room);
   const content=useRef<HTMLDivElement>(null),positions=useRef<Record<string,number>>({});
-  const [readSeq,setReadSeq]=useState(0);
+  const [readSeq,setReadSeq]=useState(0),[infoOpen,setInfoOpen]=useState(true);
+  const infoContext=useRef<string|undefined>(undefined);
+  useEffect(()=>{infoContext.current=view?.game?.contextId;setInfoOpen(!view?.startInfo?.acknowledged);},[view?.startInfo?.infoId]);
+  useEffect(()=>{if(view?.startInfo?.acknowledged&&(view.action||view.game?.contextId!==infoContext.current))setInfoOpen(false);},[view?.startInfo?.acknowledged,view?.action?.kind,view?.game?.contextId]);
   function changeTab(next:typeof tab){positions.current[tab]=content.current?.scrollTop??0;setTab(next);if(next==="RECORD")setReadSeq(view?.history.at(-1)?.seq??0);}
   useLayoutEffect(()=>{if(content.current)content.current.scrollTop=positions.current[tab]??0;},[tab,game?.phase]);
   useEffect(()=>{positions.current={};if(content.current)content.current.scrollTop=0;},[game?.contextId,game?.gameId]);
@@ -90,6 +95,8 @@ function PlayerGameContent({ drafts, setDrafts, showBallot, view, busy, error, o
 
   if (game.phase === "ROLE_REVEAL") return <RoomPageShell className="role-confirm-page" title="身份确认" subtitle="仅你可见" onBack={onBack} actions={<><Button onClick={onConfirmRole} disabled={busy||view.roleConfirmed}>{view.roleConfirmed?"已确认，等待其他玩家":busy?"正在提交…":"确认身份"}</Button>{error?<p role="alert" className="form-error">{error}</p>:null}</>}><RoleCard name={role.name} alignment={`${role.alignment==="GOOD"?"善良":"邪恶"} · ${role.type==="TOWNSFOLK"?"镇民":role.type==="OUTSIDER"?"外来者":role.type==="MINION"?"爪牙":"恶魔"}`} ability={role.summary} {...roleArt(role.roleId)}/><details className="role-advice"><summary>游玩建议</summary><p>{role.beginnerTip}</p></details><GameGuideLinks onOpen={onOpenGuide}/></RoomPageShell>;
 
+  if(game.phase==='FIRST_NIGHT'&&view.startInfo&&infoOpen)return <RoomPageShell title="首夜信息" subtitle="仅你可见" onBack={()=>setInfoOpen(false)} actions={<><Button disabled={busy||!view.startInfo.canAcknowledge} onClick={()=>onConfirmStartInfo?.(view.startInfo!.infoId)}>{view.startInfo.acknowledged?'已知晓，等待其他玩家':busy?'正在确认…':'已知晓'}</Button><button type="button" onClick={()=>setInfoOpen(false)}>收起</button>{error?<p role="alert">{error}</p>:null}</>}><div className="start-info-team">{view.startInfo.team.map(p=><article key={p.seat}><Avatar id={`start-${p.seat}`} name={p.nickname} url={p.avatar}/><strong>{p.seat}号 · {p.nickname}</strong><small>{p.kind==='DEMON'?'恶魔':'爪牙'}</small></article>)}</div>{view.startInfo.bluffs.length?<section className="start-info-bluffs"><h2>未在场角色</h2>{view.startInfo.bluffs.map(r=><article key={r.roleId}><strong>{r.name}</strong><p>{r.summary}</p></article>)}</section>:null}</RoomPageShell>;
+
   if (game.phase === "GAME_OVER" && (game.revealComplete === false || (game.presentationUntil ?? 0) > now)) return <main className="game-page"><Waiting title={game.winner ? game.winner === "GOOD" ? "善良阵营获胜" : "邪恶阵营获胜" : "终章将至"} detail="身份与战报将在最后一幕结束后公布。" compact /></main>;
   if (game.phase === "GAME_OVER") return <RoomPageShell className={`ending-page ending--${game.winner?.toLowerCase()}`} title={game.winner==="GOOD"?"善良阵营获胜":"邪恶阵营获胜"} onBack={onBack} actions={<>{canRestart?<Button onClick={onRestart} disabled={busy}>{busy?"正在重置…":"下一把"}</Button>:<p>等待房主开始下一把</p>}{onLeave?<Button variant="quiet" onClick={onLeave} disabled={busy}>离开房间</Button>:null}{error?<p role="alert">{error}</p>:null}</>}><p>{winReason(game.winReason)}</p><Panel className="clue-panel"><h2>你的真实身份</h2><p>{role.name} · {role.summary}</p>{role.perceivedAs?<p>本局自认 {role.perceivedAs}，此前信息可能不真实。</p>:null}</Panel>{roomCode?<ResultBoard code={roomCode} gameId={game.gameId}/>:null}<StorytellerReview decisions={view.storytellerDecisions??[]}/><Clues history={view.history} messages={view.messages}/><PublicLog events={game.events}/></RoomPageShell>;
 
@@ -103,14 +110,14 @@ function PlayerGameContent({ drafts, setDrafts, showBallot, view, busy, error, o
   const defending = Boolean(game.nomination?.defenseUntil && now < game.nomination.defenseUntil);
   const pendingInvites = view.social?.invitations.filter((invite) => invite.toSeat === view.participant.seat && invite.status.toUpperCase() === "PENDING").length ?? 0;
   const navigation = <nav className="game-tabs" aria-label="游戏分区">{([['ACTION', '行动'], ['TOWN', '城镇'], ['RECORD', '记录']] as const).map(([key, label]) => <button type="button" key={key} className={tab === key ? "is-active" : ""} aria-pressed={tab === key} onClick={() => changeTab(key)}>{label}{key === "TOWN" && pendingInvites ? <small className="invite-badge">{pendingInvites}</small> : key==="RECORD"&&view.history.some(e=>e.seq>readSeq&&e.kind==="INFORMATION")?<small className="invite-badge">新</small>:null}</button>)}</nav>;
-  const utility = <div className="game-utility"><span>{game.aliveCount} 人存活 · 你是 {view.participant.seat} 号</span>{voiceRoomUrl || view.voiceRoomUrl ? <a href={voiceRoomUrl ?? view.voiceRoomUrl} target="_blank" rel="noreferrer">语音频道 ↗</a> : null}{game.pauseReason ? <p role="status">{game.pauseReason}{onResumeGame ? <button type="button" disabled={busy} onClick={onResumeGame}>延长等待</button> : null}</p> : null}</div>;
+  const utility = <div className="game-utility"><span>{game.aliveCount} 人存活 · 你是 {view.participant.seat} 号</span>{voiceRoomUrl || view.voiceRoomUrl ? <a href={voiceRoomUrl ?? view.voiceRoomUrl} target="_blank" rel="noopener noreferrer">语音频道 ↗</a> : null}{game.pauseReason ? <p role="status">{game.pauseReason}{onResumeGame ? <button type="button" disabled={busy} onClick={onResumeGame}>延长等待</button> : null}</p> : null}</div>;
   const publicTown = <><RemoteTownBoard game={game} ownSeat={view.participant.seat} />{roomCode ? <SocialRoom code={roomCode} view={view} drafts={drafts ?? {}} setDrafts={setDrafts!} onRefresh={onRefresh ?? (() => undefined)} /> : null}</>;
   const submittedNightAction = isNight && view.history.some((entry) => entry.phase === game.phase && entry.day === game.day && entry.kind === "ACTION");
   if (isNight) return <main className="game-page game-page--night">
     <GameHeader phase={phaseNames[game.phase]!} day={game.day} role={role.name} onBack={onBack} />
     {utility}{navigation}<div className="game-content" ref={content}>{tab === "TOWN" ? publicTown : null}{tab === "RECORD" ? <><Clues history={view.history} messages={view.messages} /><PublicLog events={shownEvents} /><GameGuideLinks onOpen={onOpenGuide} /></> : null}<div hidden={tab !== "ACTION"}>
 
-    {game.phase === "FIRST_NIGHT" && role.alignment === "EVIL" ? <EvilFirstNightIntel entries={view.history.filter((entry) => entry.phase === "ROLE_REVEAL" && (entry.kind === "INFORMATION" || entry.kind === "NOTICE"))} /> : null}
+    {game.phase==='FIRST_NIGHT'&&view.startInfo?<button type="button" onClick={()=>setInfoOpen(true)}>查看首夜信息</button>:null}
     {action?.kind === "SELECT_ONE" || action?.kind === "SELECT_TWO" ? <Panel className="action-panel">
       <p className="eyebrow">轮到你行动</p><h1>{action.prompt}</h1>
       <SeatChoices seats={game.seats} legalSeats={action.legalSeats} selected={selected} max={action.maxTargets} onChange={setSelected} />
@@ -153,11 +160,6 @@ function RemoteTownBoard({ game, ownSeat }: { game: NonNullable<PrivateView["gam
 
 function GameGuideLinks({ onOpen }: { onOpen: (mode: GuideMode) => void }) {
   return <div className="game-guide-links"><button type="button" onClick={() => onOpen("mine")}>我的角色</button><button type="button" onClick={() => onOpen("tutorial")}>教程</button><button type="button" onClick={() => onOpen("roles")}>角色表</button></div>;
-}
-
-function EvilFirstNightIntel({ entries }: { entries: PrivateHistoryEntry[] }) {
-  if (entries.length === 0) return null;
-  return <Panel className="evil-intel"><p className="eyebrow">邪恶阵营首夜情报</p>{entries.map((entry) => <p key={entry.seq}>{entry.text}</p>)}</Panel>;
 }
 
 function Waiting({ title, detail, compact = false }: { title: string; detail: string; compact?: boolean }) { return <section className={compact ? "inline-waiting" : "night-page"}><Panel className="night-action"><h1>{title}</h1><p>{detail}</p><div className="waiting-orbit"><span /></div></Panel></section>; }

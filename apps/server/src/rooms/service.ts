@@ -25,6 +25,8 @@ import {activePlayers,humans,bots,newBotControl,botToken,gameNow,setTimeline,inv
 import type {RoomTimeline,ControlResult} from '@ravens/contracts';
 import {avatarChoices} from '../auth/avatar.js';
 import type {CreationRequest} from './creation.js';
+import { experienceTiming } from '@ravens/contracts';
+import {createStartInfo,validateStartInfo,type StartInfo} from './first-night-info.js';
 const HUMAN_ACTIVITY_CHECKPOINT_MS=60_000;
 export type ParticipantMode = "PLAYER" | "DISPLAY";
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
@@ -54,7 +56,7 @@ export interface RoomResult {releasedWallAt:number;hadBots:boolean;rehearsalUsed
 
 export interface RoomRecord {
   lastResult?: RoomResult;
-  schemaVersion: 3;
+  schemaVersion: 4;
   timeline:RoomTimeline;
   botControl:BotControl;
   lastHumanActivityAt:number;
@@ -113,6 +115,8 @@ const VOTE_SLOT_MS = 1500;
 const DEFENSE_MS = 20_000;
 
 export interface GameRuntime {
+  presentationVersion:1|2;
+  startInfo:StartInfo;
   hadBots:boolean;
   rehearsalUsed:boolean;
   spyGrimoires?: Record<string, Grimoire>;
@@ -190,7 +194,7 @@ export class RoomService {
     while (this.#rooms.has(code)) code = createRoomCode();
     const organizerToken = createOpaqueToken();
     const room: RoomRecord = {
-      schemaVersion: 3, timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true},roomInstanceId: randomUUID(), setupId: randomUUID(),
+      schemaVersion: 4, timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true},roomInstanceId: randomUUID(), setupId: randomUUID(),
       id: randomUUID(),
       code,
       organizerName: organizerName.trim().slice(0, 24) || "组织者",
@@ -216,7 +220,7 @@ export class RoomService {
     const nickname = nicknameInput.trim().slice(0, 24);
     if (!nickname) throw new Error("Nickname is required");
     if (mode === "PLAYER" && room.participants.some((participant) => participant.mode === "PLAYER" && participant.nickname === nickname)) {
-      throw new Error("这个昵称已经有人使用");
+      throw new RoomError("NICKNAME_TAKEN","这个昵称已经有人使用，请修改昵称后继续",409);
     }
     let replacingSeat:number|undefined;
     if(mode==='PLAYER'&&activePlayers(room).length>=room.playerCount){
@@ -351,6 +355,7 @@ export class RoomService {
   restoreProfiles(values:AccountProfile[]){for(const value of values)this.#profiles.set(value.sub,structuredClone(value));}
   accountProfile(sub:string){return this.#profiles.get(sub);}
   syncAccountProfile(room:RoomRecord,participant:ParticipantRecord,account:Account,force=false){
+    if(participant.mode==='DISPLAY')return;
     const saved=this.accountProfile(account.sub),view=profileView(account,saved);
     const next={nickname:saved||force?view.nickname:participant.nickname,avatar:view.avatar};
     if(room.state!=='LOBBY'){if(force)participant.pendingProfile=next;return;}
@@ -474,6 +479,7 @@ export class RoomService {
     this.assertPresentationComplete(room);
     game.contextId = randomUUID();
     game.phase = "ABORTED";
+    game.startInfo.stage="CANCELLED";invalidateBots(room);
     room.state = "ABORTED";
     game.termination = { kind: "ABORTED", actorParticipantId: host.id, at: this.#now() };
     delete game.nomination; delete game.nightOrder; delete game.nightStep; delete game.pauseReason;
@@ -513,6 +519,7 @@ export class RoomService {
     if (participantIds.length !== players.length || new Set(participantIds).size !== participantIds.length || participantIds.some((id) => !currentIds.has(id))) {
       throw new Error("座位顺序必须包含当前全部玩家且不能重复");
     }
+    if(players.slice().sort((a,b)=>a.seat!-b.seat!).every((p,i)=>p.id===participantIds[i]))return;
     const playersById = new Map(players.map((candidate) => [candidate.id, candidate]));
     participantIds.forEach((id, index) => { playersById.get(id)!.seat = index + 1; });
     this.invalidateSetup(room);
@@ -522,11 +529,11 @@ export class RoomService {
   restore(snapshots: RoomRecord[]): void {
     for (const snapshot of snapshots) {
       const code = normalizeRoomCode(snapshot.code);
-      if (![undefined, 1, 2, 3].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
+      if (![undefined, 1, 2, 3, 4].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) throw new Error(`Room ${code}: invalid roster snapshot`);
-      if(![2,3].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
+      if(![2,3,4].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
       const game = snapshot.game ? this.restoreGame(snapshot.game, `legacy-game-${snapshot.gameNumber ?? 0}:${randomUUID()}`, snapshot.timeline ? gameNow(snapshot,this.#now()) : this.#now()) : undefined;
-      if (game && (snapshot.schemaVersion!==3||!game.publicProjection)) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
+      if (game && (![3,4].includes(snapshot.schemaVersion)||!game.publicProjection)) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
       migrateReceipts(snapshot);
 
       snapshot.roomInstanceId ??= randomUUID();
@@ -535,7 +542,12 @@ export class RoomService {
       const organizerParticipantId = snapshot.organizerParticipantId
         ?? snapshot.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1)?.id;
       const restored=structuredClone({ ...snapshot, playMode: snapshot.playMode ?? "IN_PERSON", lastActivityAt: snapshot.lastActivityAt ?? new Date(this.#now()).toISOString(), ...(organizerParticipantId ? { organizerParticipantId } : {}), ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 });
-      upgradeBotRoom(restored,this.#now());this.#rooms.set(code,restored);
+      upgradeBotRoom(restored,this.#now());
+      if((snapshot.schemaVersion as number)!==4){
+        restored.schemaVersion=4;
+        if(restored.game){restored.game.presentationVersion=1;restored.game.startInfo={mode:'LEGACY',stage:restored.game.phase==='ABORTED'?'CANCELLED':'COMPLETE',entries:{}};for(const e of restored.game.events)e.timingVersion??=1;}
+      }
+      validateStartInfo(restored);this.#rooms.set(code,restored);
       this.captureResult(this.#rooms.get(code)!, this.gameNow(this.#rooms.get(code)!));
     }
   }
@@ -566,7 +578,7 @@ export class RoomService {
     return {
       code: room.code,
       timeline:{mode:room.timeline.mode,epoch:room.timeline.epoch},botControl:this.botControlView(room),activeHumanCount:humans(room).length,botCount:bots(room).length,
-      protocolVersion: 3 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
+      protocolVersion: 4 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
       revision: room.revision, serverNow: this.#now(),
       rulesSummary: room.playerCount < 7 ? "5–6 人采用官方 Teensyville：恶魔与爪牙互不认识，恶魔没有三个伪装。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。" : "暗流涌动标准规则。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。",
       state: room.game && room.state !== "ABORTED" ? room.game.publicProjection?.phase === "GAME_OVER" ? "GAME_OVER" : "RUNNING" : room.state,
@@ -576,7 +588,7 @@ export class RoomService {
       ...(organizer ? { organizerId: organizer.id, organizerName: organizer.nickname } : {}),
       tutorialCompleteCount: room.participants.filter(p => p.mode === "PLAYER" && !p.left && p.tutorialComplete).length,
       hostClaimAt: organizer ? organizer.lastSeenAt + HOST_CLAIM_MS : undefined,
-      participants: room.participants.map(p => ({ controller:p.controller,id: p.id, nickname: p.nickname, mode: p.mode, seat: p.seat, avatar: p.avatarSnapshot, connected: p.controller==="BOT"||p.connected && this.#now() - p.lastSeenAt < ONLINE_MS, ready: p.ready, left: p.left ?? false })),
+      participants: room.participants.map(p => ({ controller:p.controller,id: p.id, nickname: p.mode==="DISPLAY"?"公共大屏":p.nickname, mode: p.mode, seat: p.seat, avatar: p.mode==="DISPLAY"?undefined:p.avatarSnapshot, connected: p.controller==="BOT"||p.connected && this.#now() - p.lastSeenAt < ONLINE_MS, ready: p.ready, left: p.left ?? false })),
       ...(room.game ? { game: this.publicGame(room) } : {}),
     };
   }
@@ -695,6 +707,7 @@ export class RoomService {
       const time=this.gameNow(room,now);
       const game = room.game;
       if (game && game.phase !== "ABORTED") dirty = publishDue(game, time) || dirty;
+      if(game&&this.releaseStartInfoIfDue(room))dirty=true;
       if (game?.phase === "VOTING" && game.nomination?.voterOrder && time >= game.presentationUntil) dirty = this.advanceBallot(room, time) || dirty;
       if (game && !["GAME_OVER", "ABORTED"].includes(game.phase) && time >= game.phaseDeadlineAt && time >= game.presentationUntil && !game.pauseReason) {
         if (game.phase === "VOTING") {
@@ -722,10 +735,65 @@ export class RoomService {
       game.phase = "FIRST_NIGHT";
       game.contextId = randomUUID();
       this.event(room, "所有身份已确认。村庄进入首夜。", "NIGHT_FALLS");
-      this.initializeNight(room);
-      this.settleNightIfReady(room);
+      if(game.startInfo.mode==='LEGACY'){this.initializeNight(room);this.settleNightIfReady(room);}
+      else {publishDue(game,this.gameNow(room));this.releaseStartInfoIfDue(room);}
     }
     this.changed(room);
+  }
+
+  updateGuestProfile(code:string,token:string,nickname:string,avatar:string) {
+    const {room,participant}=this.authorizedPlayer(code,token);
+    if(participant.controller!=='HUMAN'||participant.accountId)throw new RoomError('PROFILE_OWNER_CHANGED','请重新加载当前账号资料',403);
+    const values=validateProfile(nickname,avatar);
+    if(!values.nickname||!values.avatar)throw new RoomError('INVALID_PROFILE','请选择昵称和头像',400);
+    const previous=room.state==='LOBBY'?{nickname:participant.nickname,avatar:participant.avatarSnapshot??null}:participant.pendingProfile;
+    if(previous?.nickname===values.nickname&&previous.avatar===values.avatar)return{profileApplication:room.state==='LOBBY'?'CURRENT' as const:'NEXT_LOBBY' as const};
+    if(room.state==='LOBBY'){
+      participant.nickname=values.nickname;participant.avatarSnapshot=values.avatar;
+      if(room.organizerParticipantId===participant.id)room.organizerName=participant.nickname;
+    }else participant.pendingProfile={nickname:values.nickname,avatar:values.avatar};
+    this.changed(room);
+    return {profileApplication:room.state==='LOBBY'?'CURRENT' as const:'NEXT_LOBBY' as const};
+  }
+
+  private startInfoBlocks(room:RoomRecord){return room.game?.phase==='FIRST_NIGHT'&&room.game.startInfo.mode!=='LEGACY'&&room.game.startInfo.stage!=='COMPLETE';}
+  private nightfallComplete(room:RoomRecord){
+    const g=room.game;if(!g||room.state!=='RUNNING'||g.phase!=='FIRST_NIGHT'||g.confirmedRoleSeats.length!==room.playerCount)return false;
+    const event=g.events.find(e=>e.kind==='NIGHT_FALLS'&&e.day===0);
+    return !!event&&this.gameNow(room)>=Math.max(g.presentationUntil,event.startsAt+event.durationMs)&&!(g.pendingPublications??[]).some(p=>p.id===`${event.id}:end`);
+  }
+  private releaseStartInfoIfDue(room:RoomRecord){
+    const g=room.game;if(!g||g.startInfo.stage!=='WAIT_NIGHTFALL'||!this.nightfallComplete(room))return false;
+    const s=g.startInfo;
+    if(s.mode==='NONE')return this.completeStartInfoAndContinue(room);
+    if(s.mode!=='REQUIRED')return false;
+    s.stage='WAIT_ACK';s.releasedAt=this.gameNow(room);delete g.pauseReason;g.phaseDeadlineAt=this.gameNow(room)+180000;
+    for(const [own,entry]of Object.entries(s.entries)){
+      const seat=Number(own),team=entry.team.map(p=>`${p.nickname}（${p.seat}号，${p.kind==='DEMON'?'恶魔':'爪牙'}）`).join('、');
+      this.privateMessage(g,seat,`首夜阵营信息：${team||'无其他队友'}。`,'INFORMATION');
+      if(entry.bluffRoleIds.length)this.privateMessage(g,seat,`三个安全伪装：${entry.bluffRoleIds.map(id=>roleById(id).name).join('、')}。`,'INFORMATION');
+      this.rememberBotTeam(room,seat,entry.team.map(p=>p.seat));
+    }
+    return true;
+  }
+  private completeStartInfoAndContinue(room:RoomRecord){
+    const g=this.requireGame(room),s=g.startInfo;
+    if(!this.nightfallComplete(room)||!(s.mode==='NONE'&&s.stage==='WAIT_NIGHTFALL'||s.mode==='REQUIRED'&&s.stage==='WAIT_ACK'&&Object.values(s.entries).every(e=>e.acknowledged)))return false;
+    s.stage='COMPLETE';g.contextId=randomUUID();delete g.pauseReason;invalidateBots(room);
+    this.initializeNight(room);this.deadline(room);this.settleNightIfReady(room);return true;
+  }
+  private startInfoView(room:RoomRecord,seat:number){
+    const g=room.game,s=g?.startInfo,entry=s?.entries[seat];if(!g||!s||!entry||s.releasedAt===undefined)return;
+    return {infoId:entry.infoId,gameId:g.gameId,team:structuredClone(entry.team),bluffs:entry.bluffRoleIds.map(id=>{const r=roleById(id);return{roleId:id,name:r.name,summary:r.summary};}),acknowledged:entry.acknowledged,
+      canAcknowledge:room.state==='RUNNING'&&g.phase==='FIRST_NIGHT'&&s.stage==='WAIT_ACK'&&!entry.acknowledged&&this.gameNow(room)>=g.presentationUntil};
+  }
+  acknowledgeStartInfo(code:string,token:string,infoId:string){
+    const {room,participant}=this.authorizedPlayer(code,token),g=this.requireGame(room),s=g.startInfo,entry=s.entries[participant.seat!];
+    if(!entry||entry.infoId!==infoId||s.releasedAt===undefined||s.stage==='CANCELLED'||room.state!=='RUNNING')throw new RoomError('START_INFO_NOT_AVAILABLE','当前没有待确认提示');
+    if(entry.acknowledged)return;
+    if(!this.startInfoView(room,participant.seat!)?.canAcknowledge)throw new RoomError('START_INFO_NOT_AVAILABLE','当前没有待确认提示');
+    entry.acknowledged=true;delete g.pauseReason;if(this.gameNow(room)>=g.phaseDeadlineAt)this.deadline(room);
+    this.completeStartInfoAndContinue(room);this.changed(room);
   }
 
   submitAction(codeInput: string, playerToken: string, targetSeats: number[]): void {
@@ -733,6 +801,7 @@ export class RoomService {
     const game = this.requireGame(room);
     this.assertPresentationComplete(room);
     if (game.phase !== "FIRST_NIGHT" && game.phase !== "OTHER_NIGHT") throw new Error("No night action is active");
+    if(this.startInfoBlocks(room))throw new RoomError("START_INFO_NOT_AVAILABLE","请先完成当前私密提示");
     if (game.nightSubmissions[participant.seat!]) throw new Error("Night action already submitted");
     const requirement = this.nightRequirement(room, participant.seat!);
     if (!requirement) throw new Error("This role has no pending action");
@@ -1027,7 +1096,7 @@ export class RoomService {
     const alive = !!game?.publicProjection?.aliveSeats.includes(seat);
     const daytime = !!game && ["DAY_DISCUSSION", "NOMINATION"].includes(game.phase);
     return {
-      protocolVersion: 3 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
+      protocolVersion: 4 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
       self: { participantId: participant.id, mode: participant.mode, commandVersion: participant.commandVersion },
       ...(game ? { contextId: game.publicProjection?.contextId ?? game.contextId } : {}),
       canManageBots:this.organizer(room)?.id===participant.id&&room.state==='LOBBY',
@@ -1038,6 +1107,7 @@ export class RoomService {
       canAbort: this.organizer(room)?.id === participant.id && room.state === "RUNNING" && available,
       canRestart: this.organizer(room)?.id === participant.id && (room.state === "ABORTED" || (room.state === "GAME_OVER" && revealActualRole)) && available,
       canClaimHost: this.organizer(room)?.id !== participant.id && !!this.organizer(room) && this.#now() - this.organizer(room)!.lastSeenAt >= HOST_CLAIM_MS,
+      ...(this.startInfoView(room,seat)?{startInfo:this.startInfoView(room,seat)}:{}),
       participant: { id: participant.id, nickname: participant.nickname, seat: participant.seat, tutorialComplete: participant.tutorialComplete },
       state: this.publicView(codeInput).state,
       playMode: room.playMode,
@@ -1074,10 +1144,12 @@ export class RoomService {
     const privateHistory: Record<number, PrivateHistoryEntry[]> = {};
     const goodSeats = room.assignments.filter((assignment) => assignment.alignment === "GOOD").map((assignment) => assignment.seat);
     const redHerringSeat = goodSeats[Math.floor(randomAt(`${room.id}:red-herring`, 0) * goodSeats.length)];
+    const seed=randomUUID();
     const game: GameRuntime = {
+      presentationVersion:2,startInfo:createStartInfo(room,seed),
       hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL",
       contextId: randomUUID(),
-      gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: randomUUID(), presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
+      gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: seed, presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
       phase: "ROLE_REVEAL", day: 0,
       aliveSeats: room.assignments.map((candidate) => candidate.seat),
       ghostVoteSeats: room.assignments.map((candidate) => candidate.seat),
@@ -1100,19 +1172,6 @@ export class RoomService {
     }
     const demon = room.assignments.find((candidate) => candidate.roleType === "DEMON");
     const minions = room.assignments.filter((candidate) => candidate.roleType === "MINION");
-    if (demon && room.playerCount >= 7) {
-      this.rememberBotTeam(room,demon.seat,minions.map(p=>p.seat));
-      this.privateMessage(game, demon.seat, `你的爪牙：${minions.map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "本局没有爪牙"}。`, "INFORMATION");
-    }
-    for (const minion of room.playerCount >= 7 ? minions : []) {
-      this.rememberBotTeam(room,minion.seat,[...(demon?[demon.seat]:[]),...minions.filter(p=>p.seat!==minion.seat).map(p=>p.seat)]);
-      this.privateMessage(game, minion.seat, `恶魔是 ${demon ? this.playerLabel(room, demon.seat) : "未知玩家"}；其他爪牙：${minions.filter((candidate) => candidate.seat !== minion.seat).map((candidate) => this.playerLabel(room, candidate.seat)).join("、") || "无"}。`, "INFORMATION");
-    }
-    if (demon && room.playerCount >= 7) {
-      const selected = new Set(room.assignments.flatMap((candidate) => [candidate.roleId, candidate.perceivedRoleId]));
-      const bluffs = shuffled(ROLE_CATALOG.filter((role) => ["TOWNSFOLK", "OUTSIDER"].includes(role.type) && !selected.has(role.id)), `${game.storytellerSeed}:bluffs`).slice(0, 3).map((role) => role.name);
-      this.privateMessage(game, demon.seat, `三个安全伪装：${bluffs.join("、")}。`, "INFORMATION");
-    }
     if (room.playerCount < 7) {
       const smallGameNotice = "官方 Teensyville 小局规则：恶魔与爪牙互不认识，小恶魔没有三个安全伪装。";
       if (demon) this.privateMessage(game, demon.seat, smallGameNotice, "NOTICE");
@@ -1172,12 +1231,12 @@ export class RoomService {
 
   private event(room:RoomRecord, message: string, kind: ExperienceEvent["kind"] = "NOTICE", details: Partial<ExperienceEvent> = {}): void {
     const game=this.requireGame(room);
-    const duration = { NOTICE: 0, NIGHT_FALLS: 2000, SHOT: 4500, NOMINATION: 1000, VOTE_RESULT: 2500, EXECUTION: 4500, DAWN: 5000, GAME_OVER: 5000 }[kind];
+    const duration = experienceTiming(kind,game.presentationVersion).duration;
     const durationMs = this.#presentation ? duration : 0;
     const occurredAt = this.gameNow(room);
     const startsAt = durationMs ? Math.max(occurredAt + 1500, game.presentationUntil) : Math.max(occurredAt, game.presentationUntil);
     const seq = game.events.length + 1;
-    game.events.push({ ...details, seq, id: `${game.gameId}:${seq}`, gameId: game.gameId, kind, message: message.trim(), occurredAt, startsAt, durationMs, day: game.day });
+    game.events.push({ ...details, seq, id: `${game.gameId}:${seq}`, gameId: game.gameId, kind, timingVersion:game.presentationVersion, message: message.trim(), occurredAt, startsAt, durationMs, day: game.day });
     if (durationMs) game.presentationUntil = startsAt + durationMs;
     enqueuePublication(game, game.events.at(-1)!);
     if (["SHOT", "EXECUTION"].includes(kind)) for (const change of game.deferredRoleChanges ?? []) {
@@ -1245,6 +1304,7 @@ export class RoomService {
     const visibleAlive = projection.aliveSeats;
     return {
       publishedPhaseStartedAt:projection.publishedPhaseStartedAt,gameId: game.gameId, contextId: game.contextId, revision: room.revision, serverNow: this.gameNow(room),
+      presentationVersion:game.presentationVersion,
       presentationUntil: game.presentationUntil, phaseDeadlineAt: game.phaseDeadlineAt,
       ...(game.pauseReason ? { pauseReason: game.pauseReason } : {}),
       phase: game.phase, day: game.day, revealComplete: projection.revealComplete,
@@ -1270,7 +1330,7 @@ export class RoomService {
 
   private privateAction(room: RoomRecord, seat: number) {
     const game = this.requireGame(room);
-    if (this.gameNow(room) < game.presentationUntil) return undefined;
+    if (this.gameNow(room) < game.presentationUntil || this.startInfoBlocks(room)) return undefined;
     if (game.phase === "ROLE_REVEAL" && !game.confirmedRoleSeats.includes(seat)) return { kind: "CONFIRM_ROLE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: "确认你已记住身份" };
     if (game.phase === "FIRST_NIGHT" || game.phase === "OTHER_NIGHT") {
       if (game.nightSubmissions[seat]) return undefined;
@@ -1286,6 +1346,7 @@ export class RoomService {
   }
 
   private nightRequirement(room: RoomRecord, seat: number): { count: number; legalSeats: number[]; prompt: string } | undefined {
+    if(this.startInfoBlocks(room))return undefined;
     const game = this.requireGame(room);
     if (game.pendingRavenkeeperSeat === seat) {
       return { count: 1, legalSeats: room.assignments.map((assignment) => assignment.seat), prompt: "你在夜里死去：选择一名玩家查看其角色" };
@@ -1303,6 +1364,7 @@ export class RoomService {
   }
 
   private initializeNight(room: RoomRecord): void {
+    if(this.startInfoBlocks(room))throw new RoomError("START_INFO_NOT_AVAILABLE","请先完成当前私密提示");
     const game = this.requireGame(room);
     game.nightStartAliveSeats = [...game.aliveSeats];
     game.nightDeaths = [];
@@ -1314,6 +1376,7 @@ export class RoomService {
   }
 
   private settleNightIfReady(room: RoomRecord): void {
+    if(this.startInfoBlocks(room))return;
     const game = this.requireGame(room);
     if (!game.nightOrder) this.initializeNight(room);
     while ((game.nightStep ?? 0) < game.nightOrder!.length) {
@@ -1561,7 +1624,7 @@ export class RoomService {
 function isSafeExternalUrl(value: string): boolean {
   try {
     const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:";
+    return (url.protocol === "https:" || url.protocol === "http:")&&!url.username&&!url.password;
   } catch {
     return false;
   }

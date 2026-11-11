@@ -1,6 +1,8 @@
+import {SeatOrderGrid} from '../components/SeatOrderGrid.js';
+import {Avatar} from '../components/Avatar.js';
 import {useGameClock} from "../use-game-clock.js";
 import { Panel, SeatRing } from "@ravens/ui";
-import { useCallback, useEffect, useState, type CSSProperties, type DragEvent, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ApiError, getRoom, type RoomParticipant, type RoomView } from "../api.js";
 import { invitationQr } from "../invite.js";
 import { EventStage, publicEventsAt } from "../components/EventStage.js";
@@ -31,6 +33,7 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const [qr, setQr] = useState<string>();
   const [seatError, setSeatError] = useState<string>();
+  const[upgrade,setUpgrade]=useState(false);
   const acceptRoom = useCallback((incoming: RoomView) => setRoom((previous) => {
     if (isOlderSnapshot(incoming, previous)) return previous;
     return incoming;
@@ -38,6 +41,7 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   useEffect(() => {
     let active = true;
     const refresh = () => void getRoom(code, "DISPLAY").then((next) => { if (active) { acceptRoom(next); setSeatError(undefined); } }).catch((error) => {
+      if(active&&error instanceof ApiError&&error.status===426){setUpgrade(true);return;}
       if (active && error instanceof ApiError && [401, 403, 404].includes(error.status)) onRoomClosed();
       else if (active) setSeatError("连接暂时中断，正在重新同步城镇…");
     });
@@ -70,6 +74,7 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   const voteDetail = game?.nomination && nominee ? defending ? `${nominee.nickname} 的辩护时间 · ${Math.max(0, Math.ceil(((game.nomination.defenseUntil ?? 0) - (now)) / 1000))} 秒后开始顺时针计票` : game.nomination.voterOrder ? `${game.nomination.currentVoterSeat ? `正在计 ${game.nomination.currentVoterSeat} 号的票` : "等待钟声"} · 已计 ${game.nomination.countedSeats?.length ?? 0}/${game.nomination.voterOrder.length} 位 · 当前 ${game.nomination.votesRaised} 票 · 达标 ${game.nomination.threshold} 票` : `${nominator?.nickname ?? "一位玩家"} 发起提名 · ${nominee.nickname}（${nominee.seat}号） · 已投 ${game.nomination.votesReceived}/${seats.length} · 达标需 ${game.nomination.threshold} 票` : copy.detail;
 
   return <main className={`display display--${game?.phase.toLowerCase() ?? "lobby"}`}>
+    {upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}
     {game ? <EventStage game={game} room={room} /> : null}
     <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button></div></header>
     <section className="display__town"><div className="display__canvas"><SeatRing seats={seats} {...(game?.nomination?.currentVoterSeat ? { activeSeat: game.nomination.currentVoterSeat } : {})} {...(game?.nomination?.countedVotes ? { countedVotes: game.nomination.countedVotes } : {})} {...(game?.nomination?.raisedSeats ? { raisedSeats: game.nomination.raisedSeats } : {})} /><div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>请房主在手机上调整座位，准备后开局</small></div> : <><p>{defending ? "辩护时间" : game.phase === "VOTING" ? "顺时针表决" : copy.eyebrow}</p><h1>{finalePending ? "钟声仍在回响" : game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? nominee.nickname : copy.title}</h1><small>{voteDetail}</small></>}</div></div></section>
@@ -80,50 +85,4 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   </main>;
 }
 
-export function SeatOrderEditor({ players, busy, onReorder }: { players: RoomParticipant[]; busy: boolean; onReorder: (participantIds: string[]) => void }) {
-  const [draggingId, setDraggingId] = useState<string>();
-  const orderedIds = players.map((player) => player.id);
-
-  function move(sourceId: string, targetIndex: number) {
-    const sourceIndex = orderedIds.indexOf(sourceId);
-    if (busy || sourceIndex < 0 || targetIndex < 0 || targetIndex >= orderedIds.length || sourceIndex === targetIndex) return;
-    const next = [...orderedIds];
-    next.splice(sourceIndex, 1);
-    next.splice(targetIndex, 0, sourceId);
-    onReorder(next);
-  }
-
-  function drop(event: DragEvent<HTMLLIElement>, targetIndex: number) {
-    event.preventDefault();
-    const sourceId = event.dataTransfer.getData("text/plain") || draggingId;
-    if (sourceId) move(sourceId, targetIndex);
-    setDraggingId(undefined);
-  }
-
-  function moveWithKeyboard(event: KeyboardEvent<HTMLLIElement>, playerId: string, index: number) {
-    if (!["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(event.key)) return;
-    event.preventDefault();
-    const offset = event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1;
-    move(playerId, index + offset);
-  }
-
-  return <ol className="rn-seat-ring display-seat-editor" aria-label="开局座位顺序" style={{ "--seat-count": Math.max(players.length, 1) } as CSSProperties}>
-    {players.map((player, index) => <li
-      key={player.id}
-      className={`rn-seat display-seat-editor__seat${draggingId === player.id ? " is-dragging" : ""}`}
-      style={{ "--seat-index": index } as CSSProperties}
-      draggable={!busy}
-      tabIndex={0}
-      aria-label={`${player.nickname}，当前 ${index + 1} 号，可拖动调整座位`}
-      onDragStart={(event) => { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", player.id); setDraggingId(player.id); }}
-      onDragEnd={() => setDraggingId(undefined)}
-      onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = "move"; }}
-      onDrop={(event) => drop(event, index)}
-      onKeyDown={(event) => moveWithKeyboard(event, player.id, index)}
-    >
-      <span className="rn-seat__number">{index + 1}号</span>
-      <span className="rn-seat__name">{player.nickname}</span>
-      <small className="display-seat-editor__handle" aria-hidden="true">⠿ 拖动</small>
-    </li>)}
-  </ol>;
-}
+export function SeatOrderEditor({players,busy,onReorder}:{players:RoomParticipant[];busy:boolean;onReorder:(ids:string[])=>void}){return <SeatOrderGrid items={players} enabled busy={busy} onCommit={onReorder} renderCard={(p,i)=><div className="seat-card"><span className="seat-number">{i+1}号</span><Avatar id={p.id} name={p.nickname} url={p.avatar}/><strong>{p.nickname}</strong></div>}/>;}

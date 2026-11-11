@@ -15,7 +15,7 @@ function timedTable(roleIds = ["chef", "empath", "soldier", "saint", "baron", "i
   service.restore([snapshot]);
   for (const player of players) service.completeTutorial(room.code, player.token);
   const mutate = (change: (state: RoomRecord) => void) => { const state = service.snapshot(room.code); change(state); delete state.game!.publicProjection; delete state.game!.pendingPublications; initializePresentation(state.game!); service.restore([state]); };
-  mutate((state) => { state.game!.phase = "DAY_DISCUSSION"; state.game!.day = 1; });
+  mutate((state) => { state.game!.presentationVersion=1;state.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};state.game!.phase = "DAY_DISCUSSION"; state.game!.day = 1; });
   const game = () => service.publicView(room.code).game!;
   const advance = (milliseconds: number, tick = true) => { now += milliseconds; if (tick) service.advanceTime(now); };
   const nominate = (actor: number, nominee: number) => { service.nominate(room.code, players[actor - 1]!.token, nominee); advance(2500); };

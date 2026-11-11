@@ -10,6 +10,7 @@ export interface ExperienceEvent {
   /** Shared wall-clock start, including a short delivery lead for all devices. */
   startsAt: number;
   durationMs: number;
+  timingVersion?: 1 | 2;
   actorSeat?: number;
   targetSeat?: number;
   seats?: number[];

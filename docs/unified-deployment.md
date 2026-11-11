@@ -1,5 +1,9 @@
 # 鸦钟夜话统一账号部署
 
+## 2026-11-11 协议4/快照4候选（待发布）
+
+六项实现及独立review已完成，验证见[实施记录](superpowers/plans/2026-11-11-interaction-profile-first-night.md#13-2026-11-11-实施与验证记录)。无新增环境变量/数据库表/依赖版本。升级在既有单写锁与启动事务内进行，旧局保留时序1和原始起始信息，下一把启用新节奏与确认；4不能交给旧程序读取。现网仍为下方b5ccbbf，完成部署后补充精确SHA、备份与健康核对，不把候选状态写为已上线。
+
 ## 2026-11-11 登录房主人机控制热修复（已发布）
 
 发布读取ops最新规范964c0ba2，固定控制a5145d4；备份回执 `/srv/fribench/backups/unified-platform/ravens-night-20261111T020258Z/receipt.json`，秘密配置备份同目录root专用app.env。验收证据 `/var/lib/fribench/ravens-bot-account-fix-20261111/result.json`。公网HTTPS、协议3、补位/暂停/单步、冻结/推进、同房重开与WebSocket通过，验证房已清理，30秒无错误，45个非目标容器与49份路由摘要保持。前端资源与前一版一致，仅服务端权限传递修复；用户无需重建房间。

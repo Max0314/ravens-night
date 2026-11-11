@@ -1,3 +1,4 @@
+import {avatarChoices} from '@ravens/contracts';
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
 import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
@@ -53,13 +54,13 @@ test('account opens centrally with automatic identity, saves game-only profile, 
 
 
 test('all returned avatars stay selectable and profile actions live outside the scrolling body',async()=>{
-  const avatars=Array.from({length:35},(_,index)=>({id:`choice-${index}`,url:`https://auth.fribench.cn/assets/avatars/v3/choice-${index}.webp`}));
+  const avatars=avatarChoices;
   vi.mocked(getAccount).mockResolvedValue({signedIn:true,rooms:[],guestClaimAvailable:true,profile});vi.mocked(getAvatarChoices).mockResolvedValue({avatars});
   vi.mocked(saveGameProfile).mockResolvedValue({profile:{...profile,avatar:avatars[34]!.url,avatarOverride:avatars[34]!.url,revision:1}});
   const ui=render(<AccountPanel onResume={vi.fn()}/>);fireEvent.click(await screen.findByRole('button',{name:'打开账号设置'}));
   await waitFor(()=>expect(screen.queryByText('正在处理…')).not.toBeInTheDocument());fireEvent.click(screen.getByRole('button',{name:/更换头像/}));
   const grid=screen.getByLabelText('头像列表');expect(grid.querySelectorAll('button')).toHaveLength(35);grid.scrollTop=500;
-  fireEvent.click(screen.getByRole('button',{name:'头像35'}));
+  fireEvent.click(screen.getByRole('button',{name:'头像35'}));fireEvent.click(screen.getByRole('button',{name:'选好了'}));
   const save=screen.getByRole('button',{name:'保存资料'}),close=screen.getByRole('button',{name:'关闭账号设置'});
   expect(save.closest('.account-dialog__body')).toBeNull();expect(close.closest('.account-dialog__body')).toBeNull();expect(save.closest('footer')).not.toBeNull();
   fireEvent.click(save);await waitFor(()=>expect(saveGameProfile).toHaveBeenCalledWith(null,avatars[34]!.url,0));await screen.findByText('本游戏资料已保存');expect(screen.queryByLabelText('头像列表')).not.toBeInTheDocument();
@@ -67,10 +68,7 @@ test('all returned avatars stay selectable and profile actions live outside the 
 });
 
 
-test('avatar catalog failure can retry without erasing an edited nickname',async()=>{
-  vi.mocked(getAccount).mockResolvedValue({signedIn:true,rooms:[],guestClaimAvailable:true,profile});
-  vi.mocked(getAvatarChoices).mockRejectedValueOnce(new Error('头像暂不可用')).mockResolvedValueOnce({avatars:[{id:'cat',url:'https://auth.fribench.cn/assets/avatars/v3/cat-unbothered.webp'}]});
-  render(<AccountPanel onResume={vi.fn()}/>);fireEvent.click(await screen.findByRole('button',{name:'打开账号设置'}));await screen.findByText('头像暂不可用');
-  fireEvent.change(screen.getByLabelText('本游戏昵称'),{target:{value:'未保存昵称'}});fireEvent.click(screen.getByRole('button',{name:/更换头像/}));fireEvent.click(screen.getByRole('button',{name:'重新加载头像'}));
-  await screen.findByRole('button',{name:'头像1'});expect(screen.getByLabelText('本游戏昵称')).toHaveValue('未保存昵称');
+test('bundled avatar choices remain available without a catalog request and preserve the nickname draft',async()=>{
+ vi.mocked(getAccount).mockResolvedValue({signedIn:true,rooms:[],guestClaimAvailable:true,profile});vi.mocked(getAvatarChoices).mockRejectedValue(new Error('offline'));
+ render(<AccountPanel onResume={vi.fn()}/>);fireEvent.click(await screen.findByRole('button',{name:'打开账号设置'}));fireEvent.change(screen.getByLabelText('本游戏昵称'),{target:{value:'未保存昵称'}});fireEvent.click(screen.getByRole('button',{name:/更换头像/}));expect(screen.getAllByRole('button',{name:/^头像[0-9]+$/})).toHaveLength(35);fireEvent.click(screen.getByRole('button',{name:'关闭头像选择'}));expect(screen.getByLabelText('本游戏昵称')).toHaveValue('未保存昵称');fireEvent.click(screen.getByRole('button',{name:'关闭账号设置'}));fireEvent.click(screen.getByRole('button',{name:'打开账号设置'}));expect(screen.getByLabelText('本游戏昵称')).toHaveValue('默认昵称');
 });

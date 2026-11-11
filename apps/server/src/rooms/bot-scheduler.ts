@@ -35,6 +35,7 @@ function execute(service:RoomService,room:RoomRecord,task:BotTask):boolean{
     case 'READY':service.setReady(room.code,token,true);break;
     case 'TUTORIAL_COMPLETE':service.completeTutorial(room.code,token);break;
     case 'CONFIRM_ROLE':service.confirmRole(room.code,token);break;
+    case 'ACK_START_INFO':service.acknowledgeStartInfo(room.code,token,task.args.infoId!);break;
     case 'NIGHT_ACTION':service.submitAction(room.code,token,task.args.targets!);break;
     case 'NOMINATE':service.nominate(room.code,token,task.args.targets![0]!);break;
     case 'VOTE':

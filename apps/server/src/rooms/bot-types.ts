@@ -1,8 +1,8 @@
 import {createHmac,randomUUID} from 'node:crypto';
 import type {RoomTimeline} from '@ravens/contracts';
 import type {RoomRecord,ParticipantRecord} from './service.js';
-export type BotKind='READY'|'TUTORIAL_COMPLETE'|'CONFIRM_ROLE'|'NIGHT_ACTION'|'NOMINATE'|'VOTE'|'DAY_READY'|'SLAYER'|'WHISPER_ACCEPT'|'WHISPER_REPLY';
-export interface BotTask {id:string;botId:string;sequence:number;controlGeneration:string;roomInstanceId:string;setupId:string;gameId?:string;contextId?:string;ballotId?:string;expectedBotCommandVersion:number;kind:BotKind;args:{targets?:number[];raised?:boolean;whisperId?:string;messageId?:string};dueGameAt:number;latestGameAt?:number}
+export type BotKind='READY'|'TUTORIAL_COMPLETE'|'CONFIRM_ROLE'|'ACK_START_INFO'|'NIGHT_ACTION'|'NOMINATE'|'VOTE'|'DAY_READY'|'SLAYER'|'WHISPER_ACCEPT'|'WHISPER_REPLY';
+export interface BotTask {id:string;botId:string;sequence:number;controlGeneration:string;roomInstanceId:string;setupId:string;gameId?:string;contextId?:string;ballotId?:string;expectedBotCommandVersion:number;kind:BotKind;args:{targets?:number[];raised?:boolean;whisperId?:string;messageId?:string;infoId?:string};dueGameAt:number;latestGameAt?:number}
 export interface BotMemory {gameId?:string;knownTeamSeats:number[];ackedHumanMessageIds:string[];ballot?:{ballotId:string;initialSubmitted:boolean;correctionCount:0|1;lastRaised?:boolean;lastMasterRaised?:boolean}}
 export interface BotControl {mode:'RUNNING'|'PAUSED';pace:'NORMAL'|'SLOW';attentionRequired:boolean;version:number;generation:string;nextSequence:number;seed:string;pending:BotTask[];memory:Record<string,BotMemory>}
 export const MAX_BOTS=128;
@@ -16,7 +16,7 @@ export function setTimeline(room:RoomRecord,mode:RoomTimeline['mode'],wall:numbe
 export function invalidateBots(room:RoomRecord){room.botControl.generation=randomUUID();room.botControl.pending=[];room.botControl.version++;}
 export function exitIneligibleRehearsal(room:RoomRecord,wall:number){if(room.timeline.mode==='MANUAL'&&(humans(room).length!==1||!bots(room).length)){setTimeline(room,'WALL',wall);room.botControl.mode='RUNNING';}}
 export function upgradeBotRoom(room:RoomRecord,wall:number){
-  const legacy=(room.schemaVersion as number)!==3;
+  const legacy=![3,4].includes(room.schemaVersion as number);
   if(legacy){
     room.lastHumanActivityAt=Number.isFinite(Date.parse(room.lastActivityAt))?Date.parse(room.lastActivityAt):wall;
     room.botControl=newBotControl();room.timeline={mode:'WALL',offsetMs:0,epoch:0};
@@ -24,7 +24,7 @@ export function upgradeBotRoom(room:RoomRecord,wall:number){
     if(!activePlayers(room).length&&room.state==='LOBBY')room.metadata={...room.metadata,pendingFirstJoin:true};
     if(room.game){room.game.hadBots=false;room.game.rehearsalUsed=false;}
     if(room.lastResult){room.lastResult.hadBots=false;room.lastResult.rehearsalUsed=false;room.lastResult.releasedWallAt=room.lastResult.releasedAt;for(const p of room.lastResult.participants)p.controller='HUMAN';}
-    room.schemaVersion=3;
+    room.schemaVersion=4;
   }
   const fail=(category:string):never=>{throw new Error(`Room ${room.code}: invalid ${category}`);};
   if(!room.botControl||!room.timeline||!['WALL','MANUAL'].includes(room.timeline.mode)||!Number.isFinite(room.timeline.offsetMs)||!Number.isInteger(room.timeline.epoch)||!Number.isFinite(room.lastHumanActivityAt))fail('timeline or bot control');
@@ -38,12 +38,13 @@ export function upgradeBotRoom(room:RoomRecord,wall:number){
   if(room.timeline.mode==='MANUAL'&&(people.length!==1||!machines.length||control.mode!=='PAUSED'||!Number.isFinite(room.timeline.manualNowMs)))fail('manual clock');
   const integer=(v:unknown)=>Number.isSafeInteger(v);
   const text=(v:unknown)=>typeof v==='string'&&v.length>0;
-  const kinds:BotKind[]=['READY','TUTORIAL_COMPLETE','CONFIRM_ROLE','NIGHT_ACTION','NOMINATE','VOTE','DAY_READY','SLAYER','WHISPER_ACCEPT','WHISPER_REPLY'];
+  const kinds:BotKind[]=['READY','TUTORIAL_COMPLETE','CONFIRM_ROLE','ACK_START_INFO','NIGHT_ACTION','NOMINATE','VOTE','DAY_READY','SLAYER','WHISPER_ACCEPT','WHISPER_REPLY'];
   const validTask=(t:BotTask)=>{
     if(!t||!text(t.id)||!text(t.botId)||!text(t.controlGeneration)||!text(t.roomInstanceId)||!text(t.setupId)||!integer(t.sequence)||t.sequence<1||!integer(t.expectedBotCommandVersion)||t.expectedBotCommandVersion<0||!integer(t.dueGameAt)||t.latestGameAt!==undefined&&!integer(t.latestGameAt)||!kinds.includes(t.kind)||!t.args||typeof t.args!=='object'||Array.isArray(t.args)||Buffer.byteLength(JSON.stringify(t.args),'utf8')>2048)return false;
     if([t.gameId,t.contextId,t.ballotId].some(v=>v!==undefined&&!text(v)))return false;
     const keys=Object.keys(t.args),targets=t.args.targets;
     if(['NIGHT_ACTION','NOMINATE','SLAYER'].includes(t.kind))return keys.length===1&&Array.isArray(targets)&&targets.length>=1&&targets.length<=2&&new Set(targets).size===targets.length&&targets.every(v=>integer(v)&&v>=1&&v<=12)&&(t.kind==='NIGHT_ACTION'||targets.length===1);
+    if(t.kind==='ACK_START_INFO')return keys.length===1&&typeof t.args.infoId==='string'&&/^[-a-f0-9]{36}$/i.test(t.args.infoId);
     if(t.kind==='VOTE')return keys.length===1&&typeof t.args.raised==='boolean'&&text(t.ballotId);
     if(t.kind==='WHISPER_ACCEPT')return keys.length===1&&text(t.args.whisperId);
     if(t.kind==='WHISPER_REPLY')return keys.length===2&&text(t.args.whisperId)&&text(t.args.messageId);

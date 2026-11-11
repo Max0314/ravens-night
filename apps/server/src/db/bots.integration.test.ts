@@ -7,7 +7,7 @@ import {LiveRoomRuntime} from '../game/live-runtime.js';
 import {RoomService} from '../rooms/service.js';
 import {runBots,stepBot} from '../rooms/bot-scheduler.js';
 import {bots} from '../rooms/bot-types.js';
-const protocol={'x-ravens-protocol':'3'};
+const protocol={'x-ravens-protocol':'4'};
 const cookie=(r:{cookies:Array<{name:string;value:string}>})=>r.cookies.map(c=>`${c.name}=${c.value}`).join('; ');
 
 test.skipIf(!process.env.RAVENS_BOT_DATABASE_URL)('PG creation receipt/empty lobby survive restart; bot planning, step and clock roll back atomically',async()=>{
@@ -31,8 +31,8 @@ test.skipIf(!process.env.RAVENS_BOT_DATABASE_URL)('PG creation receipt/empty lob
  }finally{await app?.close();await runtime?.close();await admin.query(`DROP SCHEMA "${schema}" CASCADE`);await admin.end();}
 },30000);
 
-test.skipIf(!process.env.RAVENS_BOT_DATABASE_URL)('PG v2 snapshots migrate together to v3 before use, preserving roles and original deadlines',async()=>{
+test.skipIf(!process.env.RAVENS_BOT_DATABASE_URL)('PG v2 snapshots migrate together to v4 before use, preserving roles and original deadlines',async()=>{
  const base=process.env.RAVENS_BOT_DATABASE_URL!,schema=`migration_${randomUUID().replaceAll('-','')}`,admin=new Pool({connectionString:base});await admin.query(`CREATE SCHEMA "${schema}"`);const url=new URL(base);url.searchParams.set('options',`-c search_path=${schema}`);const open=()=>new PostgresRoomRepository(url.toString(),'bots-migration-test-key');let repository=open(),runtime:LiveRoomRuntime|undefined;
- try{const s=new RoomService({presentation:false}),code=s.create(5,'旧房').room.code,players=Array.from({length:5},(_,i)=>s.join(code,`真人${i}`,'PLAYER'));for(const p of players)s.setReady(code,p.token,true);s.startTutorial(code,players[0]!.token,'SKIP');const old=s.snapshot(code);(old as unknown as {schemaVersion:number}).schemaVersion=2;delete(old as Partial<typeof old>).botControl;delete(old as Partial<typeof old>).timeline;if(old.game!.publicProjection)delete(old.game!.publicProjection as {publishedPhaseStartedAt?:number}).publishedPhaseStartedAt;await repository.initialize();await repository.commit([old],[]);await repository.close();runtime=new LiveRoomRuntime(open());await runtime.initialize();const migrated=runtime.service.snapshot(code);expect(migrated.schemaVersion).toBe(3);expect(migrated.assignments).toEqual(old.assignments);expect(migrated.game!.phaseDeadlineAt).toBe(old.game!.phaseDeadlineAt);expect(migrated.participants.every(p=>p.controller==='HUMAN')).toBe(true);expect(migrated.botControl.pending).toEqual([]);expect(migrated.timeline).toEqual({mode:'WALL',offsetMs:0,epoch:0});
+ try{const s=new RoomService({presentation:false}),code=s.create(5,'旧房').room.code,players=Array.from({length:5},(_,i)=>s.join(code,`真人${i}`,'PLAYER'));for(const p of players)s.setReady(code,p.token,true);s.startTutorial(code,players[0]!.token,'SKIP');const old=s.snapshot(code);(old as unknown as {schemaVersion:number}).schemaVersion=2;delete(old as Partial<typeof old>).botControl;delete(old as Partial<typeof old>).timeline;if(old.game!.publicProjection)delete(old.game!.publicProjection as {publishedPhaseStartedAt?:number}).publishedPhaseStartedAt;await repository.initialize();await repository.commit([old],[]);await repository.close();runtime=new LiveRoomRuntime(open());await runtime.initialize();const migrated=runtime.service.snapshot(code);expect(migrated.schemaVersion).toBe(4);expect(migrated.assignments).toEqual(old.assignments);expect(migrated.game!.phaseDeadlineAt).toBe(old.game!.phaseDeadlineAt);expect(migrated.participants.every(p=>p.controller==='HUMAN')).toBe(true);expect(migrated.botControl.pending).toEqual([]);expect(migrated.timeline).toEqual({mode:'WALL',offsetMs:0,epoch:0});
  }finally{if(runtime)await runtime.close();else await repository.close().catch(()=>undefined);await admin.query(`DROP SCHEMA "${schema}" CASCADE`);await admin.end();}
 },30000);

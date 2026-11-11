@@ -1,10 +1,11 @@
+import type {PlayerSelection} from './use-player-profile.js';
 import type { ExperienceEvent, StorytellerDecision, RoomProtocolView, RoomCommandContext } from "@ravens/contracts";
 import {roomSessionKey} from './account-context.js';
 import { isOlderSnapshot } from "./snapshot-order.js";
 import type { RoomParticipant, RoomPlayMode, GameView, RoomView, PrivateView, RoomResult } from "@ravens/contracts";
 export type { RoomParticipant, RoomPlayMode, GameView, RoomView, PrivateView, RoomResult, PrivateHistoryEntry, PrivateHistoryPhase, PrivateHistoryKind } from "@ravens/contracts";
 export class ApiError extends Error {
-  constructor(message: string, readonly status: number, readonly errorCode?: string) { super(message); this.name = "ApiError"; }
+  constructor(message: string, readonly status: number, readonly errorCode?: string, readonly details?:{joinTicketConsumed?:boolean;profile?:GameProfile}) { super(message); this.name = "ApiError"; }
 }
 let accountGeneration=0;
 type ContextView = Partial<RoomProtocolView> & { contextId?: string; game?: GameView; room?: RoomView; botControl?: RoomView["botControl"] };
@@ -14,7 +15,7 @@ interface Intent { onCommitted?: (() => void) | undefined; url: string; init: Re
 const unsentVotes = new Map<string, Intent>();
 const pending = new Map<string, Intent>();
 const contextKey = (code: string, mode = currentRoomMode()) => `${code.toUpperCase()}:${mode}`;
-export function resetAccountContext(){accountGeneration++; contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear(); creationIntent=undefined; creationFlights.clear();}
+export function resetAccountContext(){accountGeneration++; contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear(); joinIntents.clear();joinFlights.clear(); creationIntent=undefined; creationFlights.clear();}
 export function observeRoomView(code: string, incoming: ContextView, mode = currentRoomMode()) {
   const key = contextKey(code, mode), previous = contexts.get(key);
   if (!incoming.roomInstanceId || !incoming.self) return;
@@ -29,7 +30,7 @@ function commandBinding(code: string, path: string): Omit<RoomCommandContext, "e
   if (["bots/step", "rehearsal/advance"].includes(path)) return { ...base, ...(view.game?.gameId ? { gameId: view.game.gameId, contextId: view.game.contextId } : {}), ...(view.game?.nomination?.ballotId ? { ballotId: view.game.nomination.ballotId } : {}) };
   if (["vote", "nomination/cancel", "nomination/defense/complete"].includes(path))
     return { ...base, ...(view.game?.gameId ? { gameId: view.game.gameId } : {}), ...(view.game?.nomination?.ballotId ? { ballotId: view.game.nomination.ballotId } : {}) };
-  if (["role/confirm", "action", "nominate", "day/ready", "day/ability", "resume", "abort", "reopen", "reset"].includes(path) || path.startsWith("whispers"))
+  if (["role/confirm", "first-night-info/ack", "action", "nominate", "day/ready", "day/ability", "resume", "abort", "reopen", "reset"].includes(path) || path.startsWith("whispers"))
     return { ...base, ...(view.game?.gameId ? { gameId: view.game.gameId } : {}), ...((view.contextId ?? view.game?.contextId) ? { contextId: (view.contextId ?? view.game?.contextId)! } : {}) };
   return base;
 }
@@ -95,12 +96,12 @@ export async function retryPendingCommand(code: string) {
 
 async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
   const generation=accountGeneration;
-  const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode(), "x-ravens-protocol": "3" });
+  const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode(), "x-ravens-protocol": "4" });
   if (init?.method && init.method !== "GET") headers.set("x-command-id", crypto.randomUUID());
   new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
   const options = { ...init, credentials: "same-origin" as const, headers };
   // Only receipt-backed commands can be safely retried after an ambiguous disconnect.
-  const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step)?|rehearsal\/(?:clock|advance)|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
+  const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step)?|rehearsal\/(?:clock|advance)|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|first-night-info\/ack|profile|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
   for (let attempt = 0; ; attempt++) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10_000);
@@ -108,7 +109,7 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
       const response = await fetch(url, { ...options, signal: controller.signal });
       const body = await response.json().catch((error: unknown) => { if (error instanceof TypeError) throw error; return { error: "服务器暂时无法响应，请稍后重试" }; }) as T & { error?: string; errorCode?: string };
       if(generation!==accountGeneration)throw new ApiError('账号已切换，旧请求结果已丢弃',409);
-      if (!response.ok) throw new ApiError(body.error ?? "请求失败，请稍后重试", response.status, body.errorCode);
+      if (!response.ok) throw new ApiError(body.error ?? "请求失败，请稍后重试", response.status, body.errorCode,body as {joinTicketConsumed?:boolean;profile?:GameProfile});
       const match = /^\/api\/rooms\/([^/?]+)(?:[/?]|$)/.exec(url);
       if (match && typeof body === "object" && body) {
         const view = body as ContextView;
@@ -139,24 +140,25 @@ export function previewGuest(code:string){return request<GuestPreview>(`/api/roo
 export function claimGuest(preview:GuestPreview){return request<{claimed:true;code:string;id:string}>(`/api/rooms/${preview.code}/account/guest-claim`,{method:'POST',body:JSON.stringify({previewToken:preview.previewToken,confirm:true})});}
 export function login(accessPassword: string) { return request<{ authorized: boolean }>("/api/auth/login", { method: "POST", body: JSON.stringify({ accessPassword }) }); }
 
-export interface CreationIntent { commandId:string; createTicket:string; playerCount:number; organizerName:string; playMode:RoomPlayMode; voiceRoomUrl?:string }
+export function notifyStorageFailure(){window.dispatchEvent(new Event('ravens:storage-warning'));}
+export interface CreationIntent { creationVersion?:2;avatar?:string|null;expectedProfileRevision?:number;commandId:string;createTicket:string;playerCount:number;organizerName:string;playMode?:RoomPlayMode;voiceRoomUrl?:string }
 const creationKey=()=>`ravens_creation:${roomSessionKey()}`;
 let creationIntent:CreationIntent|undefined;
 const creationFlights=new Map<string,{fingerprint:string;promise:Promise<{code:string;organizerToken:string}>}>();
-export function readCreationIntent():CreationIntent|undefined { try { return creationIntent ??= JSON.parse(sessionStorage.getItem(creationKey()) ?? "null") ?? undefined; } catch { return creationIntent; } }
+export function readCreationIntent():CreationIntent|undefined {try{return creationIntent??=JSON.parse(sessionStorage.getItem(creationKey())??'null')??undefined;}catch{return creationIntent;}}
 export function finishCreationIntent(){creationIntent=undefined;try{sessionStorage.removeItem(creationKey());}catch{}}
-export function createRoom(playerCount: number, organizerName: string, playMode: RoomPlayMode, voiceRoomUrl?: string) {
-  const body={playerCount,organizerName:organizerName.trim(),playMode,...(playMode!=="IN_PERSON"&&voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{})},key=creationKey(),fingerprint=JSON.stringify(body),current=creationFlights.get(key);
-  if(current)return current.fingerprint===fingerprint?current.promise:Promise.reject(new ApiError("正在创建房间，请等待原操作结果",409,"CREATION_PENDING"));
+function creationWire(intent:CreationIntent){const{commandId,avatar,expectedProfileRevision,...wire}=intent;return wire;}
+export function createRoom(playerCount:number,organizerName:string,playMode:RoomPlayMode='IN_PERSON',voiceRoomUrl?:string,profile?:PlayerSelection){
+  const previous=readCreationIntent(),key=creationKey();
+  const values=previous&&!previous.creationVersion?{playerCount,organizerName:organizerName.trim(),playMode,...(playMode!=='IN_PERSON'&&voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{})}:{creationVersion:2 as const,playerCount,organizerName:organizerName.trim(),...(voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{}),...(profile?{avatar:profile.avatar,...(profile.expectedProfileRevision!==undefined?{expectedProfileRevision:profile.expectedProfileRevision}:{})}:{})};
+  const fingerprint=JSON.stringify(values),current=creationFlights.get(key);
+  if(current)return current.fingerprint===fingerprint?current.promise:Promise.reject(new ApiError('正在创建房间，请等待原操作结果',409,'CREATION_PENDING'));
+  if(previous){const{commandId,createTicket,...old}=previous;if(JSON.stringify(old)!==fingerprint)return Promise.reject(new ApiError('上次创建结果待确认，请继续原操作',409,'CREATION_PENDING'));}
   const flight={fingerprint,promise:undefined as unknown as Promise<{code:string;organizerToken:string}>};
-  flight.promise=performCreation(body).finally(()=>{if(creationFlights.get(key)===flight)creationFlights.delete(key);});creationFlights.set(key,flight);return flight.promise;
-}
-async function performCreation(body:Pick<CreationIntent,"playerCount"|"organizerName"|"playMode"|"voiceRoomUrl">) {
-  let intent=readCreationIntent();
-  if(intent){const {commandId,createTicket,...previous}=intent;if(JSON.stringify(previous)!==JSON.stringify(body))throw new ApiError("上次创建结果待确认，请先继续原操作",409,"CREATION_PENDING");}
-  else { const {createTicket}=await request<{createTicket:string}>("/api/room-create-ticket"); intent={commandId:crypto.randomUUID(),createTicket,...body};creationIntent=intent;try{sessionStorage.setItem(creationKey(),JSON.stringify(intent));}catch{} }
-  try { return await request<{ code: string; organizerToken: string }>("/api/rooms",{method:"POST",headers:{"x-command-id":intent.commandId},body:JSON.stringify({...body,createTicket:intent.createTicket})}); }
-  catch(error){if(error instanceof ApiError && error.status<500 && error.status!==429)finishCreationIntent();throw error;}
+  flight.promise=(async()=>{let intent=previous;if(!intent){const{createTicket}=await request<{createTicket:string}>('/api/room-create-ticket');intent={commandId:crypto.randomUUID(),createTicket,...values};creationIntent=intent;try{sessionStorage.setItem(key,JSON.stringify(intent));}catch{notifyStorageFailure();}}
+    try{return await request<{code:string;organizerToken:string}>('/api/rooms',{method:'POST',headers:{'x-command-id':intent.commandId},body:JSON.stringify(creationWire(intent))});}
+    catch(error){if(error instanceof ApiError&&error.status<500&&error.status!==429)finishCreationIntent();throw error;}
+  })().finally(()=>{if(creationFlights.get(key)===flight)creationFlights.delete(key);});creationFlights.set(key,flight);return flight.promise;
 }
 export function getRoomSummary(code:string){return request<{canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number}>(`/api/rooms/${encodeURIComponent(code)}/summary`);}
 export function manageBots(code:string,intent:{count?:number;fill?:boolean;clear?:boolean}){return request<PrivateView>(`/api/rooms/${code}/bots`,{method:"POST",body:JSON.stringify(intent)});}
@@ -166,8 +168,20 @@ export function setRehearsalClock(code:string,mode:"WALL"|"MANUAL"){return reque
 export function advanceRehearsal(code:string){return request<PrivateView>(`/api/rooms/${code}/rehearsal/advance`,{method:"POST",body:"{}"});}
 
 const joinTickets = new Map<string, string>();
-export async function joinRoom(code: string, nickname: string, mode: "PLAYER" | "DISPLAY") {
-  const key = `ravens_join:${roomSessionKey()}:${code}:${mode}`;
+const joinIntents=new Map<string,PlayerSelection>();
+type JoinResult={id:string;nickname:string;mode:'PLAYER'|'DISPLAY';seat?:number;token:string};
+const joinFlights=new Map<string,{fingerprint:string;promise:Promise<JoinResult>}>();
+const joinKey=(code:string,mode:string)=>`ravens_join:${roomSessionKey()}:${code}:${mode}`;
+export function readPendingJoin(code:string,mode:'PLAYER'|'DISPLAY'='PLAYER'):PlayerSelection|undefined {const key=joinKey(code,mode);try{return joinIntents.get(key)??JSON.parse(sessionStorage.getItem(key+':intent')??'null')??undefined;}catch{return joinIntents.get(key);}}
+export function joinRoom(code:string,nickname:string,mode:'PLAYER'|'DISPLAY',profile?:PlayerSelection){
+  const key=joinKey(code,mode),old=readPendingJoin(code,mode),next={nickname,...(profile?{avatar:profile.avatar,...(profile.expectedProfileRevision!==undefined?{expectedProfileRevision:profile.expectedProfileRevision}:{})}:{})};
+  if(old&&(old.nickname!==nickname||profile&&JSON.stringify(old)!==JSON.stringify(next)))return Promise.reject(new ApiError('加入结果待确认，请重试原资料',409,'JOIN_PENDING'));
+  const frozen=old??next as PlayerSelection,fingerprint=JSON.stringify(frozen),active=joinFlights.get(key);
+  if(active)return active.fingerprint===fingerprint?active.promise:Promise.reject(new ApiError('正在加入，请等待原操作结果',409,'JOIN_PENDING'));
+  joinIntents.set(key,frozen);try{sessionStorage.setItem(key+':intent',fingerprint);}catch{notifyStorageFailure();}
+  const flight={fingerprint,promise:undefined as unknown as Promise<JoinResult>};flight.promise=performJoin(code,mode,key,frozen).finally(()=>{if(joinFlights.get(key)===flight)joinFlights.delete(key);});joinFlights.set(key,flight);return flight.promise;
+}
+async function performJoin(code:string,mode:'PLAYER'|'DISPLAY',key:string,frozen:PlayerSelection){
   let ticket = joinTickets.get(key);
   try { ticket ??= sessionStorage.getItem(key) ?? undefined; } catch { /* In-memory retry remains available. */ }
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -177,16 +191,17 @@ export async function joinRoom(code: string, nickname: string, mode: "PLAYER" | 
       try { sessionStorage.setItem(key, ticket); } catch { /* Cookie recovery remains available. */ }
     }
     try {
-      const result = await request<{ id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; token: string }>(`/api/rooms/${code}/join`, { method: "POST", headers: { "x-room-mode": mode }, body: JSON.stringify({ nickname, mode, joinTicket: ticket }) });
+      const result = await request<{ id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; token: string }>(`/api/rooms/${code}/join`, { method: "POST", headers: { "x-room-mode": mode }, body: JSON.stringify({ ...frozen, mode, joinTicket: ticket }) });
       const context=contextKey(code,mode);
       if(contexts.get(context)?.self?.participantId !== result.id){contexts.delete(context);pending.delete(context);tails.delete(context);unsentVotes.delete(context);}
-      joinTickets.delete(key);
-      try { sessionStorage.removeItem(key); } catch { /* The seat is already committed. */ }
+      joinTickets.delete(key);joinIntents.delete(key);
+      try { sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent'); } catch { /* The seat is already committed. */ }
       return result;
     } catch (error) {
+      if(error instanceof ApiError&&['PROFILE_STALE','NICKNAME_TAKEN'].includes(error.errorCode??'')){joinTickets.delete(key);joinIntents.delete(key);try{sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent');}catch{}}
       if (error instanceof ApiError && ["SETUP_CHANGED", "JOIN_TICKET_EXPIRED", "JOIN_TICKET_REVOKED"].includes(error.errorCode ?? "")) {
         joinTickets.delete(key); ticket = undefined;
-        try { sessionStorage.removeItem(key); } catch { /* Retry still has the in-memory decision. */ }
+        try { sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent'); } catch { /* Retry still has the in-memory decision. */ }
         // Only a confirmed unused setup conflict may obtain another ticket automatically.
         if (error.errorCode === "SETUP_CHANGED" && attempt === 0) continue;
       }
@@ -205,6 +220,8 @@ export function startRoom(code: string, tutorialMode: "SKIP" | "OPTIONAL" = "SKI
 export function resetRoom(code: string) { return request<RoomView>(`/api/rooms/${code}/reset`, { method: "POST", body: "{}" }); }
 export function completeTutorial(code: string) { return request<RoomView>(`/api/rooms/${code}/tutorial/complete`, { method: "POST", body: "{}" }); }
 export function getPrivateView(code: string) { return request<PrivateView>(`/api/rooms/${code}/me`); }
+export function acknowledgeStartInfo(code:string,infoId:string){return request<PrivateView>(`/api/rooms/${code}/first-night-info/ack`,{method:'POST',body:JSON.stringify({infoId})});}
+export function updateGuestProfile(code:string,nickname:string,avatar:string){return request<PrivateView>(`/api/rooms/${code}/profile`,{method:'POST',body:JSON.stringify({nickname,avatar})});}
 export function confirmRole(code: string) { return request<PrivateView>(`/api/rooms/${code}/role/confirm`, { method: "POST", body: "{}" }); }
 export function submitGameAction(code: string, targetSeats: number[]) { return request<PrivateView>(`/api/rooms/${code}/action`, { method: "POST", body: JSON.stringify({ targetSeats }) }); }
 export function nominate(code: string, nomineeSeat: number) { return request<PrivateView>(`/api/rooms/${code}/nominate`, { method: "POST", body: JSON.stringify({ nomineeSeat }) }); }
@@ -228,7 +245,7 @@ export async function recoverRoom(code: string, recoveryCode: string) {
   let commandId: string = crypto.randomUUID();
   try { commandId = sessionStorage.getItem(key) ?? commandId; sessionStorage.setItem(key, commandId); } catch { /* The immediate retry still shares its command id. */ }
   const result = await request<{ id: string }>(`/api/rooms/${code}/recover`, { method: "POST", headers: { "x-command-id": commandId }, body: JSON.stringify({ recoveryCode }) });
-  try { sessionStorage.removeItem(key); } catch { /* Recovery has already succeeded. */ }
+  try { sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent'); } catch { /* Recovery has already succeeded. */ }
   return result;
 }
 export function resumeGame(code: string) { return request<PrivateView>(`/api/rooms/${code}/resume`, { method: "POST", body: "{}" }); }

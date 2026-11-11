@@ -12,7 +12,7 @@ afterEach(()=>{cleanup();vi.unstubAllGlobals();resetAccountContext();sessionStor
 test.each(['GUEST','ACCOUNT'])('a real %s room host can open the empty-seat bot entry and submit fill through the UI command queue',async(kind)=>{
  const server=buildApp({timers:false,resolveAccount:async cookie=>cookie?.includes('fixture=owner')?{sub:'fixture-owner',name:'本人'}:null});
  try{
-  const protocol={'x-ravens-protocol':'3',...(kind==='ACCOUNT'?{cookie:'fixture=owner'}:{})},ticket=await server.inject({url:'/api/room-create-ticket',headers:protocol});
+  const protocol={'x-ravens-protocol':'4',...(kind==='ACCOUNT'?{cookie:'fixture=owner'}:{})},ticket=await server.inject({url:'/api/room-create-ticket',headers:protocol});
   const created=await server.inject({method:'POST',url:'/api/rooms',headers:{...protocol,cookie:[protocol.cookie,ticket.cookies.map(c=>`${c.name}=${c.value}`).join('; ')].filter(Boolean).join('; '),'x-command-id':crypto.randomUUID()},payload:{playerCount:8,organizerName:'本人',createTicket:ticket.json().createTicket}});expect(created.statusCode).toBe(201);const code=created.json().code;
   const joinTicket=(await server.inject({url:`/api/rooms/${code}/join-ticket?mode=PLAYER`,headers:protocol})).json().joinTicket;
   const joined=await server.inject({method:'POST',url:`/api/rooms/${code}/join`,headers:protocol,payload:{nickname:'本人',mode:'PLAYER',joinTicket}});expect(joined.statusCode).toBe(201);const cookie=[protocol.cookie,joined.cookies.map(c=>`${c.name}=${c.value}`).join('; ')].filter(Boolean).join('; ');

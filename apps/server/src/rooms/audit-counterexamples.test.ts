@@ -16,7 +16,7 @@ function table(roleIds: string[], perceived: Record<number, string> = {}, cinema
   });
   service.restore([snapshot]);
   for (const player of players) service.completeTutorial(room.code, player.token);
-  const mutate = (change: (room: RoomRecord) => void) => { const state = service.snapshot(room.code); change(state); if(!cinematic&&state.game?.publicProjection&&["DAY_DISCUSSION","NOMINATION"].includes(state.game.phase))state.game.publicProjection.aliveSeats=[...state.game.aliveSeats]; service.restore([state]); };
+  const mutate = (change: (room: RoomRecord) => void) => { const state = service.snapshot(room.code); change(state); if(state.game?.startInfo.stage==="WAIT_NIGHTFALL"&&!["ROLE_REVEAL","FIRST_NIGHT"].includes(state.game.phase)){state.game.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};state.game.presentationVersion=1;} if(!cinematic&&state.game?.publicProjection&&["DAY_DISCUSSION","NOMINATION"].includes(state.game.phase))state.game.publicProjection.aliveSeats=[...state.game.aliveSeats]; service.restore([state]); };
   const settle = (targets: Record<number, number[]> = {}) => {
     for (let pass = 0; pass < 20; pass += 1) {
       const phase = service.publicView(room.code).game!.phase;
@@ -33,7 +33,7 @@ function table(roleIds: string[], perceived: Record<number, string> = {}, cinema
     }
     throw new Error("Night did not finish");
   };
-  const day = (targets: Record<number, number[]> = {}) => { for (const player of players) service.confirmRole(room.code, player.token); settle(targets); };
+  const day = (targets: Record<number, number[]> = {}) => { for (const player of players) service.confirmRole(room.code, player.token); for(const p of players){const info=service.privateView(room.code,p.token).startInfo;if(info?.canAcknowledge)service.acknowledgeStartInfo(room.code,p.token,info.infoId);}settle(targets); };
   const endDay = () => { for (const player of players) if (service.privateView(room.code, player.token).canEndDay) service.readyToEndDay(room.code, player.token); };
   const nominateAndVote = (nominator: number, nominee: number, yes: number[]) => {
     service.nominate(room.code, players[nominator - 1]!.token, nominee);
@@ -350,7 +350,7 @@ describe("information privacy and recovery invariants", () => {
     service.startTutorial(room.code, players[0]!.token);
     for (const player of players) service.completeTutorial(room.code, player.token);
     const snapshot = service.snapshot(room.code);
-    snapshot.game!.phase = "VOTING";
+    snapshot.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};snapshot.game!.presentationVersion=1;snapshot.game!.phase = "VOTING";
     snapshot.game!.nomination = { ballotId: "fixture-ballot", nominatorSeat: 1, nomineeSeat: 2 };
     snapshot.game!.phaseDeadlineAt = now + 100;
     service.restore([snapshot]);

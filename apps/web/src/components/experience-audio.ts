@@ -1,9 +1,10 @@
+import {experienceTiming,type ExperienceKind,type PresentationVersion} from '@ravens/contracts';
 /** Small original, synthesized cues. Private cues are deliberately silent. */
 let audioContext: AudioContext | undefined;
 let enabled = readAudioPreference();
-const scheduled = new Set<string>();
+const scheduled = new Map<string,number>();
 const playing = new Set<AudioScheduledSourceNode>();
-export function silenceEffects(): void { for (const source of playing) { try { source.stop(); } catch { /* Already finished. */ } } playing.clear(); }
+export function silenceEffects(): void { for (const source of playing) { try { source.stop(); } catch { /* Already finished. */ } } playing.clear(); for(const[key,time]of scheduled)if(time>(audioContext?.currentTime??0))scheduled.delete(key); }
 
 function readAudioPreference(): boolean { try { return localStorage.getItem("ravens_effects_audio") === "on"; } catch { return false; } }
 export function effectsAudioEnabled(): boolean { return enabled; }
@@ -17,16 +18,16 @@ export async function enableEffectsAudio(value = true): Promise<void> {
   await audioContext.resume();
 }
 
-export function scheduleCue(id: string, kind: string, elapsedMs: number): void {
+export function scheduleCue(id: string, kind: string, elapsedMs: number,version:PresentationVersion=1): void {
   const ctx = audioContext;
-  if (!enabled || !ctx || ctx.state !== "running" || scheduled.has(id)) return;
-  scheduled.add(id);
-  const cues = kind === "SHOT" ? [[1_200, "cock"], [2_800, "shot"], [4_100, "bell"]] : kind === "EXECUTION" ? [[300, "bell"], [2_800, "mechanism"], [3_600, "bell"]] : kind === "DAWN" ? [[400, "bell"], [1_500, "bell"]] : kind === "NIGHT_FALLS" ? [[300, "bell"]] : [[350, "paper"]];
+  if (!enabled || !ctx || ctx.state !== "running") return;
+  const cues=experienceTiming(kind as ExperienceKind,version).cues;
   for (const [at, cue] of cues) {
     const delay = Number(at) - elapsedMs;
     // Never play a gunshot late: reconnects reveal the result without replaying the strike.
-    if (delay < -120) continue;
+    const key=`${id}:${at}`;if(delay<0||scheduled.has(key))continue;
     const time = ctx.currentTime + Math.max(0, delay / 1_000);
+    scheduled.set(key,time);if(scheduled.size>500)scheduled.delete(scheduled.keys().next().value!);
     if (cue === "bell") bell(ctx, time);
     else if (cue === "shot") { noise(ctx, time, .24, .2, 650); tone(ctx, time, 84, .6, .13); }
     else if (cue === "mechanism") { noise(ctx, time, .3, .1, 350); tone(ctx, time, 72, .4, .1); }

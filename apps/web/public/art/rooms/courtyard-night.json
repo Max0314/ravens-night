@@ -1,0 +1,10 @@
+{
+  "generator": "built-in image_gen",
+  "generatedAt": "2026-11-11",
+  "reference": "assets/ravens/home-scene-v1.webp (style only)",
+  "prompt": "Portrait 1440x2560 mobile game room background. A different midnight clocktower courtyard: black stone arcades at left and right, distant steps, barely visible tower, thin fog. Quiet dark upper/central area for UI. Painterly gothic night atmosphere, restrained antique-gold lights, darker black/gold palette. No people, faces, portraits, animals, text, logos, frames or buttons. Opaque background.",
+  "asset": "courtyard-night.webp",
+  "width": 1440,
+  "height": 2560,
+  "bytes": 88196
+}

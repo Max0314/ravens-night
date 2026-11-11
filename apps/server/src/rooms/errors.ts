@@ -1,5 +1,5 @@
 export class RoomError extends Error {
-  constructor(readonly errorCode: string, message: string, readonly status = 409, readonly refreshRequired = true) {
+  constructor(readonly errorCode: string, message: string, readonly status = 409, readonly refreshRequired = true, readonly details?: {joinTicketConsumed:false;profile?:unknown}) {
     super(message);
     this.name = "RoomError";
   }

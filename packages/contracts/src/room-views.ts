@@ -4,6 +4,7 @@ import type { RoomProtocolView } from "./room-protocol.js";
 export interface RoomParticipant { controller?:PlayerController; id: string; nickname: string; avatar?: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface GameView {
+  presentationVersion?: 1 | 2;
   publishedPhaseStartedAt?:number;
   revealComplete?: boolean;
   contextId?: string;
@@ -36,6 +37,8 @@ export interface PrivateHistoryEntry {
   text: string;
 }
 export interface PrivateView extends Partial<RoomProtocolView> {
+  profileApplication?: 'CURRENT' | 'NEXT_LOBBY';
+  startInfo?: { infoId: string; gameId: string; team: Array<{seat:number;nickname:string;avatar?:string;kind:'DEMON'|'MINION'}>; bluffs:Array<{roleId:string;name:string;summary:string}>; acknowledged:boolean;canAcknowledge:boolean };
   controlResult?:ControlResult;
   canManageBots?:boolean;canStepBots?:boolean;canFreezeRehearsal?:boolean;canAdvanceRehearsal?:boolean;
   room?: RoomView;

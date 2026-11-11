@@ -1,5 +1,6 @@
+import type {PlayerSelection} from './use-player-profile.js';
 import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from "react";
-import { ApiError, cancelNomination, castVote, completeTutorial, confirmRole, createRoom, readCreationIntent, finishCreationIntent, getAuthSession, getPrivateView as fetchPrivateView, getRoom as fetchRoom, resetAccountContext, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, setRoomReady, reorderRoomSeats, removeRoomPlayer, recoverRoom, resumeGame, finishDefense, type PrivateView, type RoomPlayMode, type RoomView } from "./api.js";
+import { ApiError, retryPendingCommand, notifyStorageFailure, acknowledgeStartInfo, cancelNomination, castVote, completeTutorial, confirmRole, createRoom, readCreationIntent, finishCreationIntent, getAuthSession, getPrivateView as fetchPrivateView, getRoom as fetchRoom, resetAccountContext, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, setRoomReady, reorderRoomSeats, removeRoomPlayer, recoverRoom, resumeGame, finishDefense, type PrivateView, type RoomPlayMode, type RoomView } from "./api.js";
 import { GramophonePlayer } from "./components/GramophonePlayer.js";
 import { GuideOverlay, type GuideMode } from "./components/GuideOverlay.js";
 import { RoomTools } from "./components/RoomTools.js";
@@ -31,8 +32,9 @@ import {getAccount,resumeAccountRoom} from './api.js';
 
 type Screen = "LOADING" | "LOGIN" | "HOME" | "CREATE" | "JOIN" | "LOBBY" | "TUTORIAL" | "GAME" | "DISPLAY";
 type ConnectionState = "ONLINE" | "OFFLINE" | "RECONNECTING";
-interface StoredSession { pendingJoin?: boolean; nickname?: string; roomCode: string; mode: "PLAYER" | "DISPLAY"; participantId?: string }
+interface StoredSession { avatar?:string|null;expectedProfileRevision?:number;pendingJoin?: boolean; nickname?: string; roomCode: string; mode: "PLAYER" | "DISPLAY"; participantId?: string }
 const SESSION_KEY = roomSessionKey();
+let volatileSession:StoredSession|null|undefined;
 
 
 export function App() {
@@ -62,6 +64,9 @@ function RoomApp() {
   const [upgrade,setUpgrade]=useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  useEffect(()=>{const revoke=(event:Event)=>{if(readSession()?.roomCode===(event as CustomEvent<{code:string}>).detail.code){clearSession();setRoom(undefined);setPrivateView(undefined);setParticipantId(undefined);setScreen('HOME');}};window.addEventListener('ravens:profile-seat-revoked',revoke);return()=>window.removeEventListener('ravens:profile-seat-revoked',revoke);},[]);
+  const[storageNotice,setStorageNotice]=useState(false);
+  useEffect(()=>{const show=()=>setStorageNotice(true);window.addEventListener("ravens:storage-warning",show);return()=>window.removeEventListener("ravens:storage-warning",show);},[]);
   const [participantId, setParticipantId] = useState<string>();
   function beginSession() { generation.current++; dispatch({type:"reset",generation:generation.current}); }
   function setRoom(value: RoomView | undefined) { if (!value) { beginSession(); return; } dispatch({type:"accept",generation:generation.current,room:value}); }
@@ -157,8 +162,9 @@ function RoomApp() {
     beginSession();
     setBusy(true); setError(undefined);
     try {
-      if(!values.recoveryCode)saveSession({roomCode:values.code,mode:values.mode,nickname:values.nickname,pendingJoin:true});
-      const joined = await guard(values.recoveryCode ? recoverRoom(values.code, values.recoveryCode) : joinRoom(values.code, values.nickname, values.mode));
+      if(!values.recoveryCode)saveSession({roomCode:values.code,mode:values.mode,nickname:values.nickname,...(values.avatar!==undefined?{avatar:values.avatar}:{}),...(values.expectedProfileRevision!==undefined?{expectedProfileRevision:values.expectedProfileRevision}:{}),pendingJoin:true});
+      const joined = await guard(values.recoveryCode ? recoverRoom(values.code, values.recoveryCode) : joinRoom(values.code, values.nickname, values.mode,values.avatar!==undefined?{nickname:values.nickname,avatar:values.avatar,...(values.expectedProfileRevision!==undefined?{expectedProfileRevision:values.expectedProfileRevision}:{})}:undefined));
+      const confirmedUrl=new URL(window.location.href);confirmedUrl.searchParams.delete("display");window.history.replaceState(window.history.state,"",confirmedUrl);
       saveSession({ roomCode: values.code, mode: values.mode, ...(values.mode === "PLAYER" ? { participantId: joined.id } : {}) });
       const current = await getRoom(values.code, values.mode);
       setConnectionState("ONLINE");
@@ -170,12 +176,12 @@ function RoomApp() {
     finally { setBusy(false); }
   }
 
-  async function submitCreate(name: string, count: number, playMode: RoomPlayMode, voiceRoomUrl?: string) {
+  async function submitCreate(name: string, count: number, playMode: RoomPlayMode, voiceRoomUrl?: string,profile?:PlayerSelection) {
     if(readSession()?.pendingJoin){await restoreSession();return;}
     beginSession();
     setBusy(true); setError(undefined);
     let createdCode:string|undefined;
-    try { const created = await guard(createRoom(count, name, playMode, voiceRoomUrl)); createdCode=created.code; saveSession({ roomCode: created.code, mode: "PLAYER", nickname:name, pendingJoin:true }); finishCreationIntent(); const joined = await guard(joinRoom(created.code, name, "PLAYER")); const current = await getRoom(created.code, "PLAYER"); setConnectionState("ONLINE"); saveSession({ roomCode: current.code, mode: "PLAYER", participantId: joined.id }); setParticipantId(joined.id); setRoom(current); acceptPrivateView(await getPrivateView(current.code)); setScreen("LOBBY"); }
+    try { const created = await guard(createRoom(count, name, playMode, voiceRoomUrl,profile)); createdCode=created.code; saveSession({ roomCode: created.code, mode: "PLAYER", nickname:name,...(profile?{avatar:profile.avatar,...(profile.expectedProfileRevision!==undefined?{expectedProfileRevision:profile.expectedProfileRevision}:{})}:{}), pendingJoin:true }); finishCreationIntent(); const joined = await guard(joinRoom(created.code, name, "PLAYER",profile)); const current = await getRoom(created.code, "PLAYER"); setConnectionState("ONLINE"); saveSession({ roomCode: current.code, mode: "PLAYER", participantId: joined.id }); setParticipantId(joined.id); setRoom(current); acceptPrivateView(await getPrivateView(current.code)); setScreen("LOBBY"); }
     catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return; if (isNetworkFailure(caught)) setConnectionState("OFFLINE"); setError(caught instanceof Error ? caught.message : "创建失败");if(createdCode||readSession()?.pendingJoin)setScreen("JOIN"); }
     finally { setBusy(false); }
   }
@@ -189,10 +195,10 @@ function RoomApp() {
 
   async function restoreSession() {
     let stored = readSession();
-    if (invitedRoomCode && stored?.roomCode !== invitedRoomCode) { setScreen("JOIN"); return; }
+    if (invitedRoomCode && (stored?.roomCode !== invitedRoomCode || new URLSearchParams(window.location.search).get("display")==="1"&&stored?.mode!=="DISPLAY")) { setScreen("JOIN"); return; }
     if (!stored) { setScreen(invitedRoomCode ? "JOIN" : "HOME"); return; }
     try {
-      if(stored.pendingJoin && stored.nickname){const joined=await guard(joinRoom(stored.roomCode,stored.nickname,stored.mode));stored={roomCode:stored.roomCode,mode:stored.mode,...(stored.mode==="PLAYER"?{participantId:joined.id}:{})};saveSession(stored);}
+      if(stored.pendingJoin && stored.nickname){const joined=await guard(joinRoom(stored.roomCode,stored.nickname,stored.mode,stored.avatar!==undefined?{nickname:stored.nickname,avatar:stored.avatar,...(stored.expectedProfileRevision!==undefined?{expectedProfileRevision:stored.expectedProfileRevision}:{})}:undefined));stored={roomCode:stored.roomCode,mode:stored.mode,...(stored.mode==="PLAYER"?{participantId:joined.id}:{})};saveSession(stored);}
       const current = await getRoom(stored.roomCode,stored.mode);
       setRoom(current);
       if (stored.mode === "DISPLAY") { setParticipantId(undefined); setScreen("DISPLAY"); return; }
@@ -217,7 +223,7 @@ function RoomApp() {
       const session = await getAuthSession();
       setConnectionState("ONLINE");
       if (session.authorized) {
-        const pendingCreate=readCreationIntent();if(pendingCreate&&!readSession()&&!invitedRoomCode){setScreen("CREATE");await submitCreate(pendingCreate.organizerName,pendingCreate.playerCount,pendingCreate.playMode,pendingCreate.voiceRoomUrl);return;}
+        const pendingCreate=readCreationIntent();if(pendingCreate&&!readSession()&&!invitedRoomCode){setScreen("CREATE");await submitCreate(pendingCreate.organizerName,pendingCreate.playerCount,pendingCreate.playMode??"IN_PERSON",pendingCreate.voiceRoomUrl,pendingCreate.avatar!==undefined?{nickname:pendingCreate.organizerName,avatar:pendingCreate.avatar,...(pendingCreate.expectedProfileRevision!==undefined?{expectedProfileRevision:pendingCreate.expectedProfileRevision}:{})}:undefined);return;}
         const account=await getAccount();
         if(account.signedIn&&!readSession()&&account.rooms.length===1&&!invitedRoomCode){const result=await resumeAccountRoom(account.rooms[0]!);saveSession({roomCode:result.code,mode:result.mode,participantId:result.id});}
         await restoreSession();
@@ -260,14 +266,14 @@ function RoomApp() {
     else setScreen("GAME");
   }
 
-  const withStatus = (page: ReactNode) => <>{page}{upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
+  const withStatus = (page: ReactNode) => <>{page}{storageNotice?<p className="session-status" role="status">浏览器未保存恢复资料，请勿关闭或刷新此页面。</p>:null}{upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
   const roomTools=!guide&&room&&participantId?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={setGuide}/>:null;
   const withGuide = (page: ReactNode) => withStatus(<>{page}{screen!=='HOME'?roomTools:null}{guide ? <GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /> : null}</>);
 
   if (screen === "LOADING") return withStatus(<main className="app-loading" aria-label="正在进入钟楼"><span>☾</span>{connectionState === "OFFLINE" ? <button type="button" onClick={() => void initialize()}>重新连接钟楼</button> : null}</main>);
   if (screen === "LOGIN") return withStatus(<Login onSubmit={submitLogin} busy={busy} {...(error ? { error } : {})} />);
   if (screen === "CREATE") return withStatus(<Create onBack={() => setScreen("HOME")} onSubmit={submitCreate} busy={busy} {...(error ? { error } : {})} />);
-  if (screen === "JOIN") return withStatus(<Join initialCode={invitedRoomCode || readSession()?.roomCode || ""} onBack={() => setScreen("HOME")} onSubmit={submitJoin} busy={busy} {...(error ? { error } : {})} />);
+  if (screen === "JOIN") return withStatus(<Join initialMode={new URLSearchParams(window.location.search).get("display")==="1"?"DISPLAY":"PLAYER"} initialCode={invitedRoomCode || readSession()?.roomCode || ""} onBack={() => setScreen("HOME")} onSubmit={submitJoin} busy={busy} {...(error ? { error } : {})} />);
   async function beginTutorial(tutorialMode: "SKIP" | "OPTIONAL" = "SKIP") { if (!room || !isOrganizer) return; setBusy(true); try { const next = await guard(startRoom(room.code, tutorialMode)); setRoom(next); setConnectionState("ONLINE"); if (next.state === "TUTORIAL") setScreen("TUTORIAL"); else { acceptPrivateView(await getPrivateView(room.code)); setScreen("GAME"); } } catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return; await handleSessionFailure(caught); setError(caught instanceof Error ? caught.message : "无法开始"); } finally { setBusy(false); } }
   async function finishTutorial() { if (!room) return; setBusy(true); try { const updated = await guard(completeTutorial(room.code)); setRoom(updated); setScreen("GAME"); setPrivateView(await getPrivateView(room.code)); setConnectionState("ONLINE"); } catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return; if (isNetworkFailure(caught)) setConnectionState("OFFLINE"); setError(caught instanceof Error ? caught.message : "无法完成教学"); } finally { setBusy(false); } }
 
@@ -324,30 +330,37 @@ function RoomApp() {
 
   async function roomMutation(operation: (code: string) => Promise<RoomView>) { if (!room) return; setBusy(true); setError(undefined); try { setRoom(await guard(operation(room.code))); } catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return; await handleSessionFailure(caught); setError(caught instanceof Error ? caught.message : "操作失败"); } finally { setBusy(false); } }
 
-  if (screen === "LOBBY" && room) return withGuide(<Lobby onRemove={id=>void roomMutation(code=>removeRoomPlayer(code,id))} room={room} {...(participantId ? { participantId } : {})} onReady={(ready) => void roomMutation((code) => setRoomReady(code, ready))} onReorder={(ids) => void roomMutation((code) => reorderRoomSeats(code, ids))} onBegin={beginTutorial} onLeave={() => void exitRoom()} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} canBegin={isOrganizer} busy={busy} {...(error ? { error } : {})} />);
+  if (screen === "LOBBY" && room) return withGuide(<Lobby onRetryReorder={async()=>{await guard(retryPendingCommand(room.code));const next=await getRoom(room.code);setRoom(next);return next;}} onRemove={id=>void roomMutation(code=>removeRoomPlayer(code,id))} room={room} {...(participantId ? { participantId } : {})} onReady={(ready) => void roomMutation((code) => setRoomReady(code, ready))} onReorder={async ids=>{setBusy(true);setError(undefined);try{const next=await guard(reorderRoomSeats(room.code,ids));setRoom(next);return next;}catch(e){await handleSessionFailure(e);setError(e instanceof Error?e.message:'排序失败');throw e;}finally{setBusy(false);}}} onBegin={beginTutorial} onLeave={() => void exitRoom()} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} canBegin={isOrganizer} busy={busy} {...(error ? { error } : {})} />);
   if (screen === "TUTORIAL") return withGuide(<Tutorial {...(room ? {completeCount:room.tutorialCompleteCount ?? 0,total:room.playerCount}:{})} onBack={returnHome} onDone={finishTutorial} busy={busy} {...(error ? { error } : {})} />);
-  if (screen === "GAME") return withGuide(<PlayerGame key={`${room?.roomInstanceId}:${room?.game?.gameId}:${participantId}`} {...(privateView ? { view: privateView } : {})} {...(receipt ? { receipt } : {})} {...(room ? { roomCode: room.code } : {})} {...(room?.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {})} busy={busy} canRestart={privateView?.canRestart ?? false} {...(error ? { error } : {})} onBack={returnHome} onResumeGame={() => void runGameMutation(resumeGame)} onFinishDefense={() => void runGameMutation(finishDefense)} onLeave={() => void exitRoom()} onRefresh={async () => { if (room) { try { acceptPrivateView(await getPrivateView(room.code)); } catch (error) { await handleSessionFailure(error); throw error; } } }} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats), seats)} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onCancelNomination={() => void runGameMutation(cancelNomination)} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(code => readyToEndDay(code, !privateView?.dayReady))} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
+  if (screen === "GAME") return withGuide(<PlayerGame key={`${room?.roomInstanceId}:${room?.game?.gameId}:${participantId}`} {...(privateView ? { view: privateView } : {})} {...(receipt ? { receipt } : {})} {...(room ? { roomCode: room.code } : {})} {...(room?.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {})} busy={busy} canRestart={privateView?.canRestart ?? false} {...(error ? { error } : {})} onBack={returnHome} onResumeGame={() => void runGameMutation(resumeGame)} onFinishDefense={() => void runGameMutation(finishDefense)} onLeave={() => void exitRoom()} onRefresh={async () => { if (room) { try { acceptPrivateView(await getPrivateView(room.code)); } catch (error) { await handleSessionFailure(error); throw error; } } }} onConfirmStartInfo={infoId=>void runGameMutation(code=>acknowledgeStartInfo(code,infoId))} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats), seats)} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onCancelNomination={() => void runGameMutation(cancelNomination)} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(code => readyToEndDay(code, !privateView?.dayReady))} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
   if (screen === "DISPLAY") return withStatus(<Display key={`${room?.roomInstanceId}:${room?.code}`} code={room?.code ?? "------"} onBack={returnHome} onRoomClosed={handleRoomClosed} />);
   const stored = room ? readSession() : undefined;
-  let guestCode:string|undefined;try{guestCode=(JSON.parse(localStorage.getItem('ravens_room_session')??'{}') as StoredSession).roomCode;}catch{}
+  const guestSession=readSession(),guestCode=guestSession?.mode==='PLAYER'&&!guestSession.pendingJoin?guestSession.roomCode:undefined;
   return withGuide(<Home accountTools={roomTools} {...(guestCode?{guestCode}:{})} onAccountResume={(code,id,mode)=>{beginSession();saveSession({roomCode:code,mode,participantId:id});void restoreSession();}} onCreate={() => setScreen("CREATE")} onJoin={() => setScreen("JOIN")} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(error ? { error } : {})} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy } : {})} />);
 }
 
-export function saveSession(session: StoredSession): void { try { const value = JSON.stringify(session); sessionStorage.setItem(SESSION_KEY, value); localStorage.setItem(`${SESSION_KEY}:${session.roomCode}:${session.mode}`, value); if (session.mode === "PLAYER") localStorage.setItem(SESSION_KEY, value); } catch { /* Cookie sessions remain valid when storage is unavailable. */ } }
-export function readSession(): StoredSession | undefined {
-  try {
-    const invitation = readInvitedRoomCode();
-    const value = sessionStorage.getItem(SESSION_KEY) ?? (invitation ? localStorage.getItem(`${SESSION_KEY}:${invitation}:PLAYER`) : null) ?? localStorage.getItem(SESSION_KEY);
-    if (!value) return undefined;
-    const session = JSON.parse(value) as StoredSession;
-    if (!session.roomCode || !["PLAYER", "DISPLAY"].includes(session.mode)) return undefined;
-    sessionStorage.setItem(SESSION_KEY, value);
-    return session;
-  }
-  catch { return undefined; }
+export function saveSession(session:StoredSession):void{
+ volatileSession=session;const value=JSON.stringify(session);let persisted=true;
+ try{sessionStorage.setItem(SESSION_KEY,value);}catch{persisted=false;}
+ try{localStorage.setItem(`${SESSION_KEY}:${session.roomCode}:${session.mode}`,value);if(session.mode==='PLAYER')localStorage.setItem(SESSION_KEY,value);}catch{persisted=false;}
+ if(persisted)volatileSession=undefined;else notifyStorageFailure();
+}
+export function readSession():StoredSession|undefined{
+ if(volatileSession!==undefined)return volatileSession??undefined;
+ const invitation=readInvitedRoomCode(),values:Array<string|null>=[];
+ try{values.push(sessionStorage.getItem(SESSION_KEY));}catch{}
+ try{if(invitation)values.push(localStorage.getItem(`${SESSION_KEY}:${invitation}:PLAYER`));values.push(localStorage.getItem(SESSION_KEY));}catch{}
+ for(const value of values){if(!value)continue;try{const session=JSON.parse(value) as StoredSession;if(!session.roomCode||!['PLAYER','DISPLAY'].includes(session.mode))continue;try{sessionStorage.setItem(SESSION_KEY,value);}catch{volatileSession=session;notifyStorageFailure();}return session;}catch{}}
+ return undefined;
 }
 
-function clearSession(): void { try { const current = readSession(); sessionStorage.removeItem(SESSION_KEY); if (current) { localStorage.removeItem(`${SESSION_KEY}:${current.roomCode}:${current.mode}`); const last = localStorage.getItem(SESSION_KEY); if (last && (JSON.parse(last) as StoredSession).roomCode === current.roomCode && (JSON.parse(last) as StoredSession).mode === current.mode) localStorage.removeItem(SESSION_KEY); } } catch { /* Clear as much as browser storage allows. */ } }
+function clearSession():void{
+ const current=readSession();volatileSession=null;
+ try{sessionStorage.removeItem(SESSION_KEY);}catch{}
+ if(current){try{localStorage.removeItem(`${SESSION_KEY}:${current.roomCode}:${current.mode}`);}catch{}
+  try{const last=localStorage.getItem(SESSION_KEY);if(last&&(JSON.parse(last) as StoredSession).roomCode===current.roomCode&&(JSON.parse(last) as StoredSession).mode===current.mode)localStorage.removeItem(SESSION_KEY);}catch{}
+ }
+}
 
 function readInvitedRoomCode(): string {
   return new URLSearchParams(window.location.search).get("room")?.toUpperCase().replace(/\s/g, "") ?? "";

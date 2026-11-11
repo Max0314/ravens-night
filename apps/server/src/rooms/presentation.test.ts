@@ -18,7 +18,7 @@ function shootingTable(successor = false) {
   snapshot.assignments = ["slayer", "chef", "empath", "saint", successor ? "scarlet_woman" : "baron", "imp"].map((roleId, i) => ({
     seat: i + 1, roleId, perceivedRoleId: roleId, roleType: roleById(roleId).type, alignment: i >= 4 ? "EVIL" : "GOOD",
   }));
-  snapshot.game!.phase = "DAY_DISCUSSION"; snapshot.game!.day = 1;
+  snapshot.game!.presentationVersion=1;snapshot.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};snapshot.game!.phase = "DAY_DISCUSSION"; snapshot.game!.day = 1;
   delete snapshot.game!.publicProjection; delete snapshot.game!.pendingPublications;
   initializePresentation(snapshot.game!); service.restore([snapshot]);
   return { service, room, players, now: () => now, advance(ms: number, tick = true) { now += ms; if (tick) service.advanceTime(now); } };
@@ -167,7 +167,7 @@ test("result API excludes anonymous callers and revokes removed members after re
     expect((await app.inject(url)).json().lastResult).toBeUndefined();
     expect((await app.inject(`${url}/result?token=${t.players[1]!.token}`)).json().result.gameId).toBe(saved.lastResult!.gameId);
     const me=(await app.inject(`${url}/me?token=${t.players[0]!.token}`)).json();
-    const removed=await app.inject({method:"POST",url:`${url}/participants/${t.players[1]!.participant.id}/remove`,headers:{"x-ravens-protocol":"3","x-command-id":"result-remove-member"},payload:{token:t.players[0]!.token,roomInstanceId:me.roomInstanceId,setupId:me.setupId,expectedCommandVersion:me.self.commandVersion,confirm:true}});
+    const removed=await app.inject({method:"POST",url:`${url}/participants/${t.players[1]!.participant.id}/remove`,headers:{"x-ravens-protocol":"4","x-command-id":"result-remove-member"},payload:{token:t.players[0]!.token,roomInstanceId:me.roomInstanceId,setupId:me.setupId,expectedCommandVersion:me.self.commandVersion,confirm:true}});
     expect(removed.statusCode).toBe(200);
     expect((await app.inject(`${url}/result?token=${t.players[1]!.token}`)).statusCode).toBe(403);
     expect((await app.inject(`${url}/result?token=${t.players[0]!.token}`)).json().result).toEqual(saved.lastResult);
