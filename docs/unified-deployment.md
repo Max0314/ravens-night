@@ -1,6 +1,19 @@
 # 鸦钟夜话统一账号部署
 
 
+## 2026-11-12 完整角色演出、纸张与移动端适配（已发布，真机待验收）
+
+2026-11-12 12:38（北京时间）固定提交`72440b914b7ee73ac87bb51a3e3c522882cd316f`已发布。用户授权实施、检验后直接部署；[完整方案](superpowers/plans/2026-11-12-full-role-cinematics.md)的R1–R10实现、定向验证及独立cross review见[阶段记录](2026-09-27-redesign.md#2026-11-12-完整角色演出纸张与移动端适配已发布真机待验收)。发布前04:26 UTC重读ops GitHub main `964c0ba2357810506ba4d9e883d217f377ea0615`，运行控制固定`a5145d4813f1943ae45c206a6784703e0e30a0fb`。只更新本游戏：HTTP/WS协议6、快照5、新局时序4，旧局不重写；无SQL表/公共服务/路由/秘密配置变化。Web仅新增精确html2canvas1.4.1及4个传递依赖，既有版本保持。
+
+单库备份及隔离恢复回执`/srv/fribench/backups/unified-platform/ravens-night-20261112T043811Z/receipt.json`，同目录root专用app.env。发布证据`/var/lib/fribench/ravens-role-cinematics-20261112T043808Z/result.json`：HTTPS健康、loopback监听、协议6/旧5及更早426、35头像目录、新presentation ACK及选角/人机命令/换房签票schema拒绝、匿名WS101后1008拒绝、30秒无应用错误通过。入口index-CPH1mVVV.js/index-BmXSotwr.css、lazy html2canvas-CQY-21OD.js、69个v2 MP3、管家56帧及仍引用的旧素材/庭院背景共87项字节SHA256与本机已验构建及固定镜像一致。镜像ID`sha256:49b6ddc65bc7aceeae97bc4e3aad9019500f84d124c75327653b122674f31732`。
+
+维护前后均0房间/0席位；停服前和停服后均重新核对空房，防止最后一次create/join竞态，没有中止/清空对局或创建生产测试房。45个非目标容器、32份路由及秘密配置摘要不变。检验以定向Node/Fastify/DOM/时钟与媒体/关节/哈希、类型/打包为准，复用相关代码未再变化的成功结果；未跑全量历史回归、PG集成或有头/无头浏览器。全程未打开本地游戏或演示页面，只查看单张管家关键帧；微信实际听感、触摸、原生栏位、SVG折射与高级卷页仍待真机体验，不将接口/资产核验当作感官验收。
+
+首轮`043019Z`构建与87资源核验已通过，但可用949,948,416字节低于备份1GiB门槛，因此在停服前退出，旧app保持健康。全局锁内按唯一Buildx history的project/context/时间核对，仅删除两个无任何容器引用的旧游戏镜像78838c/37d410及其四条精确runtime缓存，并回收当次可回收构建缓存；清单在该轮old-artifact-cleanup/cleanup-plan/cleanup.json，保留当前a73600f与上一版b85a8c6。续轮不重构建，重新核对固定镜像ID与87资源；`043726Z`因旧worktree Git index权限阻止删除而安全退出，未改权限、未停app。最终在同一root发布锁流程内，仅用无force的git worktree remove回收78838c/37d410两份源码：路径均在登记releaseRoot、无symlink/双向重叠容器挂载、HEAD固定且为main祖先，tracked/untracked/ignored完全干净，可从Git重建。保留current、候选72440b9、b85a8c6源码及全部Git历史/备份/业务数据；清单见043808Z的old-checkout-cleanup-plan/cleanup.json，备份前可用1,176,080,384字节。未全局prune、删除数据卷/旧备份、改其他服务或重启Docker。
+
+旧a73600f不支持schema5/v4：出现新状态后只能前向修复，不能直接启旧server或自动恢复旧库覆盖进度。失败恢复仅限仍全部schema4/v≤3（或无房间）的状态；本次未触发恢复。正式入口`https://clocktower.fribench.cn`，独立演示`/?preview=effects`，可试听新分轨与查看全部角色；总音效需要主动开启，私密音效还需线上加入模式。本局演出可从记录重播，下一局开始后清除。
+
+
 ## 2026-11-12 动效、提名与邀请恢复（已发布，真机待验收）
 
 2026-11-12 09:54（北京时间）固定提交`a73600f9282395e623170ead2a880ff0a0a5ae28`已发布。用户本轮授权修复后直接部署；[完整方案](superpowers/plans/2026-11-12-effects-invitations.md)经过前后端独立review与复审，代码交叉review遗漏已闭环，实现及验证见[交互记录](2026-09-27-redesign.md#2026-11-12-动效提名与邀请恢复已发布真机待验收)。发布前01:44 UTC实际重读ops GitHub main `964c0ba2357810506ba4d9e883d217f377ea0615`，控制固定`a5145d4813f1943ae45c206a6784703e0e30a0fb`。只更新本游戏：HTTP/WS协议5，新局演出v3、旧局保留原版本，快照4；无数据库表、环境变量、依赖或公共服务变更。
