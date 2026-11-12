@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "butlerTiming": {
+    "voiceAt": 1450,
+    "spokenDurationMs": 768,
+    "holdStart": 1400,
+    "holdMs": 868,
+    "riseAt": 2268,
+    "durationMs": 4002
+  },
+  "source": "../v1/butler.webp",
+  "sourceSha256": "3d08bb5456cc016680ecac13917a115ca5745b02768f4556e7d0baa05417dd1b",
+  "license": "Project original imagegen character artwork; deterministic mesh animation",
+  "rebuild": "python scripts/build-effects-butler.py <external-review-directory>",
+  "files": [
+    {
+      "file": "butler-source.webp",
+      "bytes": 75270,
+      "sha256": "23f0fc8e26415f3b378afca082e73b57ee36f2b260e8e33e7958a42a77ef9332",
+      "width": 960,
+      "height": 1440,
+      "decodedBytes": 5529600
+    },
+    {
+      "file": "butler-bow.webp",
+      "bytes": 577828,
+      "sha256": "7fe0f95e89d4a3185128e5b0cc7f0b61803f716c50d748cfa9fdc85c9522820b",
+      "width": 2048,
+      "height": 2688,
+      "decodedBytes": 22020096
+    },
+    {
+      "file": "butler-pose.json",
+      "bytes": 70110,
+      "sha256": "4d77be66ed7fb1d2729fc96731153db6b3caa8abec9adc22ecdac22db65fd628"
+    }
+  ]
+}

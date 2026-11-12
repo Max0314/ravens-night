@@ -10,7 +10,7 @@ test("v1 night waiting restores pre-night public life without revealing a pendin
   const service=new RoomService({now:()=>1000,presentation:true});service.restore([old]);expect(service.publicView(old.code).game!.aliveCount).toBe(5);expect(service.snapshot(old.code).game!.aliveSeats).toHaveLength(4);
 });
 test("unknown schemas and incomplete active ballots fail before being accepted",()=>{
-  const {old}=legacy();const service=new RoomService();expect(()=>service.restore([{...old,schemaVersion:5} as unknown as RoomRecord])).toThrow(/schema/);
+  const {old}=legacy();const service=new RoomService();expect(()=>service.restore([{...old,schemaVersion:6} as unknown as RoomRecord])).toThrow(/schema/);
   old.game!.phase="VOTING";delete old.game!.nomination;expect(()=>service.restore([old])).toThrow(/active ballot/);
 });
 test("legacy full views are compacted while small recovery results survive and unknown oversized receipts stop migration",()=>{

@@ -9,7 +9,7 @@ import {
   type RoleAssignment,
   grimoireCandidates, trueGrimoire, type Grimoire,
 } from "@ravens/game-engine";
-import type { ExperienceEvent, StorytellerDecision, RoomCommandContext, PrivateHistoryEntry as HistoryView } from "@ravens/contracts";
+import type { ExperienceEvent, StorytellerDecision, RoomCommandContext, PrivateHistoryEntry as HistoryView,PrivateSceneDescriptor,PrivateShownResult,PrivateSceneKind,PresentationAckRequest,PresentationAckResponse,PresentationDisposition } from "@ravens/contracts";
 import { FIRST_NIGHT_ORDER, OTHER_NIGHT_ORDER, shuffled } from "@ravens/game-engine";
 import { createOpaqueToken, hashOpaqueToken } from "../auth/session.js";
 import { createRoomCode, normalizeRoomCode } from "./codes.js";
@@ -57,7 +57,7 @@ export interface RoomResult {releasedWallAt:number;hadBots:boolean;rehearsalUsed
 export interface RoomRecord {
   rehearsalRole?:{participantId:string;roleId:string};
   lastResult?: RoomResult;
-  schemaVersion: 4;
+  schemaVersion: 4|5;
   timeline:RoomTimeline;
   botControl:BotControl;
   lastHumanActivityAt:number;
@@ -87,7 +87,10 @@ type PrivateHistoryPhase = RuntimePhase | "HISTORY";
 type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 
 interface PrivateHistoryEntry {
-  candidateGroup?: HistoryView["candidateGroup"];
+  presentation?:PrivateSceneDescriptor;
+  release?:{type:'EVENT_RESULT';eventId:string}|{type:'NIGHT_NOTIFICATION';changeId:string}|{type:'PUBLIC_DAY';day:number}|{type:'FINAL_REVEAL'};
+  awaitingDeathEvent?:boolean;
+  candidateGroup?: NonNullable<HistoryView["candidateGroup"]>;
   grimoire?: NonNullable<HistoryView["grimoire"]>;
   targetSeatsRevealDay?:number;
   publishAfterEventId?: string;
@@ -119,7 +122,9 @@ const VOTE_SLOT_MS = 1500;
 const DEFENSE_MS = 20_000;
 
 export interface GameRuntime {
-  presentationVersion:1|2|3;
+  presentationVersion:1|2|3|4;
+  presentationSeen:Record<string,Record<number,PresentationDisposition>>;
+  roleNotifications:Array<{changeId:string;seat:number;previousAssignment:RoleAssignment;roleHistorySeq:number;notifyOn:'NIGHT';released:boolean;notifyEventId?:string;cancelled?:boolean;acquiredPhase?:RuntimePhase;acquiredDay?:number}>;
   startInfo:StartInfo;
   hadBots:boolean;
   rehearsalUsed:boolean;
@@ -198,7 +203,7 @@ export class RoomService {
     while (this.#rooms.has(code)) code = createRoomCode();
     const organizerToken = createOpaqueToken();
     const room: RoomRecord = {
-      schemaVersion: 4, timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true},roomInstanceId: randomUUID(), setupId: randomUUID(),
+      schemaVersion: 5, timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true},roomInstanceId: randomUUID(), setupId: randomUUID(),
       id: randomUUID(),
       code,
       organizerName: organizerName.trim().slice(0, 24) || "组织者",
@@ -533,6 +538,7 @@ export class RoomService {
     this.assertPresentationComplete(room);
     game.contextId = randomUUID();
     game.phase = "ABORTED";
+    for(const notification of game.roleNotifications)if(!notification.released)notification.cancelled=true;
     game.startInfo.stage="CANCELLED";invalidateBots(room);
     room.state = "ABORTED";
     game.termination = { kind: "ABORTED", actorParticipantId: host.id, at: this.#now() };
@@ -583,12 +589,12 @@ export class RoomService {
   restore(snapshots: RoomRecord[]): void {
     for (const snapshot of snapshots) {
       const code = normalizeRoomCode(snapshot.code);
-      if (![undefined, 1, 2, 3, 4].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
+      if (![undefined, 1, 2, 3, 4,5].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) throw new Error(`Room ${code}: invalid roster snapshot`);
-      if(![2,3,4].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
-      if(snapshot.game&&snapshot.game.presentationVersion!==undefined&&![1,2,3].includes(snapshot.game.presentationVersion))throw new Error("Unsupported presentation version");
+      if(![2,3,4,5].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
+      if(snapshot.game&&snapshot.game.presentationVersion!==undefined&&![1,2,3,4].includes(snapshot.game.presentationVersion))throw new Error("Unsupported presentation version");
       const game = snapshot.game ? this.restoreGame(snapshot.game, `legacy-game-${snapshot.gameNumber ?? 0}:${randomUUID()}`, snapshot.timeline ? gameNow(snapshot,this.#now()) : this.#now()) : undefined;
-      if (game && (![3,4].includes(snapshot.schemaVersion)||!game.publicProjection)) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
+      if (game && (![3,4,5].includes(snapshot.schemaVersion)||!game.publicProjection)) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
       migrateReceipts(snapshot);
 
       snapshot.roomInstanceId ??= randomUUID();
@@ -600,10 +606,13 @@ export class RoomService {
       upgradeBotRoom(restored,this.#now());
       if(restored.rehearsalRole!==undefined&&(!restored.rehearsalRole||typeof restored.rehearsalRole!=="object"||typeof restored.rehearsalRole.participantId!=="string"||!restored.rehearsalRole.participantId||!ROLE_CATALOG.some(role=>role.id===restored.rehearsalRole!.roleId)))throw new Error(`Room ${code}: invalid rehearsal role`);
       this.clearIneligibleRehearsalRole(restored);
-      if((snapshot.schemaVersion as number)!==4){
+      if(![4,5].includes(snapshot.schemaVersion)){
         restored.schemaVersion=4;
         if(restored.game){restored.game.presentationVersion=1;restored.game.startInfo={mode:'LEGACY',stage:restored.game.phase==='ABORTED'?'CANCELLED':'COMPLETE',entries:{}};for(const e of restored.game.events)e.timingVersion??=1;}
       }
+      if(snapshot.schemaVersion!==5)this.migratePrivatePresentations(restored);
+      restored.schemaVersion=5;
+      this.validatePrivatePresentations(restored);
       validateStartInfo(restored);this.#rooms.set(code,restored);
       this.captureResult(this.#rooms.get(code)!, this.gameNow(this.#rooms.get(code)!));
     }
@@ -635,7 +644,7 @@ export class RoomService {
     return {
       code: room.code,
       timeline:{mode:room.timeline.mode,epoch:room.timeline.epoch},botControl:this.botControlView(room),activeHumanCount:humans(room).length,botCount:bots(room).length,
-      protocolVersion: 5 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
+      protocolVersion: 6 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
       revision: room.revision, serverNow: this.#now(),
       rulesSummary: room.playerCount < 7 ? "5–6 人采用官方 Teensyville：恶魔与爪牙互不认识，恶魔没有三个伪装。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。" : "暗流涌动标准规则。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。",
       state: room.game && room.state !== "ABORTED" ? room.game.publicProjection?.phase === "GAME_OVER" ? "GAME_OVER" : "RUNNING" : room.state,
@@ -766,6 +775,7 @@ export class RoomService {
       const time=this.gameNow(room,now);
       const game = room.game;
       if (game && game.phase !== "ABORTED") dirty = publishDue(game, time) || dirty;
+      if(game&&this.releaseRoleNotificationsIfDue(room))dirty=true;
       if(game&&this.releaseStartInfoIfDue(room))dirty=true;
       if (game?.phase === "VOTING" && game.nomination?.voterOrder && time >= game.presentationUntil) dirty = this.advanceBallot(room, time) || dirty;
       if (game && !["GAME_OVER", "ABORTED"].includes(game.phase) && time >= game.phaseDeadlineAt && time >= game.presentationUntil && !game.pauseReason) {
@@ -827,7 +837,7 @@ export class RoomService {
     s.stage='WAIT_ACK';s.releasedAt=this.gameNow(room);delete g.pauseReason;g.phaseDeadlineAt=this.gameNow(room)+180000;
     for(const [own,entry]of Object.entries(s.entries)){
       const seat=Number(own),team=entry.team.map(p=>`${this.playerLabel(room,p.seat)}（${p.kind==='DEMON'?'恶魔':'爪牙'}）`).join('、');
-      this.privateMessage(g,seat,`首夜阵营信息：${team||'无其他队友'}。`,'INFORMATION');
+      this.privateMessage(g,seat,`首夜阵营信息：${team||'无其他队友'}。`,'INFORMATION',undefined,undefined,undefined,undefined,undefined,{kind:'EVIL_START',themeRoleId:this.assignment(room,seat).perceivedRoleId,shown:{type:'EVIL_START',infoId:entry.infoId}});
       if(entry.bluffRoleIds.length)this.privateMessage(g,seat,`三个安全伪装：${entry.bluffRoleIds.map(id=>roleById(id).name).join('、')}。`,'INFORMATION');
       this.rememberBotTeam(room,seat,entry.team.map(p=>p.seat));
     }
@@ -853,6 +863,111 @@ export class RoomService {
     this.completeStartInfoAndContinue(room);this.changed(room);
   }
 
+  acknowledgePresentations(code:string,token:string,request:PresentationAckRequest):PresentationAckResponse {
+    const {room,participant}=this.authorizedPlayer(code,token),game=room.game;
+    if(room.roomInstanceId!==request.roomInstanceId||!game||game.gameId!==request.gameId)throw new RoomError('PRESENTATION_CONTEXT_CHANGED','对局已经变化，请重新同步');
+    if(!Array.isArray(request.entries)||request.entries.length<1||request.entries.length>16||new Set(request.entries.map(e=>e.historySeq)).size!==request.entries.length||request.entries.some(e=>!Number.isSafeInteger(e.historySeq)||e.historySeq<1||!['COMPLETE','SKIP'].includes(e.disposition)))throw new RoomError('INVALID_REQUEST','演出回执格式不正确',400);
+    const visible=new Set(this.projectPrivateHistory(room,participant.seat!).filter(e=>e.presentation).map(e=>e.seq));
+    if(request.entries.some(e=>!visible.has(e.historySeq)))throw new RoomError('PRESENTATION_NOT_AVAILABLE','当前没有这条可确认的演出',403);
+    const seen=game.presentationSeen[participant.id]??={},acked:PresentationAckRequest['entries']=[];
+    let dirty=false;
+    for(const entry of request.entries){if(!seen[entry.historySeq]){seen[entry.historySeq]=entry.disposition;dirty=true;}acked.push({historySeq:entry.historySeq,disposition:seen[entry.historySeq]!});}
+    // Do not call changed(): a read receipt cannot publish a pending gameplay outcome.
+    if(dirty)room.revision+=1;
+    return {roomInstanceId:room.roomInstanceId,gameId:game.gameId,acked,revision:room.revision};
+  }
+
+  private visibleAssignment(room:RoomRecord,seat:number):RoleAssignment|undefined {
+    if(!room.game?.publicProjection?.revealComplete){
+      const pending=room.game?.roleNotifications.find(n=>n.seat===seat&&!n.released);
+      if(pending)return pending.previousAssignment;
+      const legacy=room.game?.deferredRoleChanges?.find(n=>n.seat===seat);if(legacy)return legacy.previous;
+    }
+    return room.assignments.find(a=>a.seat===seat);
+  }
+
+  private projectPrivateHistory(room:RoomRecord,seat:number):HistoryView[] {
+    const g=room.game;if(!g)return[];
+    const revealed=g.publicProjection?.revealComplete===true;
+    return (g.privateHistory[seat]??[]).filter(entry=>{
+      if(!revealed&&entry.phase==='GAME_OVER')return false;
+      if(entry.publishAfterEventId&&!revealed&&g.deferredRoleChanges?.some(n=>n.eventId===entry.publishAfterEventId))return false;
+      if(!entry.release||revealed)return true;
+      if(g.phase==='ABORTED')return false;
+      const release=entry.release;
+      if(release.type==='NIGHT_NOTIFICATION')return !!g.roleNotifications.find(n=>n.changeId===release.changeId)?.released;
+      if(release.type==='PUBLIC_DAY')return (g.publicProjection?.day??0)>=release.day&&!g.publicProjection?.aliveSeats.includes(seat);
+      if(release.type==='EVENT_RESULT')return !!g.publicProjection?.events.some(e=>e.id===release.eventId&&e.outcome!==undefined);
+      return false;
+    }).map(entry=>{
+      const safe:HistoryView={seq:entry.seq,phase:entry.phase,day:entry.day,kind:entry.kind,text:entry.text,
+        ...(entry.effect?{effect:entry.effect}:{}),...(entry.candidateGroup?{candidateGroup:structuredClone(entry.candidateGroup)}:{}),...(entry.grimoire?{grimoire:structuredClone(entry.grimoire)}:{}),
+        ...(entry.targetSeats&&(entry.targetSeatsRevealDay===undefined||(g.publicProjection?.day??0)>=entry.targetSeatsRevealDay)?{targetSeats:[...entry.targetSeats]}:{}),
+        ...(entry.presentation?{presentation:projectSceneDescriptor(entry.presentation)}:{})};
+      return safe;
+    });
+  }
+
+  private releaseRoleNotificationsIfDue(room:RoomRecord):boolean {
+    const g=room.game;if(!g||!['FIRST_NIGHT','OTHER_NIGHT'].includes(g.phase)||room.state!=='RUNNING')return false;
+    let dirty=false;
+    for(const n of g.roleNotifications){
+      if(n.released||n.cancelled||!n.notifyEventId)continue;
+      const e=g.events.find(e=>e.id===n.notifyEventId);
+      if(!e||this.gameNow(room)<e.startsAt+e.durationMs||g.pendingPublications?.some(p=>p.id===`${e.id}:end`))continue;
+      n.released=true;dirty=true;
+    }
+    if(dirty){invalidateBots(room);this.settleNightIfReady(room);}
+    return dirty;
+  }
+
+  private migratePrivatePresentations(room:RoomRecord):void {
+    const g=room.game;if(!g)return;
+    for(const old of g.deferredRoleChanges??[]){
+      const entry=g.privateHistory[old.seat]?.find(e=>e.seq===old.historySeq);if(!entry)continue;
+      const changeId=randomUUID();g.roleNotifications.push({changeId,seat:old.seat,previousAssignment:old.previous,roleHistorySeq:old.historySeq,notifyOn:'NIGHT',released:false});
+      entry.release={type:'NIGHT_NOTIFICATION',changeId};delete entry.publishAfterEventId;
+      entry.presentation={version:1,id:`${g.gameId}:private:${old.seat}:${entry.seq}`,kind:'ROLE_CHANGE',themeRoleId:old.previous.perceivedRoleId,shown:{type:'NEW_ROLE',roleId:'imp'}};
+    }
+    delete g.deferredRoleChanges;
+    for(const assignment of room.assignments){
+      if(!g.confirmedRoleSeats.includes(assignment.seat)){
+        const e=g.privateHistory[assignment.seat]?.find(e=>e.kind==='IDENTITY');
+        if(e&&!e.presentation){const role=roleById(assignment.perceivedRoleId);e.presentation={version:1,id:`${g.gameId}:private:${assignment.seat}:${e.seq}`,kind:'IDENTITY',themeRoleId:role.id,shown:{type:'IDENTITY',roleId:role.id,summary:role.summary}};}
+      }
+      const info=g.startInfo.entries[assignment.seat];
+      if(g.startInfo.stage==='WAIT_ACK'&&info&&!info.acknowledged){const e=g.privateHistory[assignment.seat]?.find(e=>e.kind==='INFORMATION'&&e.phase==='FIRST_NIGHT');if(e&&!e.presentation)e.presentation={version:1,id:`${g.gameId}:private:${assignment.seat}:${e.seq}`,kind:'EVIL_START',themeRoleId:assignment.perceivedRoleId,shown:{type:'EVIL_START',infoId:info.infoId}};}
+    }
+  }
+
+  private validatePrivatePresentations(room:RoomRecord):void {
+    const g=room.game;if(!g)return;
+    const fail=():never=>{throw Error(`Room ${room.code}: invalid private presentation`);};
+    if(!g.presentationSeen||Array.isArray(g.presentationSeen)||!Array.isArray(g.roleNotifications))fail();
+    for(const values of Object.values(g.presentationSeen)){if(!values||typeof values!=='object'||Array.isArray(values)||Object.entries(values).some(([seq,value])=>!Number.isSafeInteger(Number(seq))||Number(seq)<1||!['COMPLETE','SKIP'].includes(value)))fail();}
+    const ids=new Set<string>();
+    for(const n of g.roleNotifications){if(!n||typeof n.changeId!=='string'||!n.changeId||ids.has(n.changeId)||!Number.isInteger(n.seat)||n.seat<1||n.seat>room.playerCount||!n.previousAssignment||n.previousAssignment.seat!==n.seat||!ROLE_CATALOG.some(r=>r.id===n.previousAssignment.perceivedRoleId)||n.notifyOn!=='NIGHT'||typeof n.released!=='boolean'||!g.privateHistory[n.seat]?.some(e=>e.seq===n.roleHistorySeq))fail();ids.add(n.changeId);}
+    const actionForRole:Record<string,string>={poisoner:'POISON',monk:'PROTECT',butler:'MASTER',imp:'KILL',fortune_teller:'DIVINE',ravenkeeper:'INSPECT'};
+    for(const [seat,entries]of Object.entries(g.privateHistory))for(const e of entries){
+      if(e.release){const r=e.release;if(r.type==='NIGHT_NOTIFICATION'){if(!ids.has(r.changeId))fail();}else if(r.type==='PUBLIC_DAY'){if(!Number.isSafeInteger(r.day)||r.day<0)fail();}else if(r.type==='EVENT_RESULT'){if(typeof r.eventId!=='string')fail();}else if(r.type!=='FINAL_REVEAL')fail();}
+      const p=e.presentation;if(!p)continue;
+      if(p.version!==1||p.id!==`${g.gameId}:private:${seat}:${e.seq}`||!ROLE_CATALOG.some(r=>r.id===p.themeRoleId)||!p.shown)fail();
+      const s=p.shown,validSeat=(n:number)=>Number.isInteger(n)&&n>=1&&n<=room.playerCount,role=(id:string)=>ROLE_CATALOG.some(r=>r.id===id);
+      const valid= s.type==='IDENTITY'?p.kind==='IDENTITY'&&s.roleId===p.themeRoleId&&typeof s.summary==='string'
+        :s.type==='TARGET_SUBMITTED'?p.kind==='ACTION_SUBMITTED'&&actionForRole[p.themeRoleId]===s.action&&Array.isArray(s.seats)&&s.seats.length===(s.action==='DIVINE'?2:1)&&new Set(s.seats).size===s.seats.length&&s.seats.every(validSeat)
+        :s.type==='COUNT'?p.kind==='INFORMATION'&&['chef','empath'].includes(p.themeRoleId)&&Number.isInteger(s.value)&&s.value>=0&&s.value<=(p.themeRoleId==='empath'?2:room.playerCount)
+        :s.type==='CANDIDATES'?p.kind==='INFORMATION'&&['washerwoman','librarian','investigator'].includes(p.themeRoleId)&&role(s.roleId)&&s.seats.length===2&&s.seats[0]!==s.seats[1]&&s.seats.every(validSeat)
+        :s.type==='NO_OUTSIDER'?p.kind==='INFORMATION'&&p.themeRoleId==='librarian'
+        :s.type==='DIVINATION'?p.kind==='INFORMATION'&&p.themeRoleId==='fortune_teller'&&['YES','NO'].includes(s.value)&&s.seats.length===2&&s.seats[0]!==s.seats[1]&&s.seats.every(validSeat)
+        :s.type==='SHOWN_ROLE'?p.kind==='INFORMATION'&&['ravenkeeper','undertaker'].includes(p.themeRoleId)&&role(s.roleId)&&validSeat(s.seat)
+        :s.type==='GRIMOIRE'?p.kind==='INFORMATION'&&p.themeRoleId==='spy'&&s.historySeq===e.seq&&!!e.grimoire
+        :s.type==='EVIL_START'?p.kind==='EVIL_START'&&g.startInfo.entries[Number(seat)]?.infoId===s.infoId
+        :s.type==='NEW_ROLE'?p.kind==='ROLE_CHANGE'&&s.roleId==='imp'
+        :s.type==='CONTINUATION'?p.kind==='OLD_DEMON_CONTINUATION'&&p.themeRoleId==='imp':false;
+      if(!valid)fail();
+    }
+  }
+
   submitAction(codeInput: string, playerToken: string, targetSeats: number[]): void {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
@@ -866,7 +981,8 @@ export class RoomService {
     if (targetSeats.some((seat) => !requirement.legalSeats.includes(seat))) throw new Error("Illegal target");
     const roleId = this.assignment(room, participant.seat!).perceivedRoleId;
     const effect = roleId === "poisoner" ? "POISON" : roleId === "monk" ? "PROTECT" : ["fortune_teller", "ravenkeeper"].includes(roleId) ? "DIVINATION" : undefined;
-    this.privateMessage(game, participant.seat!, this.describeNightAction(room, participant.seat!, targetSeats), "ACTION", effect, targetSeats);
+    const action=({poisoner:'POISON',monk:'PROTECT',butler:'MASTER',imp:'KILL',fortune_teller:'DIVINE',ravenkeeper:'INSPECT'} as const)[roleId as 'poisoner'];
+    this.privateMessage(game, participant.seat!, this.describeNightAction(room, participant.seat!, targetSeats), "ACTION", effect, targetSeats,undefined,undefined,undefined,action?{kind:'ACTION_SUBMITTED',themeRoleId:roleId,shown:{type:'TARGET_SUBMITTED',action,seats:[...targetSeats]}}:undefined);
     game.nightSubmissions[participant.seat!] = [...targetSeats];
     delete game.pauseReason;
     if (this.gameNow(room) >= game.phaseDeadlineAt) this.deadline(room);
@@ -1141,23 +1257,21 @@ export class RoomService {
 
   privateView(codeInput: string, playerToken: string) {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
-    const assignment = room.game?.deferredRoleChanges?.find(change => change.seat === participant.seat)?.previous
-      ?? room.assignments.find((candidate) => candidate.seat === participant.seat);
+    const assignment = this.visibleAssignment(room,participant.seat!);
     const revealActualRole = room.game?.publicProjection?.revealComplete === true;
     const visibleRoleId = assignment ? (revealActualRole ? assignment.roleId : assignment.perceivedRoleId) : undefined;
     const visibleRole = visibleRoleId ? roleById(visibleRoleId) : undefined;
     const game = room.game;
     const seat = participant.seat!;
     const visible = game ? projectedGame(game) : undefined;
-    const history = (game?.privateHistory[seat] ?? []).filter(entry =>
-      (revealActualRole || entry.phase !== "GAME_OVER")
-      && (!entry.publishAfterEventId || !game?.deferredRoleChanges?.some(change => change.eventId === entry.publishAfterEventId)))
-      .map(({ publishAfterEventId: _publication,targetSeatsRevealDay,...entry }) => {if(targetSeatsRevealDay!==undefined&&(game?.publicProjection?.day??0)<targetSeatsRevealDay){const {targetSeats:_targets,...safe}=entry;return {...safe,targetSeats:undefined};}return entry;});
+    const history = this.projectPrivateHistory(room,seat);
+    const pending=game?.phase==='ABORTED'?[]:history.filter(entry=>entry.presentation&&!game?.presentationSeen[participant.id]?.[entry.seq]).map(entry=>({historySeq:entry.seq,scene:entry.presentation!}));
     const available = !!game && this.gameNow(room) >= game.presentationUntil;
     const alive = !!game?.publicProjection?.aliveSeats.includes(seat);
     const daytime = !!game && ["DAY_DISCUSSION", "NOMINATION"].includes(game.phase);
     return {
-      protocolVersion: 5 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
+      protocolVersion: 6 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
+      presentations:{version:1 as const,pending:pending.slice(0,32),hasMore:pending.length>32},
       self: { participantId: participant.id, mode: participant.mode, commandVersion: participant.commandVersion },
       ...(game ? { contextId: game.publicProjection?.contextId ?? game.contextId } : {}),
       rehearsal:{eligible:this.rehearsalEligible(room),canChooseRole:room.state==='LOBBY'&&this.organizer(room)?.id===participant.id&&this.rehearsalEligible(room),...(room.rehearsalRole?.participantId===participant.id&&this.rehearsalEligible(room)?{selectedRoleId:room.rehearsalRole.roleId}:{})},
@@ -1208,7 +1322,7 @@ export class RoomService {
     const redHerringSeat = goodSeats[Math.floor(randomAt(`${room.id}:red-herring`, 0) * goodSeats.length)];
     const seed=randomUUID();
     const game: GameRuntime = {
-      presentationVersion:3,startInfo:createStartInfo(room,seed),
+      presentationVersion:4,presentationSeen:{},roleNotifications:[],startInfo:createStartInfo(room,seed),
       hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL"||!!room.rehearsalRole,
       contextId: randomUUID(),
       gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: seed, presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
@@ -1230,7 +1344,7 @@ export class RoomService {
       const role = roleById(assignment.perceivedRoleId);
       messages[assignment.seat] = [];
       privateHistory[assignment.seat] = [];
-      this.privateMessage(game, assignment.seat, `你的身份是${role.name}。${role.summary}`, "IDENTITY");
+      this.privateMessage(game, assignment.seat, `你的身份是${role.name}。${role.summary}`, "IDENTITY",undefined,undefined,undefined,undefined,undefined,{kind:'IDENTITY',themeRoleId:role.id,shown:{type:'IDENTITY',roleId:role.id,summary:role.summary}});
     }
     const demon = room.assignments.find((candidate) => candidate.roleType === "DEMON");
     const minions = room.assignments.filter((candidate) => candidate.roleType === "MINION");
@@ -1245,7 +1359,7 @@ export class RoomService {
   private restoreGame(snapshot: GameRuntime, gameId: string, now:number): GameRuntime {
     const legacy = snapshot as GameRuntime & { privateHistory?: Record<number, PrivateHistoryEntry[]> };
     const historyEvents=[...snapshot.events,...(snapshot.publicProjection?.events??[]),...(snapshot.pendingPublications??[]).flatMap(node=>node.eventPatch?[node.eventPatch]:[])];
-    if(historyEvents.some(event=>event.timingVersion!==undefined&&![1,2,3].includes(event.timingVersion)))throw new Error("Unsupported presentation version");
+    if(historyEvents.some(event=>event.timingVersion!==undefined&&![1,2,3,4].includes(event.timingVersion)))throw new Error("Unsupported presentation version");
     const privateHistory = legacy.privateHistory ?? Object.fromEntries(
       Object.entries(snapshot.messages ?? {}).map(([seat, messages]) => [seat, messages.map((text, index) => ({
         seq: index + 1,
@@ -1257,6 +1371,7 @@ export class RoomService {
     );
     return {
       ...snapshot,
+      presentationSeen:snapshot.presentationSeen??{},roleNotifications:snapshot.roleNotifications??[],
       contextId: snapshot.contextId ?? randomUUID(),
       ...(snapshot.nomination ? { nomination: { ...snapshot.nomination, ballotId: snapshot.nomination.ballotId ?? randomUUID() } } : {}),
       privateHistory,
@@ -1299,11 +1414,13 @@ export class RoomService {
     const durationMs = this.#presentation ? duration : 0;
     const occurredAt = this.gameNow(room);
     const nonBlocking=isNonBlockingExperience(kind,game.presentationVersion);
-    const startsAt = nonBlocking?occurredAt:durationMs ? Math.max(occurredAt + (game.presentationVersion===3?250:1500), game.presentationUntil) : Math.max(occurredAt, game.presentationUntil);
+    const startsAt = nonBlocking?occurredAt:durationMs ? Math.max(occurredAt + (game.presentationVersion>=3?250:1500), game.presentationUntil) : Math.max(occurredAt, game.presentationUntil);
     const seq = game.events.length + 1;
     game.events.push({ ...details, seq, id: `${game.gameId}:${seq}`, gameId: game.gameId, kind, timingVersion:game.presentationVersion, message: message.trim(), occurredAt, startsAt, durationMs, day: game.day });
     if (durationMs&&!nonBlocking) game.presentationUntil = startsAt + durationMs;
     enqueuePublication(game, game.events.at(-1)!);
+    if(kind==='NIGHT_FALLS')for(const notification of game.roleNotifications)if(!notification.released&&!notification.cancelled&&!notification.notifyEventId)notification.notifyEventId=game.events.at(-1)!.id;
+    if(kind==='SHOT'||kind==='EXECUTION')for(const entries of Object.values(game.privateHistory))for(const entry of entries)if(entry.awaitingDeathEvent){entry.release={type:'EVENT_RESULT',eventId:game.events.at(-1)!.id};delete entry.awaitingDeathEvent;}
     if (["SHOT", "EXECUTION"].includes(kind)) for (const change of game.deferredRoleChanges ?? []) {
       if (!change.eventId) {
         change.eventId = game.events.at(-1)!.id;
@@ -1313,20 +1430,23 @@ export class RoomService {
     }
   }
 
-  private privateMessage(game: GameRuntime, seat: number, text: string, kind: PrivateHistoryKind, effect?: PrivateHistoryEntry["effect"], targetSeats?: number[],targetSeatsRevealDay?:number, grimoire?: HistoryView["grimoire"],candidateGroup?:HistoryView["candidateGroup"]): void {
+  private privateMessage(game: GameRuntime, seat: number, text: string, kind: PrivateHistoryKind, effect?: PrivateHistoryEntry["effect"], targetSeats?: number[],targetSeatsRevealDay?:number, grimoire?: HistoryView["grimoire"],candidateGroup?:HistoryView["candidateGroup"],scene?:Omit<PrivateSceneDescriptor,'id'|'version'>): PrivateHistoryEntry {
     const message = text.trim();
     (game.messages[seat] ??= []).push(message);
     const history = game.privateHistory[seat] ??= [];
-    history.push({
-      seq: (history.at(-1)?.seq ?? 0) + 1,
+    const seq=(history.at(-1)?.seq ?? 0) + 1;
+    const entry:PrivateHistoryEntry={
+      seq,
       phase: game.phase,
       day: game.day,
       kind,
       text: message,
+      ...(scene?{presentation:{version:1,id:`${game.gameId}:private:${seat}:${seq}`,...structuredClone(scene)}}:{}),
       ...(grimoire ? { grimoire } : {}),
       ...(candidateGroup ? {candidateGroup:structuredClone(candidateGroup)} : {}),
       ...(effect ? { effect } : {}), ...(targetSeats ? { targetSeats } : {}), ...(targetSeatsRevealDay!==undefined?{targetSeatsRevealDay}:{}),
-    });
+    };
+    history.push(entry);return entry;
   }
 
   private describeNightAction(room: RoomRecord, seat: number, targetSeats: number[]): string {
@@ -1344,7 +1464,7 @@ export class RoomService {
   }
 
   private changed(room: RoomRecord): void {
-    if (room.game) { publishDue(room.game, this.gameNow(room)); syncImmediate(room.game, this.gameNow(room)); }
+    if (room.game) { publishDue(room.game, this.gameNow(room));this.releaseRoleNotificationsIfDue(room); syncImmediate(room.game, this.gameNow(room)); }
     this.captureResult(room, this.gameNow(room));
     room.revision += 1; room.lastActivityAt = new Date(this.#now()).toISOString();
   }
@@ -1406,7 +1526,7 @@ export class RoomService {
     }
     if (game.phase === "VOTING" && this.eligibleVoters(game).includes(seat) && !this.voteIsLocked(room, seat)) return { kind: "VOTE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: "提前举手或放下；顺时针数到本席时锁票，未举手不消耗鬼票" };
     if ((game.phase === "DAY_DISCUSSION" || game.phase === "NOMINATION") && game.aliveSeats.includes(seat)) {
-      if (this.assignment(room, seat).perceivedRoleId === "slayer" && !game.usedAbilitySeats.includes(seat)) return { kind: "SLAYER", legalSeats: room.assignments.map((assignment) => assignment.seat), minTargets: 1, maxTargets: 1, prompt: "你可以公开选择任意玩家发动猎魔人能力（整局一次）" };
+      if (this.visibleAssignment(room, seat)?.perceivedRoleId === "slayer" && !game.usedAbilitySeats.includes(seat)) return { kind: "SLAYER", legalSeats: room.assignments.map((assignment) => assignment.seat), minTargets: 1, maxTargets: 1, prompt: "你可以公开选择任意玩家发动猎魔人能力（整局一次）" };
       return { kind: "DAY", legalSeats: room.assignments.map((assignment) => assignment.seat), minTargets: 0, maxTargets: 1, prompt: "讨论、提名，或确认结束今天" };
     }
     return undefined;
@@ -1415,6 +1535,8 @@ export class RoomService {
   private nightRequirement(room: RoomRecord, seat: number): { count: number; legalSeats: number[]; prompt: string } | undefined {
     if(this.startInfoBlocks(room))return undefined;
     const game = this.requireGame(room);
+    if(game.roleNotifications.some(n=>n.seat===seat&&!n.released))return undefined;
+    if(game.roleNotifications.some(n=>n.seat===seat&&n.acquiredPhase===game.phase&&n.acquiredDay===game.day&&['FIRST_NIGHT','OTHER_NIGHT'].includes(game.phase)))return undefined;
     if (game.pendingRavenkeeperSeat === seat) {
       return { count: 1, legalSeats: room.assignments.map((assignment) => assignment.seat), prompt: "你在夜里死去：选择一名玩家查看其角色" };
     }
@@ -1445,6 +1567,7 @@ export class RoomService {
   private settleNightIfReady(room: RoomRecord): void {
     if(this.startInfoBlocks(room))return;
     const game = this.requireGame(room);
+    if(game.roleNotifications.some(n=>!n.released&&!n.cancelled&&n.notifyEventId))return;
     if (!game.nightOrder) this.initializeNight(room);
     while ((game.nightStep ?? 0) < game.nightOrder!.length) {
       const { seat, roleId } = game.nightOrder![game.nightStep!]!;
@@ -1469,7 +1592,7 @@ export class RoomService {
         const target = targets[0]!;
         const truthful = this.registeredRole(room, target, "ravenkeeper");
         const shown = this.information(room, seat, roleId, truthful, ROLE_CATALOG.map((role) => role.id));
-        this.privateMessage(game, seat, `守鸦人信息：${this.playerLabel(room, target)}是${roleById(shown).name}。`, "INFORMATION",undefined,[target]);
+        this.privateMessage(game, seat, `守鸦人信息：${this.playerLabel(room, target)}是${roleById(shown).name}。`, "INFORMATION",undefined,[target],undefined,undefined,undefined,{kind:'INFORMATION',themeRoleId:roleId,shown:{type:'SHOWN_ROLE',roleId:shown,seat:target}});
         delete game.pendingRavenkeeperSeat;
       } else this.deliverNightInformation(room, seat, roleId);
       game.nightStep! += 1;
@@ -1505,26 +1628,31 @@ export class RoomService {
     let informationTargets:number[]|undefined;
     let spySnapshot: HistoryView["grimoire"];
     let candidateGroup:HistoryView["candidateGroup"];
+    let result:PrivateShownResult|undefined;
     if (roleId === "chef" && first) {
       const evil = room.assignments.filter((assignment) => this.registeredAlignment(room, assignment.seat, `chef-${seat}`) === "EVIL").map((assignment) => assignment.seat);
       const count = evil.filter((candidate) => evil.includes(candidate === room.playerCount ? 1 : candidate + 1)).length;
-      message = `厨师信息：相邻邪恶玩家共有 ${this.information(room, seat, roleId, count, Array.from({ length: room.playerCount + 1 }, (_, index) => index))} 对。`;
+      const shown=this.information(room, seat, roleId, count, Array.from({ length: room.playerCount + 1 }, (_, index) => index));
+      result={type:'COUNT',value:shown as Extract<PrivateShownResult,{type:'COUNT'}>['value']};
+      message = `厨师信息：相邻邪恶玩家共有 ${shown} 对。`;
     } else if (roleId === "empath") {
       const living = [...game.aliveSeats].sort((a, b) => a - b);
       const index = living.indexOf(seat);
       const neighbors = [living[(index - 1 + living.length) % living.length]!, living[(index + 1) % living.length]!];
       informationTargets=[...new Set(neighbors)];
       const count = neighbors.filter((candidate) => this.registeredAlignment(room, candidate, `empath-${seat}`) === "EVIL").length;
-      message = `共情信息：你的两位最近存活邻居中有 ${this.information(room, seat, roleId, count, [0, 1, 2])} 位邪恶。`;
+      const shown=this.information(room, seat, roleId, count, [0, 1, 2]);result={type:'COUNT',value:shown as 0|1|2};
+      message = `共情信息：你的两位最近存活邻居中有 ${shown} 位邪恶。`;
     } else if (roleId === "fortune_teller") {
       informationTargets=[...game.nightSubmissions[seat]!];
       const truthful = game.nightSubmissions[seat]!.some((target) => target === game.redHerringSeat || this.registeredRole(room, target, `fortune_teller-${seat}`, ["DEMON"]) === "imp");
-      message = `占卜结果：${this.information(room, seat, roleId, truthful, [true, false]) ? "是" : "否"}。`;
+      const shown=this.information(room, seat, roleId, truthful, [true, false]);result={type:'DIVINATION',value:shown?'YES':'NO',seats:[informationTargets[0]!,informationTargets[1]!]};
+      message = `占卜结果：${shown ? "是" : "否"}。`;
     } else if (["washerwoman", "librarian", "investigator"].includes(roleId) && first) {
       const sought = roleId === "washerwoman" ? "TOWNSFOLK" : roleId === "librarian" ? "OUTSIDER" : "MINION";
       const registrations = room.assignments.map((candidate) => ({ seat: candidate.seat, roleId: this.registeredRole(room, candidate.seat, `${roleId}-${seat}`, [sought]) }));
       const valid = registrations.filter((candidate) => roleById(candidate.roleId).type === sought);
-      if (valid.length === 0 && !this.isImpaired(room, seat) && roleId === "librarian") message = "图书管理员信息：本局没有外来者。";
+      if (valid.length === 0 && !this.isImpaired(room, seat) && roleId === "librarian") {message = "图书管理员信息：本局没有外来者。";result={type:'NO_OUTSIDER'};}
       else {
         const legalPool = this.isImpaired(room, seat) || !valid.length ? registrations : valid;
         const others = legalPool.filter((candidate) => candidate.seat !== seat);
@@ -1538,6 +1666,7 @@ export class RoomService {
         const pair = shuffled([target.seat, decoy.seat], `${game.storytellerSeed}:${seat}:pair`, game.decisions.length);
         informationTargets=[...pair];
         candidateGroup={kind:"ONE_OF",roleName:roleById(shown).name,seats:[...pair]};
+        result={type:'CANDIDATES',roleId:shown,seats:[pair[0]!,pair[1]!]};
         message = `${roleById(roleId).name}信息：${this.playerLabel(room, pair[0]!)}与${this.playerLabel(room, pair[1]!)}中，有一位是${roleById(shown).name}。`;
       }
     } else if (roleId === "spy") {
@@ -1564,14 +1693,16 @@ export class RoomService {
       });
       // Store the already selected (possibly impaired) night snapshot, never a live grimoire.
       spySnapshot={entries};
+      result={type:'GRIMOIRE',historySeq:(game.privateHistory[seat]?.at(-1)?.seq??0)+1};
       message = `魔典：${entries.map(entry=>`${this.playerLabel(room,entry.seat)} ${entry.roleName} [${entry.reminders.join("、")}]`).join("；")}。`;
     } else if (roleId === "undertaker" && !first && game.lastExecutedSeat !== undefined) {
       informationTargets=[game.lastExecutedSeat];
       const truthful = this.registeredRole(room, game.lastExecutedSeat, "undertaker");
       const shown = this.information(room, seat, roleId, truthful, ROLE_CATALOG.map((role) => role.id));
+      result={type:'SHOWN_ROLE',roleId:shown,seat:game.lastExecutedSeat};
       message = `送葬信息：今天因处决死亡的是${roleById(shown).name}。`;
     }
-    if (message) this.privateMessage(game, seat, message, "INFORMATION",undefined,informationTargets,roleId==="empath"?game.day+1:undefined,spySnapshot,candidateGroup);
+    if (message) this.privateMessage(game, seat, message, "INFORMATION",undefined,informationTargets,roleId==="empath"?game.day+1:undefined,spySnapshot,candidateGroup,result?{kind:'INFORMATION',themeRoleId:roleId,shown:result}:undefined);
   }
 
   private finishNight(room: RoomRecord): void {
@@ -1620,8 +1751,13 @@ export class RoomService {
       const old = successor.roleId;
       successor.roleId = "imp"; successor.perceivedRoleId = "imp"; successor.roleType = "DEMON";
       this.decision(room, successor.seat, "demon-succession", `${old} → imp`, scarlet ? `恶魔死亡前 ${beforeCount} 人存活，健康猩红女郎优先接任。` : "小恶魔自杀，从仍存活的爪牙中选择继任者。");
-      this.privateMessage(game, successor.seat, "恶魔死亡，你已秘密接替成为新的小恶魔。", "ROLE_CHANGE");
-      if (["DAY_DISCUSSION", "NOMINATION", "VOTING"].includes(game.phase)) (game.deferredRoleChanges ??= []).push({ seat: successor.seat, previous, historySeq: game.privateHistory[successor.seat]!.at(-1)!.seq });
+      const daytime=["DAY_DISCUSSION", "NOMINATION", "VOTING"].includes(game.phase),changeId=randomUUID();
+      const entry=this.privateMessage(game, successor.seat, "恶魔死亡，你已秘密接替成为新的小恶魔。", "ROLE_CHANGE",undefined,undefined,undefined,undefined,undefined,{kind:'ROLE_CHANGE',themeRoleId:previous.perceivedRoleId,shown:{type:'NEW_ROLE',roleId:'imp'}});
+      game.roleNotifications.push({changeId,seat:successor.seat,previousAssignment:previous,roleHistorySeq:entry.seq,notifyOn:'NIGHT',released:!daytime,acquiredPhase:game.phase,acquiredDay:game.day});
+      if(daytime)entry.release={type:'NIGHT_NOTIFICATION',changeId};
+      const continuation=this.privateMessage(game,seat,'你的生命已经终结，恶魔的力量仍在延续。','NOTICE',undefined,undefined,undefined,undefined,undefined,{kind:'OLD_DEMON_CONTINUATION',themeRoleId:'imp',shown:{type:'CONTINUATION'}});
+      if(daytime){continuation.awaitingDeathEvent=true;continuation.release={type:'EVENT_RESULT',eventId:''};}
+      else continuation.release={type:'PUBLIC_DAY',day:game.day+1};
     }
   }
 
@@ -1697,6 +1833,20 @@ export class RoomService {
     delete game.pauseReason;
   }
 
+}
+
+function projectSceneDescriptor(p:PrivateSceneDescriptor):PrivateSceneDescriptor {
+  const s=p.shown;
+  const shown:PrivateShownResult=s.type==='IDENTITY'?{type:s.type,roleId:s.roleId,summary:s.summary}
+    :s.type==='TARGET_SUBMITTED'?{type:s.type,action:s.action,seats:[...s.seats]}
+    :s.type==='CANDIDATES'?{type:s.type,roleId:s.roleId,seats:[s.seats[0],s.seats[1]]}
+    :s.type==='COUNT'?{type:s.type,value:s.value}
+    :s.type==='DIVINATION'?{type:s.type,value:s.value,seats:[s.seats[0],s.seats[1]]}
+    :s.type==='SHOWN_ROLE'?{type:s.type,roleId:s.roleId,seat:s.seat}
+    :s.type==='GRIMOIRE'?{type:s.type,historySeq:s.historySeq}
+    :s.type==='EVIL_START'?{type:s.type,infoId:s.infoId}
+    :s.type==='NEW_ROLE'?{type:s.type,roleId:s.roleId}:{type:s.type};
+  return {version:1,id:p.id,kind:p.kind,themeRoleId:p.themeRoleId,shown};
 }
 
 function isSafeExternalUrl(value: string): boolean {

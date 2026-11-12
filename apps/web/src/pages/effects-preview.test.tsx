@@ -2,7 +2,7 @@
 import '@testing-library/jest-dom/vitest';
 import {act,cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {afterEach,expect,test,vi} from 'vitest';
-import {EffectsPreview,effectsScenarios} from './EffectsPreview.js';
+import {EffectsPreview,effectsScenarios,rolePreviewScenarios} from './EffectsPreview.js';
 import {EventStage,eventAt} from '../components/EventStage.js';
 import type {GameView} from '../api.js';
 import type {ExperienceEvent} from '@ravens/contracts';
@@ -23,9 +23,9 @@ test('a shot while reading preserves the reader focus and offers a nonmodal resu
 });
 test('laboratory drives private and public frames with pause, seek and new replay ids without room writes',()=>{
  vi.useFakeTimers();vi.setSystemTime(epoch);const fetch=vi.fn();vi.stubGlobal('fetch',fetch);render(<EffectsPreview/>);
- expect(effectsScenarios).toHaveLength(19);fireEvent.click(screen.getByRole('button',{name:/恶魔攻击/}));expect(screen.getByLabelText('仅你可见的行动回执')).toHaveTextContent('选择已提交');
+ expect(effectsScenarios.some(s=>s.id==='evil-saint')).toBe(true);expect(rolePreviewScenarios.filter(s=>s.scene?.kind==='IDENTITY')).toHaveLength(22);fireEvent.click(screen.getByRole('button',{name:/恶魔攻击/}));expect(screen.getByLabelText('仅本人可见的演示')).toHaveTextContent('选择已提交');
  act(()=>vi.advanceTimersByTime(500));fireEvent.click(screen.getByRole('button',{name:'暂停'}));const control=screen.getByLabelText('演出播放控制'),before=within(control).getByRole('slider').getAttribute('value');act(()=>vi.advanceTimersByTime(1000));expect(within(control).getByRole('slider')).toHaveAttribute('value',before);
- fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'3000'}});expect(screen.queryByLabelText('仅你可见的行动回执')).not.toBeInTheDocument();fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'1000'}});expect(screen.getByLabelText('仅你可见的行动回执')).toBeVisible();
+ fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'3000'}});expect(screen.getByLabelText('仅本人可见的演示')).toBeVisible();fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'1000'}});expect(screen.getByLabelText('仅本人可见的演示')).toBeVisible();
  fireEvent.click(screen.getByRole('button',{name:'重播'}));expect(screen.getByRole('slider',{name:'演出进度'})).toHaveValue('0');fireEvent.click(screen.getByRole('button',{name:'返回目录'}));expect(screen.queryByLabelText('演出播放控制')).toBeNull();expect(fetch).not.toHaveBeenCalled();vi.unstubAllGlobals();
 });
 

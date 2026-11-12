@@ -25,7 +25,7 @@ export function validateStartInfo(room:RoomRecord) {
   const g=room.game;if(!g)return;
   const fail=():never=>{throw new Error(`Room ${room.code}: invalid start information`);};
   const s=g.startInfo;
-  if(![1,2,3].includes(g.presentationVersion)||!s||!['REQUIRED','NONE','LEGACY'].includes(s.mode)||!['WAIT_NIGHTFALL','WAIT_ACK','COMPLETE','CANCELLED'].includes(s.stage)||!s.entries||Array.isArray(s.entries))fail();
+  if(![1,2,3,4].includes(g.presentationVersion)||!s||!['REQUIRED','NONE','LEGACY'].includes(s.mode)||!['WAIT_NIGHTFALL','WAIT_ACK','COMPLETE','CANCELLED'].includes(s.stage)||!s.entries||Array.isArray(s.entries))fail();
   if(s.stage==='CANCELLED'&&g.phase!=='ABORTED'||s.stage==='WAIT_ACK'&&g.phase!=='FIRST_NIGHT'||s.stage==='WAIT_NIGHTFALL'&&!['ROLE_REVEAL','FIRST_NIGHT'].includes(g.phase))fail();
   if(s.releasedAt!==undefined&&!Number.isSafeInteger(s.releasedAt)||s.stage==='WAIT_NIGHTFALL'&&s.releasedAt!==undefined||s.stage==='WAIT_ACK'&&s.releasedAt===undefined)fail();
   if(s.mode!=='REQUIRED') {

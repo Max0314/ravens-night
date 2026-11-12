@@ -1,0 +1,1892 @@
+{
+  "version": 2,
+  "builtAt": "2026-11-12",
+  "sources": [
+    {
+      "id": "3446",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/3446.mp3",
+      "page": "https://bigsoundbank.com/cloche-1h-s3446.html",
+      "author": "Joseph SARDIN & Axeline T.",
+      "license": "CC0-1.0",
+      "licenseURL": "https://bigsoundbank.com/licenses.html",
+      "sha256": "29d82355ff8e37830a36fd6593c6e91d0b3206d5bcfa16bfc6a0d351c02f0b19",
+      "bytes": 297960
+    },
+    {
+      "id": "0164",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/0164.mp3",
+      "page": "https://bigsoundbank.com/turned-page-s0164.html",
+      "author": "DavidGreck",
+      "license": "CC0-1.0",
+      "licenseURL": "https://bigsoundbank.com/licenses.html",
+      "sha256": "bbfe308e17db4bcd402d07c69447c31ec351dc9d4143f8d93c4e567d4c1ac8d5",
+      "bytes": 11183
+    },
+    {
+      "id": "2213",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/2213.mp3",
+      "page": "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseURL": "https://bigsoundbank.com/licenses.html",
+      "sha256": "34167cc701a517c6d8501ec60fee0d90b6edc8f22b1dca1fdd94ce352968cf34",
+      "bytes": 42464
+    },
+    {
+      "id": "2214",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/2214.mp3",
+      "page": "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseURL": "https://bigsoundbank.com/licenses.html",
+      "sha256": "dc522de9c55a7a45102618d4cf156573f0e8c0fef3024075ca7b099ccf2e599a",
+      "bytes": 51104
+    },
+    {
+      "id": "2211",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/2211.mp3",
+      "page": "https://bigsoundbank.com/pages-that-turn-4-s2211.html",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseURL": "https://bigsoundbank.com/licenses.html",
+      "sha256": "64741ee40d6d5f149abf7ce559779ab9a82370f984a8e297d839612ce9f00e03",
+      "bytes": 77024
+    },
+    {
+      "id": "2181",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/2181.mp3",
+      "page": "https://bigsoundbank.com/man-cough-3-s2181.html",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseURL": "https://bigsoundbank.com/licenses.html",
+      "sha256": "19fe719fb9cb314ccf4babda05e7443b0a1c3227f6ba3a6232427a073d271e51",
+      "bytes": 39636
+    },
+    {
+      "id": "2186",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/2186.mp3",
+      "page": "https://bigsoundbank.com/man-cough-8-s2186.html",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseURL": "https://bigsoundbank.com/licenses.html",
+      "sha256": "1b10a6f477932f9eb0496a8e7c05c2886674de8d2273267728c909125a6e0bfc",
+      "bytes": 40596
+    },
+    {
+      "id": "2187",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/2187.mp3",
+      "page": "https://bigsoundbank.com/man-cough-9-s2187.html",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseURL": "https://bigsoundbank.com/licenses.html",
+      "sha256": "a1d27bb2af2af8b61f43b86bab785b3c80fd54b0d3e258da3169f383525876eb",
+      "bytes": 24276
+    },
+    {
+      "id": "kenney-v1",
+      "page": "https://kenney.nl/assets/impact-sounds",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8"
+    },
+    {
+      "id": "yelling-v1",
+      "page": "https://opengameart.org/content/male-gruntyelling-sounds",
+      "url": "https://opengameart.org/content/male-gruntyelling-sounds",
+      "author": "HaelDB and vocalists",
+      "license": "CC0-1.0",
+      "sha256": "e9100a4e3b9dcd146993089970dc6097dcf9935fa4683b196040012bad65d67a"
+    },
+    {
+      "id": "glass-v1",
+      "page": "https://opengameart.org/content/glass-break",
+      "url": "https://opengameart.org/content/glass-break",
+      "author": "TinyWorlds",
+      "license": "CC0-1.0",
+      "sha256": "37d29069c885afe3f7ca639293fa679fb6511a6a1e54316f0e403e4493f502b3"
+    }
+  ],
+  "voice": {
+    "text": "My lord.",
+    "generator": "Microsoft Zira Desktop; unchanged accepted v1 processing",
+    "originalSha256": "0c3c7d0010c4a23ce74590972c85a41ad5214e1da9be905434e7e665ca147140"
+  },
+  "butlerTiming": {
+    "voiceAt": 1450,
+    "spokenDurationMs": 768,
+    "holdStart": 1400,
+    "holdMs": 868,
+    "riseAt": 2268,
+    "durationMs": 4002
+  },
+  "files": [
+    {
+      "id": "night-bell",
+      "file": "night-bell.mp3",
+      "sha256": "cca671b3e3139aaff5764d143812f2d2378f530491ccb62a311f18db870c0161",
+      "bytes": 89068,
+      "durationSeconds": 5.5,
+      "trimStartMs": 0,
+      "trimEndMs": 5500,
+      "cueMs": 0,
+      "decodedBytes": 970200,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -8.67,
+      "rmsDbFS": -19.66,
+      "integratedLUFS": -20.1,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/cloche-1h-s3446.html"
+      ],
+      "layers": [
+        "Real recorded bronze strike and 137Hz recorded hum-note body; tense dark balance, 5.5s resonant decay"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "dawn-bell",
+      "file": "dawn-bell.mp3",
+      "sha256": "6e82020e3e508875689196ad596d1abac01315725a1220690fa4a2ecf62ba6ef",
+      "bytes": 119579,
+      "durationSeconds": 7.4,
+      "trimStartMs": 0,
+      "trimEndMs": 7400,
+      "cueMs": 0,
+      "decodedBytes": 1305360,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.05,
+      "rmsDbFS": -20.95,
+      "integratedLUFS": -21.3,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/cloche-1h-s3446.html"
+      ],
+      "layers": [
+        "Real recorded bell and 153Hz recorded hum-note body; warmer dawn balance, 7.4s resonant decay"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "gun-cock",
+      "file": "gun-cock.mp3",
+      "sha256": "a1f4dd491d50090233c37840911b5745f732f037392e84e964fe6ee34dc676d0",
+      "bytes": 2968,
+      "durationSeconds": 0.12,
+      "trimStartMs": 0,
+      "trimEndMs": 120,
+      "cueMs": 0,
+      "decodedBytes": 21168,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -15.91,
+      "rmsDbFS": -24.4,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Kenney metal latch, short crisp mechanical cock"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "shot",
+      "file": "shot.mp3",
+      "sha256": "5d82dd2642268047a98adc8fb0192463a45dc7b05a10f8dac948b1ce54557386",
+      "bytes": 14671,
+      "durationSeconds": 0.85,
+      "trimStartMs": 0,
+      "trimEndMs": 850,
+      "cueMs": 0,
+      "decodedBytes": 149940,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -8.22,
+      "rmsDbFS": -20.42,
+      "integratedLUFS": -22.1,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Existing accepted impulse sharpened, no vocal or glass"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "glass-hit",
+      "file": "glass-hit.mp3",
+      "sha256": "05d2adec3631d530491f1f3ef338ed9bc65df46a7ecad0df3043c047e84a3f96",
+      "bytes": 11327,
+      "durationSeconds": 0.65,
+      "trimStartMs": 0,
+      "trimEndMs": 650,
+      "cueMs": 0,
+      "decodedBytes": 114660,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.83,
+      "rmsDbFS": -23.95,
+      "integratedLUFS": -22.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/glass-break"
+      ],
+      "layers": [
+        "Recorded glass initial fracture"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "glass-shards",
+      "file": "glass-shards.mp3",
+      "sha256": "d3bd1a7b9ff50ca4d16b4fbdccb9608a7e55600ba2dbb2d2ede5d53678a9c961",
+      "bytes": 19687,
+      "durationSeconds": 1.1688,
+      "trimStartMs": 0,
+      "trimEndMs": 1169,
+      "cueMs": 0,
+      "decodedBytes": 206184,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -12.87,
+      "rmsDbFS": -24.32,
+      "integratedLUFS": -21.9,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/glass-break"
+      ],
+      "layers": [
+        "Recorded glass pieces and trailing debris"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "hurt-shot-1",
+      "file": "hurt-shot-1.mp3",
+      "sha256": "bb3dca365820fb16f13b0eab44bfa8dc15fe38e50e3fe9e0e17492887649efb0",
+      "bytes": 7984,
+      "durationSeconds": 0.42,
+      "trimStartMs": 0,
+      "trimEndMs": 420,
+      "cueMs": 0,
+      "decodedBytes": 74088,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.42,
+      "rmsDbFS": -22.01,
+      "integratedLUFS": -21.7,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/male-gruntyelling-sounds"
+      ],
+      "layers": [
+        "Distinct recorded sharp male hurt vocal 3grunt3; no deep low-pass"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "hurt-shot-2",
+      "file": "hurt-shot-2.mp3",
+      "sha256": "9c7d5af023171af57a4fdcb5ec8b4920694cda7d620c9faf150f842b4650b39e",
+      "bytes": 4640,
+      "durationSeconds": 0.2164,
+      "trimStartMs": 0,
+      "trimEndMs": 216,
+      "cueMs": 0,
+      "decodedBytes": 38172,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.44,
+      "rmsDbFS": -22.09,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/male-gruntyelling-sounds"
+      ],
+      "layers": [
+        "Distinct recorded sharp male hurt vocal 3grunt4; no deep low-pass"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "hurt-shot-3",
+      "file": "hurt-shot-3.mp3",
+      "sha256": "29e4ee761c765d664917f5e33756afb4c31f98c1f5358483fa195d3d627d2210",
+      "bytes": 7984,
+      "durationSeconds": 0.42,
+      "trimStartMs": 0,
+      "trimEndMs": 420,
+      "cueMs": 0,
+      "decodedBytes": 74088,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.45,
+      "rmsDbFS": -24.44,
+      "integratedLUFS": -24.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/male-gruntyelling-sounds"
+      ],
+      "layers": [
+        "Distinct recorded sharp male hurt vocal 3grunt6; no deep low-pass"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "hurt-night-1",
+      "file": "hurt-night-1.mp3",
+      "sha256": "ee96bdcece87660fb967bfc848469509425d5f43b3b28dc96bbd066ce2869e2b",
+      "bytes": 15925,
+      "durationSeconds": 0.9301,
+      "trimStartMs": 0,
+      "trimEndMs": 930,
+      "cueMs": 0,
+      "decodedBytes": 164072,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -8.61,
+      "rmsDbFS": -21.8,
+      "integratedLUFS": -21.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/male-gruntyelling-sounds"
+      ],
+      "layers": [
+        "Distinct recorded longer night-death vocal 1yell3"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "hurt-night-2",
+      "file": "hurt-night-2.mp3",
+      "sha256": "e112d35b9e4a78381e19890b7e67f31dc34120d5d07d4ecc08ea69a9a4fd4845",
+      "bytes": 18015,
+      "durationSeconds": 1.062,
+      "trimStartMs": 0,
+      "trimEndMs": 1062,
+      "cueMs": 0,
+      "decodedBytes": 187328,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.68,
+      "rmsDbFS": -22.02,
+      "integratedLUFS": -21.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/male-gruntyelling-sounds"
+      ],
+      "layers": [
+        "Distinct recorded longer night-death vocal 2yell11"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "hurt-night-3",
+      "file": "hurt-night-3.mp3",
+      "sha256": "7894ed800abe11ad8958efa97ee033907a35f20efeef9b5bc0e1fdb6af7f71c5",
+      "bytes": 22612,
+      "durationSeconds": 1.35,
+      "trimStartMs": 0,
+      "trimEndMs": 1350,
+      "cueMs": 0,
+      "decodedBytes": 238140,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -12.22,
+      "rmsDbFS": -22.08,
+      "integratedLUFS": -21.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/male-gruntyelling-sounds"
+      ],
+      "layers": [
+        "Distinct recorded longer night-death vocal 3yell1"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "cough-1",
+      "file": "cough-1.mp3",
+      "sha256": "9dda871d23f413c628f21a1e2edcc974abc45bd6753fae4b6f171584900d442b",
+      "bytes": 10492,
+      "durationSeconds": 0.6,
+      "trimStartMs": 0,
+      "trimEndMs": 600,
+      "cueMs": 0,
+      "decodedBytes": 105840,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -10.33,
+      "rmsDbFS": -26.29,
+      "integratedLUFS": -25.2,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/man-cough-3-s2181.html"
+      ],
+      "layers": [
+        "Recorded single cough; symbolic poisoner-only feedback"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "cough-2",
+      "file": "cough-2.mp3",
+      "sha256": "9e7230c28d40c38a303ec2b214344ca96aa32c86c69295d48b68db515c127ec8",
+      "bytes": 10492,
+      "durationSeconds": 0.6,
+      "trimStartMs": 0,
+      "trimEndMs": 600,
+      "cueMs": 0,
+      "decodedBytes": 105840,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -10.44,
+      "rmsDbFS": -27.16,
+      "integratedLUFS": -27.1,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/man-cough-8-s2186.html"
+      ],
+      "layers": [
+        "Recorded single cough; symbolic poisoner-only feedback"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "cough-3",
+      "file": "cough-3.mp3",
+      "sha256": "6ffaf4defaf24f0387add8c18fa8cd79ce40ac0c59a34d202cfd1a31f6924b25",
+      "bytes": 5894,
+      "durationSeconds": 0.3,
+      "trimStartMs": 0,
+      "trimEndMs": 300,
+      "cueMs": 0,
+      "decodedBytes": 52920,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -10.45,
+      "rmsDbFS": -28.94,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/man-cough-9-s2187.html"
+      ],
+      "layers": [
+        "Recorded single cough; symbolic poisoner-only feedback"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "guillotine-tension",
+      "file": "guillotine-tension.mp3",
+      "sha256": "a1a0f364c4a0b15b6071a85d6b3ad9cfef3e662fd9c85b19db2d2cd39c42e358",
+      "bytes": 10492,
+      "durationSeconds": 0.6,
+      "trimStartMs": 0,
+      "trimEndMs": 600,
+      "cueMs": 0,
+      "decodedBytes": 105840,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -19.0,
+      "rmsDbFS": -25.15,
+      "integratedLUFS": -29.9,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Wood frame stress and rope-wheel tension"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "guillotine-unlock",
+      "file": "guillotine-unlock.mp3",
+      "sha256": "f0510fbc6e7ee89a769572a3047499b26681f3a14b6307e8650f8443599b0f53",
+      "bytes": 3804,
+      "durationSeconds": 0.18,
+      "trimStartMs": 0,
+      "trimEndMs": 180,
+      "cueMs": 0,
+      "decodedBytes": 31752,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -14.65,
+      "rmsDbFS": -24.69,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Small metal latch release"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "guillotine-blade",
+      "file": "guillotine-blade.mp3",
+      "sha256": "40bb0815c7763f0a739903312ace3aca3a5246bf19885cc4b4af3b8eb16a5f4d",
+      "bytes": 6312,
+      "durationSeconds": 0.32,
+      "trimStartMs": 0,
+      "trimEndMs": 320,
+      "cueMs": 0,
+      "decodedBytes": 56448,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -15.77,
+      "rmsDbFS": -24.2,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Fast blade air with steel whisper"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "guillotine-impact",
+      "file": "guillotine-impact.mp3",
+      "sha256": "5591b85427c29de2784be54bdb116a0ee9faaac92a76c08959388deb94d19692",
+      "bytes": 14671,
+      "durationSeconds": 0.85,
+      "trimStartMs": 0,
+      "trimEndMs": 850,
+      "cueMs": 0,
+      "decodedBytes": 149940,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -8.29,
+      "rmsDbFS": -20.58,
+      "integratedLUFS": -22.0,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Hard blade in wood, dry platform punch, no rope strangling"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "guillotine-wind",
+      "file": "guillotine-wind.mp3",
+      "sha256": "4b003e87828089ee69d1876939bfb60551936c86ac4039f65a15c44a6a0b8f8b",
+      "bytes": 21776,
+      "durationSeconds": 1.3,
+      "trimStartMs": 0,
+      "trimEndMs": 1300,
+      "cueMs": 0,
+      "decodedBytes": 229320,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -18.11,
+      "rmsDbFS": -24.86,
+      "integratedLUFS": -23.1,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Empty platform wind and drifting dust"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "poison-bottle",
+      "file": "poison-bottle.mp3",
+      "sha256": "307f522ef8c095232a7d5b0608dd318b510edcce1e3418cb3fe54b591b9b5bac",
+      "bytes": 10492,
+      "durationSeconds": 0.6,
+      "trimStartMs": 0,
+      "trimEndMs": 600,
+      "cueMs": 0,
+      "decodedBytes": 105840,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -11.4,
+      "rmsDbFS": -24.15,
+      "integratedLUFS": -22.6,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://opengameart.org/content/glass-break"
+      ],
+      "layers": [
+        "Recorded bottle-like glass fracture"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "poison-bubbles",
+      "file": "poison-bubbles.mp3",
+      "sha256": "c6026f26529e0e317cb0895dd39a84afa2ba99b8f07105e179ba73d25963e1e6",
+      "bytes": 20105,
+      "durationSeconds": 1.2,
+      "trimStartMs": 0,
+      "trimEndMs": 1200,
+      "cueMs": 0,
+      "decodedBytes": 211680,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -18.84,
+      "rmsDbFS": -24.38,
+      "integratedLUFS": -25.0,
+      "license": "Original project sound design",
+      "sourceURL": [],
+      "layers": [
+        "Authored gurgling liquid bubbles; bounded loop"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "wing-flap",
+      "file": "wing-flap.mp3",
+      "sha256": "9c366dcf22b240aa269df505fc83af3d7df1c6c20a25bf44328ecd02c49f4153",
+      "bytes": 8402,
+      "durationSeconds": 0.45,
+      "trimStartMs": 0,
+      "trimEndMs": 450,
+      "cueMs": 0,
+      "decodedBytes": 79380,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -14.51,
+      "rmsDbFS": -24.09,
+      "integratedLUFS": -26.0,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Recorded paper/cloth-like feather flutter and soft wing-root thump"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "wing-air",
+      "file": "wing-air.mp3",
+      "sha256": "305c098416ecc5231d19f666c4767659e5c9e90058a163544949a32d28c585a5",
+      "bytes": 11327,
+      "durationSeconds": 0.65,
+      "trimStartMs": 0,
+      "trimEndMs": 650,
+      "cueMs": 0,
+      "decodedBytes": 114660,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -15.77,
+      "rmsDbFS": -24.22,
+      "integratedLUFS": -22.1,
+      "license": "Original project sound design",
+      "sourceURL": [],
+      "layers": [
+        "Authored broad wing air displacement, no explosive boom"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "wing-root",
+      "file": "wing-root.mp3",
+      "sha256": "88133e1c0a44f62fb6bd5d4f4b669e3452dd2aa3b976b8d9089c5e42679d7428",
+      "bytes": 6730,
+      "durationSeconds": 0.35,
+      "trimStartMs": 0,
+      "trimEndMs": 350,
+      "cueMs": 0,
+      "decodedBytes": 61740,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -15.56,
+      "rmsDbFS": -24.12,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Kenney soft flap body, low root pressure"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "slash-left",
+      "file": "slash-left.mp3",
+      "sha256": "af71a9a4524f93c794ef564647caf378e96b358459b092fc5d6f2721a17706a8",
+      "bytes": 8402,
+      "durationSeconds": 0.45,
+      "trimStartMs": 0,
+      "trimEndMs": 450,
+      "cueMs": 0,
+      "decodedBytes": 79380,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -13.75,
+      "rmsDbFS": -24.1,
+      "integratedLUFS": -23.1,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html"
+      ],
+      "layers": [
+        "Paper fibre rip texture and fast diagonal air, no confirmed kill vocal"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "slash-right",
+      "file": "slash-right.mp3",
+      "sha256": "40467de4999c9d8a78e0109293304bf2a7928027b2f46bb716e64b46601efe05",
+      "bytes": 8402,
+      "durationSeconds": 0.45,
+      "trimStartMs": 0,
+      "trimEndMs": 450,
+      "cueMs": 0,
+      "decodedBytes": 79380,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -14.24,
+      "rmsDbFS": -24.13,
+      "integratedLUFS": -22.6,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html"
+      ],
+      "layers": [
+        "Paper fibre rip texture and fast diagonal air, no confirmed kill vocal"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "blood-impact",
+      "file": "blood-impact.mp3",
+      "sha256": "438134ac2d9a8ad4d4485cafd6fbf7f13c2296171908cd2012679371a6854582",
+      "bytes": 6730,
+      "durationSeconds": 0.35,
+      "trimStartMs": 0,
+      "trimEndMs": 350,
+      "cueMs": 0,
+      "decodedBytes": 61740,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -16.39,
+      "rmsDbFS": -24.59,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Authored wet impact and recorded body punch; public death only"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "bone-crack",
+      "file": "bone-crack.mp3",
+      "sha256": "30ccb585e81b81f42e7f673b0dda47f6924a3fb70efb19dae454d5647c1c301f",
+      "bytes": 4640,
+      "durationSeconds": 0.22,
+      "trimStartMs": 0,
+      "trimEndMs": 220,
+      "cueMs": 0,
+      "decodedBytes": 38808,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -15.11,
+      "rmsDbFS": -25.36,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Recorded dry crack and short body resonance; public death only"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "butler-voice",
+      "file": "butler-voice.mp3",
+      "sha256": "5da16a6c761c0e9130f2f9c313f0db0004a02bdb59f868c48fd176387614ea12",
+      "bytes": 13417,
+      "durationSeconds": 0.7681,
+      "trimStartMs": 0,
+      "trimEndMs": 768,
+      "cueMs": 0,
+      "decodedBytes": 135496,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.44,
+      "rmsDbFS": -21.65,
+      "integratedLUFS": -21.5,
+      "license": "Original project sound design",
+      "sourceURL": [],
+      "layers": [
+        "Existing accepted My lord. voice; Microsoft Zira Desktop, original v1 processing, unchanged speaking tempo"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "paper-turn-1",
+      "file": "paper-turn-1.mp3",
+      "sha256": "9e66865021c5d2a116511b9e7d6c1af85e4279da44f7c0aa6be721ec2da1de93",
+      "bytes": 7984,
+      "durationSeconds": 0.4302,
+      "trimStartMs": 0,
+      "trimEndMs": 430,
+      "cueMs": 0,
+      "decodedBytes": 75880,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -14.64,
+      "rmsDbFS": -27.88,
+      "integratedLUFS": -30.1,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/turned-page-s0164.html"
+      ],
+      "layers": [
+        "Actual close-recorded paperback page turn, take 1"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "paper-turn-2",
+      "file": "paper-turn-2.mp3",
+      "sha256": "89c4d7ab0d93e9062e7cc1f39fb31b369ba81de5f1476edbe9f33a2428f6161f",
+      "bytes": 10492,
+      "durationSeconds": 0.58,
+      "trimStartMs": 0,
+      "trimEndMs": 580,
+      "cueMs": 0,
+      "decodedBytes": 102312,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -14.27,
+      "rmsDbFS": -27.88,
+      "integratedLUFS": -23.7,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html"
+      ],
+      "layers": [
+        "Actual close-recorded paperback page turn, take 2"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "paper-turn-3",
+      "file": "paper-turn-3.mp3",
+      "sha256": "b4924b1c978e16069088633cc53fc9fe0c32bebebc11105faa7906ef42fd0095",
+      "bytes": 10492,
+      "durationSeconds": 0.58,
+      "trimStartMs": 0,
+      "trimEndMs": 580,
+      "cueMs": 0,
+      "decodedBytes": 102312,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -12.52,
+      "rmsDbFS": -28.35,
+      "integratedLUFS": -23.9,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html"
+      ],
+      "layers": [
+        "Actual close-recorded paperback page turn, take 3"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "paper-turn-4",
+      "file": "paper-turn-4.mp3",
+      "sha256": "9b1bfe102b5277fe5f867e00d5930d6994d9814c3c0506885c72033f56cda324",
+      "bytes": 10492,
+      "durationSeconds": 0.58,
+      "trimStartMs": 0,
+      "trimEndMs": 580,
+      "cueMs": 0,
+      "decodedBytes": 102312,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -12.65,
+      "rmsDbFS": -27.83,
+      "integratedLUFS": -23.5,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Actual close-recorded paperback page turn, take 4"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "paper-lift-1",
+      "file": "paper-lift-1.mp3",
+      "sha256": "0e6dd29b6383929212b7badc9992f89809f6e076d5cf5e03dabfff7e6e3fc6c8",
+      "bytes": 2968,
+      "durationSeconds": 0.12,
+      "trimStartMs": 0,
+      "trimEndMs": 120,
+      "cueMs": 0,
+      "decodedBytes": 21168,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -24.94,
+      "rmsDbFS": -30.42,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/turned-page-s0164.html"
+      ],
+      "layers": [
+        "First lift of real paper"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "paper-lift-2",
+      "file": "paper-lift-2.mp3",
+      "sha256": "73444fc3668f30a132b20a3120c3e5ec39cd7e97e0dbb136d13461c563a71a43",
+      "bytes": 2968,
+      "durationSeconds": 0.12,
+      "trimStartMs": 0,
+      "trimEndMs": 120,
+      "cueMs": 0,
+      "decodedBytes": 21168,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -24.13,
+      "rmsDbFS": -30.99,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html"
+      ],
+      "layers": [
+        "First lift of real paper"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "ui-press",
+      "file": "ui-press.mp3",
+      "sha256": "d2032e5bf9b2e48b975893f717d085a239d9a117f9f7fc8d67b84494d8c433d2",
+      "bytes": 1714,
+      "durationSeconds": 0.05,
+      "trimStartMs": 0,
+      "trimEndMs": 50,
+      "cueMs": 0,
+      "decodedBytes": 8820,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -28.44,
+      "rmsDbFS": -34.67,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Short semantic press foley, not a nomination or preparation impact"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "ui-select",
+      "file": "ui-select.mp3",
+      "sha256": "aa64e7e1d961538ccb64978e18b98f5a8bbaaa4aaa302c8539ba9e05d1d84203",
+      "bytes": 2132,
+      "durationSeconds": 0.065,
+      "trimStartMs": 0,
+      "trimEndMs": 65,
+      "cueMs": 0,
+      "decodedBytes": 11464,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -24.87,
+      "rmsDbFS": -35.22,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Short semantic select foley, not a nomination or preparation impact"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "ui-open",
+      "file": "ui-open.mp3",
+      "sha256": "b635647adbdc0d96679ebe30c269efa007f4bc881b50d1dde6abe00133c0c60d",
+      "bytes": 2550,
+      "durationSeconds": 0.095,
+      "trimStartMs": 0,
+      "trimEndMs": 95,
+      "cueMs": 0,
+      "decodedBytes": 16760,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -26.94,
+      "rmsDbFS": -34.53,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Short semantic open foley, not a nomination or preparation impact"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "ui-close",
+      "file": "ui-close.mp3",
+      "sha256": "6b48d698a4ea6b76d4c41aa9948dd0b7a07e7b26c27af0ed0caa9d4e5d43cc78",
+      "bytes": 2550,
+      "durationSeconds": 0.09,
+      "trimStartMs": 0,
+      "trimEndMs": 90,
+      "cueMs": 0,
+      "decodedBytes": 15876,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -27.65,
+      "rmsDbFS": -35.08,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Short semantic close foley, not a nomination or preparation impact"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "ui-success",
+      "file": "ui-success.mp3",
+      "sha256": "f540b46ce4f303425ed9d70828f6efb3c81b276ded552028b1a253bea1aed5a2",
+      "bytes": 2968,
+      "durationSeconds": 0.12,
+      "trimStartMs": 0,
+      "trimEndMs": 120,
+      "cueMs": 0,
+      "decodedBytes": 21168,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -27.98,
+      "rmsDbFS": -34.64,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Short semantic success foley, not a nomination or preparation impact"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "ui-error",
+      "file": "ui-error.mp3",
+      "sha256": "5fa111640293885fa1caa69d2074a1bc1bfa625d0a76f35c06339d4d347bb3ed",
+      "bytes": 3386,
+      "durationSeconds": 0.14,
+      "trimStartMs": 0,
+      "trimEndMs": 140,
+      "cueMs": 0,
+      "decodedBytes": 24696,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -28.98,
+      "rmsDbFS": -34.4,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Short semantic error foley, not a nomination or preparation impact"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "nomination",
+      "file": "nomination.mp3",
+      "sha256": "378a3d22a5b56580c6e15cb7e3b80848b8dda227e9ec1e7f9de440949f4b8a2e",
+      "bytes": 2968,
+      "durationSeconds": 0.13,
+      "trimStartMs": 0,
+      "trimEndMs": 130,
+      "cueMs": 0,
+      "decodedBytes": 22932,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -20.06,
+      "rmsDbFS": -25.62,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Dry wooden gavel announcement"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "vote-stamp",
+      "file": "vote-stamp.mp3",
+      "sha256": "aba7de2438544026773ae10aba7291d9c57c0c32fd554924e13838e22f23d716",
+      "bytes": 3804,
+      "durationSeconds": 0.16,
+      "trimStartMs": 0,
+      "trimEndMs": 160,
+      "cueMs": 0,
+      "decodedBytes": 28224,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -22.7,
+      "rmsDbFS": -26.17,
+      "integratedLUFS": null,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Paper stamp seal, distinct from nomination"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "shield",
+      "file": "shield.mp3",
+      "sha256": "c531a424d775c686f429277944480ce5b303d4600c45692fb0728b4a8acb9e02",
+      "bytes": 28464,
+      "durationSeconds": 1.7,
+      "trimStartMs": 0,
+      "trimEndMs": 1700,
+      "cueMs": 0,
+      "decodedBytes": 299880,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -14.24,
+      "rmsDbFS": -24.18,
+      "integratedLUFS": -24.5,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds"
+      ],
+      "layers": [
+        "Recorded steel shield with established protection resonance"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "good",
+      "file": "good.mp3",
+      "sha256": "3c95e7839b00fb394dfa7bc72560f352833279c2e6f5c23b2c71fff0de87712d",
+      "bytes": 65244,
+      "durationSeconds": 4.0,
+      "trimStartMs": 0,
+      "trimEndMs": 4000,
+      "cueMs": 0,
+      "decodedBytes": 705600,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -14.67,
+      "rmsDbFS": -23.8,
+      "integratedLUFS": -23.5,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/male-gruntyelling-sounds",
+        "https://opengameart.org/content/glass-break"
+      ],
+      "layers": [
+        "Existing original good victory composition, separately mastered"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "evil",
+      "file": "evil.mp3",
+      "sha256": "78190c01b3b71613bbc871565f4b4db0d25c26de308bf188377203f2a0c213a1",
+      "bytes": 65244,
+      "durationSeconds": 4.0,
+      "trimStartMs": 0,
+      "trimEndMs": 4000,
+      "cueMs": 0,
+      "decodedBytes": 705600,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -13.92,
+      "rmsDbFS": -23.91,
+      "integratedLUFS": -25.3,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/male-gruntyelling-sounds",
+        "https://opengameart.org/content/glass-break"
+      ],
+      "layers": [
+        "Existing original evil victory composition, separately mastered"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-washerwoman",
+      "file": "role-washerwoman.mp3",
+      "sha256": "d7b1adc2bf592edd992e1aab2cc335e6dbaf04e6336e9272beec251bc7affa24",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -6.63,
+      "rmsDbFS": -19.97,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role washerwoman individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-librarian",
+      "file": "role-librarian.mp3",
+      "sha256": "f45501d4c6b64472f41cd13d0794ba06ed9545f3d57421dba5f658ff92186887",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.29,
+      "rmsDbFS": -23.27,
+      "integratedLUFS": -19.3,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role librarian individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-investigator",
+      "file": "role-investigator.mp3",
+      "sha256": "a313590c682f470a58346aeaa889f0bcadd73dd0cf99788984b0f06aa21f11b2",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -8.55,
+      "rmsDbFS": -22.61,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role investigator individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-chef",
+      "file": "role-chef.mp3",
+      "sha256": "fafb938fd592e658dee1d5bc7814557131d4310d3296b0dc8f3e1650c4b0c312",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -6.71,
+      "rmsDbFS": -20.86,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role chef individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-empath",
+      "file": "role-empath.mp3",
+      "sha256": "284f445d832a0a4674147bc8b08ea2c45fa19fe6ca985929adfde4cf44af8389",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -6.58,
+      "rmsDbFS": -17.69,
+      "integratedLUFS": -19.6,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role empath individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-fortune_teller",
+      "file": "role-fortune_teller.mp3",
+      "sha256": "bec1d1b3a5b6c79f7529decf13aaba8a684c49def92a41be84ba88a7678470b3",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -10.92,
+      "rmsDbFS": -19.23,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role fortune_teller individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-undertaker",
+      "file": "role-undertaker.mp3",
+      "sha256": "4092dca9950cafb6a65696970aa3accf8f5e9151432115035ca0f55c24236c9b",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -6.44,
+      "rmsDbFS": -18.8,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role undertaker individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-monk",
+      "file": "role-monk.mp3",
+      "sha256": "6896d605279fa5913845bae9c56a547faacb612980a824d0fb6ffd468da76259",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -7.12,
+      "rmsDbFS": -21.08,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role monk individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-ravenkeeper",
+      "file": "role-ravenkeeper.mp3",
+      "sha256": "e1f3f3d24e553f215d74651567dbcb305126ca894f15425a9855e6e6330b9646",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -5.19,
+      "rmsDbFS": -18.48,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role ravenkeeper individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-virgin",
+      "file": "role-virgin.mp3",
+      "sha256": "1477c63a28d1d7f654b2b47cecfa55f98e88a72b61e96d90fb95a15bec3f60a6",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -8.51,
+      "rmsDbFS": -20.86,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role virgin individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-slayer",
+      "file": "role-slayer.mp3",
+      "sha256": "3ca1c4102e8dcb9e23cef3720c4960df80bcf2538c7819b1010788f6aa9436a7",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.03,
+      "rmsDbFS": -24.01,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role slayer individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-soldier",
+      "file": "role-soldier.mp3",
+      "sha256": "27ab0e78dc6dc99c9c3218946603bfb40e426935e9558a4072a15bda5fea31bf",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -5.62,
+      "rmsDbFS": -19.47,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role soldier individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-mayor",
+      "file": "role-mayor.mp3",
+      "sha256": "c7f9ca2d5a821f6740ae96abd36cabe91ebc4172434a2bf24b4533a730e1ef32",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.07,
+      "rmsDbFS": -24.84,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role mayor individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-butler",
+      "file": "role-butler.mp3",
+      "sha256": "86193bc15e60aae0ad6f83da88fe3531146420241b439592c966c5ea016f8e9e",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -8.31,
+      "rmsDbFS": -21.82,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role butler individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-drunk",
+      "file": "role-drunk.mp3",
+      "sha256": "e2e801d5949c437ff73157c1a191d86ab6baf1b87a265c2bb8e63ce9fe62617d",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -7.57,
+      "rmsDbFS": -23.82,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role drunk individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-recluse",
+      "file": "role-recluse.mp3",
+      "sha256": "d0f6ed68534be2abd7d0b282111cadb5e065ac95da69bdee12a24d18e272f3bf",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -11.43,
+      "rmsDbFS": -22.94,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role recluse individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-saint",
+      "file": "role-saint.mp3",
+      "sha256": "d9eca575de0947660e863ac27385aa23f8d1a50e159e2d197e2da28753cff00a",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -9.07,
+      "rmsDbFS": -19.36,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role saint individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-poisoner",
+      "file": "role-poisoner.mp3",
+      "sha256": "d72252ab806edca7bf6d8be8509b55e1f980591c21231d00cf5221b28620d463",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -7.96,
+      "rmsDbFS": -21.95,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role poisoner individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-spy",
+      "file": "role-spy.mp3",
+      "sha256": "a6234801ff60606f0a5fecb286d94543f117da46fa80a15dbf43c3caea84154e",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -5.42,
+      "rmsDbFS": -23.97,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role spy individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-scarlet_woman",
+      "file": "role-scarlet_woman.mp3",
+      "sha256": "5087cabb1daf368ede94270d23ca5b471920aa0d73d00f603121e8b949b4b87c",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -7.94,
+      "rmsDbFS": -17.65,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role scarlet_woman individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-baron",
+      "file": "role-baron.mp3",
+      "sha256": "5cd78e88710bcd35b3ea2be2b5d9e3a8cb70c2c71afa2695b6f4c3695b010466",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -7.55,
+      "rmsDbFS": -21.65,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role baron individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    },
+    {
+      "id": "role-imp",
+      "file": "role-imp.mp3",
+      "sha256": "71c4297ed3726fb90681158c5656227c211ee446baf798708395d11d7c8e1e6d",
+      "bytes": 42674,
+      "durationSeconds": 2.6,
+      "trimStartMs": 0,
+      "trimEndMs": 2600,
+      "cueMs": 0,
+      "decodedBytes": 458640,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -7.58,
+      "rmsDbFS": -19.11,
+      "integratedLUFS": -19.4,
+      "license": "CC0-1.0 source foley + original composition",
+      "sourceURL": [
+        "https://kenney.nl/assets/impact-sounds",
+        "https://opengameart.org/content/glass-break",
+        "https://bigsoundbank.com/turned-page-s0164.html",
+        "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+        "https://bigsoundbank.com/pages-that-turn-7-s2214.html",
+        "https://bigsoundbank.com/pages-that-turn-4-s2211.html"
+      ],
+      "layers": [
+        "Role imp individually timed material choreography, scheduled at scene500ms; no hidden result or target voice"
+      ],
+      "rebuild": "python scripts/build-effects-v2.py <external-cache> <v1-source-cache>"
+    }
+  ],
+  "totalBytes": 1682288
+}

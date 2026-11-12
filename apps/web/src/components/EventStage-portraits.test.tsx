@@ -11,15 +11,15 @@ function event(kind:ExperienceEvent['kind'],rest:Partial<ExperienceEvent>={}):Ex
 function game(events:ExperienceEvent[]):GameView{return{gameId:'portraits',serverNow:epoch,phase:'DAY_DISCUSSION',day:2,events,readyCount:0,aliveCount:3,seats:[1,2,3].map(seat=>({seat,nickname:`玩家${seat}`,avatar:`/avatars/${seat}.webp`,alive:true,connected:true,ghostVoteAvailable:true}))};}
 function clock(){vi.useFakeTimers();vi.setSystemTime(epoch);}
 
-test('an empty execution has a wind-blown empty gallows and never invents an undefined victim',()=>{
+test('an empty execution has a wind-blown empty guillotine and never invents an undefined victim',()=>{
  clock();const scene=event('EXECUTION',{outcome:'NONE',message:'今天无人被处决。'});const ui=render(<EventStage game={game([scene])}/>);
- expect(ui.container.querySelector('.empty-gallows')).not.toBeNull();expect(ui.container.querySelector('.execution-blade')).toBeNull();expect(ui.container.querySelector('.event-token')).toBeNull();expect(ui.container.textContent).not.toMatch(/undefined|未定义|被处决者/);expect(screen.queryByRole('heading',{name:'今天无人被处决'})).not.toBeInTheDocument();
+ expect(ui.container.querySelector('.guillotine-scene.is-empty')).not.toBeNull();expect(ui.container.querySelector('.execution-blade')).toBeNull();expect(ui.container.querySelector('.event-token')).toBeNull();expect(ui.container.textContent).not.toMatch(/undefined|未定义|被处决者/);expect(screen.queryByRole('heading',{name:'今天无人被处决'})).not.toBeInTheDocument();
  act(()=>vi.advanceTimersByTime(3600));expect(screen.getByRole('heading',{name:'今天无人被处决'})).toBeVisible();
 });
 
-test('an execution without a new death still shows its real target instead of the empty gallows',()=>{
+test('an execution without a new death still shows its real target instead of the empty guillotine',()=>{
  clock();const ui=render(<EventStage game={game([event('EXECUTION',{targetSeat:2,outcome:'NO_DEATH',message:'玩家2被处决，该玩家已经死亡。'})])}/>);
- expect(ui.container.querySelector('.empty-gallows')).toBeNull();expect(ui.container.querySelector('.execution-arch img')).toHaveAttribute('src','/avatars/2.webp');act(()=>vi.advanceTimersByTime(3600));expect(screen.getByRole('heading',{name:'处决结束，无人死亡'})).toBeVisible();
+ expect(ui.container.querySelector('.guillotine-scene.is-empty')).toBeNull();expect(ui.container.querySelector('.guillotine-scene img')).toHaveAttribute('src','/avatars/2.webp');act(()=>vi.advanceTimersByTime(3600));expect(screen.getByRole('heading',{name:'处决结束，无人死亡'})).toBeVisible();
 });
 
 test.each(['NOMINATION','SHOT'] as const)('%s identifies both the actor and target by their public avatars',kind=>{

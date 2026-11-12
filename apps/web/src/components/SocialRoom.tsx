@@ -1,3 +1,4 @@
+import {FeedbackButton} from '@ravens/ui';
 import {playerLabel} from '@ravens/ui';
 import { RoomSheet } from "./RoomPage.js";
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
@@ -37,14 +38,14 @@ export function SocialRoom({ code, view, open, onClose, onRefresh, drafts, setDr
         const version = drafts[active.id]!.version;
         await sendWhisper(code, active.id, draft.trim(), () => setDrafts(current => acknowledgeDraft(current, active.id, version)));
       });
-    }}><label className="sr-only" htmlFor="whisper-message">私聊内容</label><input id="whisper-message" maxLength={500} value={draft} onChange={event => setDrafts(current => editDraft(current, active.id, event.target.value, partner ?? "玩家"))} placeholder="输入消息" autoComplete="off" /><Button disabled={busy || !draft.trim()} type="submit">发送</Button></form><button className="town-whisper-leave" disabled={busy} type="button" onClick={() => void run(() => leaveWhisper(code))}>结束私聊</button></> : null}
+    }}><label className="sr-only" htmlFor="whisper-message">私聊内容</label><input id="whisper-message" maxLength={500} value={draft} onChange={event => setDrafts(current => editDraft(current, active.id, event.target.value, partner ?? "玩家"))} placeholder="输入消息" autoComplete="off" /><Button disabled={busy || !draft.trim()} type="submit">发送</Button></form><FeedbackButton className="town-whisper-leave" disabled={busy} type="button" onClick={() => void run(() => leaveWhisper(code))}>结束私聊</FeedbackButton></> : null}
     {pending.map(invitation => <div className="town-whisper-response" key={invitation.id}>{invitation.toSeat === view.participant.seat ? <><Button disabled={busy} onClick={() => void run(() => respondWhisper(code, invitation.id, true))}>接受邀请</Button><Button variant="quiet" disabled={busy} onClick={() => void run(() => respondWhisper(code, invitation.id, false))}>婉拒</Button></> : <Button variant="quiet" disabled={busy} onClick={() => void run(() => leaveWhisper(code))}>撤回邀请</Button>}</div>)}
     {error ? <p className="form-error" role="alert">{error}</p> : null}
   </>;
-  return <RoomSheet title={active ? `与 ${partner} 私聊` : pending.length ? "私聊邀请" : "私聊已结束"} onClose={onClose} actions={actions}><section className="social-room social-room--town" aria-label="玩家会客室">
+  return <RoomSheet privateFeedback title={active ? `与 ${partner} 私聊` : pending.length ? "私聊邀请" : "私聊已结束"} onClose={onClose} actions={actions}><section className="social-room social-room--town" aria-label="玩家会客室">
     <p className="town-whisper-privacy">关系全桌可见，消息仅双方可见</p>
     {pending.map(invitation => <p className="whisper-invitation" key={invitation.id}>{invitation.toSeat === view.participant.seat ? `${names(invitation.fromSeat)} 邀请你私聊` : `已邀请 ${names(invitation.toSeat)}，等待回应`}</p>)}
     {active ? <ol className="town-whisper-messages" aria-live="polite" aria-label="私聊消息">{active.messages.length ? active.messages.map(message => <li key={message.id} className={message.seat === view.participant.seat ? "is-mine" : ""}><small>{names(message.seat)}</small><p>{message.text}</p></li>) : <li className="whisper-room__empty">暂无消息</li>}</ol> : !pending.length ? <p>返回城镇，点击玩家头像发起新的邀请。</p> : null}
-    {closedDrafts.length ? <details className="town-whisper-drafts" open={!active && !pending.length}><summary>未发送的草稿（{closedDrafts.length}）</summary>{closedDrafts.map(([id, item]) => <section className="closed-draft" key={id}><strong>与 {item.label} 的草稿</strong><textarea aria-label="已结束耳语草稿" readOnly value={item.text} /><button type="button" onClick={() => void navigator.clipboard?.writeText(item.text).catch(() => setError("请长按草稿复制"))}>复制</button><button type="button" onClick={() => setDrafts(current => { const next = { ...current }; delete next[id]; return next; })}>丢弃</button></section>)}</details> : null}
+    {closedDrafts.length ? <details className="town-whisper-drafts" open={!active && !pending.length}><summary>未发送的草稿（{closedDrafts.length}）</summary>{closedDrafts.map(([id, item]) => <section className="closed-draft" key={id}><strong>与 {item.label} 的草稿</strong><textarea aria-label="已结束耳语草稿" readOnly value={item.text} /><FeedbackButton type="button" onClick={() => void navigator.clipboard?.writeText(item.text).catch(() => setError("请长按草稿复制"))}>复制</FeedbackButton><FeedbackButton type="button" onClick={() => setDrafts(current => { const next = { ...current }; delete next[id]; return next; })}>丢弃</FeedbackButton></section>)}</details> : null}
   </section></RoomSheet>;
 }

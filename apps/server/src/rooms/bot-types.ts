@@ -16,7 +16,7 @@ export function setTimeline(room:RoomRecord,mode:RoomTimeline['mode'],wall:numbe
 export function invalidateBots(room:RoomRecord){room.botControl.generation=randomUUID();room.botControl.pending=[];room.botControl.version++;}
 export function exitIneligibleRehearsal(room:RoomRecord,wall:number){if(room.timeline.mode==='MANUAL'&&(humans(room).length!==1||!bots(room).length)){setTimeline(room,'WALL',wall);room.botControl.mode='RUNNING';}}
 export function upgradeBotRoom(room:RoomRecord,wall:number){
-  const legacy=![3,4].includes(room.schemaVersion as number);
+  const legacy=![3,4,5].includes(room.schemaVersion as number);
   if(legacy){
     room.lastHumanActivityAt=Number.isFinite(Date.parse(room.lastActivityAt))?Date.parse(room.lastActivityAt):wall;
     room.botControl=newBotControl();room.timeline={mode:'WALL',offsetMs:0,epoch:0};

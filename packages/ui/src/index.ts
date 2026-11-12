@@ -1,4 +1,5 @@
 export * from "./Button.js";
+export * from './FeedbackButton.js';
 export * from "./Countdown.js";
 export * from "./Panel.js";
 export * from "./RoleCard.js";

@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
-import { castVote, createRecoveryCode, getRoom, hasPendingCommand, observeRoomView, resetAccountContext, retryPendingCommand, setRoomReady, sendWhisper, leaveRoom } from "./api.js";
+import { acknowledgePresentations, castVote, createRecoveryCode, getRoom, hasPendingCommand, observeRoomView, resetAccountContext, retryPendingCommand, setRoomReady, sendWhisper, leaveRoom } from "./api.js";
 
 function seed(ballotId = "ballot-a", commandVersion = 0) {
   observeRoomView("ABCDEF", {
-    protocolVersion: 5, roomInstanceId: "instance", setupId: "setup", revision: commandVersion + (ballotId === "ballot-a" ? 1 : 5),
+    protocolVersion:6, roomInstanceId: "instance", setupId: "setup", revision: commandVersion + (ballotId === "ballot-a" ? 1 : 5),
     self: { participantId: "player", mode: "PLAYER", commandVersion },
     game: { gameId: "game", contextId: ballotId, phase: "VOTING", day: 1, seats: [], events: [], readyCount: 0, aliveCount: 5,
       nomination: { ballotId, nominatorSeat: 1, nomineeSeat: 2, votesReceived: 0, votesRaised: 0, threshold: 3 } },
@@ -36,7 +36,7 @@ test("same-round unsent gestures coalesce; binding and latest command version ar
   await Promise.all([castVote("ABCDEF", true), castVote("ABCDEF", false)]);
   expect(fetcher).toHaveBeenCalledOnce();
   expect(JSON.parse(fetcher.mock.calls[0]![1].body)).toMatchObject({ raised: false, ballotId: "ballot-a", expectedCommandVersion: 7 });
-  expect(new Headers(fetcher.mock.calls[0]![1].headers).get("x-ravens-protocol")).toBe("5");
+  expect(new Headers(fetcher.mock.calls[0]![1].headers).get("x-ravens-protocol")).toBe("6");
 });
 
 test("an uncertain command blocks later intent and explicit retry retains the exact original payload and id", async () => {
@@ -90,3 +90,5 @@ test("lost leave success followed by revoked-seat response completes cleanup ins
   seed();const fetcher=vi.fn().mockRejectedValueOnce(new TypeError("lost response"));vi.stubGlobal("fetch",fetcher);await expect(leaveRoom("ABCDEF")).rejects.toThrow();
   fetcher.mockResolvedValue({ok:false,status:403,json:async()=>({errorCode:"SEAT_REMOVED",error:"座位已离开"})});await expect(retryPendingCommand("ABCDEF")).resolves.toMatchObject({left:true,self:null});expect(hasPendingCommand("ABCDEF")).toBe(false);
 });
+
+test('presentation ACK sends its own scope without needing or consuming a gameplay command context',async()=>{const fetcher=vi.fn(async(_url:string,_init?:RequestInit)=>success({roomInstanceId:'instance',gameId:'game',acked:[{historySeq:1,disposition:'COMPLETE'}],revision:2}));vi.stubGlobal('fetch',fetcher);const body={roomInstanceId:'instance',gameId:'game',entries:[{historySeq:1,disposition:'COMPLETE' as const}]};await acknowledgePresentations('ABCDEF',body);expect(JSON.parse(fetcher.mock.calls[0]![1]!.body as string)).toEqual(body);expect(hasPendingCommand('ABCDEF')).toBe(false);});

@@ -1,7 +1,10 @@
 /* The document never pans; only bounded content panels scroll. */
-html{color-scheme:dark;background:#0b0c09}
+html{color-scheme:dark;background:#0b0c09;scrollbar-color:#756444 #0b0c09}
 html,body,#root{background-color:#0b0c09;width:100%;height:100%;min-height:0!important;overflow:hidden!important;overscroll-behavior:none;}
 body{position:fixed;inset:0;margin:0;}
+.app-loading,.app-error,.error-page,.guide-backdrop,.account-backdrop,.room-sheet-backdrop{background-color:#0b0c09;overscroll-behavior:none;}
+.guide-backdrop,.account-backdrop,.room-sheet-backdrop{box-sizing:border-box;max-height:var(--viewport-height,100dvh);}
+input,textarea,select{color-scheme:dark;}
 .app-viewport{height:100vh;height:100dvh;height:var(--viewport-height,100dvh);width:100%;overflow:hidden;position:relative;}
 *,*::before,*::after{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
 *:not(input):not(textarea):not([contenteditable="true"]){-webkit-user-select:none!important;user-select:none!important;}
@@ -22,6 +25,7 @@ img,a{-webkit-user-drag:none;}
 .role-page>.rn-role-card{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin:auto;}.role-page>.rn-button,.role-page>.privacy-warning,.role-page>.screen-back,.role-page>.game-guide-links{flex:none;}.role-page .rn-role-card__portrait-wrap{max-height:34vh;}
 .player-private>.ending{padding-top:calc(60px + env(safe-area-inset-top));}.ending-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;}.game-page>.rn-panel{min-height:0;overflow:auto;}.game-page>.inline-waiting{flex:1;min-height:0;overflow:auto;}.player-session>.privacy-curtain{flex:1;min-height:0;}.player-session>.session-status{position:absolute;}
 .guide-sheet{height:100%;max-height:100%;overflow:hidden;display:flex;flex-direction:column;}.guide-sheet__header,.guide-tabs{flex:none;}.guide-sheet>.guide-book{flex:1;min-height:0;overflow:hidden;overscroll-behavior:contain;}.guide-sheet .role-detail{display:block;}.guide-backdrop,.account-backdrop,.event-stage{height:var(--viewport-height,100dvh);bottom:auto;}
+.guide-sheet{padding-bottom:max(8px,env(safe-area-inset-bottom));}
 .guide-book>.guide-tutorial{align-content:start;}
 .display{height:100%;min-height:0!important;overflow:hidden;grid-template-rows:auto minmax(0,1fr) minmax(0,25%);}.display__town{min-height:0;overflow:auto;overscroll-behavior:contain;display:block;}.display__canvas{position:relative;display:grid;place-items:center;width:fit-content;max-width:none;margin:0 auto;}.display__village-feed,.display__notice{min-height:0;max-height:100%;overflow:auto;overscroll-behavior:contain;}.display__village-feed ol{max-height:none;}
 .app-viewport>.portrait-gallery,.app-viewport>.effects-preview{height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;}

@@ -1,3 +1,4 @@
+import {FeedbackButton} from './FeedbackButton.js';
 import {playerLabel} from './player-label.js';
 import type { CSSProperties } from "react";
 import {roundTableLayout} from './round-table.js';
@@ -58,10 +59,10 @@ export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, r
       return <li key={seat.seat} data-seat-number={seat.seat}
         className={`rn-seat ${state === "DEAD" ? "rn-seat--dead" : state === "THREATENED" ? "rn-seat--threatened" : ""} ${seat.connected ? "" : "rn-seat--offline"} ${seat.seat === ownSeat ? "rn-seat--mine" : ""} ${seat.seat === activeSeat ? "rn-seat--counting" : ""} ${countedVotes?.[seat.seat] === true ? "rn-seat--raised" : ""} ${selected ? "rn-seat--selected" : ""} ${selectable ? "rn-seat--selectable" : ""}`}
         style={{ "--seat-index": index,...(fluid?{left:layout.points[index]!.x,top:layout.points[index]!.y}:{}) } as CSSProperties}>
-        {onSelect ? <button type="button" onClick={event => onSelect(seat.seat, event.currentTarget)} aria-pressed={selected} aria-label={`${playerLabel(seat.seat,seat.nickname)} ${seat.alive ? "存活" : "已死亡"}${seat.seat === ownSeat ? "，你" : ""}${state === "THREATENED" ? "，候选席" : ""}`}>
+        {onSelect ? <FeedbackButton type="button" onClick={event => onSelect(seat.seat, event.currentTarget)} aria-pressed={selected} aria-label={`${playerLabel(seat.seat,seat.nickname)} ${seat.alive ? "存活" : "已死亡"}${seat.seat === ownSeat ? "，你" : ""}${state === "THREATENED" ? "，候选席" : ""}`}>
           {avatar}<span className="rn-seat__number">{seat.seat}{seat.seat === ownSeat ? " · 你" : ""}</span><span className="rn-seat__name">{seat.nickname}</span>
-        </button> : <>{avatar}<span className="rn-seat__number">{seat.seat}</span><span className="rn-seat__name">{seat.nickname}</span></>}
-        {privateMarks?.[seat.seat] ? onPrivateMark?<button type="button" className="rn-seat__private-mark" title={privateMarks[seat.seat]} aria-label={`我的线索：${privateMarks[seat.seat]}`} onClick={()=>onPrivateMark?.(seat.seat)}>{privateMarks[seat.seat]}</button>:<span className="rn-seat__private-mark" title={privateMarks[seat.seat]} aria-label={`我的线索：${privateMarks[seat.seat]}`}>{privateMarks[seat.seat]}</span> : null}
+        </FeedbackButton> : <>{avatar}<span className="rn-seat__number">{seat.seat}</span><span className="rn-seat__name">{seat.nickname}</span></>}
+        {privateMarks?.[seat.seat] ? onPrivateMark?<FeedbackButton type="button" className="rn-seat__private-mark" title={privateMarks[seat.seat]} aria-label={`我的线索：${privateMarks[seat.seat]}`} onClick={()=>onPrivateMark?.(seat.seat)}>{privateMarks[seat.seat]}</FeedbackButton>:<span className="rn-seat__private-mark" title={privateMarks[seat.seat]} aria-label={`我的线索：${privateMarks[seat.seat]}`}>{privateMarks[seat.seat]}</span> : null}
         {!seat.alive ? <small className="rn-seat__ghost">{seat.ghostVoteAvailable ? "◈ 鬼票尚在" : "鬼票已用"}</small> : null}
         {countedVotes?.[seat.seat] !== undefined ? <small className="rn-seat__ballot">{countedVotes[seat.seat] ? "举手 · 已计票" : "未举手 · 已计票"}</small> : null}
         {raisedSeats?.includes(seat.seat) ? <span className="rn-seat__hand" aria-label="已举手">✋</span> : null}

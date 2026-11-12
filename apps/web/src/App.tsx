@@ -19,8 +19,7 @@ import { PlayerGame, hasPrivateTownTask } from "./pages/PlayerGame.js";
 import { Tutorial } from "./pages/Tutorial.js";
 import { EffectsPreview } from "./pages/EffectsPreview.js";
 import { PortraitsPreview } from "./pages/PortraitsPreview.js";
-import type { PrivateReceipt } from "./components/EventStage.js";
-import { enableEffectsAudio, effectsAudioEnabled } from "./components/experience-audio.js";
+import { unlockEffectsAudio, effectsAudioEnabled } from "./components/experience-audio.js";
 import { connectRoomFeed } from "./room-live.js";
 import "./styles/app.css";
 import "./styles/game-redesign.css";
@@ -91,7 +90,6 @@ function RoomApp() {
   }
   const getRoom=(...args:Parameters<typeof fetchRoom>)=>guard(fetchRoom(...args));
   const getPrivateView=(...args:Parameters<typeof fetchPrivateView>)=>guard(fetchPrivateView(...args));
-  const [receipt, setReceipt] = useState<PrivateReceipt>();
   const [guide, setGuide] = useState<GuideMode>();
   const [connectionState, setConnectionState] = useState<ConnectionState>(() => navigator.onLine ? "ONLINE" : "OFFLINE");
   const [backNotice, setBackNotice] = useState(false);
@@ -101,8 +99,7 @@ function RoomApp() {
   useEffect(()=>{if(!room||!participantId)return;const stored=readStoredRoom(room.code);if(stored&&stored.participantId===participantId&&(stored.isHost!==(room.organizerId===participantId)||stored.roomInstanceId!==room.roomInstanceId))saveSession({...stored,roomInstanceId:room.roomInstanceId,isHost:room.organizerId===participantId});},[room?.code,room?.roomInstanceId,room?.organizerId,participantId]);
 
   useEffect(() => { void initialize(); }, []);
-  useEffect(() => { if (!receipt) return; const timer = window.setTimeout(() => setReceipt(undefined), 3_800); return () => window.clearTimeout(timer); }, [receipt?.id]);
-  useEffect(() => { const unlock = () => { if (effectsAudioEnabled()) void enableEffectsAudio(); }; document.addEventListener("pointerdown", unlock); return () => document.removeEventListener("pointerdown", unlock); }, []);
+  useEffect(() => { const unlock = () => { if (effectsAudioEnabled()) void unlockEffectsAudio(); }; document.addEventListener("pointerdown", unlock); return () => document.removeEventListener("pointerdown", unlock); }, []);
   useEffect(() => { guideRef.current = guide; }, [guide]);
 
 
@@ -125,7 +122,7 @@ function RoomApp() {
       // The SDK also announces its initial identity. Only an actual namespace
       // change needs clearing here; account-context already reloads that case.
       if (roomSessionKey() === SESSION_KEY) return;
-      entryEpoch.current++;beginSession(); resetAccountContext(); setParticipantId(undefined); setReceipt(undefined); setGuide(undefined); setScreen("LOADING");
+      entryEpoch.current++;beginSession(); resetAccountContext(); setParticipantId(undefined); setGuide(undefined); setScreen("LOADING");
     };
     window.addEventListener("popstate",back); document.addEventListener("visibilitychange",hide); window.addEventListener("fribench:account-change",account);
     return () => { window.removeEventListener("popstate",back); document.removeEventListener("visibilitychange",hide); window.removeEventListener("fribench:account-change",account); };
@@ -349,10 +346,10 @@ function RoomApp() {
   async function beginTutorial(tutorialMode: "SKIP" | "OPTIONAL" = "SKIP") { if (!room || !isOrganizer) return; setBusy(true); try { const next = await guard(startRoom(room.code, tutorialMode)); setRoom(next); setConnectionState("ONLINE"); if (next.state === "TUTORIAL") setScreen("TUTORIAL"); else { acceptPrivateView(await getPrivateView(room.code)); setScreen("GAME"); } } catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return; await handleSessionFailure(caught); setError(caught instanceof Error ? caught.message : "无法开始"); } finally { setBusy(false); } }
   async function finishTutorial() { if (!room) return; setBusy(true); try { const updated = await guard(completeTutorial(room.code)); setRoom(updated); setScreen("GAME"); setPrivateView(await getPrivateView(room.code)); setConnectionState("ONLINE"); } catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return; if (isNetworkFailure(caught)) setConnectionState("OFFLINE"); setError(caught instanceof Error ? caught.message : "无法完成教学"); } finally { setBusy(false); } }
 
-  async function runGameMutation(operation: (code: string) => Promise<PrivateView>, privateTargets?: number[]) {
+  async function runGameMutation(operation: (code: string) => Promise<PrivateView>) {
     if (!room) return;
     setBusy(true); setError(undefined);
-    try { const updated = await guard(operation(room.code)); acceptPrivateView(updated);  setConnectionState("ONLINE"); if (privateTargets) { const roleId = privateView?.role?.roleId; setReceipt({ id: crypto.randomUUID(), kind: roleId === "poisoner" ? "POISON" : roleId === "monk" ? "PROTECT" : roleId==="butler"?"BUTLER":roleId==="imp"?"DEMON": ["fortune_teller", "ravenkeeper"].includes(roleId ?? "") ? "DIVINE" : "SEALED", targetSeats:[...privateTargets], target: privateTargets.map((seat) => playerLabel(seat,privateView?.game?.seats.find((player) => player.seat === seat)?.nickname)).join("、") }); } }
+    try { const updated = await guard(operation(room.code)); acceptPrivateView(updated);  setConnectionState("ONLINE"); }
     catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return; await handleSessionFailure(caught); setError(caught instanceof Error ? caught.message : "操作没有成功，请重试"); }
     finally { setBusy(false); }
   }
@@ -406,7 +403,7 @@ function RoomApp() {
 
   if (screen === "LOBBY" && room) return withGuide(<Lobby rehearsal={privateView?.rehearsal} rolePending={hasPendingCommand(room.code)} onRetryRole={async()=>{setBusy(true);setError(undefined);try{await guard(retryPendingCommand(room.code));acceptPrivateView(await getPrivateView(room.code));setConnectionState('ONLINE');}catch(e){await handleSessionFailure(e);throw e;}finally{setBusy(false);}}} onChooseRole={async roleId=>{setBusy(true);setError(undefined);try{acceptPrivateView(await guard(setRehearsalRole(room.code,roleId)));setConnectionState('ONLINE');}catch(e){await handleSessionFailure(e);throw e;}finally{setBusy(false);}}} onRetryReorder={async()=>{await guard(retryPendingCommand(room.code));const next=await getRoom(room.code);setRoom(next);return next;}} onRemove={id=>void roomMutation(code=>removeRoomPlayer(code,id))} room={room} {...(participantId ? { participantId } : {})} onReady={(ready) => void roomMutation((code) => setRoomReady(code, ready))} onReorder={async ids=>{setBusy(true);setError(undefined);try{const next=await guard(reorderRoomSeats(room.code,ids));setRoom(next);return next;}catch(e){await handleSessionFailure(e);setError(e instanceof Error?e.message:'排序失败');throw e;}finally{setBusy(false);}}} onBegin={beginTutorial} onLeave={() => void exitRoom()} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} canBegin={isOrganizer} busy={busy} {...(error ? { error } : {})} />);
   if (screen === "TUTORIAL") return withGuide(<Tutorial hideBack {...(room ? {completeCount:room.tutorialCompleteCount ?? 0,total:room.playerCount}:{})} onBack={returnHome} onDone={finishTutorial} busy={busy} {...(error ? { error } : {})} />);
-  if (screen === "GAME") return withGuide(<PlayerGame guideOpen={!!guide} onCloseGuide={()=>setGuide(undefined)} key={`${room?.roomInstanceId}:${room?.game?.gameId}:${participantId}`} {...(privateView ? { view: privateView } : {})} {...(receipt ? { receipt } : {})} {...(room ? { roomCode: room.code } : {})} {...(room?.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {})} busy={busy} canRestart={privateView?.canRestart ?? false} {...(error ? { error } : {})} onBack={returnHome} onResumeGame={() => void runGameMutation(resumeGame)} onFinishDefense={() => void runGameMutation(finishDefense)} onLeave={() => void exitRoom()} onRefresh={async () => { if (room) { try { acceptPrivateView(await getPrivateView(room.code)); } catch (error) { await handleSessionFailure(error); throw error; } } }} onConfirmStartInfo={infoId=>void runGameMutation(code=>acknowledgeStartInfo(code,infoId))} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats), seats)} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onCancelNomination={() => void runGameMutation(cancelNomination)} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(code => readyToEndDay(code, !privateView?.dayReady))} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
+  if (screen === "GAME") return withGuide(<PlayerGame guideOpen={!!guide} onCloseGuide={()=>setGuide(undefined)} key={`${room?.roomInstanceId}:${room?.game?.gameId}:${participantId}`} {...(privateView ? { view: privateView } : {})} {...(room ? { roomCode: room.code } : {})} {...(room?.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {})} busy={busy} canRestart={privateView?.canRestart ?? false} {...(error ? { error } : {})} onBack={returnHome} onResumeGame={() => void runGameMutation(resumeGame)} onFinishDefense={() => void runGameMutation(finishDefense)} onLeave={() => void exitRoom()} onRefresh={async () => { if (room) { try { acceptPrivateView(await getPrivateView(room.code)); } catch (error) { await handleSessionFailure(error); throw error; } } }} onConfirmStartInfo={infoId=>void runGameMutation(code=>acknowledgeStartInfo(code,infoId))} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats))} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onCancelNomination={() => void runGameMutation(cancelNomination)} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(code => readyToEndDay(code, !privateView?.dayReady))} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
   if (screen === "DISPLAY") return withStatus(<Display key={`${room?.roomInstanceId}:${room?.code}`} code={room?.code ?? "------"} onBack={returnHome} onRoomClosed={handleRoomClosed} />);
   const stored = room ? readSession() : undefined;
   const guestSession=readSession(),guestCode=guestSession?.mode==='PLAYER'&&!guestSession.pendingJoin?guestSession.roomCode:undefined;

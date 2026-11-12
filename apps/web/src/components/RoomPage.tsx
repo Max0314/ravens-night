@@ -1,3 +1,4 @@
+import {FeedbackButton} from '@ravens/ui';
 import { useEffect, useRef, type ReactNode } from "react";
 import { useBackLayer } from "../use-back-layer.js";
 import { Avatar } from "./Avatar.js";
@@ -6,14 +7,14 @@ import { Avatar } from "./Avatar.js";
 const sheetStack:HTMLElement[]=[];
 
 export function RoomPageShell({ title, onBack, subtitle, children, actions, className="",hideBack=false }: {hideBack?:boolean;title:string;onBack:()=>void;subtitle?:ReactNode;children:ReactNode;actions?:ReactNode;className?:string}) {
-  return <main className={`room-page ${className}`}><header className="room-page__header">{hideBack?null:<button type="button" onClick={onBack} aria-label="返回首页">←</button>}<div><h1>{title}</h1>{subtitle ? <small>{subtitle}</small> : null}</div></header><div className="room-page__content">{children}</div>{actions ? <RoomActionBar>{actions}</RoomActionBar> : null}</main>;
+  return <main className={`room-page ${className}`}><header className="room-page__header">{hideBack?null:<FeedbackButton type="button" onClick={onBack} aria-label="返回首页">←</FeedbackButton>}<div><h1>{title}</h1>{subtitle ? <small>{subtitle}</small> : null}</div></header><div className="room-page__content">{children}</div>{actions ? <RoomActionBar>{actions}</RoomActionBar> : null}</main>;
 }
 export function RoomActionBar({children}:{children:ReactNode}){return <footer className="room-action-bar">{children}</footer>;}
 export function OperationStatus({busy,error,notice}:{busy?:boolean;error?:string|undefined;notice?:string|undefined}) {return <>{busy?<p className="operation-status" role="status">正在提交…</p>:null}{error?<p className="form-error" role="alert">{error}</p>:notice?<p className="operation-status" role="status">{notice}</p>:null}</>;}
-export function PlayerTile({player,selected,disabled,onClick,detail}:{player:{id?:string;seat?:number;nickname:string;avatar?:string|undefined;controller?:"HUMAN"|"BOT";alive?:boolean};selected?:boolean;disabled?:boolean;onClick:()=>void;detail?:ReactNode}){return <button type="button" className={`player-tile${selected?" is-selected":""}`} disabled={disabled} aria-pressed={selected} onClick={onClick}><span className="player-tile__seat">{player.seat}号{player.controller==="BOT"?<small>人机</small>:null}</span><Avatar id={player.id??String(player.seat)} name={player.nickname} url={player.avatar}/><strong>{player.nickname}</strong><small>{detail??(player.alive===false?"已死亡":null)}</small></button>;}
+export function PlayerTile({player,selected,disabled,onClick,detail}:{player:{id?:string;seat?:number;nickname:string;avatar?:string|undefined;controller?:"HUMAN"|"BOT";alive?:boolean};selected?:boolean;disabled?:boolean;onClick:()=>void;detail?:ReactNode}){return <FeedbackButton type="button" className={`player-tile${selected?" is-selected":""}`} disabled={disabled} aria-pressed={selected} onClick={onClick}><span className="player-tile__seat">{player.seat}号{player.controller==="BOT"?<small>人机</small>:null}</span><Avatar id={player.id??String(player.seat)} name={player.nickname} url={player.avatar}/><strong>{player.nickname}</strong><small>{detail??(player.alive===false?"已死亡":null)}</small></FeedbackButton>;}
 
 /** Fixed close/actions; only its body scrolls. A nested confirmation is the only extra layer. */
-export function RoomSheet({title,onClose,children,actions,confirmation=false}:{title:string;onClose:()=>void;children:ReactNode;actions?:ReactNode;confirmation?:boolean}){
+export function RoomSheet({title,onClose,children,actions,confirmation=false,privateFeedback=false}:{title:string;onClose:()=>void;children:ReactNode;actions?:ReactNode;confirmation?:boolean;privateFeedback?:boolean}){
   const ref=useRef<HTMLElement>(null); const close=useRef(onClose);close.current=onClose;
   useBackLayer(true,()=>close.current());
   useEffect(()=>{
@@ -40,5 +41,5 @@ export function RoomSheet({title,onClose,children,actions,confirmation=false}:{t
     document.addEventListener('keydown',trap);
     return()=>{if(node){const index=sheetStack.indexOf(node);if(index>=0)sheetStack.splice(index,1);}document.removeEventListener('keydown',trap);if(previous?.isConnected)previous.focus({preventScroll:true});};
   },[]);
-  return <div className={`room-sheet-backdrop${confirmation?" room-sheet-backdrop--confirm":""}`} onClick={event=>{if(event.target===event.currentTarget)onClose();}}><section className="room-sheet" ref={ref} tabIndex={-1} role={confirmation?"alertdialog":"dialog"} aria-modal="true" aria-label={title}><header><h2>{title}</h2><button type="button" onClick={onClose} aria-label={`关闭${title}`}>×</button></header><div className="room-sheet__body">{children}</div>{actions?<RoomActionBar>{actions}</RoomActionBar>:null}</section></div>;
+  return <div data-private-feedback={privateFeedback?'true':undefined} className={`room-sheet-backdrop${confirmation?" room-sheet-backdrop--confirm":""}`} onClick={event=>{if(event.target===event.currentTarget)onClose();}}><section className="room-sheet" ref={ref} tabIndex={-1} role={confirmation?"alertdialog":"dialog"} aria-modal="true" aria-label={title}><header><h2>{title}</h2><FeedbackButton type="button" onClick={onClose} aria-label={`关闭${title}`}>×</FeedbackButton></header><div className="room-sheet__body">{children}</div>{actions?<RoomActionBar>{actions}</RoomActionBar>:null}</section></div>;
 }

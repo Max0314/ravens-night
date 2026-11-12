@@ -10,7 +10,7 @@ function table(version:1|2|3=3,successor=false){
   const players=Array.from({length:6},(_,i)=>service.join(code,`玩家${i+1}`,'PLAYER'));
   for(const p of players)service.setReady(code,p.token,true);
   service.startTutorial(code,players[0]!.token,'SKIP');
-  expect(service.find(code).game!.presentationVersion).toBe(3);
+  expect(service.find(code).game!.presentationVersion).toBe(4);
   const snapshot=service.snapshot(code),game=snapshot.game!;
   snapshot.assignments=['slayer','chef','empath','saint',successor?'scarlet_woman':'baron','imp'].map((id,i)=>({seat:i+1,roleId:id,perceivedRoleId:id,roleType:roleById(id).type,alignment:i>=4?'EVIL':'GOOD'}));
   game.presentationVersion=version;game.startInfo={mode:'LEGACY',stage:'COMPLETE',entries:{}};game.phase='DAY_DISCUSSION';game.day=1;game.presentationUntil=0;game.pendingPublications=[];delete game.publicProjection;initializePresentation(game,now);service.restore([snapshot]);
@@ -92,6 +92,6 @@ test.each([1,2] as const)('restored v%s keeps the old blocking nomination and ti
 
 test('an unknown persisted event timing version fails restore instead of being interpreted as legacy',()=>{
   const t=table();t.service.useDayAbility(t.code,t.players[0]!.token,2);const saved=t.service.snapshot(t.code);
-  (saved.game!.events.at(-1)! as {timingVersion:number}).timingVersion=4;
+  (saved.game!.events.at(-1)! as {timingVersion:number}).timingVersion=5;
   expect(()=>new RoomService({presentation:true}).restore([saved])).toThrow('Unsupported presentation version');
 });

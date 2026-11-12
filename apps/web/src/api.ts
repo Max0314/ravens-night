@@ -2,6 +2,7 @@ import type {PlayerSelection} from './use-player-profile.js';
 import type { ExperienceEvent, StorytellerDecision, RoomProtocolView, RoomCommandContext } from "@ravens/contracts";
 import {roomSessionKey} from './account-context.js';
 import { isOlderSnapshot } from "./snapshot-order.js";
+import type {PresentationAckRequest,PresentationAckResponse} from '@ravens/contracts';
 import type { RoomParticipant, RoomPlayMode, GameView, RoomView, PrivateView, RoomResult } from "@ravens/contracts";
 export type { RoomParticipant, RoomPlayMode, GameView, RoomView, PrivateView, RoomResult, PrivateHistoryEntry, PrivateHistoryPhase, PrivateHistoryKind } from "@ravens/contracts";
 export class ApiError extends Error {
@@ -38,7 +39,7 @@ function commandBinding(code: string, path: string): Omit<RoomCommandContext, "e
 const memberPath = (url: string) => /^\/api\/rooms\/([^/]+)\/(.+)$/.exec(url);
 function isMemberWrite(url: string, init?: RequestInit) {
   const match = memberPath(url);
-  return match && init?.method && !["GET", "HEAD"].includes(init.method) && !/^(?:join$|recover$|switch-ticket$|account\/)/.test(match[2]!) ? match : undefined;
+  return match && init?.method && !["GET", "HEAD"].includes(init.method) && !/^(?:join$|recover$|switch-ticket$|presentations\/ack$|account\/)/.test(match[2]!) ? match : undefined;
 }
 
 async function request<T>(url: string, init?: RequestInit, onCommitted?: () => void): Promise<T> {
@@ -96,7 +97,7 @@ export async function retryPendingCommand(code: string) {
 
 async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
   const generation=accountGeneration;
-  const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode(), "x-ravens-protocol": "5" });
+  const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode(), "x-ravens-protocol": "6" });
   if (init?.method && init.method !== "GET") headers.set("x-command-id", crypto.randomUUID());
   new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
   const options = { ...init, credentials: "same-origin" as const, headers };
@@ -128,6 +129,7 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export function getAuthSession() { return request<{ authorized: boolean }>("/api/auth/session"); }
+export function acknowledgePresentations(code:string,body:PresentationAckRequest){return rawRequest<PresentationAckResponse>(`/api/rooms/${encodeURIComponent(code)}/presentations/ack`,{method:'POST',body:JSON.stringify(body)});}
 export type AccountRoom={code:string;participantId:string;mode:'PLAYER'|'DISPLAY';nickname:string};
 export type GameProfile={revision:number;nickname:string;avatar:string|null;nicknameOverride:string|null;avatarOverride:string|null;defaultNickname:string;defaultAvatar:string|null};
 export type AccountAccess={signedIn:boolean;guestClaimAvailable:boolean;rooms:AccountRoom[];profile?:GameProfile};

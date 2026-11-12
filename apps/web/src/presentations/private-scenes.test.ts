@@ -1,0 +1,7 @@
+import {expect,test} from 'vitest';
+import {PrivateSceneQueue,sceneDuration,type QueuedScene} from './private-scenes.js';
+const entry=(seq:number):QueuedScene=>({historySeq:seq,scene:{version:1,id:`game:private:1:${seq}`,kind:'INFORMATION',themeRoleId:'chef',shown:{type:'COUNT',value:2}}});
+test('HTTP/WS duplicates dedupe, while equal results from different nights each play',()=>{const q=new PrivateSceneQueue();q.sync([entry(1),entry(2)]);q.sync([entry(1),entry(2)]);expect(q.count).toBe(2);expect(q.start()?.historySeq).toBe(1);expect(q.finish('COMPLETE')).toEqual({historySeq:1,disposition:'COMPLETE'});q.sync([entry(1),entry(2)]);expect(q.start()?.historySeq).toBe(2);});
+test('remote ACK removes waiting scenes but never interrupts the running immutable scene',()=>{const q=new PrivateSceneQueue();q.sync([entry(1),entry(2)]);const running=q.start();q.sync([]);expect(q.current).toBe(running);expect(q.count).toBe(1);q.finish('SKIP');expect(q.start()).toBeUndefined();});
+test('replays have no ACK and context clear discards all private data',()=>{const q=new PrivateSceneQueue();q.replay(entry(1));expect(q.start()?.replay).toBe(true);expect(q.finish('COMPLETE')).toBeUndefined();q.sync([entry(2)]);q.clear();expect(q.count).toBe(0);expect(q.start()).toBeUndefined();});
+test('all information has a full duration and butler honors the actual spoken hold',()=>{expect(sceneDuration(entry(1).scene)).toBe(3800);expect(sceneDuration({...entry(1).scene,themeRoleId:'butler'},4700)).toBe(4700);});

@@ -11,6 +11,7 @@
     "@ravens/content": "workspace:*",
     "@ravens/contracts": "workspace:*",
     "@ravens/ui": "workspace:*",
+    "html2canvas": "1.4.1",
     "qrcode": "latest",
     "react": "latest",
     "react-dom": "latest",

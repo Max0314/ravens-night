@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, expect, test, vi } from "vitest";
 import { GuideOverlay } from "./GuideOverlay.js";
 import { tutorialSteps } from "../guide-content.js";
+import {StrictMode} from 'react';
 const audio=vi.hoisted(()=>({turn:vi.fn(),silence:vi.fn(),dispose:vi.fn()}));
 vi.mock("./book-audio.js",()=>({createBookAudio:()=>audio}));
 afterEach(()=>{cleanup();vi.clearAllMocks();vi.useRealTimers();vi.unstubAllGlobals();localStorage.clear();window.history.replaceState({},"","/");});
@@ -70,8 +71,8 @@ test('tutorial swipes share button turns, stop at the first page and enter roles
   installPointer();render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);
   const book=document.querySelector('.guide-book')!;
   swipePage(book,'back');expect(audio.turn).not.toHaveBeenCalled();
-  swipePage(book,'next');expect(screen.getByText(`规则 2 / ${tutorialSteps.length}`)).toBeVisible();expect(book).toHaveAttribute('data-turn','forward');expect(audio.turn).toHaveBeenCalledOnce();
-  fireEvent.click(screen.getByRole('button',{name:'上一条'}));expect(book).toHaveAttribute('data-turn','back');
+  swipePage(book,'next');expect(screen.getByText(`规则 2 / ${tutorialSteps.length}`)).toBeVisible();expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole('button',{name:'上一条'}));expect(book).toHaveAttribute('data-page-key','tutorial:0');
   fireEvent.click(screen.getByRole('button',{name:'关闭翻页音效'}));
   for(let i=0;i<tutorialSteps.length;i++)swipePage(book,'next');
   expect(screen.getByRole('tab',{name:/镇民/})).toHaveAttribute('aria-selected','true');expect(audio.turn).toHaveBeenCalledTimes(2);
@@ -135,4 +136,62 @@ test('blank space first returns from a role detail and leaves the close control 
   fireEvent.click(screen.getByRole('button',{name:'查看洗衣妇详情'}));
   fireEvent.mouseDown(document.querySelector('.guide-backdrop')!);
   expect(screen.queryByRole('article',{name:'洗衣妇详情'})).not.toBeInTheDocument();expect(close).not.toHaveBeenCalled();
+});
+
+test('a real-width drag reverses to the original page and a completed drag commits once under StrictMode',()=>{
+  installPointer();vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  render(<StrictMode><GuideOverlay mode="tutorial" onClose={vi.fn()}/></StrictMode>);const book=document.querySelector<HTMLElement>('.guide-book')!;
+  Object.defineProperties(book,{clientWidth:{value:360},clientHeight:{value:600}});
+  fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:180,clientY:100});fireEvent.pointerMove(book,{pointerId:1,clientX:80,clientY:100});
+  expect(book).toHaveAttribute('data-page-key','tutorial:0');expect(document.querySelector('.page-turn-layer')).not.toBeNull();
+  fireEvent.pointerMove(book,{pointerId:1,clientX:210,clientY:100});fireEvent.pointerUp(book,{pointerId:1,clientX:210,clientY:100});act(()=>vi.advanceTimersByTime(200));
+  expect(book).toHaveAttribute('data-page-key','tutorial:0');expect(audio.turn).not.toHaveBeenCalled();
+  fireEvent.pointerDown(book,{pointerId:2,button:0,clientX:180,clientY:100});fireEvent.pointerMove(book,{pointerId:2,clientX:20,clientY:100});fireEvent.pointerUp(book,{pointerId:2,clientX:20,clientY:100});
+  act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).toHaveBeenCalledOnce();expect(document.querySelector('.page-turn-layer')).toBeNull();
+});
+
+test('closing a handbook during a turn cancels it rather than allowing a late page commit',()=>{
+  vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  const close=vi.fn();render(<GuideOverlay mode="tutorial" onClose={close}/>);const book=document.querySelector<HTMLElement>('.guide-book')!;Object.defineProperty(book,'clientWidth',{value:360});
+  fireEvent.click(screen.getByRole('button',{name:'下一条'}));fireEvent.click(screen.getByRole('button',{name:'关闭游戏帮助'}));act(()=>vi.advanceTimersByTime(500));
+  expect(close).toHaveBeenCalledOnce();expect(book).toHaveAttribute('data-page-key','tutorial:0');expect(audio.turn).not.toHaveBeenCalled();
+});
+
+test('a full private scene can release book textures without closing or losing its reading position',()=>{
+  installPointer();vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);const book=document.querySelector<HTMLElement>('.guide-book')!,list=document.querySelector<HTMLElement>('.guide-page-surface .role-compendium')!;list.scrollTop=170;Object.defineProperty(book,'clientWidth',{value:360});
+  fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:180,clientY:100});fireEvent.pointerMove(book,{pointerId:1,clientX:20,clientY:100});
+  fireEvent(window,new Event('ravens:release-book-textures'));act(()=>vi.advanceTimersByTime(400));
+  expect(screen.getByRole('dialog')).toBeVisible();expect(book).toHaveAttribute('data-page-key','roles:TOWNSFOLK:grid');expect(list.scrollTop).toBe(170);expect(audio.turn).not.toHaveBeenCalled();
+  fireEvent(window,new Event('ravens:resume-book-textures'));swipePage(book,'next');act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','roles:OUTSIDER:grid');
+});
+
+test('hiding a page cancels its unfinished turn and paper sound',()=>{
+  vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);const book=document.querySelector<HTMLElement>('.guide-book')!;Object.defineProperty(book,'clientWidth',{value:360});fireEvent.click(screen.getByRole('button',{name:'下一条'}));
+  const hidden=vi.spyOn(document,'hidden','get').mockReturnValue(true);fireEvent(document,new Event('visibilitychange'));act(()=>vi.advanceTimersByTime(500));
+  expect(book).toHaveAttribute('data-page-key','tutorial:0');expect(audio.turn).not.toHaveBeenCalled();expect(audio.silence).toHaveBeenCalled();hidden.mockRestore();
+});
+
+test('tutorial, grid, detail and own-role keep one fixed toolbar outside the shared book viewport',()=>{
+  const ownRole={roleId:'soldier',name:'士兵',alignment:'GOOD' as const,type:'TOWNSFOLK',summary:'你免受恶魔攻击',beginnerTip:'游玩建议'};
+  const ui=render(<GuideOverlay mode="tutorial" ownRole={ownRole} onClose={vi.fn()}/>);
+  const book=ui.container.querySelector('.guide-book')!,slot=ui.container.querySelector('.guide-page-toolbar')!;
+  const sameViewport=(kind:string)=>{expect(ui.container.querySelectorAll('.guide-page-toolbar')).toHaveLength(1);expect(ui.container.querySelector('.guide-page-toolbar')).toBe(slot);expect(slot).toHaveAttribute('data-guide-toolbar',kind);expect(slot.nextElementSibling).toBe(book);expect(slot.closest('.guide-book')).toBeNull();};
+  sameViewport('tutorial');expect(screen.getByText(`规则 1 / ${tutorialSteps.length}`)).toBeVisible();
+  for(let i=0;i<tutorialSteps.length;i++)fireEvent.click(screen.getByRole('button',{name:i===tutorialSteps.length-1?'继续看角色表':'下一条'}));
+  sameViewport('grid');expect(slot).toContainElement(screen.getByRole('tablist',{name:'角色分类'}));
+  fireEvent.click(screen.getByRole('button',{name:'查看洗衣妇详情'}));sameViewport('detail');expect(slot).toContainElement(screen.getByRole('button',{name:'返回镇民角色表'}));
+  fireEvent.click(screen.getByRole('button',{name:'返回镇民角色表'}));sameViewport('grid');
+  fireEvent.click(screen.getByRole('button',{name:'我的角色'}));sameViewport('mine');expect(screen.getByRole('heading',{name:'士兵'})).toBeVisible();
+  fireEvent.click(screen.getByRole('button',{name:'新手教程'}));sameViewport('tutorial');
+});
+
+test('a short fast drag held still expires its flick velocity before release',()=>{
+  installPointer();vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);const book=document.querySelector<HTMLElement>('.guide-book')!;Object.defineProperty(book,'clientWidth',{value:360});
+  fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:180,clientY:100});fireEvent.pointerMove(book,{pointerId:1,clientX:120,clientY:100});act(()=>vi.advanceTimersByTime(1000));
+  fireEvent.pointerUp(book,{pointerId:1,clientX:120,clientY:100});act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:0');expect(audio.turn).not.toHaveBeenCalled();
+  fireEvent.pointerDown(book,{pointerId:2,button:0,clientX:180,clientY:100});fireEvent.pointerMove(book,{pointerId:2,clientX:120,clientY:100});fireEvent.pointerUp(book,{pointerId:2,clientX:120,clientY:100});
+  act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).toHaveBeenCalledOnce();
 });

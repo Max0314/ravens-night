@@ -71,10 +71,10 @@ async function httpTable() {
   const app = buildApp({ repository, now: t.now, presentation: false, timers: false, resolveAccount: async () => null });
   apps.push(app); await app.ready();
   async function body(seat: number) {
-    const view = (await app.inject({ url: `/api/rooms/${t.code}/me?token=${t.players[seat - 1]!.token}`,headers:{"x-ravens-protocol":"5"} })).json();
+    const view = (await app.inject({ url: `/api/rooms/${t.code}/me?token=${t.players[seat - 1]!.token}`,headers:{"x-ravens-protocol":"6"} })).json();
     return { token: t.players[seat - 1]!.token, roomInstanceId: view.roomInstanceId, setupId: view.setupId, expectedCommandVersion: view.self.commandVersion, gameId: view.game.gameId, contextId: view.contextId, ...(view.game.nomination ? { ballotId: view.game.nomination.ballotId } : {}) };
   }
-  const send = (path: string, payload: object, id = randomUUID()) => app.inject({ method: "POST", url: `/api/rooms/${t.code}/${path}`, headers: { "x-ravens-protocol": "5", "x-command-id": id }, payload });
+  const send = (path: string, payload: object, id = randomUUID()) => app.inject({ method: "POST", url: `/api/rooms/${t.code}/${path}`, headers: { "x-ravens-protocol": "6", "x-command-id": id }, payload });
   return { ...t, app, repository, body, send };
 }
 
@@ -113,7 +113,7 @@ test("save failure rolls back a vote and its receipt; same command can safely re
 test("legacy writes require refresh; public participants never include command versions", async () => {
   const t = await httpTable();
   expect((await t.app.inject({ method: "POST", url: `/api/rooms/${t.code}/vote`, payload: { raised: true } })).statusCode).toBe(426);
-  const publicRoom = (await t.app.inject({ url: `/api/rooms/${t.code}`,headers:{"x-ravens-protocol":"5"} })).json();
+  const publicRoom = (await t.app.inject({ url: `/api/rooms/${t.code}`,headers:{"x-ravens-protocol":"6"} })).json();
   expect(JSON.stringify(publicRoom.participants)).not.toMatch(/commandVersion|tokenHash|accountId|joinTicket/);
 });
 

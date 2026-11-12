@@ -26,7 +26,7 @@ describe("HTTP and websocket authorization boundaries", () => {
     expect((await app.inject({ url: `/api/rooms/${code}/me`, headers: { cookie: both } })).json().participant.nickname).toBe("Host");
     expect((await app.inject({ url: `/api/rooms/${code}/me`, headers: { cookie: displayCookie } })).statusCode).toBe(403);
     await app.ready();
-    const ws = await app.injectWS(`/api/rooms/${code}/live?protocol=5&mode=DISPLAY`, { headers: { cookie: both } });
+    const ws = await app.injectWS(`/api/rooms/${code}/live?protocol=6&mode=DISPLAY`, { headers: { cookie: both } });
     try {
       const received = new Promise<string>((resolve) => ws.once("message", (message: { toString(): string }) => resolve(message.toString())));
       ws.send("ping");

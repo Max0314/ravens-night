@@ -1,10 +1,11 @@
 import type {PlayerController,BotControlView,RoomTimeline,ControlResult} from "./bot-control.js";
 import type { ExperienceEvent, StorytellerDecision } from "./experience.js";
 import type { RoomProtocolView } from "./room-protocol.js";
+import type {PrivateSceneDescriptor} from './private-presentations.js';
 export interface RoomParticipant { controller?:PlayerController; left?:boolean; id: string; nickname: string; avatar?: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface GameView {
-  presentationVersion?: 1 | 2 | 3;
+  presentationVersion?: 1 | 2 | 3 | 4;
   publishedPhaseStartedAt?:number;
   revealComplete?: boolean;
   contextId?: string;
@@ -30,6 +31,8 @@ export interface RoomView extends Partial<RoomProtocolView> { botControl?:BotCon
 export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
 export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 export interface PrivateHistoryEntry {
+  presentation?:PrivateSceneDescriptor;
+  effect?:'POISON'|'PROTECT'|'DIVINATION';
   candidateGroup?: {kind:"ONE_OF";roleName:string;seats:number[]};
   grimoire?: { entries: Array<{seat:number;nickname:string;avatar?:string;roleName:string;alive:boolean;reminders:string[]}> };
   targetSeats?:number[];
@@ -40,6 +43,7 @@ export interface PrivateHistoryEntry {
   text: string;
 }
 export interface PrivateView extends Partial<RoomProtocolView> {
+  presentations?:{version:1;pending:Array<{historySeq:number;scene:PrivateSceneDescriptor}>;hasMore:boolean};
   rehearsal?:{eligible:boolean;canChooseRole:boolean;selectedRoleId?:string};
   profileApplication?: 'CURRENT' | 'NEXT_LOBBY';
   startInfo?: { infoId: string; gameId: string; team: Array<{seat:number;nickname:string;avatar?:string;kind:'DEMON'|'MINION'}>; bluffs:Array<{roleId:string;name:string;summary:string}>; acknowledged:boolean;canAcknowledge:boolean };

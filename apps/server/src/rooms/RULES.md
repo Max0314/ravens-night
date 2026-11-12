@@ -81,9 +81,9 @@
 
 ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与只含公开信息的对象座位。完整历史可供重连追赶，不再只保留最后八条。
 
-网络视图只读取已提交的 publicProjection。startsAt 前不发送未来事件；准备包为中性文案。结果点由事件timingVersion决定；v1的SHOT/EXECUTION为2800ms、DAWN/GAME_OVER为2100ms，v2为3600/2800ms；v3的SHOT850ms、EXECUTION1000ms、DAWN1400ms、GAME_OVER900ms。终局结束时才公布全员身份与裁量记录。500ms 时钟在下一次 tick 原子发布到期节点并增加 revision；GET、私密视图、WebSocket、重试与大屏共用投影。内部提前计算的终局、能力、上下文和未来排队事件不能泄露结果；跳过动画不会提前公开。
+网络视图只读取已提交的 publicProjection。startsAt 前不发送未来事件；准备包为中性文案。结果点由事件timingVersion决定；v1的SHOT/EXECUTION为2800ms、DAWN/GAME_OVER为2100ms，v2为3600/2800ms；v3的SHOT850ms、EXECUTION1000ms、DAWN1400ms、GAME_OVER900ms；v4分别为850/1200/1800/900ms。终局结束时才公布全员身份与裁量记录。500ms 时钟在下一次 tick 原子发布到期节点并增加 revision；GET、私密视图、WebSocket、重试与大屏共用投影。内部提前计算的终局、能力、上下文和未来排队事件不能泄露结果；跳过动画不会提前公开。
 
-新局presentationVersion=3：枪击2600ms、处决2800ms、黎明4200ms、入夜3600ms、终局5200ms，阻塞事件lead为250ms。提名800ms/票结果1200ms仅为非模态展示，startsAt=occurredAt、不写演出锁、不延迟下一合法动作；其发布节点只更新event，同提交同步最新业务状态，不能回写旧phase/context/nomination/举手。枪击仍暂停计票并顺延剩余辩护/席位时间。旧局和历史保留v1/v2原时序及1500ms lead，不原地改写。NOTICE按当前阻塞队列排程；阻塞演出结束前服务端拒绝新游戏操作，客户端必须按serverNow对时。
+新局presentationVersion=4：枪击3000ms、处决3200ms、黎明6600ms、入夜6200ms、终局5200ms，阻塞事件lead为250ms。提名800ms/票结果1200ms仅为非模态展示，startsAt=occurredAt、不写演出锁、不延迟下一合法动作；其发布节点只更新event，同提交同步最新业务状态，不能回写旧phase/context/nomination/举手。枪击仍暂停计票并顺延剩余辩护/席位时间。旧局和历史保留v1/v2/v3原时序，v1/v2 lead1500ms、v3 lead250ms，不原地改写。NOTICE按当前阻塞队列排程；阻塞演出结束前服务端拒绝新游戏操作，客户端必须按serverNow对时。
 
 投毒、保护、查验使用行动者自己的 ACTION 历史，effect 分别为 POISON / PROTECT / DIVINATION，targetSeats 只进入该玩家私密视图。
 
@@ -113,7 +113,7 @@ ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与�
 
 醉毒间谍从完整真魔典与完整扰动候选中确定性选择，每夜固定一次。扰动只交换相同生死的善良身份包和对应提醒，冻结本人、邪恶角色及死亡旧小恶魔；保留真实角色多重集合，禁止假候选直接标出间谍自身中毒，无合法扰动时使用完整真候选。
 
-当前HTTP/WS协议5，旧协议4及更早HTTP请求426、旧WS1008要求刷新；快照schemaVersion=4，旧库在监听前、单写锁内先全量预检再单事务迁移；未知版本或不可还原快照拒绝启动。v1投票保留绝对时间、已冻结票和已耗鬼票，不追溯改票。普通回执只保存指纹与小结果，保留256条；淘汰后的旧请求仍因成员命令版本过期被拒绝。
+当前HTTP/WS协议6，旧协议5及更早HTTP请求426、旧WS1008要求刷新；快照schemaVersion=5，旧库在监听前、单写锁内先全量预检再单事务迁移；未知版本或不可还原快照拒绝启动。v1投票保留绝对时间、已冻结票和已耗鬼票，不追溯改票。普通回执只保存指纹与小结果，保留256条；淘汰后的旧请求仍因成员命令版本过期被拒绝。
 
 - POST /api/rooms/:code/bots/command 沿用现任房主CONTROL授权、game/context/ballot版本、命令ID与队列事务；END_DAY仅让可结束白天的机器人同意，真人不变。NOMINATE_ONCE/SHOOT_ONCE各选一名公开有资格的机器人执行一次正常命令；射击包含VOTING，不按真实角色选执行者。无资格/非法目标明确409；重试回原回执及最新视图。反馈仅公开执行者、数量与提交结果，不提前公开死亡/隐藏身份。
 - 新洗衣妇、图书管理员及调查员二选一线索在本人历史保存candidateGroup（ONE_OF、shown角色名与实际告知的两席）；醉毒使用实际误信息，不增强为后台真值。旧文本不解析补标记，公共视图不包含该字段。
@@ -128,3 +128,13 @@ ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与�
 本轮新增 presentation、migration、join-ticket、repair-migration、command-queue、mobile-interactions 等专项，覆盖发布边界与真实安装的500ms定时器、终局前控制字段一致、战报权限、迁移事务、回执体积、旧响应隔离与DOM交互。实际执行记录见 docs/2026-09-27-redesign.md；没有使用本地游戏页面或浏览器验证。
 
 2026-11-12：effects-v3.test覆盖即时非阻塞提名、连续表决/入夜、投票中枪击保留锁票、死亡/胜利/身份分时发布及旧时序；switch-room.test覆盖两房原子切换、三凭据重放、票据过期/撤销/实例与房主变化、失败回滚、容量和协议5。只做Node/Fastify检查，不打开游戏或浏览器。
+
+## 2026-11-12 完整私人演出与继承通知
+
+私人历史可附version1的presentation描述，内容在原先醉毒/登记选择之后从实际shown结果生成，不解析中文文本、不重新查询真值。私有presentations.pending仅含本席当前可见未ACK记录，最多32条；hasMore不计尚未发布项。共情者数字夜里立即可见，邻座targetSeats仍等天亮；间谍重播始终引用当夜获得的快照；酒鬼解密前只用自认角色主题。
+
+POST `/api/rooms/:code/presentations/ack` 接收roomInstanceId/gameId及1–16条historySeq/disposition(COMPLETE或SKIP)，按同源Origin、房间PLAYER凭据及可信账号校验。它独立于玩法commandVersion/context/ballot队列；首次Seen更新只增加room.revision并经runtime事务落盘，不推进游戏/发布任务，重复请求不写。看完或跳过演出不代替身份/首夜规则确认；重播不写ACK。重开清除本局私人演出，不新增跨局档案。
+
+继承实际角色即时生效。白天继任者的role/history/action出口保留原身份，到下一NIGHT_FALLS:end事务才通知新身份并开放夜间操作；夜晚继任在kill事务通知。一般自杀传位获得的新小恶魔同夜不能再杀一次。其他爪牙不自动收到通知、不刷新首夜队友；间谍可在合法后续夜快照看到变化。按用户明确要求，原恶魔会在自己死亡公开后得到不含继任者身份/座位/头像的“力量延续”私人演出；这是本项目自定义反馈，超出官方只通知继任者的标准流程。
+
+升级仅旧<=3先走原兼容迁移，再4→5增量新增Seen/角色通知/描述，保留v3与REQUIRED/WAIT_ACK首夜信息；schema5只验证，不反复升级。旧server不能读取5/v4，发生新写入后优先前向修复，不自动还原旧快照覆盖进度。

@@ -63,7 +63,7 @@ test("browser back closes ghost confirmation and public player detail before nav
     const {mine}=fixture();render(<PlayerGame {...handlers} view={mine}/>);
     fireEvent.click(screen.getByRole("button",{name:"举手"}));expect(window.history.state.ravensLayer).toBeDefined();
     window.history.back();await waitFor(()=>expect(screen.queryByRole("alertdialog",{name:"使用鬼票"})).not.toBeInTheDocument());expect(navigate).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button",{name:"城镇"}));fireEvent.click(screen.getByRole("button",{name:/2号 玩家2.*存活/}));expect(screen.getByRole("button",{name:"关闭玩家操作"})).toBeVisible();
+    fireEvent.click(screen.getByRole("button",{name:"城镇"}));fireEvent.click(screen.getByRole("button",{name:/玩家2-玩家2.*存活/}));expect(screen.getByRole("button",{name:"关闭玩家操作"})).toBeVisible();
     window.history.back();await waitFor(()=>expect(screen.queryByRole("button",{name:"关闭玩家操作"})).not.toBeInTheDocument());expect(navigate).not.toHaveBeenCalled();
     expect(window.history.state.ravensScreen).toBe("GAME");
   }finally{window.removeEventListener("popstate",navigate);}
@@ -110,7 +110,7 @@ test("privacy cover retains public ghost-vote confirmation, resets old ballots a
   const {mine}=fixture(),vote=vi.fn();const ui=render(<PlayerGame {...handlers} view={mine} onVote={vote}/>);
   fireEvent.click(screen.getByRole("button",{name:"记录"}));fireEvent(window,new Event("ravens:cover-private"));
   expect(screen.getByLabelText("私密内容已遮住")).toBeVisible();const ballot=within(screen.getByRole("region",{name:"公开表决"}));
-  fireEvent.click(ballot.getByRole("button",{name:/3号/}));expect(screen.getByLabelText("私密内容已遮住")).toBeVisible();
+  fireEvent.click(ballot.getByRole("button",{name:/被提名【玩家3-/}));expect(screen.getByLabelText("私密内容已遮住")).toBeVisible();
   fireEvent.click(ballot.getByRole("button",{name:"举手"}));expect(vote).not.toHaveBeenCalled();
   ui.rerender(<PlayerGame {...handlers} view={{...mine,game:{...mine.game!,nomination:{...mine.game!.nomination!,ballotId:"new"}}}} onVote={vote}/>);expect(screen.queryByRole("alertdialog",{name:"使用鬼票"})).not.toBeInTheDocument();
   fireEvent.click(ballot.getByRole("button",{name:"举手"}));fireEvent.click(screen.getByRole("button",{name:"确认使用鬼票"}));expect(vote).toHaveBeenCalledWith(true);

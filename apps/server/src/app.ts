@@ -10,7 +10,7 @@ import { RoomService, type ParticipantMode, type RoomPlayMode } from "./rooms/se
 import { PostgresRoomRepository } from "./db/room-repository.js";
 import { LiveRoomRuntime, PersistenceUnavailableError, type RoomRepository } from "./game/live-runtime.js";
 import { createRecovery, inviteWhisper, leaveWhisper, member, recoverMembership, respondWhisper, sendWhisper, socialView } from "./rooms/social.js";
-import { roomCommandProperties, roomCommandRequired, type RoomCommandContext,type ControlResult } from "@ravens/contracts";
+import { roomCommandProperties, roomCommandRequired, type RoomCommandContext,type ControlResult,type PresentationAckRequest } from "@ravens/contracts";
 import { RoomError, PUBLICATION_TICK_MS } from "./rooms/errors.js";
 import { issueJoinTicket, validateJoinTicket, parseJoinTicket, assertJoinCapacity, revokeJoinTicket } from "./rooms/join-ticket.js";
 import { profileView } from './auth/game-profile.js';
@@ -85,8 +85,8 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     }
     const pathname = request.url.split("?")[0]!;
     const roomApi=/^\/api\/rooms(?:\/|$)/.test(pathname)||pathname==='/api/room-create-ticket';
-    if(roomApi&&!request.headers.upgrade&&!(request.method==='GET'&&/^\/api\/rooms\/[^/]+\/summary$/.test(pathname))&&request.headers['x-ravens-protocol']!=='5')return reply.code(426).send({errorCode:'CLIENT_UPGRADE_REQUIRED',error:'游戏已更新，请刷新页面后继续',refreshRequired:true});
-    if (/\/auth\/login$|\/join$|\/recover$|\/switch-ticket$/.test(pathname) && request.method === "POST") {
+    if(roomApi&&!request.headers.upgrade&&!(request.method==='GET'&&/^\/api\/rooms\/[^/]+\/summary$/.test(pathname))&&request.headers['x-ravens-protocol']!=='6')return reply.code(426).send({errorCode:'CLIENT_UPGRADE_REQUIRED',error:'游戏已更新，请刷新页面后继续',refreshRequired:true});
+    if (/\/auth\/login$|\/join$|\/recover$|\/switch-ticket$|\/presentations\/ack$/.test(pathname) && request.method === "POST") {
       const key = `${request.ip}:${pathname.split("/").at(-1)}`;
       const current = attempts.get(key);
       const entry = current && current.reset > now() ? current : { count: 0, reset: now() + 60_000 };
@@ -367,6 +367,15 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     catch (error) { if (!(error instanceof PersistenceUnavailableError)) throw error; }
     return privateView(runtime.service, request.params.code, token);
   });
+  // UI receipts are independent from the gameplay command version/ballot queue.
+  app.post<RoomRequest>('/api/rooms/:code/presentations/ack',{schema:{body:bodySchema({
+    roomInstanceId:roomCommandProperties.roomInstanceId,gameId:roomCommandProperties.gameId,
+    entries:{type:'array',minItems:1,maxItems:16,items:{type:'object',additionalProperties:false,required:['historySeq','disposition'],properties:{historySeq:{type:'integer',minimum:1},disposition:{enum:['COMPLETE','SKIP']}}}},
+  },['roomInstanceId','gameId','entries'])}},async request=>{
+    const token=participantToken(request,request.body?.token as string|undefined,'PLAYER');
+    member(runtime.service.find(request.params.code),token,'PLAYER');
+    return runtime.execute(rooms=>rooms.acknowledgePresentations(request.params.code,token,request.body as unknown as PresentationAckRequest));
+  });
   function command(path: string, properties: Record<string, unknown>, required: string[], change: (rooms: RoomService, code: string, token: string, body: Record<string, unknown>, request: FastifyRequest<RoomRequest>) => unknown, view: "public" | "private" | "result" | "profile" = "private", organizer = false, scope: "ROOM" | "GAME" | "BALLOT" | "OPTIONAL_GAME" = "ROOM") {
     if (["vote", "nomination/cancel", "nomination/defense/complete"].includes(path)) scope = "BALLOT";
     else if (["role/confirm", "action", "nominate", "day/ready", "day/ability", "resume", "first-night-info/ack"].includes(path)) scope = "GAME";
@@ -422,7 +431,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
 
   void app.register(async (scope) => {
     scope.get<{ Params: { code: string }; Querystring: { mode?: string;protocol?:string } }>("/api/rooms/:code/live", { websocket: true }, (socket, request) => {
-      if(request.query.protocol!=="5"){socket.close(1008,"Client upgrade required");return;}
+      if(request.query.protocol!=="6"){socket.close(1008,"Client upgrade required");return;}
       const mode = request.query.mode === "DISPLAY" ? "DISPLAY" : "PLAYER";
       let token: string;
       try { token = participantToken(request, undefined, mode); member(runtime.service.find(request.params.code), token, mode); }

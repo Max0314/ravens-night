@@ -1,3 +1,4 @@
+import {FeedbackButton} from '@ravens/ui';
 import {playerLabel} from '@ravens/ui';
 import {useState} from 'react';
 import {SeatAvatarDecoration} from '@ravens/ui';
@@ -23,22 +24,22 @@ export function SpyTownBoard({entries,onReturn,initialSeq}:{entries:PrivateHisto
   const snapshots=entries.filter((entry):entry is SnapshotEntry=>!!entry.grimoire);
   const [seq,setSeq]=useState<number|undefined>(initialSeq??snapshots.at(-1)?.seq),[selection,setSelection]=useState<{seq:number;seat:number}>();
   const entry=snapshots.find(item=>item.seq===seq)??snapshots.at(-1);
-  if(!entry)return <section className="spy-town"><p>尚未收到魔典快照。</p><button type="button" onClick={onReturn}>返回公开城镇</button></section>;
+  if(!entry)return <section className="spy-town"><p>尚未收到魔典快照。</p><FeedbackButton type="button" onClick={onReturn}>返回公开城镇</FeedbackButton></section>;
   const index=snapshots.indexOf(entry),players=entry.grimoire.entries;
   const picked=selection?.seq===entry.seq?players.find(player=>player.seat===selection.seat):undefined;
   const move=(offset:number)=>{const next=snapshots[index+offset];if(next){setSeq(next.seq);setSelection(undefined);}};
   return <section className="spy-town" aria-label="我的魔典圆桌">
-    <header className="spy-town__heading"><button type="button" aria-label="上一夜魔典" disabled={index===0} onClick={()=>move(-1)}>‹</button><div><strong>{nightName(entry)} · 魔典</strong><small>仅你可见 · 当夜快照{index===snapshots.length-1?' · 最新':''}</small></div><button type="button" aria-label="下一夜魔典" disabled={index===snapshots.length-1} onClick={()=>move(1)}>›</button></header>
+    <header className="spy-town__heading"><FeedbackButton type="button" aria-label="上一夜魔典" disabled={index===0} onClick={()=>move(-1)}>‹</FeedbackButton><div><strong>{nightName(entry)} · 魔典</strong><small>仅你可见 · 当夜快照{index===snapshots.length-1?' · 最新':''}</small></div><FeedbackButton type="button" aria-label="下一夜魔典" disabled={index===snapshots.length-1} onClick={()=>move(1)}>›</FeedbackButton></header>
     <RoundTable stable key={entry.seq} count={players.length} className="spy-town__table">{layout=><>
       <div className={`spy-town__center${picked?" has-player":""}`} aria-live="polite">{picked?<><span className="spy-town__detail-seat">{playerLabel(picked.seat,picked.nickname)}</span><strong>{picked.roleName}</strong><small className="spy-town__life">{picked.alive?'当夜存活':'当夜已死亡'}</small><ul aria-label={`${picked.seat}号魔典标记`}>{picked.reminders.filter(text=>text!=='存活'&&text!=='死亡').map((text,i)=><li key={i} data-marker={marker(text).kind}>{text}</li>)}</ul></>:<><span className="spy-town__book" aria-hidden="true">☾</span><strong>当夜所见</strong><p>点头像查看角色与标记</p></>}</div>
       <ol className="spy-town__ring">{players.map((player,i)=>{
         const point=layout.points[i]!,reminders=player.reminders.filter(text=>text!=='存活'&&text!=='死亡');
         return <li key={player.seat} style={{left:point.x,top:point.y}}>
-          <button type="button" className={`spy-town__player${picked?.seat===player.seat?' is-selected':''}${player.alive?'':' is-dead'}`} aria-pressed={picked?.seat===player.seat} aria-label={`${playerLabel(player.seat,player.nickname)}，魔典所示${player.roleName}，${player.alive?'存活':'已死亡'}${reminders.length?'，'+reminders.join('、'):''}`} onClick={()=>setSelection({seq:entry.seq,seat:player.seat})}>
+          <FeedbackButton type="button" className={`spy-town__player${picked?.seat===player.seat?' is-selected':''}${player.alive?'':' is-dead'}`} aria-pressed={picked?.seat===player.seat} aria-label={`${playerLabel(player.seat,player.nickname)}，魔典所示${player.roleName}，${player.alive?'存活':'已死亡'}${reminders.length?'，'+reminders.join('、'):''}`} onClick={()=>setSelection({seq:entry.seq,seat:player.seat})}>
             <span className="spy-town__portrait"><Avatar id={`spy-${entry.seq}-${player.seat}`} name={player.nickname} url={player.avatar}/>{!player.alive?<SeatAvatarDecoration state="DEAD"/>:null}<span className="spy-town__number">{player.seat}</span>
               <span className="spy-town__markers">{reminders.slice(0,3).map((text,n)=><small key={n} data-marker={marker(text).kind} title={text} aria-hidden="true">{marker(text).label}</small>)}{reminders.length>3?<small aria-hidden="true">+{reminders.length-3}</small>:null}</span>
             </span><span className="spy-town__role">{player.roleName}</span>
-          </button>
+          </FeedbackButton>
         </li>;
       })}</ol>
     </>}</RoundTable>

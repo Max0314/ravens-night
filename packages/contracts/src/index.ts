@@ -9,3 +9,4 @@ export * from "./room-protocol.js";
 export * from "./room-views.js";
 
 export * from "./bot-control.js";
+export * from "./private-presentations.js";

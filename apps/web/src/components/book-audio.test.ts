@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import {afterEach,expect,test,vi} from 'vitest';
 import {createBookAudio} from './book-audio.js';
-afterEach(()=>vi.unstubAllGlobals());
-test('muting and closing a book cancel delayed audio resume callbacks',async()=>{
-  let finish!:()=>void;
-  const context={state:'suspended',currentTime:0,sampleRate:48000,resume:vi.fn(()=>new Promise<void>(resolve=>{finish=()=>{context.state='running';resolve();};})),close:vi.fn(async()=>{}),createBuffer:vi.fn()};
-  class Audio{constructor(){return context as unknown as Audio;}}
-  vi.stubGlobal('AudioContext',Audio);
-  const audio=createBookAudio();audio.turn();audio.silence();finish();await Promise.resolve();expect(context.createBuffer).not.toHaveBeenCalled();
-  context.state='suspended';audio.turn();audio.dispose();finish();await Promise.resolve();expect(context.createBuffer).not.toHaveBeenCalled();expect(context.close).toHaveBeenCalledOnce();
+const shared=vi.hoisted(()=>({playSemantic:vi.fn(),cancelSemantic:vi.fn()}));
+vi.mock('./experience-audio.js',()=>shared);
+afterEach(()=>vi.clearAllMocks());
+test('book uses shared semantic samples and rotates variants without a second audio context',()=>{
+  const audio=createBookAudio();for(let i=0;i<5;i++)audio.turn();audio.lift();
+  expect(shared.playSemantic.mock.calls.slice(0,5).map(call=>call[1].variant)).toEqual([0,1,2,3,0]);
+  expect(shared.playSemantic).toHaveBeenLastCalledWith('paper-lift',{scope:'book',variant:1});
+  audio.silence();expect(shared.cancelSemantic).toHaveBeenCalledWith('book');
+  audio.dispose();audio.turn();audio.lift();expect(shared.playSemantic).toHaveBeenCalledTimes(6);
 });
