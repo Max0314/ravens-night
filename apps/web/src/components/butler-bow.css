@@ -1,9 +1,9 @@
 .butler-bow {
   width: min(256px, 38vh, 55vw);
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 4 / 7;
   flex: 0 0 auto;
   margin-inline: auto;
-  background-image: url('/art/effects/v2/butler-bow.webp');
+  background-image: url('/art/effects/v3/butler-bow.webp');
   background-size: 800% 700%;
   background-repeat: no-repeat;
   filter: drop-shadow(0 8px 12px #0009);

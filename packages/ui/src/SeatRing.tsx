@@ -40,11 +40,12 @@ interface SeatRingProps {
   fluid?: boolean;
   diameter?: number;
   threatenedSeats?: number[];
+  nightDeathSeats?: number[];
   selectedSeats?: number[];
   selectableSeats?: number[];
 }
 
-export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, privateMarks, onPrivateMark, fluid=false, diameter=320, threatenedSeats, selectedSeats, selectableSeats }: SeatRingProps) {
+export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, privateMarks, onPrivateMark, fluid=false, diameter=320, threatenedSeats, nightDeathSeats, selectedSeats, selectableSeats }: SeatRingProps) {
   const layout=roundTableLayout(seats.length,diameter);
   return <ol className={`rn-seat-ring${fluid?" rn-seat-ring--fluid":""}`} style={{ "--seat-count": seats.length } as CSSProperties}>
     {seats.map((seat, index) => {
@@ -55,6 +56,7 @@ export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, r
         {seat.avatar ? <img key={seat.avatar} src={seat.avatar} alt="" draggable={false} onError={event => { event.currentTarget.hidden = true; }} /> : null}
         <span className="rn-seat__initial" aria-hidden="true">{[...seat.nickname][0] ?? "客"}</span>
         {state ? <SeatAvatarDecoration state={state} /> : null}
+        {state==='DEAD'&&nightDeathSeats?.includes(seat.seat)?<img className="rn-night-scratch" src="/art/effects/v3/claw-town.webp" alt="" draggable={false}/>:null}
       </span>;
       return <li key={seat.seat} data-seat-number={seat.seat}
         className={`rn-seat ${state === "DEAD" ? "rn-seat--dead" : state === "THREATENED" ? "rn-seat--threatened" : ""} ${seat.connected ? "" : "rn-seat--offline"} ${seat.seat === ownSeat ? "rn-seat--mine" : ""} ${seat.seat === activeSeat ? "rn-seat--counting" : ""} ${countedVotes?.[seat.seat] === true ? "rn-seat--raised" : ""} ${selected ? "rn-seat--selected" : ""} ${selectable ? "rn-seat--selectable" : ""}`}

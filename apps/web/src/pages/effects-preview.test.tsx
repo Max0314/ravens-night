@@ -6,6 +6,7 @@ import {EffectsPreview,effectsScenarios,rolePreviewScenarios} from './EffectsPre
 import {EventStage,eventAt} from '../components/EventStage.js';
 import type {GameView} from '../api.js';
 import type {ExperienceEvent} from '@ravens/contracts';
+vi.mock('../components/PremiumArt.js',async original=>({...await original<typeof import('../components/PremiumArt.js')>(),preparePrivateArt:vi.fn(async()=>{})}));
 afterEach(()=>{cleanup();sessionStorage.clear();localStorage.clear();vi.useRealTimers();vi.unstubAllGlobals();});
 const epoch=1800000000000;
 function view(events:ExperienceEvent[]):GameView{return{gameId:'new-effects',serverNow:epoch,phase:'DAY_DISCUSSION',day:2,seats:[1,2,3].map(seat=>({seat,nickname:`人${seat}`,alive:true,connected:true,ghostVoteAvailable:true})),events,readyCount:0,aliveCount:3};}
@@ -21,10 +22,10 @@ test('new death and victory effects remain gated by the actual reveal point',()=
 test('a shot while reading preserves the reader focus and offers a nonmodal result',()=>{
  vi.useFakeTimers();vi.setSystemTime(epoch);const ui=render(<><button>原阅读位置</button><EventStage reading game={view([event('SHOT')])}/></>);const anchor=screen.getByRole('button',{name:'原阅读位置'});anchor.focus();act(()=>vi.advanceTimersByTime(1000));expect(anchor).toHaveFocus();expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'知道了'})).toBeVisible();ui.unmount();
 });
-test('laboratory drives private and public frames with pause, seek and new replay ids without room writes',()=>{
+test('laboratory drives private and public frames with pause, seek and new replay ids without room writes',async()=>{
  vi.useFakeTimers();vi.setSystemTime(epoch);const fetch=vi.fn();vi.stubGlobal('fetch',fetch);render(<EffectsPreview/>);
  expect(effectsScenarios.some(s=>s.id==='evil-saint')).toBe(true);expect(rolePreviewScenarios.filter(s=>s.scene?.kind==='IDENTITY')).toHaveLength(22);fireEvent.click(screen.getByRole('button',{name:/恶魔攻击/}));expect(screen.getByLabelText('仅本人可见的演示')).toHaveTextContent('选择已提交');
- act(()=>vi.advanceTimersByTime(500));fireEvent.click(screen.getByRole('button',{name:'暂停'}));const control=screen.getByLabelText('演出播放控制'),before=within(control).getByRole('slider').getAttribute('value');act(()=>vi.advanceTimersByTime(1000));expect(within(control).getByRole('slider')).toHaveAttribute('value',before);
+ await act(async()=>{for(let i=0;i<8;i++)await Promise.resolve();});act(()=>vi.advanceTimersByTime(500));fireEvent.click(screen.getByRole('button',{name:'暂停'}));const control=screen.getByLabelText('演出播放控制'),before=within(control).getByRole('slider').getAttribute('value');act(()=>vi.advanceTimersByTime(1000));expect(within(control).getByRole('slider')).toHaveAttribute('value',before);
  fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'3000'}});expect(screen.getByLabelText('仅本人可见的演示')).toBeVisible();fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'1000'}});expect(screen.getByLabelText('仅本人可见的演示')).toBeVisible();
  fireEvent.click(screen.getByRole('button',{name:'重播'}));expect(screen.getByRole('slider',{name:'演出进度'})).toHaveValue('0');fireEvent.click(screen.getByRole('button',{name:'返回目录'}));expect(screen.queryByLabelText('演出播放控制')).toBeNull();expect(fetch).not.toHaveBeenCalled();vi.unstubAllGlobals();
 });

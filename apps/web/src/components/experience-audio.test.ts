@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import {afterEach,beforeEach,expect,test,vi} from 'vitest';
-const names=['shot','glass','impact','scream','poison','shield','butler','demon','good','evil','night-bell','dawn-bell','paper-turn-1','paper-turn-2','paper-turn-3','paper-turn-4','ui-press','guillotine-tension','guillotine-unlock','guillotine-blade','guillotine-impact','guillotine-wind','glass-hit','glass-shards','gun-cock','hurt-shot-1','hurt-shot-2','hurt-shot-3','hurt-night-1','hurt-night-2','hurt-night-3','role-baron','role-scarlet_woman'];
+const names=['shot','glass','impact','scream','poison','shield','butler','demon','good','evil','night-bell','dawn-bell','paper-turn-1','paper-turn-2','paper-turn-3','paper-turn-4','ui-press','guillotine-tension','guillotine-unlock','guillotine-blade','guillotine-impact','guillotine-wind','glass-hit','glass-shards','gun-cock','hurt-shot-1','hurt-shot-2','hurt-shot-3','hurt-night-1','hurt-night-2','hurt-night-3','role-baron','role-scarlet_woman','role-imp','role-monk','role-butler','wing-flap','wing-air','wing-root','slash-left','slash-right','bottle','bubbles','cough-1','butler-voice'];
 const started:Array<{sample:number;at:number;stopped:boolean;stopAt?:number}>=[];
 class Param{value=0;setValueAtTime(){}linearRampToValueAtTime(){}exponentialRampToValueAtTime(){}}
 class Node{gain=new Param();frequency=new Param();playbackRate=new Param();buffer:{sample:number}|undefined;onended:(()=>void)|null=null;row:{sample:number;at:number;stopped:boolean;stopAt?:number}|undefined;connect(){}disconnect(){}start(at:number){this.row={sample:this.buffer?.sample??-1,at,stopped:false};started.push(this.row);}stop(at?:number){if(this.row){this.row.stopped=true;this.row.stopAt=at??0;}}}
-class Context{state='running';currentTime=10;sampleRate=48000;destination={};async resume(){}createGain(){return new Node();}createBufferSource(){return new Node();}createOscillator(){return new Node();}async decodeAudioData(data:ArrayBuffer){return{sample:new Uint8Array(data)[0],duration:1};}createBuffer(){return{getChannelData:()=>new Float32Array(100)};}}
+class Context{state='running';currentTime=10;sampleRate=48000;destination={};async resume(){}createGain(){return new Node();}createBufferSource(){return new Node();}createOscillator(){return new Node();}async decodeAudioData(data:ArrayBuffer){return{sample:new Uint8Array(data)[0],duration:({shield:1.7,'slash-left':.57,'slash-right':.57,'night-bell':9,'dawn-bell':10.5} as Record<string,number>)[names[new Uint8Array(data)[0]!]!]??3};}createBuffer(){return{getChannelData:()=>new Float32Array(100)};}}
 let audio:typeof import('./experience-audio.js'),preferences:typeof import('../participation-audio.js');
 async function flush(){for(let i=0;i<20;i++)await Promise.resolve();}
-beforeEach(async()=>{vi.resetModules();localStorage.clear();started.length=0;vi.stubGlobal('AudioContext',Context);vi.stubGlobal('fetch',vi.fn(async(url:string)=>({ok:true,arrayBuffer:async()=>new Uint8Array([names.indexOf(url.split('/').at(-1)!.replace('.mp3',''))]).buffer})));audio=await import('./experience-audio.js');preferences=await import('../participation-audio.js');await audio.enableEffectsAudio(true);await flush();});
+beforeEach(async()=>{vi.resetModules();localStorage.clear();started.length=0;vi.stubGlobal('AudioContext',Context);vi.stubGlobal('fetch',vi.fn(async(url:string)=>({ok:true,arrayBuffer:async()=>new Uint8Array([(()=>{const sample=names.indexOf(url.split('/').at(-1)!.replace('.mp3',''));if(sample<0)throw Error('Unmodelled audio '+url);return sample;})()]).buffer})));audio=await import('./experience-audio.js');preferences=await import('../participation-audio.js');await audio.enableEffectsAudio(true);await flush();});
 afterEach(()=>{audio.silenceEffects();vi.unstubAllGlobals();});
 test('online enables private samples while mode selection keeps the master preference and offline cancels them',async()=>{
  audio.schedulePrivateCue('private-one','BUTLER',0);await flush();expect(started).toHaveLength(0);
@@ -46,3 +46,22 @@ test('pause immediately cancels a cue that was due less than 40ms in the future'
 test('a former Baron inherits with the succession theme instead of disclosing old prop audio',async()=>{preferences.setParticipationMode('ONLINE');audio.scheduleRoleCue({version:1,id:'succession',kind:'ROLE_CHANGE',themeRoleId:'baron',shown:{type:'NEW_ROLE',roleId:'imp'}},0);await flush();expect(started.some(s=>s.sample===names.indexOf('role-scarlet_woman'))).toBe(true);expect(started.some(s=>s.sample===names.indexOf('role-baron'))).toBe(false);});
 
 test('in-person mode suppresses private button feedback while public UI and paper remain available',async()=>{audio.playSemantic('press',{scope:'private'});await flush();expect(started).toHaveLength(0);audio.playSemantic('press',{scope:'ui'});await flush();expect(started.some(s=>s.sample===names.indexOf('ui-press'))).toBe(true);preferences.setParticipationMode('ONLINE');const count=started.length;audio.playSemantic('press',{scope:'private'});await flush();expect(started.length).toBe(count+1);});
+
+const submitted=(role:string)=>({version:1 as const,id:'submit-'+role,kind:'ACTION_SUBMITTED' as const,themeRoleId:role,shown:{type:'TARGET_SUBMITTED' as const,action:role==='monk'?'PROTECT' as const:'KILL' as const,seats:[2]}});
+test('monk action restores the exact accepted v1 shield and its metal transient lands at 700ms',async()=>{
+ preferences.setParticipationMode('ONLINE');const scene=submitted('monk');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();
+ expect(fetch).toHaveBeenCalledWith('/audio/effects/v1/shield.mp3');expect(started).toHaveLength(1);expect(started[0]?.sample).toBe(names.indexOf('shield'));expect(started[0]?.at).toBeCloseTo(10.418);expect(audio.roleAudioCues(scene)[0]?.[2]).toBe(.74);
+});
+test('imp action separates both rip cues without duplicating the generic wing theme',async()=>{
+ preferences.setParticipationMode('ONLINE');const scene=submitted('imp');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();
+ expect(started.some(s=>s.sample===names.indexOf('role-imp'))).toBe(false);expect(started.filter(s=>s.sample===names.indexOf('slash-left')).map(s=>s.at)).toEqual([11.45]);expect(started.filter(s=>s.sample===names.indexOf('slash-right')).map(s=>s.at)).toEqual([11.75]);
+ audio.cancelEventAudio('private:'+scene.id);expect(started.every(s=>s.stopped)).toBe(true);
+});
+test('closing a slow single-track audition cancels its eventual decode',async()=>{
+ let finish:()=>void=()=>{};vi.mocked(fetch).mockImplementationOnce(()=>new Promise<Response>(resolve=>{finish=()=>resolve({ok:true,arrayBuffer:async()=>new Uint8Array([names.indexOf('shield')]).buffer} as Response);}));
+ const pending=audio.auditionSample('v1:shield');await flush();audio.silenceEffects();finish();await pending;await flush();expect(started).toHaveLength(0);
+});
+
+test('explicit replay gets fresh audio but duplicate scheduling of the same playback stays idempotent',async()=>{
+ preferences.setParticipationMode('ONLINE');const scene=submitted('monk');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0,{playbackId:'first'});audio.scheduleRoleCue(scene,0,{playbackId:'first'});await flush();expect(started).toHaveLength(1);audio.cancelEventAudio('private:first');audio.scheduleRoleCue(scene,0,{playbackId:'replay'});await flush();expect(started).toHaveLength(2);
+});

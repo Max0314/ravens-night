@@ -1,0 +1,29 @@
+{
+  "version": 3,
+  "files": [
+    {
+      "id": "slash-left",
+      "file": "slash-left.mp3",
+      "bytes": 12582,
+      "sha256": "f846ce760c8db3c0d22cdd1611d23cac93ff4c540ae7dba784189d0e2e1c5266",
+      "source": "../v1/demon.mp3",
+      "sourceSha256": "fbff0f5073913312c73531962e76c75cd3acd0132b7db705372e283ee232a616",
+      "start": 0.95,
+      "duration": 0.57,
+      "processing": "highpass=f=95,equalizer=f=2300:t=q:w=1:g=3,acompressor=threshold=0.3:ratio=2:attack=2:release=90,alimiter=limit=0.9:level=false,afade=t=out:st=0.49:d=0.08",
+      "license": "Original project composition with previously attributed Kenney CC0 foley; see v1/SOURCES.md"
+    },
+    {
+      "id": "slash-right",
+      "file": "slash-right.mp3",
+      "bytes": 12582,
+      "sha256": "8e387ff4c295cfd54e53a8d19c1fe269e903d245c80a674d0642970fef0456fb",
+      "source": "../v1/demon.mp3",
+      "sourceSha256": "fbff0f5073913312c73531962e76c75cd3acd0132b7db705372e283ee232a616",
+      "start": 1.82,
+      "duration": 0.57,
+      "processing": "highpass=f=95,equalizer=f=2300:t=q:w=1:g=3,acompressor=threshold=0.3:ratio=2:attack=2:release=90,alimiter=limit=0.9:level=false,afade=t=out:st=0.49:d=0.08",
+      "license": "Original project composition with previously attributed Kenney CC0 foley; see v1/SOURCES.md"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "sourceSha256": "3ca945d56468f670fcb92bd142e575739ecf150fa1e83df85bb7ee6c17609102",
+  "method": "Eight generated full-body poses, fixed boot anchor, bidirectional optical-flow interpolation; same descent reversed for rise; not a rotated standing image",
+  "cell": [
+    256,
+    448
+  ],
+  "columns": 8,
+  "rows": 7,
+  "frames": 56,
+  "sourceAnchors": [
+    {
+      "sourceFrame": 0,
+      "sourceFoot": [
+        120,
+        419
+      ],
+      "translation": [
+        8,
+        11
+      ],
+      "targetFoot": [
+        128,
+        430
+      ]
+    },
+    {
+      "sourceFrame": 1,
+      "sourceFoot": [
+        120,
+        419
+      ],
+      "translation": [
+        8,
+        11
+      ],
+      "targetFoot": [
+        128,
+        430
+      ]
+    },
+    {
+      "sourceFrame": 2,
+      "sourceFoot": [
+        119,
+        419
+      ],
+      "translation": [
+        9,
+        11
+      ],
+      "targetFoot": [
+        128,
+        430
+      ]
+    },
+    {
+      "sourceFrame": 3,
+      "sourceFoot": [
+        118,
+        419
+      ],
+      "translation": [
+        10,
+        11
+      ],
+      "targetFoot": [
+        128,
+        430
+      ]
+    },
+    {
+      "sourceFrame": 4,
+      "sourceFoot": [
+        119,
+        417
+      ],
+      "translation": [
+        9,
+        13
+      ],
+      "targetFoot": [
+        128,
+        430
+      ]
+    },
+    {
+      "sourceFrame": 5,
+      "sourceFoot": [
+        118,
+        417
+      ],
+      "translation": [
+        10,
+        13
+      ],
+      "targetFoot": [
+        128,
+        430
+      ]
+    },
+    {
+      "sourceFrame": 6,
+      "sourceFoot": [
+        118,
+        417
+      ],
+      "translation": [
+        10,
+        13
+      ],
+      "targetFoot": [
+        128,
+        430
+      ]
+    },
+    {
+      "sourceFrame": 7,
+      "sourceFoot": [
+        117,
+        417
+      ],
+      "translation": [
+        11,
+        13
+      ],
+      "targetFoot": [
+        128,
+        430
+      ]
+    }
+  ],
+  "fixedBootBand": [
+    412,
+    448
+  ],
+  "timing": {
+    "voiceAt": 1450,
+    "spokenDurationMs": 768,
+    "holdStart": 1400,
+    "holdMs": 868,
+    "riseAt": 2268,
+    "durationMs": 4002
+  }
+}

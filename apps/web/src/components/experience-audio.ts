@@ -1,7 +1,7 @@
 import {experienceTiming,type ExperienceKind,type PresentationVersion,type PrivateSceneDescriptor} from '@ravens/contracts';
 import {privateAudioAllowed} from '../participation-audio.js';
 type Scope='public'|'private'|'ui'|'book';
-export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean}
+export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
 interface Playing {id:string;scope:Scope;at:number;sample:string;gain:GainNode;bell:boolean;end:number}
 let ctx:AudioContext|undefined,output:GainNode|undefined,unlockFlight:Promise<void>|undefined;
@@ -27,7 +27,7 @@ function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve()
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
 function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
- const version=sample.startsWith('v1:')?'v1':'v2',name=sample.replace(/^v1:/,'');
+ const version=sample.startsWith('v1:')?'v1':sample.startsWith('v3:')?'v3':'v2',name=sample.replace(/^v[13]:/,'');
  const pending=(async()=>{await takeLoadSlot();try{const response=await fetch('/audio/effects/'+version+'/'+name+'.mp3');if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
 function claim(key:string,at:number){if(played.has(key))return false;played.set(key,at);if(played.size>1200)played.delete(played.keys().next().value!);return true;}
@@ -79,14 +79,26 @@ export function scheduleCue(id:string,kind:string,elapsed:number,version:Present
  if(kind==='GAME_OVER'&&options.resultVisible&&fresh&&(options.outcome==='GOOD'||options.outcome==='EVIL'))sampleAt(id,'outcome:finale',(version<4?'v1:':'')+(options.outcome==='GOOD'?'good':'evil'),0,'public',rate,.78,0,500-(elapsed-timing.resultOffset));
 }
 export function schedulePrivateCue(id:string,kind:string,elapsed:number,options:AudioPlayback={}){const sample=({POISON:'poison',PROTECT:'shield',BUTLER:'butler',DEMON:'demon'} as Record<string,string>)[kind];if(sample)sampleAt('private:'+id,'base:ritual','v1:'+sample,(120-elapsed)/(options.rate??1),'private',options.rate??1,.74);}
-export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,options:AudioPlayback={}){
- const id='private:'+scene.id,rate=options.rate??1,role=scene.themeRoleId;
- const theme=scene.kind==='ROLE_CHANGE'?'scarlet_woman':role;const cues:Array<[number,string,number]>=[[500,'role-'+theme,.5]];
+export function roleAudioCues(scene:PrivateSceneDescriptor):Array<[number,string,number]>{
+ const role=scene.themeRoleId,theme=scene.kind==='ROLE_CHANGE'?'scarlet_woman':role;
  if(scene.kind==='ACTION_SUBMITTED'){
-  if(role==='butler')cues.push([1450,'butler-voice',.74]);
-  if(role==='poisoner')cues.push([750,'poison-bottle',.55],[1100,'poison-bubbles',.4],[1700,'cough-'+(1+hash(scene.id)%3),.35]);
-  if(role==='imp')cues.push([600,'wing-flap',.55],[850,'wing-air',.4],[1100,'wing-root',.5],[1450,'slash-left',.6],[1750,'slash-right',.6]);
+  // Preserve the user's accepted v1 shield, including its transient and decay.
+  if(role==='monk')return[[418,'v1:shield',.74]];
+  if(role==='imp')return[[600,'wing-flap',.43],[850,'wing-air',.22],[1100,'wing-root',.32],[1450,'v3:slash-left',.78],[1750,'v3:slash-right',.78]];
+  if(role==='poisoner')return[[750,'poison-bottle',.65],[1100,'poison-bubbles',.52],[1700,'cough-'+(1+hash(scene.id)%3),.42]];
+  if(role==='butler')return[[500,'role-butler',.3],[1450,'butler-voice',.74]];
  }
+ return[[500,'role-'+theme,.5]];
+}
+/** Prepare private media before its local art clock starts. Public timelines never wait. */
+export async function prepareRoleAudio(scene:PrivateSceneDescriptor):Promise<void>{
+ if(!enabled||!ctx||!privateAudioAllowed())return;
+ let timer:ReturnType<typeof setTimeout>|undefined;
+ await Promise.race([Promise.allSettled(roleAudioCues(scene).map(([,sample])=>load(sample))),new Promise<void>(resolve=>{timer=setTimeout(()=>{report('声音加载较慢，本段先继续；可在记录中重播');resolve();},6000);})]);
+ clearTimeout(timer);
+}
+export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,options:AudioPlayback={}){
+ const id='private:'+(options.playbackId??scene.id),rate=options.rate??1,cues=roleAudioCues(scene);
  for(const [at,sample,volume]of cues){const late=elapsed>at;if(late&&!options.resume)continue;const offset=late?(elapsed-at)/1000:0;sampleAt(id,(options.resume?'resume:'+epochs.get(id)+':':'')+at+':'+sample,sample,Math.max(0,(at-elapsed)/rate),'private',rate,volume,offset,150);}
 }
-export function auditionSample(sample:string){if(!/^[a-z0-9_-]+$/.test(sample))return;sampleAt('ui:audition:'+(++semanticSeq),'audition',sample,0,'ui',1,.5,0,500);}
+export async function auditionSample(sample:string){if(!/^(?:v[13]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
