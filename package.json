@@ -10,7 +10,7 @@
     "build": "pnpm -r --if-present build",
     "lint": "pnpm typecheck",
     "test:e2e": "playwright test",
-    "art:build": "node scripts/build-portraits.mjs"
+    "art:build": "node scripts/build-portraits-v2.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

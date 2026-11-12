@@ -16,7 +16,7 @@ export function PortraitsPreview() {
     <div className="portrait-gallery__grid">{roles.map((role) => {
       const art = roleArt(role.id);
       return <button key={role.id} className="portrait-gallery__card" type="button" onClick={() => setSelected(role.id)} aria-label={`查看${role.name}`}>
-        <RolePortrait url={art.portraitUrl} srcSet={art.portraitSrcSet} sizes="(max-width: 640px) 45vw, (max-width: 1000px) 30vw, 280px" label={`${role.name} A 版立绘`} loading="lazy" />
+        <RolePortrait url={art.portraitUrl} srcSet={art.portraitSrcSet} sizes="(max-width: 640px) 45vw, (max-width: 1000px) 30vw, 280px" label={`${role.name} B 版立绘`} loading="lazy" />
         <span><strong>{role.name}</strong><small>{groups.find((item) => item.id === role.type)?.label}</small></span>
       </button>;
     })}</div>

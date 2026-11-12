@@ -104,7 +104,7 @@ export function HomePortrait() {
       <div className="home-portrait__track">{beginnerRoles.map((role,item)=>{
         const art=roleArt(role.id),near=Math.abs(relative(item,index))<=2;
         return <div ref={node=>{cards.current[item]=node;}} className="home-portrait__slide" key={role.id} aria-hidden={item!==index}><div className="home-portrait__arch">
-          <img src={near?art.portraitUrl:undefined} srcSet={near?art.portraitSrcSet:undefined} sizes="(max-width:600px) 76vw,420px" alt={`${role.name}原画`} draggable={false} decoding="async" onError={event=>{if(event.currentTarget.getAttribute('src')?.endsWith('/concealed.svg'))return;event.currentTarget.removeAttribute('srcset');event.currentTarget.src='/assets/ravens/portraits-a-v1/concealed.svg';}}/><div className="home-portrait__shade"/>
+          <img src={near?art.portraitUrl:undefined} srcSet={near?art.portraitSrcSet:undefined} sizes="(max-width:600px) 76vw,420px" alt={`${role.name}原画`} draggable={false} decoding="async" onError={event=>{if(event.currentTarget.getAttribute('src')?.endsWith('/concealed.svg'))return;event.currentTarget.removeAttribute('srcset');event.currentTarget.src='/assets/ravens/portraits-b-v2/concealed.svg';}}/><div className="home-portrait__shade"/>
         </div></div>;
       })}</div>
     </div>
