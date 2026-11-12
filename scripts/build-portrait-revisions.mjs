@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import sharp from 'sharp';
-const root=path.resolve(import.meta.dirname,'..'),src=path.join(root,'artifacts/character-production-b-revisions-2026-11-12/originals'),out=path.join(root,'apps/web/public/assets/ravens/portraits-b-v3');
+const root=path.resolve(import.meta.dirname,'..'),src=path.join(root,'artifacts/character-production-b-revisions-2026-11-12/originals'),out=path.join(root,'artifacts/character-production-b-revisions-2026-11-12/preview-webp');
 await fs.mkdir(out,{recursive:true});const portraits=[];
 for(const [id,file] of [['spy','spy.png'],['virgin','virgin.png']]){
  const data=await fs.readFile(path.join(src,file)),meta=await sharp(data).metadata(),variants=[];
