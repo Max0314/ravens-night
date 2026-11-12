@@ -411,21 +411,24 @@
     {
       "id": "scarlet_woman",
       "name": "猩红女郎",
-      "sourceSha256": "89249458dada7fc0e80cb9546efb177c738f178195ac2737d91b484519067b97",
-      "sourceWidth": 1086,
-      "sourceHeight": 1448,
+      "sourceFile": "artifacts/character-production-b-2026-11-12/approved/scarlet_woman-20261112.jpg",
+      "source": "user-selected attachment",
+      "selectedAt": "2026-11-12",
+      "sourceSha256": "87c8e361b07f57f4b70c5f33d5c1540e9f5725cf4d3318990608fa1579370a03",
+      "sourceWidth": 960,
+      "sourceHeight": 1280,
       "variants": [
         {
-          "file": "scarlet_woman.webp",
+          "file": "scarlet_woman-approved-20261112.webp",
           "width": 960,
           "height": 1280,
-          "bytes": 140036
+          "bytes": 120940
         },
         {
-          "file": "scarlet_woman-small.webp",
+          "file": "scarlet_woman-approved-20261112-small.webp",
           "width": 240,
           "height": 320,
-          "bytes": 7914
+          "bytes": 7820
         }
       ]
     },

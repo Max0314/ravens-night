@@ -17,9 +17,9 @@ const portraits = previousManifest?.portraits ?? [];
 await fs.mkdir(outputRoot, { recursive: true });
 for (const role of ROLE_CATALOG) {
   if (selectedRole && role.id !== selectedRole) continue;
-  const approved = role.id === "poisoner";
+  const approved = role.id === "poisoner" || role.id === "scarlet_woman";
   const sourceFile = approved
-    ? path.join(root, "artifacts/character-production-b-2026-11-12/approved/poisoner-20261112.jpg")
+    ? path.join(root, `artifacts/character-production-b-2026-11-12/approved/${role.id}-20261112.jpg`)
     : path.join(sourceRoot, `${role.id}.png`);
   const original = await fs.readFile(sourceFile);
   const metadata = await sharp(original).metadata();
@@ -28,7 +28,7 @@ for (const role of ROLE_CATALOG) {
   }
   const variants = [];
   for (const [suffix, width, quality] of [["", 960, 88], ["-small", 240, 80]]) {
-    const file = `${approved ? "poisoner-approved-20261112" : role.id}${suffix}.webp`;
+    const file = `${approved ? `${role.id}-approved-20261112` : role.id}${suffix}.webp`;
     // Delivery encoding only. Keep all artwork: no cropping, framing or recolouring.
     const result = await sharp(original).rotate().resize({ width, withoutEnlargement: true })
       .webp({ quality, effort: 6 }).toFile(path.join(outputRoot, file));
