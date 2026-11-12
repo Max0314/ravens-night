@@ -1,0 +1,1622 @@
+{
+  "version": 1,
+  "date": "2026-11-12",
+  "status": "候选，未接入游戏，待人工试听",
+  "assets": [
+    {
+      "id": "A01",
+      "kind": "ambience",
+      "file": "ambience/A01__ambience_night-cavern__source-v01.ogg",
+      "title": "dark-cavern-ambient",
+      "name_zh": "暗穴长氛围",
+      "usage": "夜晚／恶魔空间",
+      "description": "持续的洞穴式黑暗氛围，作者注明此版本为连续循环；需试听是否过于地下城化。",
+      "author": "Paul Wortmann",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/dark-cavern-ambient",
+      "download_url": "https://opengameart.org/sites/default/files/dark_cavern_ambient_002.ogg",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 1693463,
+      "sha256": "d010bb0c3f9e9f855e0ce36486f30673db414739c02d62344398197927fdc24a",
+      "review_note": "完整120秒持续氛围；作者注明可循环，本轮未在游戏内验收接缝。",
+      "duration_seconds": 119.998,
+      "integrated_lufs": -17.54,
+      "clap_top3": [
+        "悠长暗色氛围",
+        "洞穴幽鸣",
+        "钟琴水琴悬疑"
+      ]
+    },
+    {
+      "id": "A02",
+      "kind": "ambience",
+      "file": "ambience/A02__ambience_tower-wind__source-v01.wav",
+      "title": "wind1",
+      "name_zh": "钟楼风底",
+      "usage": "夜晚／空刑架",
+      "description": "PureData合成的一分钟风声，可作为风底候选；并非现场录音。",
+      "author": "Luke.RUSTLTD",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/wind1",
+      "download_url": "https://opengameart.org/sites/default/files/wind1.wav",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 5291948,
+      "sha256": "a2856f794fbf77e05f8241dc4adeade7f62fa21c3c9dc49f7725b6c6218060c3",
+      "review_note": "一分钟合成风底，模型识别一致；不能称作真实钟楼录音。",
+      "duration_seconds": 59.999,
+      "integrated_lufs": -39.52,
+      "clap_top3": [
+        "风声",
+        "洞穴幽鸣",
+        "挥击风声"
+      ]
+    },
+    {
+      "id": "A03",
+      "kind": "ambience",
+      "file": "ambience/A03__ambience_clock-mechanism__source-v01.wav",
+      "title": "ticking-clock",
+      "name_zh": "机械滴答",
+      "usage": "大厅／投票等待",
+      "description": "机械时钟滴答原始素材，可用于节奏参照；避免持续抢占对话。",
+      "author": "bart",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/ticking-clock",
+      "download_url": "https://opengameart.org/sites/default/files/ticking_clock.wav",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 2822588,
+      "sha256": "dc4dc1bf2c4bbeee5fd0841a87610ed19d851a92abc973ce0f5ff3caec40d537",
+      "review_note": "8秒时钟素材，可作节奏层；当前文件不是一分钟环境录音。",
+      "duration_seconds": 8.0,
+      "integrated_lufs": -28.53,
+      "clap_top3": [
+        "时钟滴答",
+        "普通说话",
+        "金属机关"
+      ]
+    },
+    {
+      "id": "A04",
+      "kind": "ambience",
+      "file": "ambience/A04__ambience_hearth-fire__source-v01.ogg",
+      "title": "fire-crackling",
+      "name_zh": "炉火细响",
+      "usage": "大厅／白天室内",
+      "description": "火焰燃烧的细碎声，用于温暖近处空间。",
+      "author": "AntumDeluge",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/fire-crackling",
+      "download_url": "https://opengameart.org/sites/default/files/fire-1_0.ogg",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 22784,
+      "sha256": "f922929805bc6afdf0a35727fa3998033db544c1b6f62ed3aeab94341ed6ddeb",
+      "review_note": "仅约3.55秒原始火声；长版本请比较A07。",
+      "duration_seconds": 3.545,
+      "integrated_lufs": -30.25,
+      "clap_top3": [
+        "炉火",
+        "碎裂",
+        "风声"
+      ]
+    },
+    {
+      "id": "A05",
+      "kind": "ambience",
+      "file": "ambience/A05__ambience_distant-crows__source-v01.ogg",
+      "title": "crows-singing",
+      "name_zh": "群鸦远鸣",
+      "usage": "首页／夜幕转换",
+      "description": "乌鸦叫声环境素材，适合稀疏点缀；不建议整段高频重复。",
+      "author": "IgnasD",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/crows-singing",
+      "download_url": "https://opengameart.org/sites/default/files/Crows.ogg",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 103892,
+      "sha256": "c2ac86edfe858402a5440488ad8bfa17921e2f4831b58facb544a928f20c3cad",
+      "review_note": "约9秒乌鸦录音，适合稀疏点缀。",
+      "duration_seconds": 9.344,
+      "integrated_lufs": -22.72,
+      "clap_top3": [
+        "群鸦",
+        "碎裂",
+        "女性惨叫"
+      ]
+    },
+    {
+      "id": "A06",
+      "kind": "ambience",
+      "file": "ambience/A06__ambience_night-tower-soundscape-90s__candidate-v01.mp3",
+      "title": "night-tower-soundscape-90s",
+      "name_zh": "钟楼之夜·90秒氛围",
+      "usage": "夜晚／首页暗景",
+      "description": "风底、暗穴持续层与一次远鸦组成长氛围；以空间感为主，没有新增旋律，首尾淡化，尚非无缝循环定稿。",
+      "author": "Ravens audition edit; sources: Luke.RUSTLTD; Paul Wortmann; IgnasD",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/wind1",
+        "https://opengameart.org/content/dark-cavern-ambient",
+        "https://opengameart.org/content/crows-singing"
+      ],
+      "source_ids": [
+        "A02",
+        "A01",
+        "A05"
+      ],
+      "processing": "风0.18、暗穴0.38、37s远鸦0.065；90s立体声，1s/2s淡入淡出，峰值-3dBFS。",
+      "bytes": 2161196,
+      "sha256": "5144bed51ceb5861cd36231f64f0e827fa11e2e65df708ead99859a030f3734e",
+      "review_note": "优先试听90秒夜景：模型仍偏洞穴幽鸣，需决定钟楼是否应更开阔。",
+      "duration_seconds": 90.0,
+      "integrated_lufs": -23.68,
+      "clap_top3": [
+        "洞穴幽鸣",
+        "悠长暗色氛围",
+        "钟琴水琴悬疑"
+      ]
+    },
+    {
+      "id": "A07",
+      "kind": "ambience",
+      "file": "ambience/A07__ambience_hall-hearth-clock-90s__candidate-v01.mp3",
+      "title": "hall-hearth-clock-90s",
+      "name_zh": "古宅厅堂·90秒氛围",
+      "usage": "大厅／白天室内",
+      "description": "近处炉火、轻机械滴答与极淡风底；短炉火录音做交叠延展，可能听出重复，供试听判断。",
+      "author": "Ravens audition edit; sources: AntumDeluge; bart; Luke.RUSTLTD",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/fire-crackling",
+        "https://opengameart.org/content/ticking-clock",
+        "https://opengameart.org/content/wind1"
+      ],
+      "source_ids": [
+        "A04",
+        "A03",
+        "A02"
+      ],
+      "processing": "炉火4kHz低通、150ms交叠；滴答8s整段重复；90s立体声，1s/2s首尾淡化，峰值-3dBFS。",
+      "bytes": 2161196,
+      "sha256": "9e6226ba4758d43d2b4befdd066a5f2103a2acd1cf590da278567fb4bc7db31e",
+      "review_note": "优先试听90秒大厅：炉火、滴答、淡风；短原录音重复感需人工确认。",
+      "duration_seconds": 90.0,
+      "integrated_lufs": -24.52,
+      "clap_top3": [
+        "炉火",
+        "风声",
+        "时钟滴答"
+      ]
+    },
+    {
+      "id": "D01",
+      "kind": "designed",
+      "file": "designed/D01__designed_claw-left-dry-impact__candidate-v01.mp3",
+      "title": "claw-left-dry-impact",
+      "name_zh": "左抓·干脆接触",
+      "usage": "恶魔提交动作试听",
+      "description": "挥击风声后接真实布料撕开、湿润拍击与少量粗粝碎裂，声像偏左；未使用旧版撕裂轨。",
+      "author": "Ravens audition edit; sources: Ravens audition edit; sources: artisticdude; Ravens audition edit; sources: Joseph SARDIN; Ravens audition edit; sources: qubodup; spookymodem",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/swishes-sound-pack",
+        "https://bigsoundbank.com/tissu-s0013.html",
+        "https://opengameart.org/content/40-wet-towel-clubpoundhitattack-sounds",
+        "https://opengameart.org/content/crunching-bones"
+      ],
+      "source_ids": [
+        "F01",
+        "F13",
+        "F09",
+        "S02"
+      ],
+      "processing": "空气0ms、布料80ms、湿润110ms、碎裂130ms；左侧声像约-0.45；峰值-3dBFS。",
+      "bytes": 24236,
+      "sha256": "78214e68ac9821f8fd13b815e69dd16f13b07872b127cfe78b271a48ad7e710b",
+      "review_note": "需要重点试听：真实布料撕开已加入，但混合后模型仍偏湿润拍击；尚未认定撕裂质感达标。",
+      "duration_seconds": 0.95,
+      "integrated_lufs": -24.35,
+      "clap_top3": [
+        "湿润拍击",
+        "枪声",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "D02",
+      "kind": "designed",
+      "file": "designed/D02__designed_claw-right-wet-impact__candidate-v01.mp3",
+      "title": "claw-right-wet-impact",
+      "name_zh": "右抓·湿润重击",
+      "usage": "恶魔提交动作试听",
+      "description": "另一条挥击接不同段落的真实布料撕开与湿润撞击，声像偏右。",
+      "author": "Ravens audition edit; sources: Ravens audition edit; sources: artisticdude; Ravens audition edit; sources: Joseph SARDIN; Ravens audition edit; sources: qubodup; spookymodem",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/swishes-sound-pack",
+        "https://bigsoundbank.com/tissu-s0013.html",
+        "https://opengameart.org/content/40-wet-towel-clubpoundhitattack-sounds",
+        "https://opengameart.org/content/crunching-bones"
+      ],
+      "source_ids": [
+        "F02",
+        "F13",
+        "F10",
+        "S02"
+      ],
+      "processing": "空气0ms、布料100ms、碎裂120ms、湿润140ms；右侧声像约+0.45；峰值-3dBFS。",
+      "bytes": 26540,
+      "sha256": "d4ddf33af7355c0f93173e69853a91427f49043b6f76ef7ef7cebf2b7faba624",
+      "review_note": "需要重点试听：右侧另一抓，模型同时提示湿润、碎裂、撕开；与D01一起比较。",
+      "duration_seconds": 1.05,
+      "integrated_lufs": -25.65,
+      "clap_top3": [
+        "湿润拍击",
+        "碎裂",
+        "撕开"
+      ]
+    },
+    {
+      "id": "D03",
+      "kind": "designed",
+      "file": "designed/D03__designed_death-male-direct-impact__candidate-v01.mp3",
+      "title": "death-male-direct-impact",
+      "name_zh": "死亡·男声直接冲击",
+      "usage": "公开死亡音效试听",
+      "description": "重击与短促人声几乎同时爆发，保留突然结束的决定感；仅为死亡配音候选，未接入任何游戏事件。",
+      "author": "Ravens audition edit; sources: dklon; Ravens audition edit; sources: EmoPreben; Ravens audition edit; sources: qubodup",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/body-hitting-ground",
+        "https://opengameart.org/content/pain-sounds-by-emopreben",
+        "https://opengameart.org/content/40-wet-towel-clubpoundhitattack-sounds"
+      ],
+      "source_ids": [
+        "S01",
+        "V04",
+        "F11"
+      ],
+      "processing": "身体0ms、人声15ms、湿润25ms；人声最多1.2s，短尾；整体峰值-3dBFS。",
+      "bytes": 28844,
+      "sha256": "c7013a5dac95508133a1e8813a0ed376694e2113ece9c5dbf568b79c9ec9613a",
+      "review_note": "男声重击对照：模型对痛哼与惨叫的匹配接近，尚不能认定足够凶狠。",
+      "duration_seconds": 1.15,
+      "integrated_lufs": -15.9,
+      "clap_top3": [
+        "痛苦闷哼",
+        "男性惨叫",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "D04",
+      "kind": "designed",
+      "file": "designed/D04__designed_death-female-direct-impact__candidate-v01.mp3",
+      "title": "death-female-direct-impact",
+      "name_zh": "死亡·女声直接冲击",
+      "usage": "公开死亡音效试听",
+      "description": "重击与短促人声几乎同时爆发，保留突然结束的决定感；仅为死亡配音候选，未接入任何游戏事件。",
+      "author": "Ravens audition edit; sources: dklon; AuraVoice (Nocturnal_Vanguard); Ravens audition edit; sources: qubodup",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/body-hitting-ground",
+        "https://opengameart.org/content/female-scream-1",
+        "https://opengameart.org/content/40-wet-towel-clubpoundhitattack-sounds"
+      ],
+      "source_ids": [
+        "S01",
+        "V01",
+        "F11"
+      ],
+      "processing": "身体0ms、人声15ms、湿润25ms；人声最多1.2s，短尾；整体峰值-3dBFS。",
+      "bytes": 28844,
+      "sha256": "d736d899247bc084314d1a964ecff32fa09e78614545463a37702f7bd3a4be8f",
+      "review_note": "优先死亡候选：短人声爆发与接触，模型明确偏女性惨叫；是否有决定感由人工试听。",
+      "duration_seconds": 1.15,
+      "integrated_lufs": -11.14,
+      "clap_top3": [
+        "女性惨叫",
+        "男性惨叫",
+        "痛苦闷哼"
+      ]
+    },
+    {
+      "id": "D05",
+      "kind": "designed",
+      "file": "designed/D05__designed_execution-steel-body-impact__candidate-v01.mp3",
+      "title": "execution-steel-body-impact",
+      "name_zh": "处刑·钢刃与沉重落点",
+      "usage": "处刑接触试听",
+      "description": "钢铁准备声接身体重击和短碎裂；不含人声，方便单独选择惨叫。",
+      "author": "Ravens audition edit; sources: Ravens audition edit; sources: artisticdude; dklon; spookymodem",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack",
+        "https://opengameart.org/content/body-hitting-ground",
+        "https://opengameart.org/content/crunching-bones"
+      ],
+      "source_ids": [
+        "F04",
+        "S01",
+        "S02"
+      ],
+      "processing": "钢铁0ms，落点260ms，碎裂265ms；整体峰值-3dBFS。",
+      "bytes": 34028,
+      "sha256": "06d2ed569ef415b2ec85033be97237c17214e6870fd5bf661b56a1b9b822802e",
+      "review_note": "处刑接触对照：模型仍提示湿润／玻璃感，不能认定已像沉重钢刃；可拆听F04和S01。",
+      "duration_seconds": 1.35,
+      "integrated_lufs": -23.22,
+      "clap_top3": [
+        "湿润拍击",
+        "玻璃",
+        "碎裂"
+      ]
+    },
+    {
+      "id": "D06",
+      "kind": "designed",
+      "file": "designed/D06__designed_wing-membrane-unfold__candidate-v01.mp3",
+      "title": "wing-membrane-unfold",
+      "name_zh": "展翼·膜翼展开",
+      "usage": "恶魔展翼试听",
+      "description": "两种衣料与挥动空气组合成翼膜活动的候选；听感需人工确认，不声称是真实蝙蝠录音。",
+      "author": "Ravens audition edit; sources: Vinrax; Ravens audition edit; sources: artisticdude",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/cloth-swing-sounds",
+        "https://opengameart.org/content/rpg-sound-pack",
+        "https://opengameart.org/content/swishes-sound-pack"
+      ],
+      "source_ids": [
+        "S03",
+        "F03",
+        "F02"
+      ],
+      "processing": "衣料0/250ms，空气450ms，轻度声像分布；整体峰值-3dBFS。",
+      "bytes": 49580,
+      "sha256": "9316d2cea4e52147b8a22a3122ffe91ee8545964c074a2c366bcdfdb94a67462",
+      "review_note": "展翼材质对照：模型偏重击与衣料，是否像大型膜翼仍需试听。",
+      "duration_seconds": 2.0,
+      "integrated_lufs": -23.27,
+      "clap_top3": [
+        "身体重击",
+        "衣料摩擦",
+        "挥击风声"
+      ]
+    },
+    {
+      "id": "D07",
+      "kind": "designed",
+      "file": "designed/D07__designed_poison-glass-liquid-ritual__candidate-v01.mp3",
+      "title": "poison-glass-liquid-ritual",
+      "name_zh": "投毒·瓶体与药液",
+      "usage": "投毒提交试听",
+      "description": "清楚的瓶体接触后出现两次液体活动，不加入咳嗽或成功暗示。",
+      "author": "Ravens audition edit; sources: Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack"
+      ],
+      "source_ids": [
+        "F06",
+        "F07"
+      ],
+      "processing": "瓶体0ms，液体350/950ms；整体峰值-3dBFS。",
+      "bytes": 58796,
+      "sha256": "49cd69ee5f7b2bd6be16706eeb3ae39805f960fcf03b7a1c8af52f90a3fdcb91",
+      "review_note": "投毒对照：瓶体／液体仍有湿润拍击提示，尚未认定瓶体精致度达标。",
+      "duration_seconds": 2.4,
+      "integrated_lufs": -24.76,
+      "clap_top3": [
+        "湿润拍击",
+        "液体气泡",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "F01",
+      "kind": "foley",
+      "file": "foley/F01__foley_weapon-swish-short__candidate-v01.mp3",
+      "title": "weapon-swish-short",
+      "name_zh": "短促挥击",
+      "usage": "恶魔挥爪／刀刃空气",
+      "description": "独立挥击空气材质；与接触和撕裂分开试听。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/swishes-sound-pack"
+      ],
+      "source_ids": [
+        "swishes-sound-pack:swishes/swish-1.wav"
+      ],
+      "processing": "从源包提取 swishes/swish-1.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 4076,
+      "sha256": "3d9bc46d843ed54a91b25d982f171bef4f69cf97227b72e75ef57ce4ce49efe9",
+      "source_archive_sha256": "7980215241b739a787dcf26f660ce510bb237900968789395a86911619795693",
+      "source_member": "swishes/swish-1.wav",
+      "source_member_sha256": "9a15c881345c1ce1c39cc31f52f081c8c4dc81fa41111e0079400f39d3ba0e45",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.108,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "挥击风声",
+        "身体重击",
+        "湿润拍击"
+      ]
+    },
+    {
+      "id": "F02",
+      "kind": "foley",
+      "file": "foley/F02__foley_weapon-swish-heavy__candidate-v01.mp3",
+      "title": "weapon-swish-heavy",
+      "name_zh": "重挥击",
+      "usage": "恶魔第二抓／处刑下落",
+      "description": "另一条真实素材，用于区分两次动作。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/swishes-sound-pack"
+      ],
+      "source_ids": [
+        "swishes-sound-pack:swishes/swish-7.wav"
+      ],
+      "processing": "从源包提取 swishes/swish-7.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 5228,
+      "sha256": "9cd316b0cb2c08f05525ab7942e2d6c9f6527330f3bb692942359e0e4bd6cffa",
+      "source_archive_sha256": "7980215241b739a787dcf26f660ce510bb237900968789395a86911619795693",
+      "source_member": "swishes/swish-7.wav",
+      "source_member_sha256": "e6de737a34de16afed094d6170d7679149022f149e0a8356d2f029b0e8f4a4d7",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.158,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "挥击风声",
+        "身体重击",
+        "衣料摩擦"
+      ]
+    },
+    {
+      "id": "F03",
+      "kind": "foley",
+      "file": "foley/F03__foley_heavy-cloth__candidate-v01.mp3",
+      "title": "heavy-cloth",
+      "name_zh": "厚衣料",
+      "usage": "展翼／管家",
+      "description": "重衣料摩擦材质，作为翼膜和服装候选。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack"
+      ],
+      "source_ids": [
+        "rpg-sound-pack:RPG Sound Pack/inventory/cloth-heavy.wav"
+      ],
+      "processing": "从源包提取 RPG Sound Pack/inventory/cloth-heavy.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 8108,
+      "sha256": "b67b2f4a8ea099b49b7bc84fda3ae8acb7eb2a40a638c5cf81af5033a12f2e63",
+      "source_archive_sha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "source_member": "RPG Sound Pack/inventory/cloth-heavy.wav",
+      "source_member_sha256": "73bbbd383b5bbc8b8313f6fee84040aecc1de09714afbe51ba4e5162cbac3528",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.28,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "衣料摩擦",
+        "挥击风声",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "F04",
+      "kind": "foley",
+      "file": "foley/F04__foley_steel-draw__candidate-v01.mp3",
+      "title": "steel-draw",
+      "name_zh": "钢刃出鞘",
+      "usage": "处刑／猎手准备",
+      "description": "钢铁抽动材质候选，适合动作准备阶段。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack"
+      ],
+      "source_ids": [
+        "rpg-sound-pack:RPG Sound Pack/battle/sword-unsheathe2.wav"
+      ],
+      "processing": "从源包提取 RPG Sound Pack/battle/sword-unsheathe2.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 9260,
+      "sha256": "a3bc9986a7d450e918013b90952b1ef7c96e87793afa5476d87467a64bece6d8",
+      "source_archive_sha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "source_member": "RPG Sound Pack/battle/sword-unsheathe2.wav",
+      "source_member_sha256": "1df8bdb5e4f852821a9b5b7cf27b2c1c516c3a6382cb14b2865005d786503b0a",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.314,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "剑刃",
+        "玻璃",
+        "湿润拍击"
+      ]
+    },
+    {
+      "id": "F05",
+      "kind": "foley",
+      "file": "foley/F05__foley_metal-ring__candidate-v01.mp3",
+      "title": "metal-ring",
+      "name_zh": "金属余鸣",
+      "usage": "护盾／机关",
+      "description": "金属持续共鸣，作为精致余音材料。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack"
+      ],
+      "source_ids": [
+        "rpg-sound-pack:RPG Sound Pack/inventory/metal-ringing.wav"
+      ],
+      "processing": "从源包提取 RPG Sound Pack/inventory/metal-ringing.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 13292,
+      "sha256": "addcda099db215850af6733d6dcbfce4c59986dd5007d64fe3f42bc612170bbb",
+      "source_archive_sha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "source_member": "RPG Sound Pack/inventory/metal-ringing.wav",
+      "source_member_sha256": "55b1ba32e57070ef150c3fe88e1e04f0a4dc382f47e0bfc77249d1ac62dba517",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.493,
+      "integrated_lufs": -14.55,
+      "clap_top3": [
+        "玻璃",
+        "钟声",
+        "群鸦"
+      ]
+    },
+    {
+      "id": "F06",
+      "kind": "foley",
+      "file": "foley/F06__foley_glass-bottle__candidate-v01.mp3",
+      "title": "glass-bottle",
+      "name_zh": "瓶体接触",
+      "usage": "投毒／酒鬼",
+      "description": "独立瓶体材质，避免把所有瓶子都做成玻璃破碎。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack"
+      ],
+      "source_ids": [
+        "rpg-sound-pack:RPG Sound Pack/inventory/bottle.wav"
+      ],
+      "processing": "从源包提取 RPG Sound Pack/inventory/bottle.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 10412,
+      "sha256": "9bf178257009253b3fa8aa8509ee0d5521aadc3662082fc175824ccb83fc5343",
+      "source_archive_sha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "source_member": "RPG Sound Pack/inventory/bottle.wav",
+      "source_member_sha256": "b80e52ce602f0e8f75b3a80516771a759b815416f749888f72cadcd9448ecea0",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.373,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "湿润拍击",
+        "液体气泡",
+        "挥击风声"
+      ]
+    },
+    {
+      "id": "F07",
+      "kind": "foley",
+      "file": "foley/F07__foley_liquid-bubbles__candidate-v01.mp3",
+      "title": "liquid-bubbles",
+      "name_zh": "液体冒泡",
+      "usage": "投毒／药液",
+      "description": "另一组液体气泡素材候选。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack"
+      ],
+      "source_ids": [
+        "rpg-sound-pack:RPG Sound Pack/inventory/bubble2.wav"
+      ],
+      "processing": "从源包提取 RPG Sound Pack/inventory/bubble2.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 9836,
+      "sha256": "7ea6aee2d769724795595408953ebcb2b4e08a038a68513c143015cdd0e43f41",
+      "source_archive_sha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "source_member": "RPG Sound Pack/inventory/bubble2.wav",
+      "source_member_sha256": "fea5d8f0049a71b0a73b3086271fc18d0b5d733965b53fbfe550b6de26b1bef9",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.346,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "湿润拍击",
+        "液体气泡",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "F08",
+      "kind": "foley",
+      "file": "foley/F08__foley_wood-knock__candidate-v01.mp3",
+      "title": "wood-knock",
+      "name_zh": "木质落点",
+      "usage": "提名／砧板／投票",
+      "description": "短木质接触，可比较机关与道具的实体感。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack"
+      ],
+      "source_ids": [
+        "rpg-sound-pack:RPG Sound Pack/inventory/wood-small.wav"
+      ],
+      "processing": "从源包提取 RPG Sound Pack/inventory/wood-small.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 6956,
+      "sha256": "87532fd360c2062ddde499de676c4cdfa28bf82461e04da11a4d0c0781c4cdcb",
+      "source_archive_sha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "source_member": "RPG Sound Pack/inventory/wood-small.wav",
+      "source_member_sha256": "679184e2a0c37e68450f8f2b511daca8ce187af306789215197dc73c0193386e",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.226,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "木头敲击",
+        "碎裂",
+        "时钟滴答"
+      ]
+    },
+    {
+      "id": "F09",
+      "kind": "foley",
+      "file": "foley/F09__foley_wet-impact-a__candidate-v01.mp3",
+      "title": "wet-impact-a",
+      "name_zh": "湿润冲击 A",
+      "usage": "死亡／挥爪接触",
+      "description": "湿毛巾接触身体的拟音，作为湿润接触材质。",
+      "author": "Ravens audition edit; sources: qubodup",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/40-wet-towel-clubpoundhitattack-sounds"
+      ],
+      "source_ids": [
+        "40-wet-towel-clubpoundhitattack-sounds:wet_towel_on_body/wet_towel_on_body-04.flac"
+      ],
+      "processing": "从源包提取 wet_towel_on_body/wet_towel_on_body-04.flac；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 9836,
+      "sha256": "c334ec945fe2f575939033f6dc719a1b7010f0dfec483e2aeb01d36a657549b2",
+      "source_archive_sha256": "bbb7041df68d5ae19358457d5ffa7f562ea143c85af40e999d719478f388ae7a",
+      "source_member": "wet_towel_on_body/wet_towel_on_body-04.flac",
+      "source_member_sha256": "5a8c371336efc4f81c0cb09ce081d469f59c877e4204ebcd1cfeb2ecf5760fd4",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.356,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "枪声",
+        "湿润拍击",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "F10",
+      "kind": "foley",
+      "file": "foley/F10__foley_wet-impact-b__candidate-v01.mp3",
+      "title": "wet-impact-b",
+      "name_zh": "湿润冲击 B",
+      "usage": "死亡／挥爪接触",
+      "description": "同套录音的另一条独立拍击。",
+      "author": "Ravens audition edit; sources: qubodup",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/40-wet-towel-clubpoundhitattack-sounds"
+      ],
+      "source_ids": [
+        "40-wet-towel-clubpoundhitattack-sounds:wet_towel_on_body/wet_towel_on_body-15.flac"
+      ],
+      "processing": "从源包提取 wet_towel_on_body/wet_towel_on_body-15.flac；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 8684,
+      "sha256": "319b0b0b865462ecc50967ddb63d402c49c1f7af856008be8ae81bcc09dd9b0a",
+      "source_archive_sha256": "bbb7041df68d5ae19358457d5ffa7f562ea143c85af40e999d719478f388ae7a",
+      "source_member": "wet_towel_on_body/wet_towel_on_body-15.flac",
+      "source_member_sha256": "8b230375875078132a1509fc5487c85882fd828879351a26b0e2cb49cb4963b4",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.306,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "碎裂",
+        "湿润拍击",
+        "挥击风声"
+      ]
+    },
+    {
+      "id": "F11",
+      "kind": "foley",
+      "file": "foley/F11__foley_wet-impact-c__candidate-v01.mp3",
+      "title": "wet-impact-c",
+      "name_zh": "湿润冲击 C",
+      "usage": "死亡／挥爪接触",
+      "description": "第三条独立拍击，避免完全重复。",
+      "author": "Ravens audition edit; sources: qubodup",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/40-wet-towel-clubpoundhitattack-sounds"
+      ],
+      "source_ids": [
+        "40-wet-towel-clubpoundhitattack-sounds:wet_towel_on_body/wet_towel_on_body-30.flac"
+      ],
+      "processing": "从源包提取 wet_towel_on_body/wet_towel_on_body-30.flac；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 8684,
+      "sha256": "fe172500d933d24a1b15dc2e6013d376bf88db2d9f9c8d98005f0649b3669aad",
+      "source_archive_sha256": "bbb7041df68d5ae19358457d5ffa7f562ea143c85af40e999d719478f388ae7a",
+      "source_member": "wet_towel_on_body/wet_towel_on_body-30.flac",
+      "source_member_sha256": "5aa62d45e5780827b51ba1da87451249eba2179547480e54ce05e7bebc2e6185",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.31,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "碎裂",
+        "湿润拍击",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "F12",
+      "kind": "foley",
+      "file": "foley/F12__foley_chainmail__candidate-v01.mp3",
+      "title": "chainmail",
+      "name_zh": "甲片与链甲",
+      "usage": "士兵／护盾",
+      "description": "细碎金属活动材质，不与主重击争抢起音。",
+      "author": "Ravens audition edit; sources: artisticdude",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/rpg-sound-pack"
+      ],
+      "source_ids": [
+        "rpg-sound-pack:RPG Sound Pack/inventory/chainmail1.wav"
+      ],
+      "processing": "从源包提取 RPG Sound Pack/inventory/chainmail1.wav；去首尾静音，3ms/40ms淡入淡出，峰值-3dBFS，192kbps MP3。",
+      "bytes": 10988,
+      "sha256": "1b247033409dd504b74ffc88424b8d03a3370820059e042c861b25420d581b72",
+      "source_archive_sha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "source_member": "RPG Sound Pack/inventory/chainmail1.wav",
+      "source_member_sha256": "44d4d6b0cda8138c9d5545ba4f434f53b7817ba32d98ddfdf5bff6ae7acdefdf",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.396,
+      "integrated_lufs": null,
+      "clap_top3": [
+        "身体重击",
+        "衣料摩擦",
+        "挥击风声"
+      ]
+    },
+    {
+      "id": "F13",
+      "kind": "foley",
+      "file": "foley/F13__foley_real-cloth-rip-excerpt__candidate-v01.mp3",
+      "title": "real-cloth-rip-excerpt",
+      "name_zh": "真实布料撕开·摘录",
+      "usage": "恶魔撕裂／翼膜",
+      "description": "录音棚真实布料短撕与长撕的前4.5秒摘录；原始10秒下载未完整保存，当前摘录已重新编码为完整可播放文件。",
+      "author": "Ravens audition edit; sources: Joseph SARDIN",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://bigsoundbank.com/tissu-s0013.html"
+      ],
+      "source_ids": [
+        "bigsoundbank-0013"
+      ],
+      "processing": "从已下载前段解码摘录4.5s，3/30ms首尾淡化，峰值-3dBFS；完整源页提供10s原录音。",
+      "bytes": 109484,
+      "sha256": "a3570a6d91f858996cad13f3e2e20242b92e76ff3a0ea17e4bd047987b0ab9ef",
+      "download_url": "https://bigsoundbank.com/UPLOAD/mp3/0013.mp3",
+      "downloaded_source_complete": false,
+      "downloaded_source_bytes": 65536,
+      "downloaded_source_sha256": "bf5badef9ccf6802fcdebfb0d2866279aa4138f0b61b6eb47b72f976310f1ced",
+      "review_note": "优先与旧撕裂比较：真实布料撕开前段摘录，模型也偏撕开；完整源录音尚未下载成功。",
+      "duration_seconds": 4.5,
+      "integrated_lufs": -31.04,
+      "clap_top3": [
+        "撕开",
+        "碎裂",
+        "湿润拍击"
+      ]
+    },
+    {
+      "id": "L01",
+      "kind": "long-effects",
+      "file": "long-effects/L01__long-effects_dark-long-hits-sequence__source-v01.mp3",
+      "title": "dark-long-hits",
+      "name_zh": "黑暗长重音组",
+      "usage": "身份揭晓／继任／终局",
+      "description": "有持续余音的暗色重音合集，作为长音效与音乐转场参照。",
+      "author": "marcelofg55",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_page": "https://opengameart.org/content/dark-long-hits",
+      "download_url": "https://opengameart.org/sites/default/files/Dark%20Long%20Hits.mp3",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 1589625,
+      "sha256": "036d870f0b6490bd68065840582c080fbe09f50b406f9561ccf9d24c4f9b086d",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 66.064,
+      "integrated_lufs": -14.28,
+      "clap_top3": [
+        "低沉长重音",
+        "钟声",
+        "悠长暗色氛围"
+      ]
+    },
+    {
+      "id": "L02",
+      "kind": "long-effects",
+      "file": "long-effects/L02__long-effects_dark-resonance-l02__candidate-v01.mp3",
+      "title": "dark-resonance-l02",
+      "name_zh": "暗色长重音·第一式",
+      "usage": "身份揭幕／继任／终局转场",
+      "description": "从Marcelo Fernandez长重音合集单独截出一式，保留悠长衰减，方便与连续配乐分开比较。",
+      "author": "Ravens audition edit; sources: marcelofg55",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/dark-long-hits"
+      ],
+      "source_ids": [
+        "L01"
+      ],
+      "processing": "源文件0s起截取15s，300ms收尾，峰值-3dBFS。",
+      "bytes": 361196,
+      "sha256": "c025d3539d6540f60c6dd255c7f967cab6ac6fac55f2a2f2eaf839a854937fb6",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 15.0,
+      "integrated_lufs": -26.17,
+      "clap_top3": [
+        "低沉长重音",
+        "枪声",
+        "钟声"
+      ]
+    },
+    {
+      "id": "L03",
+      "kind": "long-effects",
+      "file": "long-effects/L03__long-effects_dark-resonance-l03__candidate-v01.mp3",
+      "title": "dark-resonance-l03",
+      "name_zh": "暗色长重音·第二式",
+      "usage": "身份揭幕／继任／终局转场",
+      "description": "从Marcelo Fernandez长重音合集单独截出一式，保留悠长衰减，方便与连续配乐分开比较。",
+      "author": "Ravens audition edit; sources: marcelofg55",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/dark-long-hits"
+      ],
+      "source_ids": [
+        "L01"
+      ],
+      "processing": "源文件22s起截取16s，300ms收尾，峰值-3dBFS。",
+      "bytes": 385388,
+      "sha256": "3a957692321a62e00daab7b17d948ac0cce17d9fbf852b8b66714e446844f5bf",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 16.0,
+      "integrated_lufs": -23.8,
+      "clap_top3": [
+        "低沉长重音",
+        "枪声",
+        "洞穴幽鸣"
+      ]
+    },
+    {
+      "id": "L04",
+      "kind": "long-effects",
+      "file": "long-effects/L04__long-effects_dark-resonance-l04__candidate-v01.mp3",
+      "title": "dark-resonance-l04",
+      "name_zh": "暗色长重音·第三式",
+      "usage": "身份揭幕／继任／终局转场",
+      "description": "从Marcelo Fernandez长重音合集单独截出一式，保留悠长衰减，方便与连续配乐分开比较。",
+      "author": "Ravens audition edit; sources: marcelofg55",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_pages": [
+        "https://opengameart.org/content/dark-long-hits"
+      ],
+      "source_ids": [
+        "L01"
+      ],
+      "processing": "源文件44s起截取20s，300ms收尾，峰值-3dBFS。",
+      "bytes": 481580,
+      "sha256": "683c496677c9a1e1fbc8afdc73123a7f00e5f34ae44129ebabfdbc78636cfa5b",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 20.0,
+      "integrated_lufs": -25.28,
+      "clap_top3": [
+        "低沉长重音",
+        "钟声",
+        "枪声"
+      ]
+    },
+    {
+      "id": "M01",
+      "kind": "music",
+      "file": "music/M01__music_home__moonlight-hall__Kevin-MacLeod__full-v01.mp3",
+      "title": "Moonlight Hall",
+      "name_zh": "月下大厅",
+      "usage": "首页／身份揭幕",
+      "description": "管弦乐与木管推动的神秘叙事，后段更活跃；作为有旋律的首页候选，须试听是否偏诙谐。",
+      "author": "Kevin MacLeod",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200095",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/1/19/Moonlight_Hall_%28ISRC_USUAN1200095%29.mp3",
+      "source_instruments": "Celesta, Tuba, Choir, Oboe, Bassoon, Violins, Violas, Cellos, Basses, Flute, Piccolo, Timpani, Percussion",
+      "source_bpm": "136",
+      "isrc": "USUAN1200095",
+      "processing": "原始完整MP3，仅重命名；未归一化，未宣称无缝循环。",
+      "author_download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Moonlight%20Hall.mp3",
+      "mirror_page": "https://commons.wikimedia.org/wiki/File:Moonlight_Hall_(ISRC_USUAN1200095).mp3",
+      "source_sha1": "7dae7ff0108cf427ea082dd129daef7d1aabd538",
+      "source_size": 7927672,
+      "bytes": 7927672,
+      "sha256": "5decdbc9ec96d4c075825bfb10c2d00dbc854f72721eeba7c1f9e3aa70369060",
+      "review_note": "优先用于善良终局对照；模型更接近明亮胜利，不能仅因曲名就定为阴暗首页。",
+      "duration_seconds": 198.139,
+      "integrated_lufs": -16.18,
+      "clap_top3": [
+        "明亮胜利",
+        "古典圆舞曲",
+        "哥特管弦乐"
+      ]
+    },
+    {
+      "id": "M03",
+      "kind": "music",
+      "file": "music/M03__music_day-discussion__comfortable-mystery__Kevin-MacLeod__full-v01.mp3",
+      "title": "Comfortable Mystery",
+      "name_zh": "安静的疑云",
+      "usage": "白天讨论",
+      "description": "缓慢电钢琴下行分解音，留白较多；作为轻量讨论底乐，复古音色需要与画面核对。",
+      "author": "Kevin MacLeod",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100287",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Comfortable_Mystery_%28ISRC_USUAN1100287%29.mp3",
+      "source_instruments": "Electric Piano",
+      "source_bpm": "65",
+      "isrc": "USUAN1100287",
+      "processing": "原始完整MP3，仅重命名；未归一化，未宣称无缝循环。",
+      "author_download_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Comfortable%20Mystery.mp3",
+      "mirror_page": "https://commons.wikimedia.org/wiki/File:Comfortable_Mystery_(ISRC_USUAN1100287).mp3",
+      "source_sha1": "c945394b38a81cd3a96af92c2a917c18c58c8dce",
+      "source_size": 7808360,
+      "bytes": 7808360,
+      "sha256": "43cea2c91a80524d3fdaee00c0823d8e3b001a40332253f8d0b3ea8b36ff73a4",
+      "review_note": "优先讨论底乐候选；电钢琴与温暖感需与哥特画面一起试听。",
+      "duration_seconds": 236.46,
+      "integrated_lufs": -31.3,
+      "clap_top3": [
+        "稀疏钢琴",
+        "温暖抒情",
+        "吉他氛围"
+      ]
+    },
+    {
+      "id": "M13",
+      "kind": "music",
+      "file": "music/M13__music_home-mystery__mysterious__full-v01.mp3",
+      "title": "mysterious",
+      "name_zh": "迷雾与弦影",
+      "usage": "首页／身份揭幕",
+      "description": "弦乐与合唱音色的神秘主题；作者描述带一点诡异嘉年华感，需要比较是否适合严肃气质。",
+      "author": "nene",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/mysterious",
+      "download_url": "https://opengameart.org/sites/default/files/Mysterious.wav",
+      "source_sha256": "8c2a346f60fbdfe4b22cf03487988a3a41568db07c2f3aa62773527d97ce78aa",
+      "bytes": 1885484,
+      "sha256": "53afd4373c854dc5991bed6fb307a259a9cbf5cf23ab3987363053bafdfc65ee",
+      "processing": "完整WAV转MP3（libmp3lame q2），未改编／归一化。",
+      "review_note": "优先首页／大厅对照；模型偏温暖，严肃感需人工确认。",
+      "duration_seconds": 87.0,
+      "integrated_lufs": -25.38,
+      "clap_top3": [
+        "温暖抒情",
+        "钟琴水琴悬疑",
+        "吉他氛围"
+      ]
+    },
+    {
+      "id": "M14",
+      "kind": "music",
+      "file": "music/M14__music_night-ritual__ancient-mysteries__full-v01.mp3",
+      "title": "ancient-mysteries",
+      "name_zh": "古老的谜",
+      "usage": "首夜／情报揭晓",
+      "description": "作者为谜境创作的持续旋律，带空间回声；作者提供循环版本，本文件取循环版。",
+      "author": "sperrylion",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/ancient-mysteries",
+      "download_url": "https://opengameart.org/sites/default/files/ancient_mysteries.mp3",
+      "source_sha256": "fa10e70a5888d57bae1b04e66b43fda238d3651999c0e1182a7ec5741c0b85fc",
+      "bytes": 2405056,
+      "sha256": "fa10e70a5888d57bae1b04e66b43fda238d3651999c0e1182a7ec5741c0b85fc",
+      "processing": "原始完整录音，仅重命名。",
+      "review_note": "保留作身份仪式／首页对照；模型同时提示圆舞曲与电子节奏，不能当作纯古典。",
+      "duration_seconds": 120.048,
+      "integrated_lufs": -11.01,
+      "clap_top3": [
+        "古典圆舞曲",
+        "强烈电子节奏",
+        "钟琴水琴悬疑"
+      ]
+    },
+    {
+      "id": "M15",
+      "kind": "music",
+      "file": "music/M15__music_vote-investigation__unsolved-investigation__full-v01.ogg",
+      "title": "unsolved-investigation",
+      "name_zh": "未解的调查",
+      "usage": "提名／投票／讨论升级",
+      "description": "暗色、悬疑的电影配乐候选；用于比较张力和讨论可听性。",
+      "author": "isaiah658",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/unsolved-investigation",
+      "download_url": "https://opengameart.org/sites/default/files/Unsolved-Investigation-isaiah658_0.ogg",
+      "source_sha256": "2877e423ff90cb99b3082840e66cf79d69a809708466c6f27c750c0e1ce2a912",
+      "bytes": 2200350,
+      "sha256": "2877e423ff90cb99b3082840e66cf79d69a809708466c6f27c750c0e1ce2a912",
+      "processing": "原始完整录音，仅重命名。",
+      "review_note": "优先投票／夜间低声层；模型提示合唱、钟声，需确认是否有明显人声纹理。",
+      "duration_seconds": 48.0,
+      "integrated_lufs": -20.95,
+      "clap_top3": [
+        "人声合唱",
+        "钟声",
+        "钟琴水琴悬疑"
+      ]
+    },
+    {
+      "id": "M16",
+      "kind": "music",
+      "file": "music/M16__music_day-haunting-piano__haunting-piano__full-v01.mp3",
+      "title": "haunting-piano",
+      "name_zh": "萦绕的钢琴",
+      "usage": "白天讨论／黎明／死亡之后",
+      "description": "钢琴主题候选，适合安静悬疑或回顾；需要人工确认旋律情绪与重复耐听程度。",
+      "author": "Emma_MA",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/haunting-piano",
+      "download_url": "https://opengameart.org/sites/default/files/haunting%20piano_0.mp3",
+      "source_sha256": "54721bfb4515ac0d50eb6f29e9176aff58e19f900b52b7cdd52dd422177e7685",
+      "bytes": 2336600,
+      "sha256": "54721bfb4515ac0d50eb6f29e9176aff58e19f900b52b7cdd52dd422177e7685",
+      "processing": "原始完整录音，仅重命名。",
+      "review_note": "优先黎明／死亡之后／白天，钢琴标签较一致。",
+      "duration_seconds": 58.415,
+      "integrated_lufs": -16.07,
+      "clap_top3": [
+        "稀疏钢琴",
+        "温暖抒情",
+        "古典圆舞曲"
+      ]
+    },
+    {
+      "id": "M17",
+      "kind": "music",
+      "file": "music/M17__music_evil-nightmare__a-wonderful-nightmare__full-v01.ogg",
+      "title": "a-wonderful-nightmare",
+      "name_zh": "美妙的噩梦",
+      "usage": "邪恶胜利／夜晚备选",
+      "description": "幽异主题候选，保留旋律辨识度；作为戏剧性邪恶气氛的对照。",
+      "author": "SpiderDave",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/a-wonderful-nightmare",
+      "download_url": "https://opengameart.org/sites/default/files/46b.ogg",
+      "source_sha256": "142a56935eb926b280fe2b890b825d55bf737de76aae438bef2c9d72a9349604",
+      "bytes": 5217173,
+      "sha256": "142a56935eb926b280fe2b890b825d55bf737de76aae438bef2c9d72a9349604",
+      "processing": "原始完整录音，仅重命名。",
+      "review_note": "风格对照，降低优先级：模型偏强电子节奏，可能偏离优雅古典。",
+      "duration_seconds": 184.0,
+      "integrated_lufs": -8.21,
+      "clap_top3": [
+        "强烈电子节奏",
+        "古典圆舞曲",
+        "钟琴水琴悬疑"
+      ]
+    },
+    {
+      "id": "M18",
+      "kind": "music",
+      "file": "music/M18__music_night-shrine__dark-shrine-loop__full-v01.ogg",
+      "title": "dark-shrine-loop",
+      "name_zh": "暗色圣所",
+      "usage": "夜晚等待／僧侣仪式",
+      "description": "qubodup对yd的Shrine所做的暗色循环变奏；适合宗教建筑与秘密仪式。",
+      "author": "qubodup; original composition by yd",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/dark-shrine-loop",
+      "download_url": "https://opengameart.org/sites/default/files/qubodup-yd-DarkShrineLoop-OpenGameArt.ogg",
+      "source_sha256": "9580618dc851f70c3a11b5ff87672867de44cd38b35dabf926d6befde20e78d0",
+      "bytes": 678630,
+      "sha256": "9580618dc851f70c3a11b5ff87672867de44cd38b35dabf926d6befde20e78d0",
+      "processing": "原始完整录音，仅重命名。",
+      "review_note": "优先夜晚／仪式，模型提示合唱、古乐弓弦、悠长氛围。",
+      "duration_seconds": 56.573,
+      "integrated_lufs": -22.0,
+      "clap_top3": [
+        "人声合唱",
+        "古乐弓弦",
+        "悠长暗色氛围"
+      ]
+    },
+    {
+      "id": "M19",
+      "kind": "music",
+      "file": "music/M19__music_ritual-latin-voice__breves-dies-hominis__full-v01.ogg",
+      "title": "breves-dies-hominis",
+      "name_zh": "短暂的人世",
+      "usage": "身份仪式／终局回顾备选",
+      "description": "Magdalen Kadel演唱中世纪拉丁文作品的独唱录音；含可辨歌词，不宜作为普通讨论底乐。",
+      "author": "Magdalen Kadel (Makemi); submitted by ceninan",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/breves-dies-hominis",
+      "download_url": "https://opengameart.org/sites/default/files/breves_dies_hominis.ogg",
+      "source_sha256": "2f796c2ac3fb441acd6f40970ead975d342d276fe30de365f0fa0f5ad616a810",
+      "bytes": 2805592,
+      "sha256": "2f796c2ac3fb441acd6f40970ead975d342d276fe30de365f0fa0f5ad616a810",
+      "processing": "原始完整录音，仅重命名。",
+      "review_note": "特殊仪式备选：真实拉丁文独唱，模型的“合唱”不能据此认定多人合唱。",
+      "duration_seconds": 175.521,
+      "integrated_lufs": -28.83,
+      "clap_top3": [
+        "人声合唱",
+        "温暖抒情",
+        "古乐弓弦"
+      ]
+    },
+    {
+      "id": "M21",
+      "kind": "music",
+      "file": "music/M21__music_night-prowler__night-prowler__full-v01.ogg",
+      "title": "night-prowler",
+      "name_zh": "暗夜潜行",
+      "usage": "夜晚／紧张等待",
+      "description": "暗夜主题音乐候选；通过模型与实际试听再判断节奏是否过强。",
+      "author": "section31",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/night-prowler",
+      "download_url": "https://opengameart.org/sites/default/files/S31-Night%20Prowler.ogg",
+      "source_sha256": "4ec459f8bb364e484592f38288c53245c96d788dce4cd3b6aa247e95e4c528e8",
+      "bytes": 2525529,
+      "sha256": "4ec459f8bb364e484592f38288c53245c96d788dce4cd3b6aa247e95e4c528e8",
+      "processing": "原始完整录音，仅重命名。",
+      "review_note": "风格对照，降低优先级：明显偏电子节奏的模型提示，需判断是否太现代。",
+      "duration_seconds": 152.724,
+      "integrated_lufs": -9.4,
+      "clap_top3": [
+        "强烈电子节奏",
+        "古典圆舞曲",
+        "钟琴水琴悬疑"
+      ]
+    },
+    {
+      "id": "M22",
+      "kind": "music",
+      "file": "music/M22__music_cinematic-resolution__no-more-magic__full-v01.mp3",
+      "title": "no-more-magic",
+      "name_zh": "魔法散去",
+      "usage": "首页备选／黎明／善良终局",
+      "description": "HorrorPen创作的电影场景管弦配乐，作为更完整旋律与戏剧发展的候选。",
+      "author": "HorrorPen",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_page": "https://opengameart.org/content/no-more-magic",
+      "download_url": "https://opengameart.org/sites/default/files/No%20More%20Magic_5.mp3",
+      "bytes": 4253908,
+      "sha256": "d5f7fb5c6d179cb58c378684d6adddb46d86df96b91be00ad4d096a63b84a35e",
+      "processing": "原始完整MP3，仅重命名。",
+      "review_note": "优先首页／善良终局旋律候选；模型偏古典、温暖与钢琴，拍号仍需人工判断。",
+      "duration_seconds": 106.344,
+      "integrated_lufs": -14.2,
+      "clap_top3": [
+        "古典圆舞曲",
+        "温暖抒情",
+        "稀疏钢琴"
+      ]
+    },
+    {
+      "id": "M23",
+      "kind": "music",
+      "file": "music/M23__music_clocktower__forgotten-clocktower__full-v01.mp3",
+      "title": "forgotten-clocktower",
+      "name_zh": "被遗忘的钟楼",
+      "usage": "首页／夜晚／长场景参照",
+      "description": "PetterTheSturgeon发布的钟楼主题长曲；名称与场景相关，具体配器与情绪仍以模型提示和人工试听判断。",
+      "author": "PetterTheSturgeon",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_page": "https://opengameart.org/content/forgotten-clocktower",
+      "download_url": "https://opengameart.org/sites/default/files/Forgotten%20Clocktower.mp3",
+      "bytes": 2305043,
+      "sha256": "41a9caf0f35c9569ece6fd25ca1e8cff4233eded2c319c5287a695d1e663bd23",
+      "processing": "原始完整MP3，仅重命名。",
+      "review_note": "优先首页／大厅候选；原始响度较低，比较时不要把较轻误判为缺乏品质。",
+      "duration_seconds": 144.013,
+      "integrated_lufs": -27.8,
+      "clap_top3": [
+        "古典圆舞曲",
+        "温暖抒情",
+        "吉他氛围"
+      ]
+    },
+    {
+      "id": "R01",
+      "kind": "reference",
+      "file": "reference/R01__reference_accepted-night-bell__unchanged.mp3",
+      "title": "accepted-night-bell",
+      "name_zh": "已认可钟声·参考",
+      "usage": "音色与空间参考",
+      "description": "用户满意的现有入夜钟声，逐字节复制作为听感基准。",
+      "author": "Joseph SARDIN & Axeline T.; existing Ravens mix",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://bigsoundbank.com/cloche-1h-s3446.html",
+      "processing": "从现有v2原样复制，不改动游戏文件。",
+      "bytes": 89068,
+      "sha256": "cca671b3e3139aaff5764d143812f2d2378f530491ccb62a311f18db870c0161",
+      "review_note": "用户已认可的钟声，只作音色和空间参照；游戏文件未修改。",
+      "duration_seconds": 5.5,
+      "integrated_lufs": -21.38,
+      "clap_top3": [
+        "钟声",
+        "低沉长重音",
+        "稀疏钢琴"
+      ]
+    },
+    {
+      "id": "S01",
+      "kind": "foley",
+      "file": "foley/S01__foley_body-fall-sequence__source-v01.wav",
+      "title": "body-hitting-ground",
+      "name_zh": "身体落地声组",
+      "usage": "死亡落地／身体冲击",
+      "description": "厚书包裹毛巾模拟身体落地，用Zoom H4N录制，多次动作；并非真实伤害录音。",
+      "author": "dklon",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_page": "https://opengameart.org/content/body-hitting-ground",
+      "download_url": "https://opengameart.org/sites/default/files/body_hits.wav",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 901340,
+      "sha256": "112816d00fca6759a4e9bcee7866c0f3ba98a389fc3ace1176d30ea66dbcf620",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 5.108,
+      "integrated_lufs": -26.46,
+      "clap_top3": [
+        "身体重击",
+        "木头敲击",
+        "衣料摩擦"
+      ]
+    },
+    {
+      "id": "S02",
+      "kind": "foley",
+      "file": "foley/S02__foley_bone-crunch-sequence__source-v01.wav",
+      "title": "crunching-bones",
+      "name_zh": "骨质碎裂声组",
+      "usage": "死亡／恶魔接触层",
+      "description": "干脆的碎裂材质候选；需要控制用量，避免持续咀嚼感。",
+      "author": "spookymodem",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_page": "https://opengameart.org/content/crunching-bones",
+      "download_url": "https://opengameart.org/sites/default/files/Crunching%20Bones.wav",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 855280,
+      "sha256": "0dae2105892ba903dc16f41e515b253bb0e42dd1b2b022530338671d87624250",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 4.848,
+      "integrated_lufs": -34.73,
+      "clap_top3": [
+        "碎裂",
+        "炉火",
+        "撕开"
+      ]
+    },
+    {
+      "id": "S03",
+      "kind": "foley",
+      "file": "foley/S03__foley_cloth-swing-sequence__source-v01.ogg",
+      "title": "cloth-swing-sounds",
+      "name_zh": "衣料挥动声组",
+      "usage": "展翼／管家衣料／挥击",
+      "description": "真实录制衣料挥动，可作为翼膜和动作空气层的材料，不能直接声称是翅膀录音。",
+      "author": "Vinrax",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "source_page": "https://opengameart.org/content/cloth-swing-sounds",
+      "download_url": "https://opengameart.org/sites/default/files/cloth_sounds.ogg",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 467267,
+      "sha256": "95ea4528c594d6c9a3add1f0f6b7c931f100700793072546a34d1a77d4ca35a5",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 9.874,
+      "integrated_lufs": -25.44,
+      "clap_top3": [
+        "身体重击",
+        "衣料摩擦",
+        "挥击风声"
+      ]
+    },
+    {
+      "id": "V01",
+      "kind": "voice",
+      "file": "voice/V01__voice_female-death-scream__source-v01.ogg",
+      "title": "female-scream-1",
+      "name_zh": "女声惨叫",
+      "usage": "死亡人声候选",
+      "description": "AuraVoice发布的真实表演录音；用于比较自然爆发与当前泛用惨叫。",
+      "author": "AuraVoice (Nocturnal_Vanguard)",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/female-scream-1",
+      "download_url": "https://opengameart.org/sites/default/files/female_scream_1.ogg",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 33339,
+      "sha256": "87b1a695b0106f9af6ca83b1f9f362b0d201663878aff231d634af69cd8ab516",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 1.822,
+      "integrated_lufs": -12.67,
+      "clap_top3": [
+        "女性惨叫",
+        "男性惨叫",
+        "痛苦闷哼"
+      ]
+    },
+    {
+      "id": "V02",
+      "kind": "voice",
+      "file": "voice/V02__voice_female-horror-scream-sequence__source-v01.ogg",
+      "title": "female-high-pitched-scream-sfx",
+      "name_zh": "女声恐惧叫声组",
+      "usage": "死亡人声备选",
+      "description": "四种音高的恐惧喊叫合集；不是四位不同演员，需先分段再判断适配。",
+      "author": "WuxiaScrub",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_page": "https://opengameart.org/content/female-high-pitched-scream-sfx",
+      "download_url": "https://opengameart.org/sites/default/files/screams_0.ogg",
+      "processing": "原始文件，仅重命名。",
+      "bytes": 143566,
+      "sha256": "9f9b64086cba7873adb20ef9e3bc14596f8041cc62ece191a1afb6d0b8d5a209",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 6.633,
+      "integrated_lufs": -18.02,
+      "clap_top3": [
+        "女性惨叫",
+        "男性惨叫",
+        "群鸦"
+      ]
+    },
+    {
+      "id": "V03",
+      "kind": "voice",
+      "file": "voice/V03__voice_male-pain-take-01__candidate-v01.mp3",
+      "title": "male-pain-take-01",
+      "name_zh": "男声痛叫 1",
+      "usage": "枪击／处刑死亡人声候选",
+      "description": "EmoPreben的独立痛苦表演录音；保留不同发声方式，须比较是否足够爆发而非闷哼。",
+      "author": "Ravens audition edit; sources: EmoPreben",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/pain-sounds-by-emopreben"
+      ],
+      "source_ids": [
+        "pain-sounds-by-emopreben:Painsounds v2 - Track 1 - Arrrch.ogg"
+      ],
+      "processing": "去首尾静音，保持原音高与速度，峰值-3dBFS，192kbps MP3。",
+      "bytes": 13292,
+      "sha256": "21fc14c6dfad281e7be1343c42d2b0b96aa7975321c8e157355ef042a5459463",
+      "source_archive_sha256": "4b7b0567901ee8dc8c44ed0b595bf3ac2ce761eb153e730e0244d482e8830352",
+      "source_member": "Painsounds v2 - Track 1 - Arrrch.ogg",
+      "source_member_sha256": "ea1277dac42d689abe6a271faebd4e5c3d1ca388d72e6fd828aa97b38f4a2c2b",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.5,
+      "integrated_lufs": -19.1,
+      "clap_top3": [
+        "痛苦闷哼",
+        "男性惨叫",
+        "撕开"
+      ]
+    },
+    {
+      "id": "V04",
+      "kind": "voice",
+      "file": "voice/V04__voice_male-pain-take-02__candidate-v01.mp3",
+      "title": "male-pain-take-02",
+      "name_zh": "男声痛叫 2",
+      "usage": "枪击／处刑死亡人声候选",
+      "description": "EmoPreben的独立痛苦表演录音；保留不同发声方式，须比较是否足够爆发而非闷哼。",
+      "author": "Ravens audition edit; sources: EmoPreben",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/pain-sounds-by-emopreben"
+      ],
+      "source_ids": [
+        "pain-sounds-by-emopreben:Painsounds v2 - Track 2 - Hurgh.ogg"
+      ],
+      "processing": "去首尾静音，保持原音高与速度，峰值-3dBFS，192kbps MP3。",
+      "bytes": 15020,
+      "sha256": "a65df7d9e08ee386030c065dbe5813a510a1b68b98b991b1c12982d38eb92319",
+      "source_archive_sha256": "4b7b0567901ee8dc8c44ed0b595bf3ac2ce761eb153e730e0244d482e8830352",
+      "source_member": "Painsounds v2 - Track 2 - Hurgh.ogg",
+      "source_member_sha256": "e328c4977de1fb5125b6d9ca642d45fa3f4cad8198c89474c2ac6132e5167443",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.57,
+      "integrated_lufs": -13.55,
+      "clap_top3": [
+        "男性惨叫",
+        "痛苦闷哼",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "V05",
+      "kind": "voice",
+      "file": "voice/V05__voice_male-pain-take-03__candidate-v01.mp3",
+      "title": "male-pain-take-03",
+      "name_zh": "男声痛叫 3",
+      "usage": "枪击／处刑死亡人声候选",
+      "description": "EmoPreben的独立痛苦表演录音；保留不同发声方式，须比较是否足够爆发而非闷哼。",
+      "author": "Ravens audition edit; sources: EmoPreben",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/pain-sounds-by-emopreben"
+      ],
+      "source_ids": [
+        "pain-sounds-by-emopreben:Painsounds v2 - Track 3 - Huuurh.ogg"
+      ],
+      "processing": "去首尾静音，保持原音高与速度，峰值-3dBFS，192kbps MP3。",
+      "bytes": 17900,
+      "sha256": "cfb1f445bb25f90781094a697a25e9c010d3cf7273aa47b1b120ea35ed0f5a0c",
+      "source_archive_sha256": "4b7b0567901ee8dc8c44ed0b595bf3ac2ce761eb153e730e0244d482e8830352",
+      "source_member": "Painsounds v2 - Track 3 - Huuurh.ogg",
+      "source_member_sha256": "cfb6a352d828ab3b80b40b6fe8d972cc3e8af4cc33f417b21f1f32968d65518f",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.69,
+      "integrated_lufs": -14.84,
+      "clap_top3": [
+        "男性惨叫",
+        "痛苦闷哼",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "V06",
+      "kind": "voice",
+      "file": "voice/V06__voice_male-pain-take-04__candidate-v01.mp3",
+      "title": "male-pain-take-04",
+      "name_zh": "男声痛叫 4",
+      "usage": "枪击／处刑死亡人声候选",
+      "description": "EmoPreben的独立痛苦表演录音；保留不同发声方式，须比较是否足够爆发而非闷哼。",
+      "author": "Ravens audition edit; sources: EmoPreben",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/pain-sounds-by-emopreben"
+      ],
+      "source_ids": [
+        "pain-sounds-by-emopreben:Painsounds v2 - Track 4 - Arrggh .ogg"
+      ],
+      "processing": "去首尾静音，保持原音高与速度，峰值-3dBFS，192kbps MP3。",
+      "bytes": 16748,
+      "sha256": "df93bf826f3c7915fa26b4bdfa3039c96dd36c87343713caeeb3158f7accb870",
+      "source_archive_sha256": "4b7b0567901ee8dc8c44ed0b595bf3ac2ce761eb153e730e0244d482e8830352",
+      "source_member": "Painsounds v2 - Track 4 - Arrggh .ogg",
+      "source_member_sha256": "13a78b9bf7114a8c0e38c1e9322ce558dba3462bd6f2cf455e0f451d886ba4fc",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.629,
+      "integrated_lufs": -16.25,
+      "clap_top3": [
+        "痛苦闷哼",
+        "身体重击",
+        "男性惨叫"
+      ]
+    },
+    {
+      "id": "V07",
+      "kind": "voice",
+      "file": "voice/V07__voice_male-pain-take-05__candidate-v01.mp3",
+      "title": "male-pain-take-05",
+      "name_zh": "男声痛叫 5",
+      "usage": "枪击／处刑死亡人声候选",
+      "description": "EmoPreben的独立痛苦表演录音；保留不同发声方式，须比较是否足够爆发而非闷哼。",
+      "author": "Ravens audition edit; sources: EmoPreben",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/pain-sounds-by-emopreben"
+      ],
+      "source_ids": [
+        "pain-sounds-by-emopreben:Painsounds v2 - Track 5 - Urggh.ogg"
+      ],
+      "processing": "去首尾静音，保持原音高与速度，峰值-3dBFS，192kbps MP3。",
+      "bytes": 15020,
+      "sha256": "0e06baf90db2d0e40178eaba766c116ef77ce3a127d347f587776a910b1dc752",
+      "source_archive_sha256": "4b7b0567901ee8dc8c44ed0b595bf3ac2ce761eb153e730e0244d482e8830352",
+      "source_member": "Painsounds v2 - Track 5 - Urggh.ogg",
+      "source_member_sha256": "93d3b166247c66c8f583c71669400038a53e635a188e385a1942cab106cb2103",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.57,
+      "integrated_lufs": -17.65,
+      "clap_top3": [
+        "痛苦闷哼",
+        "男性惨叫",
+        "身体重击"
+      ]
+    },
+    {
+      "id": "V08",
+      "kind": "voice",
+      "file": "voice/V08__voice_male-pain-take-06__candidate-v01.mp3",
+      "title": "male-pain-take-06",
+      "name_zh": "男声痛叫 6",
+      "usage": "枪击／处刑死亡人声候选",
+      "description": "EmoPreben的独立痛苦表演录音；保留不同发声方式，须比较是否足够爆发而非闷哼。",
+      "author": "Ravens audition edit; sources: EmoPreben",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source_pages": [
+        "https://opengameart.org/content/pain-sounds-by-emopreben"
+      ],
+      "source_ids": [
+        "pain-sounds-by-emopreben:Painsounds v2 - Track 6 - hyyrdhh.ogg"
+      ],
+      "processing": "去首尾静音，保持原音高与速度，峰值-3dBFS，192kbps MP3。",
+      "bytes": 19052,
+      "sha256": "5beb2217027a314ba1aa8b8ae26e1799967df593742459ecc908de652625bbee",
+      "source_archive_sha256": "4b7b0567901ee8dc8c44ed0b595bf3ac2ce761eb153e730e0244d482e8830352",
+      "source_member": "Painsounds v2 - Track 6 - hyyrdhh.ogg",
+      "source_member_sha256": "d0a8bf406559e10f50e3b5e4817718ffeaefff490b324102c81fb5021209c2c7",
+      "review_note": "原始材料／独立录音候选；短音的模型标签易混淆，结合来源说明和实际试听判断。",
+      "duration_seconds": 0.724,
+      "integrated_lufs": -13.96,
+      "clap_top3": [
+        "痛苦闷哼",
+        "男性惨叫",
+        "身体重击"
+      ]
+    }
+  ]
+}

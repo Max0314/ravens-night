@@ -1,0 +1,37 @@
+{
+  "ops_policy_sha": "964c0ba2357810506ba4d9e883d217f377ea0615",
+  "model_revision": "8fa0f1c6d0433df6e97c127f64b2a1d6c0dcda8a",
+  "model_weight_sha256": "1cd3c601bc4afe0fa87be3de4c13dd2cfadd249fac1e29acf74a9b296c3219bb",
+  "asset_count": 55,
+  "asset_bytes": 62476857,
+  "all_have_current_analysis": true,
+  "artistic_listening_approval": false,
+  "runtime_integration": false,
+  "browser_preview_check": {
+    "method": "Local HTML opened in headless Chromium via Playwright; no game page or server",
+    "entries": 55,
+    "music_entries": 12,
+    "category_filter": "passed",
+    "search_F13_present": true,
+    "browser_metadata": [
+      {
+        "id": "F13",
+        "duration_seconds": 4.5
+      },
+      {
+        "id": "D04",
+        "duration_seconds": 1.15
+      },
+      {
+        "id": "M23",
+        "duration_seconds": 144.013061
+      },
+      {
+        "id": "M18",
+        "duration_seconds": 56.572517
+      }
+    ],
+    "page_errors": [],
+    "artistic_listening": false
+  }
+}

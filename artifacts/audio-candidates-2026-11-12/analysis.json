@@ -1,0 +1,3271 @@
+{
+  "model": "laion/clap-htsat-unfused",
+  "model_revision": "8fa0f1c6d0433df6e97c127f64b2a1d6c0dcda8a",
+  "method": "Mean cosine similarity of L2-normalized audio/text embeddings; no softmax; top labels are relative to this prompt list.",
+  "prompts": [
+    [
+      "哥特管弦乐",
+      "Dark gothic orchestral music with dramatic strings and woodwinds."
+    ],
+    [
+      "古典圆舞曲",
+      "Elegant classical waltz music with piano, strings and a dancing rhythm."
+    ],
+    [
+      "稀疏钢琴",
+      "Slow sparse mysterious piano music with quiet pauses."
+    ],
+    [
+      "古乐弓弦",
+      "Solemn medieval bowed string music with a continuous drone."
+    ],
+    [
+      "弦乐张力",
+      "Suspenseful tense orchestral string music with trembling low notes."
+    ],
+    [
+      "悠长暗色氛围",
+      "Dark eerie ambient music with long sustained drones."
+    ],
+    [
+      "温暖抒情",
+      "Warm peaceful emotional instrumental music."
+    ],
+    [
+      "明亮胜利",
+      "Triumphant uplifting orchestral victory music with brass and strings."
+    ],
+    [
+      "强烈电子节奏",
+      "Electronic music with a strong pulsing beat and synthesizers."
+    ],
+    [
+      "吉他氛围",
+      "Quiet mysterious guitar music with atmospheric synthesizers."
+    ],
+    [
+      "钟琴水琴悬疑",
+      "Eerie slow music with vibraphone, waterphone and metallic resonances."
+    ],
+    [
+      "人声合唱",
+      "Music with human singing or a choir."
+    ],
+    [
+      "风声",
+      "The sound of wind blowing and gusting."
+    ],
+    [
+      "洞穴幽鸣",
+      "An eerie cavern ambience with distant ghostly howls and rumbling."
+    ],
+    [
+      "时钟滴答",
+      "A mechanical clock ticking rhythmically."
+    ],
+    [
+      "炉火",
+      "The sound of a fire crackling and popping in a fireplace."
+    ],
+    [
+      "群鸦",
+      "The sound of crows cawing outside."
+    ],
+    [
+      "女性惨叫",
+      "A woman screaming loudly in pain and fear."
+    ],
+    [
+      "男性惨叫",
+      "A man screaming loudly in pain and fear."
+    ],
+    [
+      "痛苦闷哼",
+      "A person grunting and groaning in pain."
+    ],
+    [
+      "身体重击",
+      "A heavy body being hit with a hard thud."
+    ],
+    [
+      "湿润拍击",
+      "A wet squishing and splattering impact."
+    ],
+    [
+      "碎裂",
+      "A sharp cracking and crunching sound."
+    ],
+    [
+      "撕开",
+      "A rough ripping and tearing sound."
+    ],
+    [
+      "挥击风声",
+      "A fast whooshing swishing sound of a weapon swinging through air."
+    ],
+    [
+      "衣料摩擦",
+      "Cloth and fabric rustling and flapping."
+    ],
+    [
+      "金属机关",
+      "Metal clinking, rattling, scraping and a mechanical latch clicking."
+    ],
+    [
+      "剑刃",
+      "A metallic sword being drawn and striking."
+    ],
+    [
+      "玻璃",
+      "Glass rattling, clinking and breaking."
+    ],
+    [
+      "液体气泡",
+      "Liquid bubbling and gurgling."
+    ],
+    [
+      "木头敲击",
+      "A wooden object being knocked and creaking."
+    ],
+    [
+      "低沉长重音",
+      "A deep cinematic booming impact with a long ominous reverberant tail."
+    ],
+    [
+      "钟声",
+      "A deep bronze church bell ringing with a long resonant decay."
+    ],
+    [
+      "枪声",
+      "A loud gunshot with a sharp explosive attack."
+    ],
+    [
+      "普通说话",
+      "A person speaking words in a normal conversational voice."
+    ]
+  ],
+  "versions": {
+    "torch": "2.9.1+cpu",
+    "transformers": "4.57.1",
+    "librosa": "0.11.0",
+    "numpy": "2.5.4",
+    "soundfile": "0.13.1"
+  },
+  "assets": {
+    "A01": {
+      "file": "ambience/A01__ambience_night-cavern__source-v01.ogg",
+      "sha256": "d010bb0c3f9e9f855e0ce36486f30673db414739c02d62344398197927fdc24a",
+      "decoded": true,
+      "duration_seconds": 119.998,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "vorbis",
+      "integrated_lufs": -17.54,
+      "true_peak_dbtp": 2.65,
+      "loudness_range_lu": 11.0,
+      "sampled_feature_offsets_seconds": [
+        12.0,
+        54.999,
+        99.998
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 357.6,
+      "spectral_flatness_sampled": 2e-05,
+      "rms_p90_p10_ratio_sampled": 7.057,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.4879
+        },
+        {
+          "label_zh": "洞穴幽鸣",
+          "prompt_en": "An eerie cavern ambience with distant ghostly howls and rumbling.",
+          "cosine": 0.4705
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.4132
+        },
+        {
+          "label_zh": "弦乐张力",
+          "prompt_en": "Suspenseful tense orchestral string music with trembling low notes.",
+          "cosine": 0.4028
+        },
+        {
+          "label_zh": "哥特管弦乐",
+          "prompt_en": "Dark gothic orchestral music with dramatic strings and woodwinds.",
+          "cosine": 0.3789
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 12.0,
+          "label_zh": "悠长暗色氛围"
+        },
+        {
+          "offset_seconds": 54.999,
+          "label_zh": "悠长暗色氛围"
+        },
+        {
+          "offset_seconds": 99.998,
+          "label_zh": "洞穴幽鸣"
+        }
+      ]
+    },
+    "A02": {
+      "file": "ambience/A02__ambience_tower-wind__source-v01.wav",
+      "sha256": "a2856f794fbf77e05f8241dc4adeade7f62fa21c3c9dc49f7725b6c6218060c3",
+      "decoded": true,
+      "duration_seconds": 59.999,
+      "sample_rate": 44100,
+      "channels": 1,
+      "codec": "pcm_s16le",
+      "integrated_lufs": -39.52,
+      "true_peak_dbtp": -22.45,
+      "loudness_range_lu": 2.7,
+      "sampled_feature_offsets_seconds": [
+        6.0,
+        24.999,
+        39.999
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 897.1,
+      "spectral_flatness_sampled": 5e-05,
+      "rms_p90_p10_ratio_sampled": 1.578,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "风声",
+          "prompt_en": "The sound of wind blowing and gusting.",
+          "cosine": 0.4818
+        },
+        {
+          "label_zh": "洞穴幽鸣",
+          "prompt_en": "An eerie cavern ambience with distant ghostly howls and rumbling.",
+          "cosine": 0.383
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.3201
+        },
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.2595
+        },
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.2258
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 6.0,
+          "label_zh": "风声"
+        },
+        {
+          "offset_seconds": 24.999,
+          "label_zh": "风声"
+        },
+        {
+          "offset_seconds": 39.999,
+          "label_zh": "风声"
+        }
+      ]
+    },
+    "A03": {
+      "file": "ambience/A03__ambience_clock-mechanism__source-v01.wav",
+      "sha256": "dc4dc1bf2c4bbeee5fd0841a87610ed19d851a92abc973ce0f5ff3caec40d537",
+      "decoded": true,
+      "duration_seconds": 8.0,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "pcm_f32le",
+      "integrated_lufs": -28.53,
+      "true_peak_dbtp": -5.29,
+      "loudness_range_lu": 1.2,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1826.3,
+      "spectral_flatness_sampled": 0.01382,
+      "rms_p90_p10_ratio_sampled": 17.749,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "时钟滴答",
+          "prompt_en": "A mechanical clock ticking rhythmically.",
+          "cosine": 0.5957
+        },
+        {
+          "label_zh": "普通说话",
+          "prompt_en": "A person speaking words in a normal conversational voice.",
+          "cosine": 0.1951
+        },
+        {
+          "label_zh": "金属机关",
+          "prompt_en": "Metal clinking, rattling, scraping and a mechanical latch clicking.",
+          "cosine": 0.1765
+        },
+        {
+          "label_zh": "剑刃",
+          "prompt_en": "A metallic sword being drawn and striking.",
+          "cosine": 0.1726
+        },
+        {
+          "label_zh": "木头敲击",
+          "prompt_en": "A wooden object being knocked and creaking.",
+          "cosine": 0.1536
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "时钟滴答"
+        }
+      ]
+    },
+    "A04": {
+      "file": "ambience/A04__ambience_hearth-fire__source-v01.ogg",
+      "sha256": "f922929805bc6afdf0a35727fa3998033db544c1b6f62ed3aeab94341ed6ddeb",
+      "decoded": true,
+      "duration_seconds": 3.545,
+      "sample_rate": 44100,
+      "channels": 1,
+      "codec": "vorbis",
+      "integrated_lufs": -30.25,
+      "true_peak_dbtp": -6.33,
+      "loudness_range_lu": 0.2,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1070.3,
+      "spectral_flatness_sampled": 0.00272,
+      "rms_p90_p10_ratio_sampled": 3.173,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "炉火",
+          "prompt_en": "The sound of a fire crackling and popping in a fireplace.",
+          "cosine": 0.4316
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.3604
+        },
+        {
+          "label_zh": "风声",
+          "prompt_en": "The sound of wind blowing and gusting.",
+          "cosine": 0.3277
+        },
+        {
+          "label_zh": "时钟滴答",
+          "prompt_en": "A mechanical clock ticking rhythmically.",
+          "cosine": 0.2274
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.2124
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "炉火"
+        }
+      ]
+    },
+    "A05": {
+      "file": "ambience/A05__ambience_distant-crows__source-v01.ogg",
+      "sha256": "c2ac86edfe858402a5440488ad8bfa17921e2f4831b58facb544a928f20c3cad",
+      "decoded": true,
+      "duration_seconds": 9.344,
+      "sample_rate": 44100,
+      "channels": 1,
+      "codec": "vorbis",
+      "integrated_lufs": -22.72,
+      "true_peak_dbtp": -5.84,
+      "loudness_range_lu": 3.7,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2914.0,
+      "spectral_flatness_sampled": 0.03467,
+      "rms_p90_p10_ratio_sampled": 3.662,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "群鸦",
+          "prompt_en": "The sound of crows cawing outside.",
+          "cosine": 0.6155
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.2451
+        },
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.1595
+        },
+        {
+          "label_zh": "明亮胜利",
+          "prompt_en": "Triumphant uplifting orchestral victory music with brass and strings.",
+          "cosine": 0.1532
+        },
+        {
+          "label_zh": "哥特管弦乐",
+          "prompt_en": "Dark gothic orchestral music with dramatic strings and woodwinds.",
+          "cosine": 0.1433
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "群鸦"
+        }
+      ]
+    },
+    "L01": {
+      "file": "long-effects/L01__long-effects_dark-long-hits-sequence__source-v01.mp3",
+      "sha256": "036d870f0b6490bd68065840582c080fbe09f50b406f9561ccf9d24c4f9b086d",
+      "decoded": true,
+      "duration_seconds": 66.064,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -14.28,
+      "true_peak_dbtp": 1.3,
+      "loudness_range_lu": 22.2,
+      "sampled_feature_offsets_seconds": [
+        6.606,
+        28.032,
+        46.064
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 86.8,
+      "spectral_flatness_sampled": 0.0,
+      "rms_p90_p10_ratio_sampled": 13.361,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "低沉长重音",
+          "prompt_en": "A deep cinematic booming impact with a long ominous reverberant tail.",
+          "cosine": 0.6302
+        },
+        {
+          "label_zh": "钟声",
+          "prompt_en": "A deep bronze church bell ringing with a long resonant decay.",
+          "cosine": 0.3725
+        },
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.3542
+        },
+        {
+          "label_zh": "洞穴幽鸣",
+          "prompt_en": "An eerie cavern ambience with distant ghostly howls and rumbling.",
+          "cosine": 0.3457
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.3355
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 6.606,
+          "label_zh": "低沉长重音"
+        },
+        {
+          "offset_seconds": 28.032,
+          "label_zh": "低沉长重音"
+        },
+        {
+          "offset_seconds": 46.064,
+          "label_zh": "低沉长重音"
+        }
+      ]
+    },
+    "M01": {
+      "file": "music/M01__music_home__moonlight-hall__Kevin-MacLeod__full-v01.mp3",
+      "sha256": "5decdbc9ec96d4c075825bfb10c2d00dbc854f72721eeba7c1f9e3aa70369060",
+      "decoded": true,
+      "duration_seconds": 198.139,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -16.18,
+      "true_peak_dbtp": -0.08,
+      "loudness_range_lu": 8.2,
+      "sampled_feature_offsets_seconds": [
+        15,
+        94.069,
+        178.139
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1200.2,
+      "spectral_flatness_sampled": 0.00058,
+      "rms_p90_p10_ratio_sampled": 4.797,
+      "tempo_bpm_estimate_sampled": 136.0,
+      "clap_top5": [
+        {
+          "label_zh": "明亮胜利",
+          "prompt_en": "Triumphant uplifting orchestral victory music with brass and strings.",
+          "cosine": 0.6147
+        },
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.5654
+        },
+        {
+          "label_zh": "哥特管弦乐",
+          "prompt_en": "Dark gothic orchestral music with dramatic strings and woodwinds.",
+          "cosine": 0.5036
+        },
+        {
+          "label_zh": "人声合唱",
+          "prompt_en": "Music with human singing or a choir.",
+          "cosine": 0.4461
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.3866
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 15,
+          "label_zh": "古典圆舞曲"
+        },
+        {
+          "offset_seconds": 94.069,
+          "label_zh": "古典圆舞曲"
+        },
+        {
+          "offset_seconds": 178.139,
+          "label_zh": "明亮胜利"
+        }
+      ]
+    },
+    "S01": {
+      "file": "foley/S01__foley_body-fall-sequence__source-v01.wav",
+      "sha256": "112816d00fca6759a4e9bcee7866c0f3ba98a389fc3ace1176d30ea66dbcf620",
+      "decoded": true,
+      "duration_seconds": 5.108,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "pcm_s16le",
+      "integrated_lufs": -26.46,
+      "true_peak_dbtp": -3.0,
+      "loudness_range_lu": 6.3,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1743.4,
+      "spectral_flatness_sampled": 0.00756,
+      "rms_p90_p10_ratio_sampled": 89.147,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.7054
+        },
+        {
+          "label_zh": "木头敲击",
+          "prompt_en": "A wooden object being knocked and creaking.",
+          "cosine": 0.384
+        },
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.3699
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.3442
+        },
+        {
+          "label_zh": "普通说话",
+          "prompt_en": "A person speaking words in a normal conversational voice.",
+          "cosine": 0.1309
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "身体重击"
+        }
+      ]
+    },
+    "S02": {
+      "file": "foley/S02__foley_bone-crunch-sequence__source-v01.wav",
+      "sha256": "0dae2105892ba903dc16f41e515b253bb0e42dd1b2b022530338671d87624250",
+      "decoded": true,
+      "duration_seconds": 4.848,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "pcm_s16le",
+      "integrated_lufs": -34.73,
+      "true_peak_dbtp": -6.54,
+      "loudness_range_lu": 3.6,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 4512.4,
+      "spectral_flatness_sampled": 0.15998,
+      "rms_p90_p10_ratio_sampled": 172.36,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.5842
+        },
+        {
+          "label_zh": "炉火",
+          "prompt_en": "The sound of a fire crackling and popping in a fireplace.",
+          "cosine": 0.3607
+        },
+        {
+          "label_zh": "撕开",
+          "prompt_en": "A rough ripping and tearing sound.",
+          "cosine": 0.3139
+        },
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.2661
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.2335
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "碎裂"
+        }
+      ]
+    },
+    "S03": {
+      "file": "foley/S03__foley_cloth-swing-sequence__source-v01.ogg",
+      "sha256": "95ea4528c594d6c9a3add1f0f6b7c931f100700793072546a34d1a77d4ca35a5",
+      "decoded": true,
+      "duration_seconds": 9.874,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "vorbis",
+      "integrated_lufs": -25.44,
+      "true_peak_dbtp": 0.07,
+      "loudness_range_lu": 7.9,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2507.8,
+      "spectral_flatness_sampled": 0.03043,
+      "rms_p90_p10_ratio_sampled": 61.551,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.6395
+        },
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.5698
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.4518
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.2762
+        },
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.2415
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "身体重击"
+        }
+      ]
+    },
+    "V01": {
+      "file": "voice/V01__voice_female-death-scream__source-v01.ogg",
+      "sha256": "87b1a695b0106f9af6ca83b1f9f362b0d201663878aff231d634af69cd8ab516",
+      "decoded": true,
+      "duration_seconds": 1.822,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "vorbis",
+      "integrated_lufs": -12.67,
+      "true_peak_dbtp": -4.38,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1854.3,
+      "spectral_flatness_sampled": 0.04851,
+      "rms_p90_p10_ratio_sampled": 249046.625,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.7054
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.5295
+        },
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.3259
+        },
+        {
+          "label_zh": "群鸦",
+          "prompt_en": "The sound of crows cawing outside.",
+          "cosine": 0.3195
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.0895
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "女性惨叫"
+        }
+      ]
+    },
+    "V02": {
+      "file": "voice/V02__voice_female-horror-scream-sequence__source-v01.ogg",
+      "sha256": "9f9b64086cba7873adb20ef9e3bc14596f8041cc62ece191a1afb6d0b8d5a209",
+      "decoded": true,
+      "duration_seconds": 6.633,
+      "sample_rate": 44100,
+      "channels": 1,
+      "codec": "vorbis",
+      "integrated_lufs": -18.02,
+      "true_peak_dbtp": -6.08,
+      "loudness_range_lu": 3.9,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2467.3,
+      "spectral_flatness_sampled": 0.00445,
+      "rms_p90_p10_ratio_sampled": 25.0,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.5175
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.3908
+        },
+        {
+          "label_zh": "群鸦",
+          "prompt_en": "The sound of crows cawing outside.",
+          "cosine": 0.2593
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.2073
+        },
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.1764
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "女性惨叫"
+        }
+      ]
+    },
+    "M03": {
+      "file": "music/M03__music_day-discussion__comfortable-mystery__Kevin-MacLeod__full-v01.mp3",
+      "sha256": "43cea2c91a80524d3fdaee00c0823d8e3b001a40332253f8d0b3ea8b36ff73a4",
+      "decoded": true,
+      "duration_seconds": 236.46,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -31.3,
+      "true_peak_dbtp": -15.9,
+      "loudness_range_lu": 9.9,
+      "sampled_feature_offsets_seconds": [
+        15,
+        113.23,
+        216.46
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 594.8,
+      "spectral_flatness_sampled": 1e-05,
+      "rms_p90_p10_ratio_sampled": 3.149,
+      "tempo_bpm_estimate_sampled": 136.0,
+      "clap_top5": [
+        {
+          "label_zh": "稀疏钢琴",
+          "prompt_en": "Slow sparse mysterious piano music with quiet pauses.",
+          "cosine": 0.5095
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.4949
+        },
+        {
+          "label_zh": "吉他氛围",
+          "prompt_en": "Quiet mysterious guitar music with atmospheric synthesizers.",
+          "cosine": 0.4209
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.3937
+        },
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.3144
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 15,
+          "label_zh": "稀疏钢琴"
+        },
+        {
+          "offset_seconds": 113.23,
+          "label_zh": "稀疏钢琴"
+        },
+        {
+          "offset_seconds": 216.46,
+          "label_zh": "稀疏钢琴"
+        }
+      ]
+    },
+    "M13": {
+      "file": "music/M13__music_home-mystery__mysterious__full-v01.mp3",
+      "sha256": "53afd4373c854dc5991bed6fb307a259a9cbf5cf23ab3987363053bafdfc65ee",
+      "decoded": true,
+      "duration_seconds": 87.0,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -25.38,
+      "true_peak_dbtp": -12.42,
+      "loudness_range_lu": 3.7,
+      "sampled_feature_offsets_seconds": [
+        8.7,
+        38.5,
+        67.0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1667.1,
+      "spectral_flatness_sampled": 0.00071,
+      "rms_p90_p10_ratio_sampled": 1.706,
+      "tempo_bpm_estimate_sampled": 161.5,
+      "clap_top5": [
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.5114
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.4922
+        },
+        {
+          "label_zh": "吉他氛围",
+          "prompt_en": "Quiet mysterious guitar music with atmospheric synthesizers.",
+          "cosine": 0.4793
+        },
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.4563
+        },
+        {
+          "label_zh": "稀疏钢琴",
+          "prompt_en": "Slow sparse mysterious piano music with quiet pauses.",
+          "cosine": 0.3858
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 8.7,
+          "label_zh": "温暖抒情"
+        },
+        {
+          "offset_seconds": 38.5,
+          "label_zh": "温暖抒情"
+        },
+        {
+          "offset_seconds": 67.0,
+          "label_zh": "温暖抒情"
+        }
+      ]
+    },
+    "M14": {
+      "file": "music/M14__music_night-ritual__ancient-mysteries__full-v01.mp3",
+      "sha256": "fa10e70a5888d57bae1b04e66b43fda238d3651999c0e1182a7ec5741c0b85fc",
+      "decoded": true,
+      "duration_seconds": 120.048,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -11.01,
+      "true_peak_dbtp": 0.43,
+      "loudness_range_lu": 3.7,
+      "sampled_feature_offsets_seconds": [
+        12.005,
+        55.024,
+        100.048
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 988.6,
+      "spectral_flatness_sampled": 0.00103,
+      "rms_p90_p10_ratio_sampled": 2.239,
+      "tempo_bpm_estimate_sampled": 103.4,
+      "clap_top5": [
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.5455
+        },
+        {
+          "label_zh": "强烈电子节奏",
+          "prompt_en": "Electronic music with a strong pulsing beat and synthesizers.",
+          "cosine": 0.5003
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.4964
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.4881
+        },
+        {
+          "label_zh": "吉他氛围",
+          "prompt_en": "Quiet mysterious guitar music with atmospheric synthesizers.",
+          "cosine": 0.4631
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 12.005,
+          "label_zh": "古典圆舞曲"
+        },
+        {
+          "offset_seconds": 55.024,
+          "label_zh": "古典圆舞曲"
+        },
+        {
+          "offset_seconds": 100.048,
+          "label_zh": "强烈电子节奏"
+        }
+      ]
+    },
+    "M15": {
+      "file": "music/M15__music_vote-investigation__unsolved-investigation__full-v01.ogg",
+      "sha256": "2877e423ff90cb99b3082840e66cf79d69a809708466c6f27c750c0e1ce2a912",
+      "decoded": true,
+      "duration_seconds": 48.0,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "vorbis",
+      "integrated_lufs": -20.95,
+      "true_peak_dbtp": -9.18,
+      "loudness_range_lu": 2.2,
+      "sampled_feature_offsets_seconds": [
+        4.8,
+        19.0,
+        28.0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 360.5,
+      "spectral_flatness_sampled": 1e-05,
+      "rms_p90_p10_ratio_sampled": 1.874,
+      "tempo_bpm_estimate_sampled": 123.0,
+      "clap_top5": [
+        {
+          "label_zh": "人声合唱",
+          "prompt_en": "Music with human singing or a choir.",
+          "cosine": 0.4216
+        },
+        {
+          "label_zh": "钟声",
+          "prompt_en": "A deep bronze church bell ringing with a long resonant decay.",
+          "cosine": 0.3395
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.3253
+        },
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.3243
+        },
+        {
+          "label_zh": "古乐弓弦",
+          "prompt_en": "Solemn medieval bowed string music with a continuous drone.",
+          "cosine": 0.3175
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 4.8,
+          "label_zh": "人声合唱"
+        },
+        {
+          "offset_seconds": 19.0,
+          "label_zh": "人声合唱"
+        },
+        {
+          "offset_seconds": 28.0,
+          "label_zh": "人声合唱"
+        }
+      ]
+    },
+    "M16": {
+      "file": "music/M16__music_day-haunting-piano__haunting-piano__full-v01.mp3",
+      "sha256": "54721bfb4515ac0d50eb6f29e9176aff58e19f900b52b7cdd52dd422177e7685",
+      "decoded": true,
+      "duration_seconds": 58.415,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -16.07,
+      "true_peak_dbtp": -3.14,
+      "loudness_range_lu": 3.9,
+      "sampled_feature_offsets_seconds": [
+        5.841,
+        24.207,
+        38.415
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 741.1,
+      "spectral_flatness_sampled": 1e-05,
+      "rms_p90_p10_ratio_sampled": 3.589,
+      "tempo_bpm_estimate_sampled": 76.0,
+      "clap_top5": [
+        {
+          "label_zh": "稀疏钢琴",
+          "prompt_en": "Slow sparse mysterious piano music with quiet pauses.",
+          "cosine": 0.5877
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.5316
+        },
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.469
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.417
+        },
+        {
+          "label_zh": "吉他氛围",
+          "prompt_en": "Quiet mysterious guitar music with atmospheric synthesizers.",
+          "cosine": 0.3735
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 5.841,
+          "label_zh": "稀疏钢琴"
+        },
+        {
+          "offset_seconds": 24.207,
+          "label_zh": "稀疏钢琴"
+        },
+        {
+          "offset_seconds": 38.415,
+          "label_zh": "稀疏钢琴"
+        }
+      ]
+    },
+    "M17": {
+      "file": "music/M17__music_evil-nightmare__a-wonderful-nightmare__full-v01.ogg",
+      "sha256": "142a56935eb926b280fe2b890b825d55bf737de76aae438bef2c9d72a9349604",
+      "decoded": true,
+      "duration_seconds": 184.0,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "vorbis",
+      "integrated_lufs": -8.21,
+      "true_peak_dbtp": 0.53,
+      "loudness_range_lu": 2.1,
+      "sampled_feature_offsets_seconds": [
+        15,
+        87.0,
+        164.0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2422.2,
+      "spectral_flatness_sampled": 0.02157,
+      "rms_p90_p10_ratio_sampled": 3.366,
+      "tempo_bpm_estimate_sampled": 117.5,
+      "clap_top5": [
+        {
+          "label_zh": "强烈电子节奏",
+          "prompt_en": "Electronic music with a strong pulsing beat and synthesizers.",
+          "cosine": 0.4564
+        },
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.3455
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.2658
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.2465
+        },
+        {
+          "label_zh": "风声",
+          "prompt_en": "The sound of wind blowing and gusting.",
+          "cosine": 0.2065
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 15,
+          "label_zh": "强烈电子节奏"
+        },
+        {
+          "offset_seconds": 87.0,
+          "label_zh": "强烈电子节奏"
+        },
+        {
+          "offset_seconds": 164.0,
+          "label_zh": "强烈电子节奏"
+        }
+      ]
+    },
+    "M18": {
+      "file": "music/M18__music_night-shrine__dark-shrine-loop__full-v01.ogg",
+      "sha256": "9580618dc851f70c3a11b5ff87672867de44cd38b35dabf926d6befde20e78d0",
+      "decoded": true,
+      "duration_seconds": 56.573,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "vorbis",
+      "integrated_lufs": -22.0,
+      "true_peak_dbtp": -6.87,
+      "loudness_range_lu": 5.8,
+      "sampled_feature_offsets_seconds": [
+        5.657,
+        23.286,
+        36.573
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 606.9,
+      "spectral_flatness_sampled": 3e-05,
+      "rms_p90_p10_ratio_sampled": 3.272,
+      "tempo_bpm_estimate_sampled": 129.2,
+      "clap_top5": [
+        {
+          "label_zh": "人声合唱",
+          "prompt_en": "Music with human singing or a choir.",
+          "cosine": 0.5147
+        },
+        {
+          "label_zh": "古乐弓弦",
+          "prompt_en": "Solemn medieval bowed string music with a continuous drone.",
+          "cosine": 0.4776
+        },
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.4487
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.4384
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.4311
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 5.657,
+          "label_zh": "人声合唱"
+        },
+        {
+          "offset_seconds": 23.286,
+          "label_zh": "人声合唱"
+        },
+        {
+          "offset_seconds": 36.573,
+          "label_zh": "人声合唱"
+        }
+      ]
+    },
+    "M19": {
+      "file": "music/M19__music_ritual-latin-voice__breves-dies-hominis__full-v01.ogg",
+      "sha256": "2f796c2ac3fb441acd6f40970ead975d342d276fe30de365f0fa0f5ad616a810",
+      "decoded": true,
+      "duration_seconds": 175.521,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "vorbis",
+      "integrated_lufs": -28.83,
+      "true_peak_dbtp": -8.87,
+      "loudness_range_lu": 18.0,
+      "sampled_feature_offsets_seconds": [
+        15,
+        82.761,
+        155.521
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1579.5,
+      "spectral_flatness_sampled": 0.0013,
+      "rms_p90_p10_ratio_sampled": 19.423,
+      "tempo_bpm_estimate_sampled": 112.3,
+      "clap_top5": [
+        {
+          "label_zh": "人声合唱",
+          "prompt_en": "Music with human singing or a choir.",
+          "cosine": 0.6185
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.329
+        },
+        {
+          "label_zh": "古乐弓弦",
+          "prompt_en": "Solemn medieval bowed string music with a continuous drone.",
+          "cosine": 0.2855
+        },
+        {
+          "label_zh": "弦乐张力",
+          "prompt_en": "Suspenseful tense orchestral string music with trembling low notes.",
+          "cosine": 0.229
+        },
+        {
+          "label_zh": "稀疏钢琴",
+          "prompt_en": "Slow sparse mysterious piano music with quiet pauses.",
+          "cosine": 0.1887
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 15,
+          "label_zh": "人声合唱"
+        },
+        {
+          "offset_seconds": 82.761,
+          "label_zh": "人声合唱"
+        },
+        {
+          "offset_seconds": 155.521,
+          "label_zh": "人声合唱"
+        }
+      ]
+    },
+    "M21": {
+      "file": "music/M21__music_night-prowler__night-prowler__full-v01.ogg",
+      "sha256": "4ec459f8bb364e484592f38288c53245c96d788dce4cd3b6aa247e95e4c528e8",
+      "decoded": true,
+      "duration_seconds": 152.724,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "vorbis",
+      "integrated_lufs": -9.4,
+      "true_peak_dbtp": 1.8,
+      "loudness_range_lu": 3.9,
+      "sampled_feature_offsets_seconds": [
+        15,
+        71.362,
+        132.724
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1320.3,
+      "spectral_flatness_sampled": 0.00598,
+      "rms_p90_p10_ratio_sampled": 1.922,
+      "tempo_bpm_estimate_sampled": 143.6,
+      "clap_top5": [
+        {
+          "label_zh": "强烈电子节奏",
+          "prompt_en": "Electronic music with a strong pulsing beat and synthesizers.",
+          "cosine": 0.5018
+        },
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.292
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.2895
+        },
+        {
+          "label_zh": "风声",
+          "prompt_en": "The sound of wind blowing and gusting.",
+          "cosine": 0.289
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.2728
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 15,
+          "label_zh": "强烈电子节奏"
+        },
+        {
+          "offset_seconds": 71.362,
+          "label_zh": "强烈电子节奏"
+        },
+        {
+          "offset_seconds": 132.724,
+          "label_zh": "强烈电子节奏"
+        }
+      ]
+    },
+    "A06": {
+      "file": "ambience/A06__ambience_night-tower-soundscape-90s__candidate-v01.mp3",
+      "sha256": "5144bed51ceb5861cd36231f64f0e827fa11e2e65df708ead99859a030f3734e",
+      "decoded": true,
+      "duration_seconds": 90.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -23.68,
+      "true_peak_dbtp": -3.27,
+      "loudness_range_lu": 9.8,
+      "sampled_feature_offsets_seconds": [
+        9.0,
+        40.0,
+        70.0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 464.5,
+      "spectral_flatness_sampled": 0.00033,
+      "rms_p90_p10_ratio_sampled": 5.619,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "洞穴幽鸣",
+          "prompt_en": "An eerie cavern ambience with distant ghostly howls and rumbling.",
+          "cosine": 0.5284
+        },
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.4846
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.4081
+        },
+        {
+          "label_zh": "哥特管弦乐",
+          "prompt_en": "Dark gothic orchestral music with dramatic strings and woodwinds.",
+          "cosine": 0.3982
+        },
+        {
+          "label_zh": "弦乐张力",
+          "prompt_en": "Suspenseful tense orchestral string music with trembling low notes.",
+          "cosine": 0.3899
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 9.0,
+          "label_zh": "洞穴幽鸣"
+        },
+        {
+          "offset_seconds": 40.0,
+          "label_zh": "洞穴幽鸣"
+        },
+        {
+          "offset_seconds": 70.0,
+          "label_zh": "洞穴幽鸣"
+        }
+      ]
+    },
+    "A07": {
+      "file": "ambience/A07__ambience_hall-hearth-clock-90s__candidate-v01.mp3",
+      "sha256": "9e6226ba4758d43d2b4befdd066a5f2103a2acd1cf590da278567fb4bc7db31e",
+      "decoded": true,
+      "duration_seconds": 90.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -24.52,
+      "true_peak_dbtp": -3.23,
+      "loudness_range_lu": 0.8,
+      "sampled_feature_offsets_seconds": [
+        9.0,
+        40.0,
+        70.0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 996.4,
+      "spectral_flatness_sampled": 0.00149,
+      "rms_p90_p10_ratio_sampled": 3.111,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "炉火",
+          "prompt_en": "The sound of a fire crackling and popping in a fireplace.",
+          "cosine": 0.3528
+        },
+        {
+          "label_zh": "风声",
+          "prompt_en": "The sound of wind blowing and gusting.",
+          "cosine": 0.3446
+        },
+        {
+          "label_zh": "时钟滴答",
+          "prompt_en": "A mechanical clock ticking rhythmically.",
+          "cosine": 0.2853
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.2473
+        },
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.2039
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 9.0,
+          "label_zh": "炉火"
+        },
+        {
+          "offset_seconds": 40.0,
+          "label_zh": "炉火"
+        },
+        {
+          "offset_seconds": 70.0,
+          "label_zh": "风声"
+        }
+      ]
+    },
+    "D01": {
+      "file": "designed/D01__designed_claw-left-dry-impact__candidate-v01.mp3",
+      "sha256": "78214e68ac9821f8fd13b815e69dd16f13b07872b127cfe78b271a48ad7e710b",
+      "decoded": true,
+      "duration_seconds": 0.95,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -24.35,
+      "true_peak_dbtp": -2.21,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 3988.9,
+      "spectral_flatness_sampled": 0.2063,
+      "rms_p90_p10_ratio_sampled": 73.398,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.5432
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.3667
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2764
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.2337
+        },
+        {
+          "label_zh": "剑刃",
+          "prompt_en": "A metallic sword being drawn and striking.",
+          "cosine": 0.1765
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "湿润拍击"
+        }
+      ]
+    },
+    "D02": {
+      "file": "designed/D02__designed_claw-right-wet-impact__candidate-v01.mp3",
+      "sha256": "d4ddf33af7355c0f93173e69853a91427f49043b6f76ef7ef7cebf2b7faba624",
+      "decoded": true,
+      "duration_seconds": 1.05,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -25.65,
+      "true_peak_dbtp": -3.08,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 4718.0,
+      "spectral_flatness_sampled": 0.25597,
+      "rms_p90_p10_ratio_sampled": 54.37,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.4288
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.2547
+        },
+        {
+          "label_zh": "撕开",
+          "prompt_en": "A rough ripping and tearing sound.",
+          "cosine": 0.2218
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.1543
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.1234
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "湿润拍击"
+        }
+      ]
+    },
+    "D03": {
+      "file": "designed/D03__designed_death-male-direct-impact__candidate-v01.mp3",
+      "sha256": "c7013a5dac95508133a1e8813a0ed376694e2113ece9c5dbf568b79c9ec9613a",
+      "decoded": true,
+      "duration_seconds": 1.15,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -15.9,
+      "true_peak_dbtp": -3.23,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2061.7,
+      "spectral_flatness_sampled": 0.4652,
+      "rms_p90_p10_ratio_sampled": 26139682.0,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.4585
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.4575
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.3373
+        },
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.23
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.1727
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "痛苦闷哼"
+        }
+      ]
+    },
+    "D04": {
+      "file": "designed/D04__designed_death-female-direct-impact__candidate-v01.mp3",
+      "sha256": "d736d899247bc084314d1a964ecff32fa09e78614545463a37702f7bd3a4be8f",
+      "decoded": true,
+      "duration_seconds": 1.15,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -11.14,
+      "true_peak_dbtp": -3.26,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2170.4,
+      "spectral_flatness_sampled": 0.12853,
+      "rms_p90_p10_ratio_sampled": 5201151.5,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.6281
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.5004
+        },
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.2721
+        },
+        {
+          "label_zh": "群鸦",
+          "prompt_en": "The sound of crows cawing outside.",
+          "cosine": 0.1972
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.164
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "女性惨叫"
+        }
+      ]
+    },
+    "D05": {
+      "file": "designed/D05__designed_execution-steel-body-impact__candidate-v01.mp3",
+      "sha256": "06d2ed569ef415b2ec85033be97237c17214e6870fd5bf661b56a1b9b822802e",
+      "decoded": true,
+      "duration_seconds": 1.35,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -23.22,
+      "true_peak_dbtp": -3.28,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 4229.1,
+      "spectral_flatness_sampled": 0.26702,
+      "rms_p90_p10_ratio_sampled": 107.335,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.3691
+        },
+        {
+          "label_zh": "玻璃",
+          "prompt_en": "Glass rattling, clinking and breaking.",
+          "cosine": 0.3304
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.2918
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.2824
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2285
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "湿润拍击"
+        }
+      ]
+    },
+    "D06": {
+      "file": "designed/D06__designed_wing-membrane-unfold__candidate-v01.mp3",
+      "sha256": "9316d2cea4e52147b8a22a3122ffe91ee8545964c074a2c366bcdfdb94a67462",
+      "decoded": true,
+      "duration_seconds": 2.0,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -23.27,
+      "true_peak_dbtp": -3.26,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 732.9,
+      "spectral_flatness_sampled": 0.65774,
+      "rms_p90_p10_ratio_sampled": 14003445.0,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.5387
+        },
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.4474
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.4421
+        },
+        {
+          "label_zh": "撕开",
+          "prompt_en": "A rough ripping and tearing sound.",
+          "cosine": 0.3345
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.3051
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "身体重击"
+        }
+      ]
+    },
+    "D07": {
+      "file": "designed/D07__designed_poison-glass-liquid-ritual__candidate-v01.mp3",
+      "sha256": "49cd69ee5f7b2bd6be16706eeb3ae39805f960fcf03b7a1c8af52f90a3fdcb91",
+      "decoded": true,
+      "duration_seconds": 2.4,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -24.76,
+      "true_peak_dbtp": -3.28,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1407.9,
+      "spectral_flatness_sampled": 0.53611,
+      "rms_p90_p10_ratio_sampled": 9639855.0,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.4387
+        },
+        {
+          "label_zh": "液体气泡",
+          "prompt_en": "Liquid bubbling and gurgling.",
+          "cosine": 0.4163
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.1953
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.1363
+        },
+        {
+          "label_zh": "普通说话",
+          "prompt_en": "A person speaking words in a normal conversational voice.",
+          "cosine": 0.0858
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "湿润拍击"
+        }
+      ]
+    },
+    "F01": {
+      "file": "foley/F01__foley_weapon-swish-short__candidate-v01.mp3",
+      "sha256": "3d9bc46d843ed54a91b25d982f171bef4f69cf97227b72e75ef57ce4ce49efe9",
+      "decoded": true,
+      "duration_seconds": 0.108,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.26,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1595.8,
+      "spectral_flatness_sampled": 0.00718,
+      "rms_p90_p10_ratio_sampled": 1.637,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.6748
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2778
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.2739
+        },
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.138
+        },
+        {
+          "label_zh": "剑刃",
+          "prompt_en": "A metallic sword being drawn and striking.",
+          "cosine": 0.0907
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "挥击风声"
+        }
+      ]
+    },
+    "F02": {
+      "file": "foley/F02__foley_weapon-swish-heavy__candidate-v01.mp3",
+      "sha256": "9cd316b0cb2c08f05525ab7942e2d6c9f6527330f3bb692942359e0e4bd6cffa",
+      "decoded": true,
+      "duration_seconds": 0.158,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.25,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1314.1,
+      "spectral_flatness_sampled": 0.00274,
+      "rms_p90_p10_ratio_sampled": 24.142,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.6402
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2315
+        },
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.1828
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.1287
+        },
+        {
+          "label_zh": "剑刃",
+          "prompt_en": "A metallic sword being drawn and striking.",
+          "cosine": 0.1165
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "挥击风声"
+        }
+      ]
+    },
+    "F03": {
+      "file": "foley/F03__foley_heavy-cloth__candidate-v01.mp3",
+      "sha256": "b67b2f4a8ea099b49b7bc84fda3ae8acb7eb2a40a638c5cf81af5033a12f2e63",
+      "decoded": true,
+      "duration_seconds": 0.28,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.31,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2097.8,
+      "spectral_flatness_sampled": 0.03231,
+      "rms_p90_p10_ratio_sampled": 11.146,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.4268
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.3673
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.3225
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.1608
+        },
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.0766
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "衣料摩擦"
+        }
+      ]
+    },
+    "F04": {
+      "file": "foley/F04__foley_steel-draw__candidate-v01.mp3",
+      "sha256": "a3bc9986a7d450e918013b90952b1ef7c96e87793afa5476d87467a64bece6d8",
+      "decoded": true,
+      "duration_seconds": 0.314,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -2.92,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 6209.5,
+      "spectral_flatness_sampled": 0.09214,
+      "rms_p90_p10_ratio_sampled": 10.491,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "剑刃",
+          "prompt_en": "A metallic sword being drawn and striking.",
+          "cosine": 0.4795
+        },
+        {
+          "label_zh": "玻璃",
+          "prompt_en": "Glass rattling, clinking and breaking.",
+          "cosine": 0.1362
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.1151
+        },
+        {
+          "label_zh": "明亮胜利",
+          "prompt_en": "Triumphant uplifting orchestral victory music with brass and strings.",
+          "cosine": 0.1119
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.1071
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "剑刃"
+        }
+      ]
+    },
+    "F05": {
+      "file": "foley/F05__foley_metal-ring__candidate-v01.mp3",
+      "sha256": "addcda099db215850af6733d6dcbfce4c59986dd5007d64fe3f42bc612170bbb",
+      "decoded": true,
+      "duration_seconds": 0.493,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -14.55,
+      "true_peak_dbtp": -3.2,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 3846.5,
+      "spectral_flatness_sampled": 0.00328,
+      "rms_p90_p10_ratio_sampled": 22.003,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "玻璃",
+          "prompt_en": "Glass rattling, clinking and breaking.",
+          "cosine": 0.2183
+        },
+        {
+          "label_zh": "钟声",
+          "prompt_en": "A deep bronze church bell ringing with a long resonant decay.",
+          "cosine": 0.1063
+        },
+        {
+          "label_zh": "群鸦",
+          "prompt_en": "The sound of crows cawing outside.",
+          "cosine": 0.0696
+        },
+        {
+          "label_zh": "剑刃",
+          "prompt_en": "A metallic sword being drawn and striking.",
+          "cosine": 0.0686
+        },
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.0253
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "玻璃"
+        }
+      ]
+    },
+    "F06": {
+      "file": "foley/F06__foley_glass-bottle__candidate-v01.mp3",
+      "sha256": "9bf178257009253b3fa8aa8509ee0d5521aadc3662082fc175824ccb83fc5343",
+      "decoded": true,
+      "duration_seconds": 0.373,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.22,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 3084.1,
+      "spectral_flatness_sampled": 0.05233,
+      "rms_p90_p10_ratio_sampled": 12.884,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.4868
+        },
+        {
+          "label_zh": "液体气泡",
+          "prompt_en": "Liquid bubbling and gurgling.",
+          "cosine": 0.3132
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.1593
+        },
+        {
+          "label_zh": "普通说话",
+          "prompt_en": "A person speaking words in a normal conversational voice.",
+          "cosine": 0.1354
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.0584
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "湿润拍击"
+        }
+      ]
+    },
+    "F07": {
+      "file": "foley/F07__foley_liquid-bubbles__candidate-v01.mp3",
+      "sha256": "7ea6aee2d769724795595408953ebcb2b4e08a038a68513c143015cdd0e43f41",
+      "decoded": true,
+      "duration_seconds": 0.346,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.28,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1859.6,
+      "spectral_flatness_sampled": 0.02404,
+      "rms_p90_p10_ratio_sampled": 8.318,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.412
+        },
+        {
+          "label_zh": "液体气泡",
+          "prompt_en": "Liquid bubbling and gurgling.",
+          "cosine": 0.379
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.1497
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.1044
+        },
+        {
+          "label_zh": "强烈电子节奏",
+          "prompt_en": "Electronic music with a strong pulsing beat and synthesizers.",
+          "cosine": 0.0659
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "湿润拍击"
+        }
+      ]
+    },
+    "F08": {
+      "file": "foley/F08__foley_wood-knock__candidate-v01.mp3",
+      "sha256": "87532fd360c2062ddde499de676c4cdfa28bf82461e04da11a4d0c0781c4cdcb",
+      "decoded": true,
+      "duration_seconds": 0.226,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.15,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 3886.0,
+      "spectral_flatness_sampled": 0.08744,
+      "rms_p90_p10_ratio_sampled": 14.924,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "木头敲击",
+          "prompt_en": "A wooden object being knocked and creaking.",
+          "cosine": 0.2224
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.1602
+        },
+        {
+          "label_zh": "时钟滴答",
+          "prompt_en": "A mechanical clock ticking rhythmically.",
+          "cosine": 0.1463
+        },
+        {
+          "label_zh": "群鸦",
+          "prompt_en": "The sound of crows cawing outside.",
+          "cosine": 0.1104
+        },
+        {
+          "label_zh": "剑刃",
+          "prompt_en": "A metallic sword being drawn and striking.",
+          "cosine": 0.0537
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "木头敲击"
+        }
+      ]
+    },
+    "F09": {
+      "file": "foley/F09__foley_wet-impact-a__candidate-v01.mp3",
+      "sha256": "c334ec945fe2f575939033f6dc719a1b7010f0dfec483e2aeb01d36a657549b2",
+      "decoded": true,
+      "duration_seconds": 0.356,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.27,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2132.9,
+      "spectral_flatness_sampled": 0.02966,
+      "rms_p90_p10_ratio_sampled": 23.397,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.2814
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.2581
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2501
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.1327
+        },
+        {
+          "label_zh": "剑刃",
+          "prompt_en": "A metallic sword being drawn and striking.",
+          "cosine": 0.0973
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "枪声"
+        }
+      ]
+    },
+    "F10": {
+      "file": "foley/F10__foley_wet-impact-b__candidate-v01.mp3",
+      "sha256": "319b0b0b865462ecc50967ddb63d402c49c1f7af856008be8ae81bcc09dd9b0a",
+      "decoded": true,
+      "duration_seconds": 0.306,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.22,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 3842.0,
+      "spectral_flatness_sampled": 0.20932,
+      "rms_p90_p10_ratio_sampled": 18.746,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.3004
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.2649
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.2379
+        },
+        {
+          "label_zh": "风声",
+          "prompt_en": "The sound of wind blowing and gusting.",
+          "cosine": 0.1776
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.1514
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "碎裂"
+        }
+      ]
+    },
+    "F11": {
+      "file": "foley/F11__foley_wet-impact-c__candidate-v01.mp3",
+      "sha256": "fe172500d933d24a1b15dc2e6013d376bf88db2d9f9c8d98005f0649b3669aad",
+      "decoded": true,
+      "duration_seconds": 0.31,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -3.31,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 3199.4,
+      "spectral_flatness_sampled": 0.13509,
+      "rms_p90_p10_ratio_sampled": 20.88,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.3224
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.2094
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.1584
+        },
+        {
+          "label_zh": "木头敲击",
+          "prompt_en": "A wooden object being knocked and creaking.",
+          "cosine": 0.1279
+        },
+        {
+          "label_zh": "风声",
+          "prompt_en": "The sound of wind blowing and gusting.",
+          "cosine": 0.1141
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "碎裂"
+        }
+      ]
+    },
+    "F12": {
+      "file": "foley/F12__foley_chainmail__candidate-v01.mp3",
+      "sha256": "1b247033409dd504b74ffc88424b8d03a3370820059e042c861b25420d581b72",
+      "decoded": true,
+      "duration_seconds": 0.396,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": null,
+      "true_peak_dbtp": -2.76,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 3627.6,
+      "spectral_flatness_sampled": 0.13344,
+      "rms_p90_p10_ratio_sampled": 25.961,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2684
+        },
+        {
+          "label_zh": "衣料摩擦",
+          "prompt_en": "Cloth and fabric rustling and flapping.",
+          "cosine": 0.2601
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.1673
+        },
+        {
+          "label_zh": "玻璃",
+          "prompt_en": "Glass rattling, clinking and breaking.",
+          "cosine": 0.1666
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.1589
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "身体重击"
+        }
+      ]
+    },
+    "F13": {
+      "file": "foley/F13__foley_real-cloth-rip-excerpt__candidate-v01.mp3",
+      "sha256": "a3570a6d91f858996cad13f3e2e20242b92e76ff3a0ea17e4bd047987b0ab9ef",
+      "decoded": true,
+      "duration_seconds": 4.5,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -31.04,
+      "true_peak_dbtp": -2.84,
+      "loudness_range_lu": 3.7,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 4859.2,
+      "spectral_flatness_sampled": 0.28678,
+      "rms_p90_p10_ratio_sampled": 988.96,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "撕开",
+          "prompt_en": "A rough ripping and tearing sound.",
+          "cosine": 0.5371
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.4061
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.176
+        },
+        {
+          "label_zh": "明亮胜利",
+          "prompt_en": "Triumphant uplifting orchestral victory music with brass and strings.",
+          "cosine": 0.1643
+        },
+        {
+          "label_zh": "炉火",
+          "prompt_en": "The sound of a fire crackling and popping in a fireplace.",
+          "cosine": 0.1126
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "撕开"
+        }
+      ]
+    },
+    "L02": {
+      "file": "long-effects/L02__long-effects_dark-resonance-l02__candidate-v01.mp3",
+      "sha256": "c025d3539d6540f60c6dd255c7f967cab6ac6fac55f2a2f2eaf839a854937fb6",
+      "decoded": true,
+      "duration_seconds": 15.0,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -26.17,
+      "true_peak_dbtp": -3.28,
+      "loudness_range_lu": 24.4,
+      "sampled_feature_offsets_seconds": [
+        0,
+        2.5,
+        5.0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 115.8,
+      "spectral_flatness_sampled": 3e-05,
+      "rms_p90_p10_ratio_sampled": 12.476,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "低沉长重音",
+          "prompt_en": "A deep cinematic booming impact with a long ominous reverberant tail.",
+          "cosine": 0.6698
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.3828
+        },
+        {
+          "label_zh": "钟声",
+          "prompt_en": "A deep bronze church bell ringing with a long resonant decay.",
+          "cosine": 0.3503
+        },
+        {
+          "label_zh": "洞穴幽鸣",
+          "prompt_en": "An eerie cavern ambience with distant ghostly howls and rumbling.",
+          "cosine": 0.338
+        },
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.3207
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "低沉长重音"
+        },
+        {
+          "offset_seconds": 2.5,
+          "label_zh": "低沉长重音"
+        },
+        {
+          "offset_seconds": 5.0,
+          "label_zh": "低沉长重音"
+        }
+      ]
+    },
+    "L03": {
+      "file": "long-effects/L03__long-effects_dark-resonance-l03__candidate-v01.mp3",
+      "sha256": "3a957692321a62e00daab7b17d948ac0cce17d9fbf852b8b66714e446844f5bf",
+      "decoded": true,
+      "duration_seconds": 16.0,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -23.8,
+      "true_peak_dbtp": -3.27,
+      "loudness_range_lu": 20.8,
+      "sampled_feature_offsets_seconds": [
+        0,
+        3.0,
+        6.0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 95.9,
+      "spectral_flatness_sampled": 0.0,
+      "rms_p90_p10_ratio_sampled": 11.756,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "低沉长重音",
+          "prompt_en": "A deep cinematic booming impact with a long ominous reverberant tail.",
+          "cosine": 0.6918
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.4169
+        },
+        {
+          "label_zh": "洞穴幽鸣",
+          "prompt_en": "An eerie cavern ambience with distant ghostly howls and rumbling.",
+          "cosine": 0.3484
+        },
+        {
+          "label_zh": "钟声",
+          "prompt_en": "A deep bronze church bell ringing with a long resonant decay.",
+          "cosine": 0.305
+        },
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.2927
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "低沉长重音"
+        },
+        {
+          "offset_seconds": 3.0,
+          "label_zh": "低沉长重音"
+        },
+        {
+          "offset_seconds": 6.0,
+          "label_zh": "低沉长重音"
+        }
+      ]
+    },
+    "L04": {
+      "file": "long-effects/L04__long-effects_dark-resonance-l04__candidate-v01.mp3",
+      "sha256": "683c496677c9a1e1fbc8afdc73123a7f00e5f34ae44129ebabfdbc78636cfa5b",
+      "decoded": true,
+      "duration_seconds": 20.0,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -25.28,
+      "true_peak_dbtp": -3.27,
+      "loudness_range_lu": 22.3,
+      "sampled_feature_offsets_seconds": [
+        0,
+        5.0,
+        10.0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 125.1,
+      "spectral_flatness_sampled": 0.0001,
+      "rms_p90_p10_ratio_sampled": 73.598,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "低沉长重音",
+          "prompt_en": "A deep cinematic booming impact with a long ominous reverberant tail.",
+          "cosine": 0.4737
+        },
+        {
+          "label_zh": "钟声",
+          "prompt_en": "A deep bronze church bell ringing with a long resonant decay.",
+          "cosine": 0.4173
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.2816
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.2753
+        },
+        {
+          "label_zh": "悠长暗色氛围",
+          "prompt_en": "Dark eerie ambient music with long sustained drones.",
+          "cosine": 0.2582
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "低沉长重音"
+        },
+        {
+          "offset_seconds": 5.0,
+          "label_zh": "低沉长重音"
+        },
+        {
+          "offset_seconds": 10.0,
+          "label_zh": "钟声"
+        }
+      ]
+    },
+    "R01": {
+      "file": "reference/R01__reference_accepted-night-bell__unchanged.mp3",
+      "sha256": "cca671b3e3139aaff5764d143812f2d2378f530491ccb62a311f18db870c0161",
+      "decoded": true,
+      "duration_seconds": 5.5,
+      "sample_rate": 44100,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -21.38,
+      "true_peak_dbtp": -8.67,
+      "loudness_range_lu": 8.1,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 390.6,
+      "spectral_flatness_sampled": 3e-05,
+      "rms_p90_p10_ratio_sampled": 7.973,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "钟声",
+          "prompt_en": "A deep bronze church bell ringing with a long resonant decay.",
+          "cosine": 0.6169
+        },
+        {
+          "label_zh": "低沉长重音",
+          "prompt_en": "A deep cinematic booming impact with a long ominous reverberant tail.",
+          "cosine": 0.2542
+        },
+        {
+          "label_zh": "稀疏钢琴",
+          "prompt_en": "Slow sparse mysterious piano music with quiet pauses.",
+          "cosine": 0.2449
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.1957
+        },
+        {
+          "label_zh": "枪声",
+          "prompt_en": "A loud gunshot with a sharp explosive attack.",
+          "cosine": 0.1883
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "钟声"
+        }
+      ]
+    },
+    "V03": {
+      "file": "voice/V03__voice_male-pain-take-01__candidate-v01.mp3",
+      "sha256": "21fc14c6dfad281e7be1343c42d2b0b96aa7975321c8e157355ef042a5459463",
+      "decoded": true,
+      "duration_seconds": 0.5,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -19.1,
+      "true_peak_dbtp": -3.17,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2111.7,
+      "spectral_flatness_sampled": 0.01185,
+      "rms_p90_p10_ratio_sampled": 4.339,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.3582
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.3056
+        },
+        {
+          "label_zh": "撕开",
+          "prompt_en": "A rough ripping and tearing sound.",
+          "cosine": 0.2609
+        },
+        {
+          "label_zh": "碎裂",
+          "prompt_en": "A sharp cracking and crunching sound.",
+          "cosine": 0.1751
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.1644
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "痛苦闷哼"
+        }
+      ]
+    },
+    "V04": {
+      "file": "voice/V04__voice_male-pain-take-02__candidate-v01.mp3",
+      "sha256": "a65df7d9e08ee386030c065dbe5813a510a1b68b98b991b1c12982d38eb92319",
+      "decoded": true,
+      "duration_seconds": 0.57,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -13.55,
+      "true_peak_dbtp": -3.25,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 3522.8,
+      "spectral_flatness_sampled": 0.00894,
+      "rms_p90_p10_ratio_sampled": 3.298,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.4418
+        },
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.4286
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2298
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.1209
+        },
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.114
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "男性惨叫"
+        }
+      ]
+    },
+    "V05": {
+      "file": "voice/V05__voice_male-pain-take-03__candidate-v01.mp3",
+      "sha256": "cfb1f445bb25f90781094a697a25e9c010d3cf7273aa47b1b120ea35ed0f5a0c",
+      "decoded": true,
+      "duration_seconds": 0.69,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -14.84,
+      "true_peak_dbtp": -3.27,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2298.6,
+      "spectral_flatness_sampled": 0.01148,
+      "rms_p90_p10_ratio_sampled": 11.275,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.4216
+        },
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.3616
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.1133
+        },
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.1096
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.0914
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "男性惨叫"
+        }
+      ]
+    },
+    "V06": {
+      "file": "voice/V06__voice_male-pain-take-04__candidate-v01.mp3",
+      "sha256": "df93bf826f3c7915fa26b4bdfa3039c96dd36c87343713caeeb3158f7accb870",
+      "decoded": true,
+      "duration_seconds": 0.629,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -16.25,
+      "true_peak_dbtp": -3.23,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2247.5,
+      "spectral_flatness_sampled": 0.0004,
+      "rms_p90_p10_ratio_sampled": 33.092,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.3493
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.3238
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.2856
+        },
+        {
+          "label_zh": "撕开",
+          "prompt_en": "A rough ripping and tearing sound.",
+          "cosine": 0.1907
+        },
+        {
+          "label_zh": "挥击风声",
+          "prompt_en": "A fast whooshing swishing sound of a weapon swinging through air.",
+          "cosine": 0.1691
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "痛苦闷哼"
+        }
+      ]
+    },
+    "V07": {
+      "file": "voice/V07__voice_male-pain-take-05__candidate-v01.mp3",
+      "sha256": "0e06baf90db2d0e40178eaba766c116ef77ce3a127d347f587776a910b1dc752",
+      "decoded": true,
+      "duration_seconds": 0.57,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -17.65,
+      "true_peak_dbtp": -3.28,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1450.3,
+      "spectral_flatness_sampled": 0.00291,
+      "rms_p90_p10_ratio_sampled": 2.425,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.3306
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.2307
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2141
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.1799
+        },
+        {
+          "label_zh": "人声合唱",
+          "prompt_en": "Music with human singing or a choir.",
+          "cosine": 0.1294
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "痛苦闷哼"
+        }
+      ]
+    },
+    "V08": {
+      "file": "voice/V08__voice_male-pain-take-06__candidate-v01.mp3",
+      "sha256": "5beb2217027a314ba1aa8b8ae26e1799967df593742459ecc908de652625bbee",
+      "decoded": true,
+      "duration_seconds": 0.724,
+      "sample_rate": 48000,
+      "channels": 1,
+      "codec": "mp3",
+      "integrated_lufs": -13.96,
+      "true_peak_dbtp": -3.14,
+      "loudness_range_lu": 0.0,
+      "sampled_feature_offsets_seconds": [
+        0
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2095.4,
+      "spectral_flatness_sampled": 0.01192,
+      "rms_p90_p10_ratio_sampled": 7.902,
+      "tempo_bpm_estimate_sampled": null,
+      "clap_top5": [
+        {
+          "label_zh": "痛苦闷哼",
+          "prompt_en": "A person grunting and groaning in pain.",
+          "cosine": 0.4974
+        },
+        {
+          "label_zh": "男性惨叫",
+          "prompt_en": "A man screaming loudly in pain and fear.",
+          "cosine": 0.3133
+        },
+        {
+          "label_zh": "身体重击",
+          "prompt_en": "A heavy body being hit with a hard thud.",
+          "cosine": 0.2882
+        },
+        {
+          "label_zh": "湿润拍击",
+          "prompt_en": "A wet squishing and splattering impact.",
+          "cosine": 0.1377
+        },
+        {
+          "label_zh": "女性惨叫",
+          "prompt_en": "A woman screaming loudly in pain and fear.",
+          "cosine": 0.1259
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 0,
+          "label_zh": "痛苦闷哼"
+        }
+      ]
+    },
+    "M22": {
+      "file": "music/M22__music_cinematic-resolution__no-more-magic__full-v01.mp3",
+      "sha256": "d5f7fb5c6d179cb58c378684d6adddb46d86df96b91be00ad4d096a63b84a35e",
+      "decoded": true,
+      "duration_seconds": 106.344,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -14.2,
+      "true_peak_dbtp": -2.03,
+      "loudness_range_lu": 19.3,
+      "sampled_feature_offsets_seconds": [
+        10.634,
+        48.172,
+        86.344
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 2076.3,
+      "spectral_flatness_sampled": 0.00128,
+      "rms_p90_p10_ratio_sampled": 22.462,
+      "tempo_bpm_estimate_sampled": 143.6,
+      "clap_top5": [
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.5032
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.4398
+        },
+        {
+          "label_zh": "稀疏钢琴",
+          "prompt_en": "Slow sparse mysterious piano music with quiet pauses.",
+          "cosine": 0.4296
+        },
+        {
+          "label_zh": "明亮胜利",
+          "prompt_en": "Triumphant uplifting orchestral victory music with brass and strings.",
+          "cosine": 0.3564
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.3309
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 10.634,
+          "label_zh": "稀疏钢琴"
+        },
+        {
+          "offset_seconds": 48.172,
+          "label_zh": "古典圆舞曲"
+        },
+        {
+          "offset_seconds": 86.344,
+          "label_zh": "古典圆舞曲"
+        }
+      ]
+    },
+    "M23": {
+      "file": "music/M23__music_clocktower__forgotten-clocktower__full-v01.mp3",
+      "sha256": "41a9caf0f35c9569ece6fd25ca1e8cff4233eded2c319c5287a695d1e663bd23",
+      "decoded": true,
+      "duration_seconds": 144.013,
+      "sample_rate": 44100,
+      "channels": 2,
+      "codec": "mp3",
+      "integrated_lufs": -27.8,
+      "true_peak_dbtp": -12.16,
+      "loudness_range_lu": 22.2,
+      "sampled_feature_offsets_seconds": [
+        14.401,
+        67.007,
+        124.013
+      ],
+      "sampled_excerpt_length_max_seconds": 10,
+      "spectral_centroid_hz_sampled": 1249.0,
+      "spectral_flatness_sampled": 0.00193,
+      "rms_p90_p10_ratio_sampled": 19.305,
+      "tempo_bpm_estimate_sampled": 161.5,
+      "clap_top5": [
+        {
+          "label_zh": "古典圆舞曲",
+          "prompt_en": "Elegant classical waltz music with piano, strings and a dancing rhythm.",
+          "cosine": 0.4839
+        },
+        {
+          "label_zh": "温暖抒情",
+          "prompt_en": "Warm peaceful emotional instrumental music.",
+          "cosine": 0.482
+        },
+        {
+          "label_zh": "吉他氛围",
+          "prompt_en": "Quiet mysterious guitar music with atmospheric synthesizers.",
+          "cosine": 0.4728
+        },
+        {
+          "label_zh": "钟琴水琴悬疑",
+          "prompt_en": "Eerie slow music with vibraphone, waterphone and metallic resonances.",
+          "cosine": 0.3791
+        },
+        {
+          "label_zh": "强烈电子节奏",
+          "prompt_en": "Electronic music with a strong pulsing beat and synthesizers.",
+          "cosine": 0.3766
+        }
+      ],
+      "clap_segment_top1": [
+        {
+          "offset_seconds": 14.401,
+          "label_zh": "吉他氛围"
+        },
+        {
+          "offset_seconds": 67.007,
+          "label_zh": "古典圆舞曲"
+        },
+        {
+          "offset_seconds": 124.013,
+          "label_zh": "吉他氛围"
+        }
+      ]
+    }
+  }
+}

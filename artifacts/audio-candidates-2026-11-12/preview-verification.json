@@ -1,0 +1,15 @@
+{
+  "method": "Local HTML opened in headless Chromium via Playwright; no game page or server",
+  "entries": 55,
+  "music_entries": 12,
+  "category_filter": "passed",
+  "search_F13_present": true,
+  "browser_metadata": [
+    {"id": "F13", "duration_seconds": 4.5},
+    {"id": "D04", "duration_seconds": 1.15},
+    {"id": "M23", "duration_seconds": 144.013061},
+    {"id": "M18", "duration_seconds": 56.572517}
+  ],
+  "page_errors": [],
+  "artistic_listening": false
+}

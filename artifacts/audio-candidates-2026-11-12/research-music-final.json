@@ -1,0 +1,49 @@
+[
+  {
+    "slug": "no-more-magic",
+    "page": "https://opengameart.org/content/no-more-magic",
+    "files": [
+      "https://opengameart.org/sites/default/files/No%20More%20Magic_5.mp3",
+      "https://opengameart.org/sites/default/files/No%20More%20Magic.ogg",
+      "https://opengameart.org/sites/default/files/No%20More%20Magic_0.mid"
+    ],
+    "license_urls": [
+      "http://creativecommons.org/licenses/by/3.0/"
+    ],
+    "author": [
+      "HorrorPen",
+      "shd",
+      "yd"
+    ]
+  },
+  {
+    "slug": "forgotten-clocktower",
+    "page": "https://opengameart.org/content/forgotten-clocktower",
+    "files": [
+      "https://opengameart.org/sites/default/files/Forgotten%20Clocktower.mp3"
+    ],
+    "license_urls": [
+      "http://creativecommons.org/licenses/by/3.0/"
+    ],
+    "author": [
+      "PetterTheSturgeon",
+      "Snabisch",
+      ""
+    ]
+  },
+  {
+    "slug": "skeleton-waltz-theme",
+    "page": "https://opengameart.org/content/skeleton-waltz-theme",
+    "files": [
+      "https://opengameart.org/sites/default/files/Bone%20Yard%20Waltz%20-%20Loopable_0.ogg"
+    ],
+    "license_urls": [
+      "https://creativecommons.org/licenses/by/4.0/"
+    ],
+    "author": [
+      "Wolfgang_",
+      "Chasersgaming",
+      ""
+    ]
+  }
+]

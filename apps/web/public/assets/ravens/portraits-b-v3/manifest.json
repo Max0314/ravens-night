@@ -1,0 +1,50 @@
+{
+  "collection": "gothic-b-revisions-v3",
+  "selectedAt": "2026-11-12",
+  "portraits": [
+    {
+      "id": "spy",
+      "source": "spy.png",
+      "sourceSha256": "a0e9af1cc8425f4e4ce201b4a5e874dd7cdccdb38ea2b2dea10ab20286dbc7f8",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "processing": "Encode full image at native aspect ratio; no painting, cropping, reframing or recolouring. Existing UI crop remains.",
+      "variants": [
+        {
+          "file": "spy.webp",
+          "width": 960,
+          "height": 1280,
+          "sha256": "21d3e096545d7e6f7916ae83d1aa24c75ad7d7a10cedb23ed4011be9e7fc31a5"
+        },
+        {
+          "file": "spy-small.webp",
+          "width": 240,
+          "height": 320,
+          "sha256": "0b6cf533da9967c45935a7fad7a0b59e439e2e6c1e9bb5f367e49267df25b857"
+        }
+      ]
+    },
+    {
+      "id": "virgin",
+      "source": "virgin.png",
+      "sourceSha256": "8d52f758ddc935bc469ff2856111883c452e2e5e44126875514be47a7b6e2dc9",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "processing": "Encode full image at native aspect ratio; no painting, cropping, reframing or recolouring. Existing UI crop remains.",
+      "variants": [
+        {
+          "file": "virgin.webp",
+          "width": 960,
+          "height": 1280,
+          "sha256": "361996a8290b60fab033eb11b568522dcd4122778a353e4f9fb1d39999d38cb2"
+        },
+        {
+          "file": "virgin-small.webp",
+          "width": 240,
+          "height": 320,
+          "sha256": "a776cda3ddfa9be7c5f4627f9c52fd5b7bec281082a30e48b1158a38d76d5976"
+        }
+      ]
+    }
+  ]
+}
