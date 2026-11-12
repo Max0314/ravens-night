@@ -7,10 +7,11 @@ const PORTRAIT_ROOT = "/assets/ravens/portraits-b-v2";
 export function roleArt(roleId: string) {
   // Unknown identities must never fall back to another character's portrait.
   if (!PORTRAIT_ROLES.has(roleId)) return { portraitUrl: `${PORTRAIT_ROOT}/concealed.svg`, thumbnailUrl: `${PORTRAIT_ROOT}/concealed.svg`, portraitPosition: "50% 50%" };
+  const assetId = roleId === "poisoner" ? "poisoner-approved-20261112" : roleId;
   return {
-    portraitUrl: `${PORTRAIT_ROOT}/${roleId}.webp`,
-    thumbnailUrl: `${PORTRAIT_ROOT}/${roleId}-small.webp`,
-    portraitSrcSet: `${PORTRAIT_ROOT}/${roleId}-small.webp 240w, ${PORTRAIT_ROOT}/${roleId}.webp 960w`,
+    portraitUrl: `${PORTRAIT_ROOT}/${assetId}.webp`,
+    thumbnailUrl: `${PORTRAIT_ROOT}/${assetId}-small.webp`,
+    portraitSrcSet: `${PORTRAIT_ROOT}/${assetId}-small.webp 240w, ${PORTRAIT_ROOT}/${assetId}.webp 960w`,
     portraitPosition: "50% 20%",
   };
 }

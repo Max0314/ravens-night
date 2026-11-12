@@ -366,21 +366,24 @@
     {
       "id": "poisoner",
       "name": "投毒者",
-      "sourceSha256": "93799087cdb286cd7b9402058467d664410104582ea1496d21efe3807ead8ff7",
-      "sourceWidth": 1086,
-      "sourceHeight": 1448,
+      "sourceFile": "artifacts/character-production-b-2026-11-12/approved/poisoner-20261112.jpg",
+      "source": "user-selected attachment",
+      "selectedAt": "2026-11-12",
+      "sourceSha256": "7744fffc8539393e379734d7bb483e35b08d10dd7e6e9eafed86e8fd0e0a42ea",
+      "sourceWidth": 1122,
+      "sourceHeight": 1402,
       "variants": [
         {
-          "file": "poisoner.webp",
+          "file": "poisoner-approved-20261112.webp",
           "width": 960,
-          "height": 1280,
-          "bytes": 103310
+          "height": 1200,
+          "bytes": 85796
         },
         {
-          "file": "poisoner-small.webp",
+          "file": "poisoner-approved-20261112-small.webp",
           "width": 240,
-          "height": 320,
-          "bytes": 7590
+          "height": 300,
+          "bytes": 7236
         }
       ]
     },
