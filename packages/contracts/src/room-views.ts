@@ -4,7 +4,7 @@ import type { RoomProtocolView } from "./room-protocol.js";
 export interface RoomParticipant { controller?:PlayerController; left?:boolean; id: string; nickname: string; avatar?: string; mode: "PLAYER" | "DISPLAY"; seat?: number; connected: boolean; ready?: boolean; lastSeenAt?: number }
 export type RoomPlayMode = "IN_PERSON" | "REMOTE" | "HYBRID";
 export interface GameView {
-  presentationVersion?: 1 | 2;
+  presentationVersion?: 1 | 2 | 3;
   publishedPhaseStartedAt?:number;
   revealComplete?: boolean;
   contextId?: string;

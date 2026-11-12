@@ -15,7 +15,7 @@ interface Intent { onCommitted?: (() => void) | undefined; url: string; init: Re
 const unsentVotes = new Map<string, Intent>();
 const pending = new Map<string, Intent>();
 const contextKey = (code: string, mode = currentRoomMode()) => `${code.toUpperCase()}:${mode}`;
-export function resetAccountContext(){accountGeneration++; contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear(); joinIntents.clear();joinFlights.clear(); creationIntent=undefined; creationFlights.clear();}
+export function resetAccountContext(){accountGeneration++; contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear(); joinIntents.clear();joinFlights.clear();switchMemory=undefined;switchFlight=undefined;switchPreparation=undefined; creationIntent=undefined; creationFlights.clear();}
 export function observeRoomView(code: string, incoming: ContextView, mode = currentRoomMode()) {
   const key = contextKey(code, mode), previous = contexts.get(key);
   if (!incoming.roomInstanceId || !incoming.self) return;
@@ -38,7 +38,7 @@ function commandBinding(code: string, path: string): Omit<RoomCommandContext, "e
 const memberPath = (url: string) => /^\/api\/rooms\/([^/]+)\/(.+)$/.exec(url);
 function isMemberWrite(url: string, init?: RequestInit) {
   const match = memberPath(url);
-  return match && init?.method && !["GET", "HEAD"].includes(init.method) && !/^(?:join$|recover$|account\/)/.test(match[2]!) ? match : undefined;
+  return match && init?.method && !["GET", "HEAD"].includes(init.method) && !/^(?:join$|recover$|switch-ticket$|account\/)/.test(match[2]!) ? match : undefined;
 }
 
 async function request<T>(url: string, init?: RequestInit, onCommitted?: () => void): Promise<T> {
@@ -96,7 +96,7 @@ export async function retryPendingCommand(code: string) {
 
 async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
   const generation=accountGeneration;
-  const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode(), "x-ravens-protocol": "4" });
+  const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode(), "x-ravens-protocol": "5" });
   if (init?.method && init.method !== "GET") headers.set("x-command-id", crypto.randomUUID());
   new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
   const options = { ...init, credentials: "same-origin" as const, headers };
@@ -160,7 +160,8 @@ export function createRoom(playerCount:number,organizerName:string,playMode:Room
     catch(error){if(error instanceof ApiError&&error.status<500&&error.status!==429)finishCreationIntent();throw error;}
   })().finally(()=>{if(creationFlights.get(key)===flight)creationFlights.delete(key);});creationFlights.set(key,flight);return flight.promise;
 }
-export function getRoomSummary(code:string){return request<{canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number;occupiedAvatars:string[]}>(`/api/rooms/${encodeURIComponent(code)}/summary`);}
+export interface RoomSummary {code?:string;roomInstanceId:string;state:RoomView['state'];canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number;playerCount?:number;occupiedAvatars:string[]}
+export function getRoomSummary(code:string){return request<RoomSummary>(`/api/rooms/${encodeURIComponent(code)}/summary`);}
 export function manageBots(code:string,intent:{count?:number;fill?:boolean;clear?:boolean}){return request<PrivateView>(`/api/rooms/${code}/bots`,{method:"POST",body:JSON.stringify(intent)});}
 export function controlBots(code:string,intent:{autoNominate?:boolean;mode?:"RUNNING"|"PAUSED";pace?:"NORMAL"|"SLOW"}){return request<PrivateView>(`/api/rooms/${code}/bots/control`,{method:"POST",body:JSON.stringify(intent)});}
 export function runBotCommand(code:string,command:import('@ravens/contracts').BotTestCommand,targetSeat?:number){return request<PrivateView>(`/api/rooms/${code}/bots/command`,{method:'POST',body:JSON.stringify({command,...(targetSeat!==undefined?{targetSeat}:{})})});}
@@ -170,12 +171,21 @@ export function setRehearsalClock(code:string,mode:"WALL"|"MANUAL"){return reque
 export function advanceRehearsal(code:string){return request<PrivateView>(`/api/rooms/${code}/rehearsal/advance`,{method:"POST",body:"{}"});}
 
 const joinTickets = new Map<string, string>();
+type JoinProfile=Pick<PlayerSelection,'nickname'>&Partial<Omit<PlayerSelection,'nickname'>>;
 const joinIntents=new Map<string,PlayerSelection>();
-type JoinResult={id:string;nickname:string;mode:'PLAYER'|'DISPLAY';seat?:number;token:string};
+export type JoinResult={id:string;nickname:string;mode:'PLAYER'|'DISPLAY';seat?:number;token:string;closedRoomCode?:string};
 const joinFlights=new Map<string,{fingerprint:string;promise:Promise<JoinResult>}>();
 const joinKey=(code:string,mode:string)=>`ravens_join:${roomSessionKey()}:${code}:${mode}`;
-export function readPendingJoin(code:string,mode:'PLAYER'|'DISPLAY'='PLAYER'):PlayerSelection|undefined {const key=joinKey(code,mode);try{return joinIntents.get(key)??JSON.parse(sessionStorage.getItem(key+':intent')??'null')??undefined;}catch{return joinIntents.get(key);}}
+export function readPendingJoin(code:string,mode:'PLAYER'|'DISPLAY'='PLAYER'):PlayerSelection|undefined {
+  const transfer=readPendingRoomSwitch();if(mode==='PLAYER'&&transfer?.targetCode===code)return transfer.profile;
+  const key=joinKey(code,mode);try{return joinIntents.get(key)??JSON.parse(sessionStorage.getItem(key+':intent')??'null')??undefined;}catch{return joinIntents.get(key);}
+}
+export function clearPendingJoin(code:string,mode:'PLAYER'|'DISPLAY'='PLAYER'){
+  const key=joinKey(code,mode);joinTickets.delete(key);joinIntents.delete(key);try{sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent');}catch{}
+}
+export function isDefiniteJoinFailure(error:unknown){return error instanceof ApiError&&error.status<500&&(error.status===429?['JOIN_TRANSFER_CAPACITY','JOIN_TICKET_CAPACITY'].includes(error.errorCode??''):![408,425,426].includes(error.status))&&!['JOIN_PENDING','COMMAND_PENDING','CREATION_PENDING'].includes(error.errorCode??'');}
 export function joinRoom(code:string,nickname:string,mode:'PLAYER'|'DISPLAY',profile?:PlayerSelection){
+  if(readPendingRoomSwitch())return Promise.reject(new ApiError('换房结果待确认，请重试原操作',409,'JOIN_PENDING'));
   const key=joinKey(code,mode),old=readPendingJoin(code,mode),next={nickname,...(profile?{avatar:profile.avatar,...(profile.expectedProfileRevision!==undefined?{expectedProfileRevision:profile.expectedProfileRevision}:{})}:{})};
   if(old&&(old.nickname!==nickname||profile&&JSON.stringify(old)!==JSON.stringify(next)))return Promise.reject(new ApiError('加入结果待确认，请重试原资料',409,'JOIN_PENDING'));
   const frozen=old??next as PlayerSelection,fingerprint=JSON.stringify(frozen),active=joinFlights.get(key);
@@ -183,34 +193,58 @@ export function joinRoom(code:string,nickname:string,mode:'PLAYER'|'DISPLAY',pro
   joinIntents.set(key,frozen);try{sessionStorage.setItem(key+':intent',fingerprint);}catch{notifyStorageFailure();}
   const flight={fingerprint,promise:undefined as unknown as Promise<JoinResult>};flight.promise=performJoin(code,mode,key,frozen).finally(()=>{if(joinFlights.get(key)===flight)joinFlights.delete(key);});joinFlights.set(key,flight);return flight.promise;
 }
-async function performJoin(code:string,mode:'PLAYER'|'DISPLAY',key:string,frozen:PlayerSelection){
-  let ticket = joinTickets.get(key);
-  try { ticket ??= sessionStorage.getItem(key) ?? undefined; } catch { /* In-memory retry remains available. */ }
-  for (let attempt = 0; attempt < 2; attempt++) {
-    if (!ticket) {
-      ticket = (await request<{ joinTicket: string }>(`/api/rooms/${code}/join-ticket?mode=${mode}`, { headers: { "x-room-mode": mode } })).joinTicket;
-      joinTickets.set(key, ticket);
-      try { sessionStorage.setItem(key, ticket); } catch { /* Cookie recovery remains available. */ }
-    }
-    try {
-      const result = await request<{ id: string; nickname: string; mode: "PLAYER" | "DISPLAY"; seat?: number; token: string }>(`/api/rooms/${code}/join`, { method: "POST", headers: { "x-room-mode": mode }, body: JSON.stringify({ ...frozen, mode, joinTicket: ticket }) });
-      const context=contextKey(code,mode);
-      if(contexts.get(context)?.self?.participantId !== result.id){contexts.delete(context);pending.delete(context);tails.delete(context);unsentVotes.delete(context);}
-      joinTickets.delete(key);joinIntents.delete(key);
-      try { sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent'); } catch { /* The seat is already committed. */ }
-      return result;
-    } catch (error) {
-      if(error instanceof ApiError&&['PROFILE_STALE','NICKNAME_TAKEN','AVATAR_TAKEN'].includes(error.errorCode??'')){joinTickets.delete(key);joinIntents.delete(key);try{sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent');}catch{}}
-      if (error instanceof ApiError && ["SETUP_CHANGED", "JOIN_TICKET_EXPIRED", "JOIN_TICKET_REVOKED"].includes(error.errorCode ?? "")) {
-        joinTickets.delete(key); ticket = undefined;
-        try { sessionStorage.removeItem(key);sessionStorage.removeItem(key+':intent'); } catch { /* Retry still has the in-memory decision. */ }
-        // Only a confirmed unused setup conflict may obtain another ticket automatically.
-        if (error.errorCode === "SETUP_CHANGED" && attempt === 0) continue;
-      }
+async function performJoin(code:string,mode:'PLAYER'|'DISPLAY',key:string,frozen:JoinProfile){
+  let ticket=joinTickets.get(key);try{ticket??=sessionStorage.getItem(key)??undefined;}catch{}
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      if(!ticket){ticket=(await request<{joinTicket:string}>(`/api/rooms/${code}/join-ticket?mode=${mode}`,{headers:{'x-room-mode':mode}})).joinTicket;joinTickets.set(key,ticket);try{sessionStorage.setItem(key,ticket);}catch{notifyStorageFailure();}}
+      const result=await request<JoinResult>(`/api/rooms/${code}/join`,{method:'POST',headers:{'x-room-mode':mode},body:JSON.stringify({...frozen,mode,joinTicket:ticket})});
+      const context=contextKey(code,mode);if(contexts.get(context)?.self?.participantId!==result.id){contexts.delete(context);pending.delete(context);tails.delete(context);unsentVotes.delete(context);}
+      clearPendingJoin(code,mode);return result;
+    }catch(error){
+      if(error instanceof ApiError&&error.errorCode==='SETUP_CHANGED'&&attempt===0){joinTickets.delete(key);ticket=undefined;try{sessionStorage.removeItem(key);}catch{}continue;}
+      if(isDefiniteJoinFailure(error))clearPendingJoin(code,mode);
       throw error;
     }
   }
-  throw new ApiError("人数或座序已变化，请重新加入", 409, "SETUP_CHANGED");
+  throw new ApiError('人数或座序已变化，请重新加入',409,'SETUP_CHANGED');
+}
+
+export interface RoomSwitchTicket {switchTicket:string;expiresAt:number;source:{code:string;roomInstanceId:string;state:RoomView['state'];activeHumanCount:number;playerCount:number}}
+export interface PendingRoomSwitch {sourceCode:string;sourceInstance:string;targetCode:string;targetInstance:string;switchTicket:string;joinTicket:string;profile:PlayerSelection;fingerprint:string;createdAt:number}
+const switchKey=()=>`ravens_room_switch:${roomSessionKey()}`;
+let switchMemory:{key:string;intent:PendingRoomSwitch}|undefined;
+let switchFlight:Promise<JoinResult>|undefined;
+let switchPreparation:{fingerprint:string;promise:Promise<JoinResult>}|undefined;
+export function readPendingRoomSwitch():PendingRoomSwitch|undefined{
+  const key=switchKey();if(switchMemory?.key===key)return switchMemory.intent;
+  try{const value=JSON.parse(sessionStorage.getItem(key)??'null') as PendingRoomSwitch|null;if(value&&typeof value.sourceCode==='string'&&typeof value.targetCode==='string'&&typeof value.switchTicket==='string'&&typeof value.joinTicket==='string'&&value.profile&&typeof value.profile.nickname==='string'){switchMemory={key,intent:value};return value;}}catch{}
+  return undefined;
+}
+export function finishPendingRoomSwitch(){const key=switchKey();if(switchMemory?.key===key)switchMemory=undefined;try{sessionStorage.removeItem(key);}catch{}}
+export function requestRoomSwitchTicket(source:Pick<RoomView,'code'|'roomInstanceId'>,targetCode:string,targetRoomInstanceId:string){
+  return request<RoomSwitchTicket>(`/api/rooms/${source.code}/switch-ticket`,{method:'POST',headers:{'x-room-mode':'PLAYER'},body:JSON.stringify({sourceRoomInstanceId:source.roomInstanceId,targetCode,targetRoomInstanceId})});
+}
+export function switchRoom(source:Pick<RoomView,'code'|'roomInstanceId'>,targetCode:string,targetInstance:string,ticket:RoomSwitchTicket,profile:PlayerSelection):Promise<JoinResult>{
+  const values={sourceCode:source.code,sourceInstance:source.roomInstanceId!,targetCode,targetInstance,switchTicket:ticket.switchTicket,profile},fingerprint=JSON.stringify(values);
+  if(switchPreparation)return switchPreparation.fingerprint===fingerprint?switchPreparation.promise:Promise.reject(new ApiError('正在换房，请等待原操作结果',409,'JOIN_PENDING'));
+  if(readPendingRoomSwitch())return Promise.reject(new ApiError('换房结果待确认，请重试原操作',409,'JOIN_PENDING'));
+  const preparation={fingerprint,promise:undefined as unknown as Promise<JoinResult>};
+  preparation.promise=(async()=>{
+    const targetKey=joinKey(targetCode,'PLAYER');let joinTicket=joinTickets.get(targetKey);try{joinTicket??=sessionStorage.getItem(targetKey)??undefined;}catch{}
+    if(!joinTicket)joinTicket=(await request<{joinTicket:string}>(`/api/rooms/${targetCode}/join-ticket?mode=PLAYER`,{headers:{'x-room-mode':'PLAYER'}})).joinTicket;
+    const intent:PendingRoomSwitch={...values,joinTicket,fingerprint,createdAt:Date.now()};switchMemory={key:switchKey(),intent};try{sessionStorage.setItem(switchKey(),JSON.stringify(intent));}catch{notifyStorageFailure();}
+    return retryPendingRoomSwitch();
+  })().finally(()=>{if(switchPreparation===preparation)switchPreparation=undefined;});
+  switchPreparation=preparation;return preparation.promise;
+}
+
+export function retryPendingRoomSwitch():Promise<JoinResult>{
+  if(switchFlight)return switchFlight;
+  const intent=readPendingRoomSwitch();if(!intent)return Promise.reject(new ApiError('没有待确认的换房操作',409,'NO_PENDING_SWITCH'));
+  const generation=accountGeneration,key=switchKey();
+  const flight=rawRequest<JoinResult>(`/api/rooms/${intent.targetCode}/join`,{method:'POST',headers:{'x-room-mode':'PLAYER'},body:JSON.stringify({...intent.profile,mode:'PLAYER',joinTicket:intent.joinTicket,switchTicket:intent.switchTicket})}).catch(error=>{if(generation===accountGeneration&&key===switchKey()&&isDefiniteJoinFailure(error))finishPendingRoomSwitch();throw error;}).finally(()=>{if(switchFlight===flight)switchFlight=undefined;});
+  switchFlight=flight;return flight;
 }
 
 export function leaveRoom(code: string) { return request<{ left: true; roomDestroyed: boolean; organizerChanged: boolean }>(`/api/rooms/${code}/leave`, { method: "DELETE", body: "{}" }); }

@@ -1,4 +1,4 @@
-import {experienceTiming} from '@ravens/contracts';
+import {experienceTiming,isNonBlockingExperience} from '@ravens/contracts';
 import type { ExperienceEvent } from "@ravens/contracts";
 import type { GameRuntime } from "./service.js";
 
@@ -60,6 +60,12 @@ function safeStart(event: ExperienceEvent): ExperienceEvent {
 }
 export function enqueuePublication(game: GameRuntime, event: ExperienceEvent): void {
   initializePresentation(game);
+  if(isNonBlockingExperience(event.kind,event.timingVersion??1)){
+    // Announcements are already public at commit. No delayed state patch may rewind a
+    // later hand change, nomination or shot; the caller syncs the current business state.
+    game.pendingPublications!.push({id:`${event.id}:announcement`,eventId:event.id,at:event.startsAt,order:event.seq*3,patch:{},eventPatch:structuredClone(event)});
+    return;
+  }
   const duration = event.durationMs;
   const offset = duration === 0 ? 0 : experienceTiming(event.kind,event.timingVersion??1).resultOffset;
   const end = event.startsAt + duration;

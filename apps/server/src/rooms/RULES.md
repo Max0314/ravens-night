@@ -81,9 +81,9 @@
 
 ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与只含公开信息的对象座位。完整历史可供重连追赶，不再只保留最后八条。
 
-网络视图只读取已提交的 publicProjection。startsAt 前不发送未来事件；准备包为中性文案。SHOT/EXECUTION 在开始后 2800ms 公布死亡，DAWN 在 2100ms 公布死亡与白天，GAME_OVER 在 2100ms 公布胜方、结束时公布全员身份与裁量记录。500ms 时钟在下一次 tick 原子发布到期节点并增加 revision；GET、私密视图、WebSocket、重试与大屏共用投影。内部提前计算的终局、能力、上下文和未来排队事件不能泄露结果；跳过动画不会提前公开。
+网络视图只读取已提交的 publicProjection。startsAt 前不发送未来事件；准备包为中性文案。结果点由事件timingVersion决定；v1的SHOT/EXECUTION为2800ms、DAWN/GAME_OVER为2100ms，v2为3600/2800ms；v3的SHOT850ms、EXECUTION1000ms、DAWN1400ms、GAME_OVER900ms。终局结束时才公布全员身份与裁量记录。500ms 时钟在下一次 tick 原子发布到期节点并增加 revision；GET、私密视图、WebSocket、重试与大屏共用投影。内部提前计算的终局、能力、上下文和未来排队事件不能泄露结果；跳过动画不会提前公开。
 
-枪击 4500ms，处决 4500ms，黎明 5000ms，入夜 2000ms，终局 5000ms；首个效果有 1500ms 同步投递提前量，后续效果排在前一效果之后。NOTICE 也按队列排程，身份日志不抢先出现。演出结束前服务端拒绝新的游戏操作，客户端必须按 serverNow 对时。
+新局presentationVersion=3：枪击2600ms、处决2800ms、黎明4200ms、入夜3600ms、终局5200ms，阻塞事件lead为250ms。提名800ms/票结果1200ms仅为非模态展示，startsAt=occurredAt、不写演出锁、不延迟下一合法动作；其发布节点只更新event，同提交同步最新业务状态，不能回写旧phase/context/nomination/举手。枪击仍暂停计票并顺延剩余辩护/席位时间。旧局和历史保留v1/v2原时序及1500ms lead，不原地改写。NOTICE按当前阻塞队列排程；阻塞演出结束前服务端拒绝新游戏操作，客户端必须按serverNow对时。
 
 投毒、保护、查验使用行动者自己的 ACTION 历史，effect 分别为 POISON / PROTECT / DIVINATION，targetSeats 只进入该玩家私密视图。
 
@@ -91,7 +91,7 @@ ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与�
 
 - GET /api/account返回本人本游戏资料及默认值；POST /api/account/profile仅可信登录账号可写nickname/avatar和expectedRevision，不能指定他人账号。恢复默认提交两字段null；头像仅允许已有Fribench目录URL。相同目标值重试不重复推进资料版本，不同值旧版本返回409。
 - 资料在既有runtime队列中与房间快照原子提交；大厅、教学及进行中局即时同步本游戏显示，已保存战报/魔典快照不回写。资料更新不改变座位、秘密身份或准备周期。重连保留当前头像，明确修改资料时才更新。
-- 活动PLAYER头像按稳定目录ID在房内判重（兼容v1/v2/v3）；随机真人/人机分配排除占用，显式冲突返回AVATAR_TAKEN且不发生部分加入/人机替换/资料版本变动。本席精确当前URL与既存重复可保留；旧pending头像冲突时保留当前头像并清pending。summary只额外公开occupiedAvatars，不附昵称或席位身份。
+- 活动PLAYER头像按稳定目录ID在房内判重（兼容v1/v2/v3）；随机真人/人机分配排除占用，显式冲突返回AVATAR_TAKEN且不发生部分加入/人机替换/资料版本变动。本席精确当前URL与既存重复可保留；旧pending头像冲突时保留当前头像并清pending。summary公开roomInstanceId/state/canJoin及occupiedAvatars，不附昵称、席位身份或凭据。
 
 - startTutorial 仅大厅、人数齐备且全员 ready/30秒内在线；可跳过教学但不能跳过身份确认。reset 仅接受正常终局演出完成或 ABORTED；RUNNING 必须先由现任房主明确中止。
 - setReady(code, token, ready)：大厅准备；reorderSeats 仅房主可用；阵容或座序变动清空准备并轮换 setupId。公共大屏只读。
@@ -113,13 +113,18 @@ ExperienceEvent 有稳定 id、seq、gameId、kind、startsAt、durationMs 与�
 
 醉毒间谍从完整真魔典与完整扰动候选中确定性选择，每夜固定一次。扰动只交换相同生死的善良身份包和对应提醒，冻结本人、邪恶角色及死亡旧小恶魔；保留真实角色多重集合，禁止假候选直接标出间谍自身中毒，无合法扰动时使用完整真候选。
 
-快照 schemaVersion=2，旧库在监听前、单写锁内先全量预检再单事务迁移；未知版本或不可还原快照拒绝启动。v1投票保留绝对时间、已冻结票和已耗鬼票，不追溯改票。普通回执只保存指纹与小结果，保留256条；淘汰后的旧请求仍因成员命令版本过期被拒绝。
+当前HTTP/WS协议5，旧协议4及更早HTTP请求426、旧WS1008要求刷新；快照schemaVersion=4，旧库在监听前、单写锁内先全量预检再单事务迁移；未知版本或不可还原快照拒绝启动。v1投票保留绝对时间、已冻结票和已耗鬼票，不追溯改票。普通回执只保存指纹与小结果，保留256条；淘汰后的旧请求仍因成员命令版本过期被拒绝。
 
 - POST /api/rooms/:code/bots/command 沿用现任房主CONTROL授权、game/context/ballot版本、命令ID与队列事务；END_DAY仅让可结束白天的机器人同意，真人不变。NOMINATE_ONCE/SHOOT_ONCE各选一名公开有资格的机器人执行一次正常命令；射击包含VOTING，不按真实角色选执行者。无资格/非法目标明确409；重试回原回执及最新视图。反馈仅公开执行者、数量与提交结果，不提前公开死亡/隐藏身份。
 - 新洗衣妇、图书管理员及调查员二选一线索在本人历史保存candidateGroup（ONE_OF、shown角色名与实际告知的两席）；醉毒使用实际误信息，不增强为后台真值。旧文本不解析补标记，公共视图不包含该字段。
+
+- POST /api/rooms/:source/switch-ticket只允许当前PLAYER房主及匹配账号/来源实例，签5分钟HMAC能力票，绑定目标实例、源房主ID/凭据散列与当时账号；不写座位。目标join接受switchTicket，原Cookie/账号席位/已用票/新入座成功均统一finalize，在同一runtime/repository事务加入目标并关闭来源。用户明确关闭允许来源进行中或有其他真人；目标失败/持久化失败两房保持。来源Cookie用源路径清，目标Cookie用目标路径设。
+- joinTransfers只在目标私密metadata保存散列和恢复信息，保留24小时、最多256条，仅清已到期，满额429不驱逐有效回执。新游客由原签名joinTicket恢复；已有游客须目标原Cookie；账号须同可信sub与当前确定性凭据。已提交重放允许票据过期但仍校验签名/实例/账号/当前凭据，不再入座、同步资料或关房。改原资料409、撤销凭据403；来源已结束SOURCE_ROOM_GONE，房主转移HOST_CHANGED，实例变化ROOM_INSTANCE_CHANGED。关闭后的客户端按404/WS失效回到首页，不清其他房间或全局资料。
 
 ## 验证
 
 `clockwise-voting.test.ts` 使用生产演出和真实推进的时钟，覆盖辩护、逐席锁票、鬼票、管家时点、平票、断线、重启与枪击暂停。`audit-counterexamples.test.ts` 覆盖审查发现的胜负、夜序、醉毒、登记、死者权限、投票阻塞、隐私、同步动画和生命周期反例。老规则测试用显式 TestRoomService fixture 准备玩家并关闭演出时间，真正的演出时序和截止时间由生产 RoomService 的独立测试覆盖。另有 200 场随机六人模拟和引擎纯函数测试。
 
 本轮新增 presentation、migration、join-ticket、repair-migration、command-queue、mobile-interactions 等专项，覆盖发布边界与真实安装的500ms定时器、终局前控制字段一致、战报权限、迁移事务、回执体积、旧响应隔离与DOM交互。实际执行记录见 docs/2026-09-27-redesign.md；没有使用本地游戏页面或浏览器验证。
+
+2026-11-12：effects-v3.test覆盖即时非阻塞提名、连续表决/入夜、投票中枪击保留锁票、死亡/胜利/身份分时发布及旧时序；switch-room.test覆盖两房原子切换、三凭据重放、票据过期/撤销/实例与房主变化、失败回滚、容量和协议5。只做Node/Fastify检查，不打开游戏或浏览器。

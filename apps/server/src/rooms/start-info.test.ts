@@ -11,7 +11,7 @@ test.each([7,8,10,12])('%i players receive private start information only after 
   const t=table(count);t.advance(1000);
   expect(t.service.find(t.room.code).game!.startInfo.stage).toBe('WAIT_NIGHTFALL');
   t.players.forEach(p=>expect(t.service.privateView(t.room.code,p.token).startInfo).toBeUndefined());
-  t.confirm();t.advance(6499);
+  t.confirm();t.advance(3849);
   expect(t.service.find(t.room.code).game!.startInfo.stage).toBe('WAIT_NIGHTFALL');t.advance(1);
   const game=t.service.find(t.room.code).game!,entries=Object.entries(game.startInfo.entries);
   expect(entries).toHaveLength(count<10?2:3);expect(game.nightOrder).toBeUndefined();
@@ -32,12 +32,12 @@ test.each([7,8,10,12])('%i players receive private start information only after 
   expect(game.privateHistory).toEqual(history);expect(game.nightOrder).toEqual(order);
 });
 test.each([5,6])('%i player small game never provides team information and releases the first night after the cinematic',count=>{
-  const t=table(count);t.confirm();t.advance(6500);
+  const t=table(count);t.confirm();t.advance(3850);
   expect(t.service.find(t.room.code).game!.startInfo).toMatchObject({mode:'NONE',stage:'COMPLETE',entries:{}});
   t.players.forEach(p=>expect(t.service.privateView(t.room.code,p.token).startInfo).toBeUndefined());
 });
 test('abort cancels a released gate and its unacknowledged private card remains read-only after restore',()=>{
-  const t=table();t.confirm();t.advance(6500);const entries=Object.entries(t.service.find(t.room.code).game!.startInfo.entries);
+  const t=table();t.confirm();t.advance(3850);const entries=Object.entries(t.service.find(t.room.code).game!.startInfo.entries);
   t.service.abort(t.room.code,t.players[0]!.token);const next=new RoomService();next.restore([t.service.snapshot(t.room.code)]);
   for(const [seat,entry]of entries){const token=t.players[Number(seat)-1]!.token;expect(next.privateView(t.room.code,token).startInfo?.canAcknowledge).toBe(false);expect(()=>next.acknowledgeStartInfo(t.room.code,token,entry.infoId)).toThrow();}
 });

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "mode": "Built-in imagegen",
+  "generatedAt": "2026-11-12",
+  "assets": [
+    {
+      "file": "demon-wings.webp",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: transparent cutout sprite for a dark gothic mobile social deduction game, not a poster. Primary request: a formidable horned demon with enormous crimson bat wings fully spread horizontally, framed as a single isolated full-body creature, clearly readable at small screen sizes. Style: refined hand-painted dark oil illustration, believable materials and anatomy, restrained Victorian gothic fantasy, realistic chiaroscuro brushwork rather than cartoon, matching black-gold character portraits. Composition: symmetrical frontal silhouette, wide wings fill most of a landscape canvas, visible complete tips, centered narrow torso and taloned hands, both feet visible, generous transparent padding around every edge. Lighting: ember red edge light through veined leather wings, black and charcoal body with subtle aged gold highlights, red glowing eyes, deep but readable shadows. True transparent background with alpha; no scenery, no smoke cloud outside silhouette, no ground plane, no border, no lettering, no watermarks. Avoid photorealistic gore or exposed organs. The wings must be the dominant visual and are meant to unfold dramatically through CSS animation."
+    },
+    {
+      "file": "butler.webp",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent character sprite for a gothic mobile game, not a framed portrait. Primary request: dignified middle-aged male Victorian butler in a black tailcoat, white waistcoat, white bow tie and immaculate gloves, full body head to shoes, shown three-quarter facing slightly to the right. His feet remain together, his right gloved hand rests over his heart, other arm relaxed behind him, head subtly inclined in readiness to bow to his lord. Upright neutral stance so the game can animate a forward bow around the hips. Hands and elbows natural, exactly two arms. Style: refined hand-painted dark oil illustration, realistic proportions, tactile black wool, subtle antique gold buttons, soft candlelit chiaroscuro, somber gothic elegance matching premium black-gold social deduction character cards. Composition: centered vertical complete figure with transparent breathing room on all sides, shoes visible. True transparent background alpha, no environment, no tray, no tea service, no floor shadow extending beyond feet, no border, no frame, no text or watermark. Face calm and respectful, not smiling or caricatured."
+    },
+    {
+      "file": "evil-town.webp",
+      "transparent": false,
+      "prompt": "Use case: stylized-concept. Asset type: vertical full-screen mobile game victory background, no UI or text. Primary request: an ancient gothic village at night overtaken by a monumental winged demon. Burning half-timbered houses and a clocktower occupy the lower third, orange embers drift up, smoke rolls through the street, while a gigantic dark horned demon silhouette looms behind the town, its immense crimson-black bat wings spanning the sky and curling around the entire composition like an ominous canopy. Style: premium hand-painted oil fantasy illustration, mature dark gothic atmosphere, painterly realism, rich textured smoke and wing membranes, restrained black-gold/red palette matching Victorian gothic social deduction portraits. Composition: portrait 9:16, cinematic perspective from town square, brightest fires low at the sides, upper center deep charcoal negative space with just subtle menacing red eyes so gold victory lettering can be placed by code, no people close-up, no explicit gore. The demon wings must be clearly legible and complete, not cropped awkwardly. Lighting: smoldering amber firelight, crimson moonless sky, dark silhouettes with a thin old-gold rim light. No captions, no logos, no border, no watermark. This is the evil faction victory backdrop."
+    }
+  ]
+}

@@ -23,7 +23,7 @@ test('an execution without a new death still shows its real target instead of th
 });
 
 test.each(['NOMINATION','SHOT'] as const)('%s identifies both the actor and target by their public avatars',kind=>{
- clock();const ui=render(<EventStage game={game([event(kind,{actorSeat:1,targetSeat:3,message:'玩家1对玩家3采取行动。'})])}/>);expect([...ui.container.querySelectorAll('.event-stage__theatre img')].map(img=>img.getAttribute('src')).sort()).toEqual(['/avatars/1.webp','/avatars/3.webp']);expect(ui.container.querySelector(kind==='NOMINATION'?'.nomination-summons':'.shot-gun')).not.toBeNull();
+ clock();const ui=render(<EventStage game={game([event(kind,{actorSeat:1,targetSeat:3,message:'玩家1对玩家3采取行动。'})])}/>);expect([...ui.container.querySelectorAll(kind==='NOMINATION'?'.event-notice img':'.event-stage__theatre img')].map(img=>img.getAttribute('src')).sort()).toEqual(['/avatars/1.webp','/avatars/3.webp']);expect(ui.container.querySelector(kind==='NOMINATION'?'.event-notice':'.shot-gun')).not.toBeNull();
 });
 
 test('dawn waits for the public result before displaying the deceased and never adds a protection explanation',()=>{

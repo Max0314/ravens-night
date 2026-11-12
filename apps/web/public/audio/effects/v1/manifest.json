@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "builtAt": "2026-11-12",
+  "license": "CC0 source foley plus original synthesized composition; see source details",
+  "sources": [
+    {
+      "file": "glass.wav",
+      "url": "https://opengameart.org/sites/default/files/glass_breaking.wav",
+      "page": "https://opengameart.org/content/glass-break",
+      "author": "TinyWorlds",
+      "license": "CC0-1.0",
+      "sha256": "37d29069c885afe3f7ca639293fa679fb6511a6a1e54316f0e403e4493f502b3",
+      "bytes": 230924
+    },
+    {
+      "file": "yelling.zip",
+      "url": "https://opengameart.org/sites/default/files/yelling%20sounds.zip",
+      "page": "https://opengameart.org/content/male-gruntyelling-sounds",
+      "author": "HaelDB and the male vocalists in the published pack",
+      "license": "CC0-1.0 (selected from the page's dual CC0 / OGA-BY offer)",
+      "sha256": "e9100a4e3b9dcd146993089970dc6097dcf9935fa4683b196040012bad65d67a",
+      "bytes": 9715828
+    },
+    {
+      "file": "kenney.zip",
+      "url": "https://kenney.nl/download-link/6173736574732f696d706163742d736f756e6473",
+      "page": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0; archive License.txt verified",
+      "sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+      "bytes": 800850
+    }
+  ],
+  "voice": {
+    "text": "My lord.",
+    "generator": "Windows System.Speech, installed Microsoft Zira Desktop",
+    "originalSha256": "0c3c7d0010c4a23ce74590972c85a41ad5214e1da9be905434e7e665ca147140",
+    "note": "Original local synthetic reading; pitch and tone processed. No third-party character recording."
+  },
+  "processing": "scripts/build-effects-audio.py; ffmpeg libmp3lame 160k mono 44.1kHz; deterministic seed 20261112; source archive hashes are recorded",
+  "files": [
+    {
+      "file": "shot.mp3",
+      "bytes": 30346,
+      "durationSeconds": 1.45,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.06,
+      "rmsDbFS": -23.02,
+      "sha256": "0af973cabc9deb6bde2277b07db59516ef0d303da1ab7e9828386e21066404fe",
+      "layers": [
+        "original pressure impulse and sub body",
+        "Kenney punch/wood/metal foley; no scream or glass"
+      ]
+    },
+    {
+      "file": "glass.mp3",
+      "bytes": 33480,
+      "durationSeconds": 1.6,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.04,
+      "rmsDbFS": -24.82,
+      "sha256": "7572598f31d9900cd4c38ba9acea485c343f707fcea30b71b2cc036f53e0982c",
+      "layers": [
+        "TinyWorlds glass break",
+        "Kenney light metal debris"
+      ]
+    },
+    {
+      "file": "impact.mp3",
+      "bytes": 25121,
+      "durationSeconds": 1.2,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.22,
+      "rmsDbFS": -22.02,
+      "sha256": "de4b62e2c2bbe1d5ed3de92dc34b91e8a7cab86f0ef951c8fd500de8a8fe6b6c",
+      "layers": [
+        "Kenney wood and punch",
+        "original dry fracture and low impact"
+      ]
+    },
+    {
+      "file": "scream.mp3",
+      "bytes": 22509,
+      "durationSeconds": 1.05,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.22,
+      "rmsDbFS": -16.66,
+      "sha256": "f460f0e314dc1481798d813477c59b80ec33ec8c081bc256e60ce5e6c2a813a4",
+      "layers": [
+        "HaelDB pack 3grunt1 male short hurt vocal; trimmed silence, equalized and compressed"
+      ]
+    },
+    {
+      "file": "poison.mp3",
+      "bytes": 48109,
+      "durationSeconds": 2.35,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.19,
+      "rmsDbFS": -19.94,
+      "sha256": "a1eefd1dbc41ffe29c1434d56703ef09880c3aa735bb535c275bea38da9455a2",
+      "layers": [
+        "TinyWorlds bottle-like glass",
+        "original resonant liquid bubbles and acid hiss"
+      ]
+    },
+    {
+      "file": "shield.mp3",
+      "bytes": 35570,
+      "durationSeconds": 1.7,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.14,
+      "rmsDbFS": -24.45,
+      "sha256": "d0fffc826d07867a15ced113c815f4e26149ab26988a06d8316648137d56b2b8",
+      "layers": [
+        "Kenney steel and plate",
+        "original shield air rush and metallic resonances"
+      ]
+    },
+    {
+      "file": "butler.mp3",
+      "bytes": 48109,
+      "durationSeconds": 2.35,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.3,
+      "rmsDbFS": -19.31,
+      "sha256": "b9ee54c247d1236dcf228219932e05b098261a7433104d6a590206e1b04504d1",
+      "layers": [
+        "original text My lord. rendered by installed Microsoft Zira Desktop, lowered and filtered into a deep register",
+        "original cloth movement; no television recording or actor impersonation"
+      ]
+    },
+    {
+      "file": "demon.mp3",
+      "bytes": 63260,
+      "durationSeconds": 3.1,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.29,
+      "rmsDbFS": -19.67,
+      "sha256": "fbff0f5073913312c73531962e76c75cd3acd0132b7db705372e283ee232a616",
+      "layers": [
+        "original wing rush and two slash gestures at 0.95/1.82s",
+        "Kenney soft/wood/punch; original bone crack and wet impact",
+        "deliberately no human scream; this is an attempted private action"
+      ]
+    },
+    {
+      "file": "good.mp3",
+      "bytes": 81546,
+      "durationSeconds": 4.0,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.25,
+      "rmsDbFS": -16.13,
+      "sha256": "ea3a3bb0102d1bdd68fee753792a17b71fe4d5bc6c3e9be45d2887727d12c7df",
+      "layers": [
+        "original ascending D major chamber chord and bright bell",
+        "TinyWorlds wing-fragment glass and original fracture"
+      ]
+    },
+    {
+      "file": "evil.mp3",
+      "bytes": 81546,
+      "durationSeconds": 4.0,
+      "sampleRate": 44100,
+      "channels": 1,
+      "peakDbFS": -4.26,
+      "rmsDbFS": -19.8,
+      "sha256": "a51d9c4b5b6bbdd09f1a93826133894005076ecf0b6b787d9fcd7def5c5e02d8",
+      "layers": [
+        "original low dark chord, wing swell and smoldering fire crackle",
+        "HaelDB pack 3yell1 distant filtered lament at low level"
+      ]
+    }
+  ]
+}

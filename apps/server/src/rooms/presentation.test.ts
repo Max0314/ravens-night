@@ -5,13 +5,14 @@ import { roleById } from "@ravens/game-engine";
 import type { ExperienceEvent } from "@ravens/contracts";
 import { RoomService, type RoomRecord } from "./service.js";
 import { initializePresentation, enqueuePublication, publishDue } from "./presentation.js";
+import {avatarChoices} from "@ravens/contracts";
 import { migratePresentation } from "./migration.js";
 
 function shootingTable(successor = false) {
   let now = 1_800_000_000_000;
   const service = new RoomService({ now: () => now, presentation: true });
   const { room } = service.create(6, "房主");
-  const players = Array.from({ length: 6 }, (_, i) => service.join(room.code, `玩家${i + 1}`, "PLAYER"));
+  const players = Array.from({ length: 6 }, (_, i) => service.join(room.code, `玩家${i + 1}`, "PLAYER",avatarChoices[i]!.url));
   for (const player of players) service.setReady(room.code, player.token, true);
   service.startTutorial(room.code, players[0]!.token, "SKIP");
   const snapshot = service.snapshot(room.code);
@@ -167,7 +168,7 @@ test("result API excludes anonymous callers and revokes removed members after re
     expect((await app.inject(url)).json().lastResult).toBeUndefined();
     expect((await app.inject(`${url}/result?token=${t.players[1]!.token}`)).json().result.gameId).toBe(saved.lastResult!.gameId);
     const me=(await app.inject(`${url}/me?token=${t.players[0]!.token}`)).json();
-    const removed=await app.inject({method:"POST",url:`${url}/participants/${t.players[1]!.participant.id}/remove`,headers:{"x-ravens-protocol":"4","x-command-id":"result-remove-member"},payload:{token:t.players[0]!.token,roomInstanceId:me.roomInstanceId,setupId:me.setupId,expectedCommandVersion:me.self.commandVersion,confirm:true}});
+    const removed=await app.inject({method:"POST",url:`${url}/participants/${t.players[1]!.participant.id}/remove`,headers:{"x-ravens-protocol":"5","x-command-id":"result-remove-member"},payload:{token:t.players[0]!.token,roomInstanceId:me.roomInstanceId,setupId:me.setupId,expectedCommandVersion:me.self.commandVersion,confirm:true}});
     expect(removed.statusCode).toBe(200);
     expect((await app.inject(`${url}/result?token=${t.players[1]!.token}`)).statusCode).toBe(403);
     expect((await app.inject(`${url}/result?token=${t.players[0]!.token}`)).json().result).toEqual(saved.lastResult);

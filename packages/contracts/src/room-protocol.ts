@@ -13,14 +13,14 @@ export interface RoomSelf {
   commandVersion: number;
 }
 export interface RoomProtocolView {
-  protocolVersion: 4;
+  protocolVersion: 5;
   roomInstanceId: string;
   setupId: string;
   revision: number;
   serverNow: number;
   self?: RoomSelf;
 }
-export const ROOM_PROTOCOL_VERSION = 4;
+export const ROOM_PROTOCOL_VERSION = 5;
 export const roomCommandProperties = {
   roomInstanceId: { type: "string", minLength: 1, maxLength: 100 },
   setupId: { type: "string", minLength: 1, maxLength: 100 },

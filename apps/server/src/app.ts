@@ -12,12 +12,13 @@ import { LiveRoomRuntime, PersistenceUnavailableError, type RoomRepository } fro
 import { createRecovery, inviteWhisper, leaveWhisper, member, recoverMembership, respondWhisper, sendWhisper, socialView } from "./rooms/social.js";
 import { roomCommandProperties, roomCommandRequired, type RoomCommandContext,type ControlResult } from "@ravens/contracts";
 import { RoomError, PUBLICATION_TICK_MS } from "./rooms/errors.js";
-import { issueJoinTicket, validateJoinTicket, assertJoinCapacity, revokeJoinTicket } from "./rooms/join-ticket.js";
+import { issueJoinTicket, validateJoinTicket, parseJoinTicket, assertJoinCapacity, revokeJoinTicket } from "./rooms/join-ticket.js";
 import { profileView } from './auth/game-profile.js';
 import { avatarChoices, trustedAvatar, avatarSelectionUrl } from './auth/avatar.js';
 
 import {runBots,stepBot} from './rooms/bot-scheduler.js';
 import {activePlayers,bots,humans} from './rooms/bot-types.js';
+import {issueSwitchTicket,parseSwitchTicket,validateSwitchSource,switchActorDigest,transferKey,transferReceipts,availableTransferReceipts,TRANSFER_RECEIPT_MS,type JoinTransferReceipt} from './rooms/switch-ticket.js';
 import {issueCreationTicket,parseCreationTicket,creationOwner,creationKey,creationOrganizer} from './rooms/creation.js';
 type RoomRequest = { Params: { code: string; id?: string }; Body: Record<string, unknown>; Querystring: { token?: string; mode?: string } };
 const string = { type: "string", maxLength: 500 };
@@ -84,8 +85,8 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     }
     const pathname = request.url.split("?")[0]!;
     const roomApi=/^\/api\/rooms(?:\/|$)/.test(pathname)||pathname==='/api/room-create-ticket';
-    if(roomApi&&!request.headers.upgrade&&!(request.method==='GET'&&/^\/api\/rooms\/[^/]+\/summary$/.test(pathname))&&request.headers['x-ravens-protocol']!=='4')return reply.code(426).send({errorCode:'CLIENT_UPGRADE_REQUIRED',error:'游戏已更新，请刷新页面后继续',refreshRequired:true});
-    if (/\/auth\/login$|\/join$|\/recover$/.test(pathname) && request.method === "POST") {
+    if(roomApi&&!request.headers.upgrade&&!(request.method==='GET'&&/^\/api\/rooms\/[^/]+\/summary$/.test(pathname))&&request.headers['x-ravens-protocol']!=='5')return reply.code(426).send({errorCode:'CLIENT_UPGRADE_REQUIRED',error:'游戏已更新，请刷新页面后继续',refreshRequired:true});
+    if (/\/auth\/login$|\/join$|\/recover$|\/switch-ticket$/.test(pathname) && request.method === "POST") {
       const key = `${request.ip}:${pathname.split("/").at(-1)}`;
       const current = attempts.get(key);
       const entry = current && current.reset > now() ? current : { count: 0, reset: now() + 60_000 };
@@ -203,7 +204,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     });
     reply.setCookie('ravens_organizer',result.organizerToken,cookieOptions(roomPath(result.code)));if(guestContext)reply.setCookie('ravens_create_context',guestContext,{...cookieOptions('/'),sameSite:'lax'});return reply.code(201).send(result);
   });
-  app.get<RoomRequest>('/api/rooms/:code/summary',async request=>{const room=runtime.service.find(request.params.code),roster=activePlayers(room),canJoin=room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);return{code:room.code,playerCount:room.playerCount,activeHumanCount:humans(room).length,botCount:bots(room).length,occupiedAvatars:[...new Set(roster.flatMap(p=>p.avatarSnapshot?[avatarSelectionUrl(p.avatarSnapshot)]:[]))],canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};});
+  app.get<RoomRequest>('/api/rooms/:code/summary',async request=>{const room=runtime.service.find(request.params.code),roster=activePlayers(room),canJoin=room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);return{code:room.code,roomInstanceId:room.roomInstanceId,state:room.state,playerCount:room.playerCount,activeHumanCount:humans(room).length,botCount:bots(room).length,occupiedAvatars:[...new Set(roster.flatMap(p=>p.avatarSnapshot?[avatarSelectionUrl(p.avatarSnapshot)]:[]))],canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};});
   const expectedControlVersion={type:'integer',minimum:0};
   function control(path:string,properties:Record<string,unknown>,required:string[],bindGame:boolean,apply:(rooms:RoomService,code:string,token:string,body:Record<string,unknown>)=>ControlResult){
     app.post<RoomRequest>(`/api/rooms/:code/${path}`,{schema:{body:bodySchema({...roomCommandProperties,expectedControlVersion,...properties},[...roomCommandRequired,'expectedControlVersion',...required])}},async request=>{
@@ -224,13 +225,57 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     if (mode !== "PLAYER" && mode !== "DISPLAY") throw new RoomError("INVALID_MODE", "请选择玩家或大屏", 400);
     return issueJoinTicket(runtime.service.find(request.params.code), mode, now(), sessionSecret);
   });
-  app.post<RoomRequest>("/api/rooms/:code/join", { schema: { body: bodySchema({ avatar:{anyOf:[{type:"string",maxLength:200},{type:"null"}]}, expectedProfileRevision:{type:"integer",minimum:0}, nickname: { type: "string", minLength: 1, maxLength: 24 }, mode: { enum: ["PLAYER", "DISPLAY"] }, joinTicket: { type: "string", minLength: 20, maxLength: 2000 } }, ["nickname", "mode", "joinTicket"]) } }, async (request, reply) => {
+  app.post<RoomRequest>('/api/rooms/:code/switch-ticket',{schema:{body:bodySchema({sourceRoomInstanceId:{type:'string',minLength:1,maxLength:100},targetCode:{type:'string',pattern:'^[A-Z2-9]{6}$'},targetRoomInstanceId:{type:'string',minLength:1,maxLength:100}},['sourceRoomInstanceId','targetCode','targetRoomInstanceId'])}},async request=>{
+    const token=participantToken(request,undefined,'PLAYER'),account=accounts.get(request);
+    const source=runtime.service.find(request.params.code);
+    runtime.service.self(source.code,token,account?.sub);
+    if(source.roomInstanceId!==request.body.sourceRoomInstanceId)throw new RoomError('ROOM_INSTANCE_CHANGED','原房间已变化，请重新确认');
+    const host=runtime.service.assertHost(source.code,token);
+    if(host.mode!=='PLAYER'||host.controller!=='HUMAN')throw new RoomError('HOST_REQUIRED','只有当前玩家房主可以关闭旧房间',403);
+    const target=runtime.service.find(request.body.targetCode as string);
+    if(target.code===source.code)throw new RoomError('SAME_ROOM','已经在这个房间，无需换房',400);
+    if(target.roomInstanceId!==request.body.targetRoomInstanceId)throw new RoomError('ROOM_INSTANCE_CHANGED','目标房间已变化，请重新打开邀请');
+    return issueSwitchTicket(sessionSecret,source,host,target,account?.sub,now());
+  });
+  app.post<RoomRequest>("/api/rooms/:code/join", { schema: { body: bodySchema({ switchTicket:{type:'string',minLength:20,maxLength:2000}, avatar:{anyOf:[{type:"string",maxLength:200},{type:"null"}]}, expectedProfileRevision:{type:"integer",minimum:0}, nickname: { type: "string", minLength: 1, maxLength: 24 }, mode: { enum: ["PLAYER", "DISPLAY"] }, joinTicket: { type: "string", minLength: 20, maxLength: 2000 } }, ["nickname", "mode", "joinTicket"]) } }, async (request, reply) => {
     const mode = request.body.mode as ParticipantMode;
     const result = await runtime.execute((rooms) => {
       const account = accounts.get(request), room = rooms.find(request.params.code);
+      const rawSwitch=request.body.switchTicket as string|undefined;
+      if(rawSwitch&&mode!=='PLAYER')throw new RoomError('INVALID_MODE','换房关闭只适用于手机玩家',400);
+      const transfer=rawSwitch?parseSwitchTicket(sessionSecret,rawSwitch):undefined;
+      const joinBearer=transfer?parseJoinTicket(request.body.joinTicket as string,room,mode,sessionSecret):undefined;
+      const key=rawSwitch?transferKey(rawSwitch,request.body.joinTicket as string):undefined;
+      const fingerprint=createHash('sha256').update(JSON.stringify([request.body.nickname,mode,request.body.avatar??null,request.body.expectedProfileRevision??null,request.body.joinTicket,rawSwitch??null])).digest('hex');
+      if(transfer){
+        if(transfer.targetCode!==room.code||transfer.targetInstance!==room.roomInstanceId)throw new RoomError('ROOM_INSTANCE_CHANGED','目标房间已变化，请重新打开邀请');
+        if(transfer.actorDigest!==switchActorDigest(sessionSecret,account?.sub))throw new RoomError('ACCOUNT_MISMATCH','登录身份已变化，请重新确认换房',403);
+        const prior=transferReceipts(room)[key!];
+        if(prior&&prior.expiresAt>now()){
+          if(prior.fingerprint!==fingerprint)throw new RoomError('COMMAND_ID_REUSED','同一次换房不能修改资料或目标');
+          const participant=room.participants.find(p=>p.id===prior.participantId&&!p.left&&p.mode==='PLAYER'&&p.controller==='HUMAN');
+          if(!participant||participant.tokenHash!==prior.targetCredentialHash||prior.targetInstance!==room.roomInstanceId||prior.sourceCode!==transfer.sourceCode||prior.sourceInstance!==transfer.sourceInstance||prior.sourceActorHash!==hashOpaqueToken(transfer.hostHash))throw new RoomError('SEAT_REMOVED','原目标座位已失效，请恢复座位',403);
+          let token:string|undefined;
+          if(prior.credentialKind==='ACCOUNT'){
+            if(!account||account.sub!==prior.accountId||participant.accountId!==account.sub)throw new RoomError('ACCOUNT_MISMATCH','账号与目标座位不匹配',403);
+            token=accountToken(account.sub,room.code,participant.id);
+          }else{
+            if(participant.accountId)throw new RoomError('SEAT_REMOVED','原游客凭据已失效，请恢复座位',403);
+            token=prior.credentialKind==='EXISTING_GUEST_COOKIE'?optionalToken(request,'PLAYER'):joinBearer!.token;
+            if(prior.credentialKind==='NEW_GUEST_TICKET'&&((room.metadata?.revokedJoinTickets as Record<string,number>|undefined)?.[joinBearer!.hash]??0)>now())throw new RoomError('SEAT_REMOVED','原加入凭据已撤销，请恢复座位',403);
+          }
+          if(!token||hashOpaqueToken(token)!==participant.tokenHash)throw new RoomError('SEAT_REMOVED','原目标座位凭据已失效，请恢复座位',403);
+          return{participant,token,closedRoomCode:prior.sourceCode};
+        }
+      }
+      const source=transfer?validateSwitchSource(rooms,transfer,sessionSecret,account?.sub,now()):undefined;
+      const retained=transfer?availableTransferReceipts(room,now()):undefined;
+      let existingGuestCookie=false;
+      const joinTarget=()=>{
       const cookie = optionalToken(request, mode);
       const existing = cookie ? room.participants.find(p => !p.left && p.mode === mode && p.tokenHash === hashOpaqueToken(cookie)) : undefined;
       if (existing) {
+        existingGuestCookie=!existing.accountId;
         if(existing.controller==='BOT')throw new RoomError('BOT_EXTERNAL_ACCESS','人机座位不支持外部访问',403);
         rooms.self(room.code, cookie!, account?.sub);
         if (account) rooms.syncAccountProfile(room,existing,account);
@@ -274,9 +319,22 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       participant.joinTicket = { hash: ticket.hash, expiresAt: ticket.expiresAt, credentialHash: participant.tokenHash };
       if (room.organizerParticipantId === participant.id) room.organizerTokenHash = participant.tokenHash;
       return { participant, token };
+
+      };
+      const joined=joinTarget();
+      if(transfer&&source){
+        // The target recovery/new-seat path succeeded. Both changes are still staged:
+        // a commit failure publishes neither the join nor the source deletion.
+        const receipt:JoinTransferReceipt={sourceCode:source.source.code,sourceInstance:source.source.roomInstanceId,targetInstance:room.roomInstanceId,sourceActorHash:hashOpaqueToken(transfer.hostHash),participantId:joined.participant.id,credentialKind:joined.participant.accountId?'ACCOUNT':existingGuestCookie?'EXISTING_GUEST_COOKIE':'NEW_GUEST_TICKET',targetCredentialHash:joined.participant.tokenHash,...(joined.participant.accountId?{accountId:joined.participant.accountId}:{}),fingerprint,expiresAt:now()+TRANSFER_RECEIPT_MS};
+        rooms.closeForSwitch(source.source.code,transfer.sourceInstance,transfer.hostId,transfer.hostHash,source.host.accountId);
+        room.metadata={...room.metadata,joinTransfers:{...retained,[key!]:receipt}};room.revision++;
+        return{...joined,closedRoomCode:source.source.code};
+      }
+      return{...joined,closedRoomCode:undefined};
     });
     reply.setCookie(mode === "DISPLAY" ? "ravens_display" : "ravens_player", result.token, cookieOptions(roomPath(request.params.code)));
-    return reply.code(201).send({ id: result.participant.id, nickname: result.participant.nickname, mode, ...(result.participant.seat ? { seat: result.participant.seat } : {}), token: result.token, self: runtime.service.self(request.params.code, result.token, accounts.get(request)?.sub) });
+    if(result.closedRoomCode){reply.clearCookie('ravens_player',{path:roomPath(result.closedRoomCode)});reply.clearCookie('ravens_organizer',{path:roomPath(result.closedRoomCode)});}
+    return reply.code(201).send({ id: result.participant.id, nickname: result.participant.nickname, mode, ...(result.participant.seat ? { seat: result.participant.seat } : {}), token: result.token,...(result.closedRoomCode?{closedRoomCode:result.closedRoomCode}:{}), self: runtime.service.self(request.params.code, result.token, accounts.get(request)?.sub) });
   });
   app.delete<RoomRequest>("/api/rooms/:code/leave", { schema: { body: bodySchema(roomCommandProperties, roomCommandRequired) } }, async (request, reply) => {
     const token = participantToken(request, request.body?.token as string | undefined);
@@ -364,7 +422,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
 
   void app.register(async (scope) => {
     scope.get<{ Params: { code: string }; Querystring: { mode?: string;protocol?:string } }>("/api/rooms/:code/live", { websocket: true }, (socket, request) => {
-      if(request.query.protocol!=="4"){socket.close(1008,"Client upgrade required");return;}
+      if(request.query.protocol!=="5"){socket.close(1008,"Client upgrade required");return;}
       const mode = request.query.mode === "DISPLAY" ? "DISPLAY" : "PLAYER";
       let token: string;
       try { token = participantToken(request, undefined, mode); member(runtime.service.find(request.params.code), token, mode); }

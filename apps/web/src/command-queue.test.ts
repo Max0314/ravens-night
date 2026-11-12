@@ -4,7 +4,7 @@ import { castVote, createRecoveryCode, getRoom, hasPendingCommand, observeRoomVi
 
 function seed(ballotId = "ballot-a", commandVersion = 0) {
   observeRoomView("ABCDEF", {
-    protocolVersion: 4, roomInstanceId: "instance", setupId: "setup", revision: commandVersion + (ballotId === "ballot-a" ? 1 : 5),
+    protocolVersion: 5, roomInstanceId: "instance", setupId: "setup", revision: commandVersion + (ballotId === "ballot-a" ? 1 : 5),
     self: { participantId: "player", mode: "PLAYER", commandVersion },
     game: { gameId: "game", contextId: ballotId, phase: "VOTING", day: 1, seats: [], events: [], readyCount: 0, aliveCount: 5,
       nomination: { ballotId, nominatorSeat: 1, nomineeSeat: 2, votesReceived: 0, votesRaised: 0, threshold: 3 } },
@@ -36,7 +36,7 @@ test("same-round unsent gestures coalesce; binding and latest command version ar
   await Promise.all([castVote("ABCDEF", true), castVote("ABCDEF", false)]);
   expect(fetcher).toHaveBeenCalledOnce();
   expect(JSON.parse(fetcher.mock.calls[0]![1].body)).toMatchObject({ raised: false, ballotId: "ballot-a", expectedCommandVersion: 7 });
-  expect(new Headers(fetcher.mock.calls[0]![1].headers).get("x-ravens-protocol")).toBe("4");
+  expect(new Headers(fetcher.mock.calls[0]![1].headers).get("x-ravens-protocol")).toBe("5");
 });
 
 test("an uncertain command blocks later intent and explicit retry retains the exact original payload and id", async () => {

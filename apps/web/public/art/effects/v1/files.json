@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "generatedBy": "Built-in imagegen; resized and encoded with sharp, no creative image edits",
+  "files": [
+    {
+      "file": "demon-wings.webp",
+      "bytes": 260498,
+      "width": 1600,
+      "height": 800,
+      "hasAlpha": true,
+      "transparentPixels": 745238,
+      "opaquePixels": 820,
+      "sha256": "2fd1e740ae1957070e47ef3642d1cadc8cedd47eacab2a4543648129037623fa",
+      "originalSha256": "7b0805fd25675a4132d208a86a264d375328818095cd50a185326d98740df4f3"
+    },
+    {
+      "file": "butler.webp",
+      "bytes": 75288,
+      "width": 960,
+      "height": 1440,
+      "hasAlpha": true,
+      "transparentPixels": 1016735,
+      "opaquePixels": 605,
+      "sha256": "3d08bb5456cc016680ecac13917a115ca5745b02768f4556e7d0baa05417dd1b",
+      "originalSha256": "11ef0dd597478d6257002b61e261e1943a6c8196b570823596d21906b34e8e74"
+    },
+    {
+      "file": "evil-town.webp",
+      "bytes": 174164,
+      "width": 941,
+      "height": 1672,
+      "hasAlpha": false,
+      "transparentPixels": 0,
+      "opaquePixels": 1573352,
+      "sha256": "351b3ec92137528c185e56dc059f76297b57c38691e534f03fe5da26ada39935",
+      "originalSha256": "7f4ae46208b30a115ec55993597da2084d18c0c0d26e98b54052c81201913a75"
+    }
+  ]
+}

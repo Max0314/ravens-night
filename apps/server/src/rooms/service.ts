@@ -25,7 +25,7 @@ import {activePlayers,humans,bots,newBotControl,botToken,gameNow,setTimeline,inv
 import type {RoomTimeline,ControlResult} from '@ravens/contracts';
 import {avatarChoices,avatarIdentity,trustedAvatar} from '../auth/avatar.js';
 import type {CreationRequest} from './creation.js';
-import { experienceTiming } from '@ravens/contracts';
+import { experienceTiming,isNonBlockingExperience } from '@ravens/contracts';
 import {createStartInfo,validateStartInfo,type StartInfo} from './first-night-info.js';
 const HUMAN_ACTIVITY_CHECKPOINT_MS=60_000;
 export type ParticipantMode = "PLAYER" | "DISPLAY";
@@ -119,7 +119,7 @@ const VOTE_SLOT_MS = 1500;
 const DEFENSE_MS = 20_000;
 
 export interface GameRuntime {
-  presentationVersion:1|2;
+  presentationVersion:1|2|3;
   startInfo:StartInfo;
   hadBots:boolean;
   rehearsalUsed:boolean;
@@ -368,6 +368,15 @@ export class RoomService {
 
   listCodes(): string[] { return [...this.#rooms.keys()]; }
 
+  /** Only the validated switch capability may close a live room, staged with the target join. */
+  closeForSwitch(code:string,instance:string,hostId:string,hostHash:string,accountId?:string):void{
+    const room=this.find(code);
+    if(room.roomInstanceId!==instance)throw new RoomError("ROOM_INSTANCE_CHANGED","原房间已变化，请重新确认");
+    const host=room.participants.find(p=>p.id===hostId&&!p.left&&p.mode==="PLAYER"&&p.controller==="HUMAN");
+    if(!host||room.organizerParticipantId!==host.id||host.tokenHash!==hostHash||host.accountId!==accountId)throw new RoomError("HOST_CHANGED","房主或原座位授权已变化，请重新确认");
+    this.#rooms.delete(room.code);
+  }
+
   accountClaims():AccountClaim[]{return structuredClone([...this.#claims.values()]);}
   restoreClaims(values:AccountClaim[]){for(const value of values)this.#claims.set(value.sub,structuredClone(value));}
   accountClaim(sub:string){return this.#claims.get(sub);}
@@ -577,6 +586,7 @@ export class RoomService {
       if (![undefined, 1, 2, 3, 4].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) throw new Error(`Room ${code}: invalid roster snapshot`);
       if(![2,3,4].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
+      if(snapshot.game&&snapshot.game.presentationVersion!==undefined&&![1,2,3].includes(snapshot.game.presentationVersion))throw new Error("Unsupported presentation version");
       const game = snapshot.game ? this.restoreGame(snapshot.game, `legacy-game-${snapshot.gameNumber ?? 0}:${randomUUID()}`, snapshot.timeline ? gameNow(snapshot,this.#now()) : this.#now()) : undefined;
       if (game && (![3,4].includes(snapshot.schemaVersion)||!game.publicProjection)) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
       migrateReceipts(snapshot);
@@ -625,7 +635,7 @@ export class RoomService {
     return {
       code: room.code,
       timeline:{mode:room.timeline.mode,epoch:room.timeline.epoch},botControl:this.botControlView(room),activeHumanCount:humans(room).length,botCount:bots(room).length,
-      protocolVersion: 4 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
+      protocolVersion: 5 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
       revision: room.revision, serverNow: this.#now(),
       rulesSummary: room.playerCount < 7 ? "5–6 人采用官方 Teensyville：恶魔与爪牙互不认识，恶魔没有三个伪装。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。" : "暗流涌动标准规则。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。",
       state: room.game && room.state !== "ABORTED" ? room.game.publicProjection?.phase === "GAME_OVER" ? "GAME_OVER" : "RUNNING" : room.state,
@@ -1147,7 +1157,7 @@ export class RoomService {
     const alive = !!game?.publicProjection?.aliveSeats.includes(seat);
     const daytime = !!game && ["DAY_DISCUSSION", "NOMINATION"].includes(game.phase);
     return {
-      protocolVersion: 4 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
+      protocolVersion: 5 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
       self: { participantId: participant.id, mode: participant.mode, commandVersion: participant.commandVersion },
       ...(game ? { contextId: game.publicProjection?.contextId ?? game.contextId } : {}),
       rehearsal:{eligible:this.rehearsalEligible(room),canChooseRole:room.state==='LOBBY'&&this.organizer(room)?.id===participant.id&&this.rehearsalEligible(room),...(room.rehearsalRole?.participantId===participant.id&&this.rehearsalEligible(room)?{selectedRoleId:room.rehearsalRole.roleId}:{})},
@@ -1198,7 +1208,7 @@ export class RoomService {
     const redHerringSeat = goodSeats[Math.floor(randomAt(`${room.id}:red-herring`, 0) * goodSeats.length)];
     const seed=randomUUID();
     const game: GameRuntime = {
-      presentationVersion:2,startInfo:createStartInfo(room,seed),
+      presentationVersion:3,startInfo:createStartInfo(room,seed),
       hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL"||!!room.rehearsalRole,
       contextId: randomUUID(),
       gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: seed, presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
@@ -1234,6 +1244,8 @@ export class RoomService {
 
   private restoreGame(snapshot: GameRuntime, gameId: string, now:number): GameRuntime {
     const legacy = snapshot as GameRuntime & { privateHistory?: Record<number, PrivateHistoryEntry[]> };
+    const historyEvents=[...snapshot.events,...(snapshot.publicProjection?.events??[]),...(snapshot.pendingPublications??[]).flatMap(node=>node.eventPatch?[node.eventPatch]:[])];
+    if(historyEvents.some(event=>event.timingVersion!==undefined&&![1,2,3].includes(event.timingVersion)))throw new Error("Unsupported presentation version");
     const privateHistory = legacy.privateHistory ?? Object.fromEntries(
       Object.entries(snapshot.messages ?? {}).map(([seat, messages]) => [seat, messages.map((text, index) => ({
         seq: index + 1,
@@ -1286,10 +1298,11 @@ export class RoomService {
     const duration = experienceTiming(kind,game.presentationVersion).duration;
     const durationMs = this.#presentation ? duration : 0;
     const occurredAt = this.gameNow(room);
-    const startsAt = durationMs ? Math.max(occurredAt + 1500, game.presentationUntil) : Math.max(occurredAt, game.presentationUntil);
+    const nonBlocking=isNonBlockingExperience(kind,game.presentationVersion);
+    const startsAt = nonBlocking?occurredAt:durationMs ? Math.max(occurredAt + (game.presentationVersion===3?250:1500), game.presentationUntil) : Math.max(occurredAt, game.presentationUntil);
     const seq = game.events.length + 1;
     game.events.push({ ...details, seq, id: `${game.gameId}:${seq}`, gameId: game.gameId, kind, timingVersion:game.presentationVersion, message: message.trim(), occurredAt, startsAt, durationMs, day: game.day });
-    if (durationMs) game.presentationUntil = startsAt + durationMs;
+    if (durationMs&&!nonBlocking) game.presentationUntil = startsAt + durationMs;
     enqueuePublication(game, game.events.at(-1)!);
     if (["SHOT", "EXECUTION"].includes(kind)) for (const change of game.deferredRoleChanges ?? []) {
       if (!change.eventId) {

@@ -30,9 +30,9 @@ export function RoomSheet({title,onClose,children,actions,confirmation=false}:{t
     };
     const trap=(event:KeyboardEvent)=>{
       const active=document.activeElement;
-      if(event.key!=='Tab'||!node||sheetStack.at(-1)!==node||!node.contains(active)&&!(active instanceof Element&&active.closest('.private-action-notice')))return;
+      if(event.key!=='Tab'||!node||sheetStack.at(-1)!==node||!node.contains(active)&&!(active instanceof Element&&active.closest('.private-action-notice,.nomination-notice')))return;
       const buttons=[...node.querySelectorAll<HTMLElement>('button,input,textarea,select,summary,a[href],[tabindex="0"]')].filter(element=>element.closest('.room-sheet')===node&&tabbable(element));
-      buttons.push(...[...document.querySelectorAll<HTMLElement>('.private-action-notice button')].filter(tabbable));
+      if(!confirmation)buttons.push(...[...document.querySelectorAll<HTMLElement>('.private-action-notice button,.nomination-notice button')].filter(tabbable));
       event.preventDefault();if(!buttons.length)return;
       const index=buttons.indexOf(active as HTMLElement),next=event.shiftKey?(index<=0?buttons.length-1:index-1):(index<0||index===buttons.length-1?0:index+1);
       buttons[next]?.focus();

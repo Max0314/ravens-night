@@ -1,34 +1,45 @@
-import { useEffect, useState } from "react";
-import { Button, SeatRing } from "@ravens/ui";
-import type { ExperienceEvent } from "@ravens/contracts";
-import type { GameView } from "../api.js";
-import { EventStage, type PrivateReceipt } from "../components/EventStage.js";
-import { effectsAudioEnabled, enableEffectsAudio } from "../components/experience-audio.js";
-
-const previewSeats = ["阿德里安", "伊芙琳", "卢卡斯", "奥莉薇亚", "爱德华", "维奥拉"].map((nickname, index) => ({ seat: index + 1, nickname, connected: true, alive: true, ghostVoteAvailable: true }));
-const scenarios: Array<{ kind: ExperienceEvent['kind']; outcome?: ExperienceEvent['outcome']; label: string; detail: string; message: string }> = [
-  { kind: "SHOT", outcome: "DEATH", label: "猎魔人 · 枪击命中", detail: "拔枪 → 瞄准 → 击发 → 座位倒下", message: "阿德里安向卢卡斯发动猎魔人能力。卢卡斯死亡。" },
-  { kind: "SHOT", outcome: "NO_DEATH", label: "猎魔人 · 无人死亡", detail: "相同的宣称演出，保留身份秘密", message: "阿德里安向卢卡斯发动猎魔人能力。无人死亡。" },
-  { kind: "EXECUTION", outcome: "DEATH", label: "处决 · 判决落下", detail: "钟声 → 机械落刃 → 烛火熄灭", message: "卢卡斯被处决并死亡。" },
-  { kind: "EXECUTION", outcome: "NO_DEATH", label: "处决 · 无人死亡", detail: "公布处决，保留存活状态", message: "卢卡斯被处决，但仍然存活。" },
-  { kind: "DAWN", outcome: "DEATH", label: "黎明 · 死者揭晓", detail: "晨光入窗 → 熄灭的蜡烛 → 死者姓名", message: "天亮了。昨夜死亡：卢卡斯（3号）。" },
-  { kind: "DAWN", outcome: "NO_DEATH", label: "黎明 · 平安之夜", detail: "温暖晨光与仍亮着的烛火", message: "天亮了。昨夜无人死亡。" },
-  { kind: "NOMINATION", label: "提名 · 公开指控", detail: "提名令牌浮现，邀请被提名者辩护", message: "阿德里安提名卢卡斯。请先陈述理由并听取辩护。" },
-  { kind: "VOTE_RESULT", outcome: "TIED", label: "投票 · 最高票平票", detail: "票数封印与清晰的处决席状态", message: "本轮 3 票，与最高票持平。当前无人将被处决。" },
-  { kind: "NIGHT_FALLS", label: "入夜 · 闭眼", detail: "夜幕收拢，私密行动即将开始", message: "夜幕降临。请闭眼，等待自己的行动。" },
-  { kind: "GAME_OVER", outcome: "GOOD", label: "终局 · 善良获胜", detail: "城镇迎来最终的黎明", message: "恶魔已死亡。善良阵营获胜。" },
+import {useEffect,useRef,useState} from 'react';
+import {avatarChoices,experienceTiming,type ExperienceEvent,type PresentationVersion} from '@ravens/contracts';
+import type {GameView} from '../api.js';
+import {EventStage,privateSceneDuration,type PrivateReceipt} from '../components/EventStage.js';
+import {ParticipationAudioChoice} from '../components/ParticipationAudioChoice.js';
+import {effectsAudioStatus,silenceEffects} from '../components/experience-audio.js';
+import '../styles/effects-preview.css';
+type Scenario={id:string;label:string;kind?:ExperienceEvent['kind'];outcome?:ExperienceEvent['outcome'];privateKind?:PrivateReceipt['kind'];message:string;empty?:boolean};
+export const effectsScenarios:Scenario[]=[
+ {id:'shot-death',kind:'SHOT',outcome:'DEATH',label:'枪击 · 死亡',message:'【玩家1-史泰龙】向【玩家3-皮卡丘】开枪，皮卡丘死亡。'},
+ {id:'shot-alive',kind:'SHOT',outcome:'NO_DEATH',label:'枪击 · 无人死亡',message:'枪声散去，无人死亡。'},
+ {id:'execution-death',kind:'EXECUTION',outcome:'DEATH',label:'处决 · 死亡',message:'【玩家3-皮卡丘】被处决并死亡。'},
+ {id:'execution-alive',kind:'EXECUTION',outcome:'NO_DEATH',label:'处决 · 存活',message:'【玩家3-皮卡丘】被处决，仍然存活。'},
+ {id:'execution-empty',kind:'EXECUTION',outcome:'NONE',label:'无人被处决',message:'今天无人被处决。',empty:true},
+ {id:'nomination',kind:'NOMINATION',label:'公开提名',message:'【玩家1-史泰龙】提名【玩家3-皮卡丘】。'},
+ {id:'vote-block',kind:'VOTE_RESULT',outcome:'ON_BLOCK',label:'投票 · 最高票',message:'本轮4票，皮卡丘暂居处决席。'},
+ {id:'vote-tie',kind:'VOTE_RESULT',outcome:'TIED',label:'投票 · 平票',message:'本轮3票，与最高票相同，当前无人将被处决。'},
+ {id:'vote-low',kind:'VOTE_RESULT',outcome:'NONE',label:'投票 · 未达标',message:'本轮2票，未达到3票门槛。'},
+ {id:'dawn-death',kind:'DAWN',outcome:'DEATH',label:'天亮 · 死亡',message:'昨夜死亡：【玩家3-皮卡丘】。'},
+ {id:'dawn-alive',kind:'DAWN',outcome:'NO_DEATH',label:'天亮 · 无人死亡',message:'昨夜无人死亡。'},
+ {id:'night',kind:'NIGHT_FALLS',label:'夜幕降临',message:'夜幕降临，请等待自己的行动。'},
+ {id:'poison',privateKind:'POISON',label:'下毒',message:'【玩家3-皮卡丘】'},
+ {id:'protect',privateKind:'PROTECT',label:'僧人保护',message:'【玩家3-皮卡丘】'},
+ {id:'butler',privateKind:'BUTLER',label:'管家认主',message:'【玩家3-皮卡丘】'},
+ {id:'demon',privateKind:'DEMON',label:'恶魔攻击',message:'【玩家3-皮卡丘】'},
+ {id:'divine',privateKind:'DIVINE',label:'占卜问询',message:'【玩家3-皮卡丘】'},
+ {id:'good',kind:'GAME_OVER',outcome:'GOOD',label:'善良胜利',message:'善良阵营获胜。恶魔已被击败。'},
+ {id:'evil',kind:'GAME_OVER',outcome:'EVIL',label:'邪恶胜利',message:'邪恶阵营获胜。城镇落入暗夜。'},
 ];
-
-export function EffectsPreview() {
-  const [event, setEvent] = useState<ExperienceEvent>();
-  const [receipt, setReceipt] = useState<PrivateReceipt>();
-  const [sound, setSound] = useState(effectsAudioEnabled);
-  useEffect(() => { const sync = () => setSound(effectsAudioEnabled()); window.addEventListener("ravens-effects-audio", sync); return () => window.removeEventListener("ravens-effects-audio", sync); }, []);
-  function play(scenario: typeof scenarios[number]) {
-    if (sound) void enableEffectsAudio();
-    const now = Date.now();
-    setEvent({ id: crypto.randomUUID(), gameId: "effects-preview", seq: now, kind: scenario.kind, message: scenario.message, occurredAt: now, startsAt: now + 180, durationMs: scenario.kind === "SHOT" || scenario.kind === "EXECUTION" ? 4_500 : scenario.kind === "NIGHT_FALLS" ? 2_000 : 5_000, actorSeat: 1, targetSeat: 3, seats: scenario.outcome === "DEATH" ? [3] : [], day: 2, votes: 3, threshold: 3, ...(scenario.outcome ? { outcome: scenario.outcome } : {}) });
-  }
-  const game: GameView = { gameId: "effects-preview", phase: "DAY_DISCUSSION", day: 2, seats: previewSeats, events: event ? [event] : [], aliveCount: 6, readyCount: 0 };
-  return <main className="effects-preview"><header><a href="/">☾ 鸦钟夜话</a><span>体验研究室 · 公开预览</span></header><section className="effects-preview__intro"><p>THE THEATRE OF RAVENS</p><h1>让每个决定，<br />都被钟楼记住。</h1><div><span>全员同场演出</span><span>身份始终保密</span><span>手机独立可玩</span></div><p>枪声、判决与黎明共享同一套演出。下毒、守护与查验，仅属于自己的屏幕。</p><label><input type="checkbox" checked={sound} onChange={(change) => { setSound(change.target.checked); void enableEffectsAudio(change.target.checked); }} /> 启用演出音效</label></section><section className="effects-preview__scenarios" aria-label="特效演出目录">{scenarios.map((scenario) => <button key={`${scenario.kind}-${scenario.outcome}`} onClick={() => play(scenario)}><span>{scenario.kind === "SHOT" ? "⌁" : scenario.kind === "DAWN" ? "☀" : scenario.kind === "EXECUTION" ? "⚜" : "☾"}</span><strong>{scenario.label}</strong><small>{scenario.detail}</small><b>播放演出 ↗</b></button>)}</section><section className="effects-preview__private"><p>ONLY YOU KNOW</p><h2>私密行动，一场无声的仪式。</h2><div>{([['POISON', '下毒 · 倾下毒液'], ['PROTECT', '守护 · 点亮烛火'], ['DIVINE', '占卜 · 向星辰提问']] as const).map(([kind, label]) => <Button key={kind} variant="quiet" onClick={() => { setEvent(undefined); setReceipt({ id: crypto.randomUUID(), kind, target: "3号 卢卡斯" }); }}>{label}</Button>)}</div><small>私密演出默认无声音，避免向身旁玩家暴露夜间行动。</small></section><section className="effects-preview__town"><p>公开城镇 · 无需大屏</p><SeatRing seats={previewSeats} /></section><EventStage game={game} {...(receipt ? { receipt } : {})} preview /></main>;
+const names=['史泰龙','犬夜叉','皮卡丘','奥特曼','莎士比亚','赫敏'];
+export function EffectsPreview(){
+ const[selected,setSelected]=useState<Scenario>(),[version,setVersion]=useState<PresentationVersion>(3),[runId,setRunId]=useState(''),[elapsed,setElapsed]=useState(0),[paused,setPaused]=useState(false),[rate,setRate]=useState(1),[epoch,setEpoch]=useState(0),[audioStatus,setAudioStatus]=useState(effectsAudioStatus);
+ const anchor=useRef({elapsed:0,at:performance.now(),paused:true,rate:1}),duration=selected?.privateKind?privateSceneDuration(selected.privateKind):selected?.kind?experienceTiming(selected.kind,version).duration:0;
+ function position(){const a=anchor.current;return Math.min(duration,Math.max(0,a.elapsed+(a.paused?0:(performance.now()-a.at)*a.rate)));}
+ useEffect(()=>{if(!selected)return;const timer=window.setInterval(()=>setElapsed(position()),32);return()=>window.clearInterval(timer);},[selected?.id,duration]);
+ useEffect(()=>{const sync=()=>setAudioStatus(effectsAudioStatus());window.addEventListener('ravens:audio-status',sync);return()=>window.removeEventListener('ravens:audio-status',sync);},[]);
+ useEffect(()=>()=>silenceEffects(),[]);
+ function start(scenario:Scenario){silenceEffects();anchor.current={elapsed:0,at:performance.now(),paused:false,rate};setSelected(scenario);setRunId(crypto.randomUUID());setElapsed(0);setPaused(false);setEpoch(v=>v+1);}
+ function update(next:{paused?:boolean;rate?:number;elapsed?:number}){const at=next.elapsed??position(),p=next.paused??paused,r=next.rate??rate;anchor.current={elapsed:at,at:performance.now(),paused:p,rate:r};setElapsed(at);setPaused(p);setRate(r);setEpoch(v=>v+1);}
+ function close(){silenceEffects();setSelected(undefined);setElapsed(0);setPaused(true);anchor.current.paused=true;}
+ const event:ExperienceEvent|undefined=selected?.kind?{id:runId,gameId:`preview-${runId}`,seq:1,kind:selected.kind,timingVersion:version,message:selected.message,occurredAt:1000,startsAt:1000,durationMs:duration,actorSeat:1,...(!selected.empty?{targetSeat:3}:{}),seats:selected.outcome==='DEATH'?[3]:[],day:2,votes:selected.id==='vote-block'?4:selected.id==='vote-low'?2:3,threshold:3,...(selected.outcome?{outcome:selected.outcome}:{})}:undefined;
+ const receipt:PrivateReceipt|undefined=selected?.privateKind?{id:runId,kind:selected.privateKind,target:selected.message,targetSeats:[3]}:undefined;
+ const game:GameView={gameId:`preview-${runId}`,serverNow:1000,phase:'DAY_DISCUSSION',day:2,seats:names.map((nickname,i)=>({seat:i+1,nickname,avatar:avatarChoices[i]!.url,connected:true,alive:true,ghostVoteAvailable:true})),events:event?[event]:[],aliveCount:6,readyCount:0};
+ return <main className={`effects-lab${selected?' is-playing':''}`}><header className="effects-lab__header"><a href="/">☾ 鸦钟夜话</a><span>动效演示</span></header><div className="effects-lab__body"><h1>动效与声音</h1><p>选择场景直接播放。此页不创建房间，不提交游戏操作。</p><ParticipationAudioChoice/><label className="effects-lab__version">演出版本<select aria-label="演出版本" value={version} disabled={!!selected} onChange={e=>setVersion(Number(e.target.value) as PresentationVersion)}><option value={3}>当前版本</option><option value={2}>上一版</option><option value={1}>初版</option></select></label><div className="effects-lab__catalog" aria-label="特效演出目录">{effectsScenarios.map(s=><button type="button" key={s.id} onClick={()=>start(s)}><span aria-hidden="true">{s.privateKind?'◈':s.kind==='GAME_OVER'?'♜':s.kind==='SHOT'?'⌁':'☾'}</span><strong>{s.label}</strong><small>{s.privateKind?'仅行动者可见':'公开演出'}<span aria-hidden="true"> ↗</span></small></button>)}</div>{audioStatus?<p role="status">{audioStatus}</p>:null}</div>{selected?<><div className="effects-lab__controls" aria-label="演出播放控制"><div><strong>{selected.label}</strong><button type="button" onClick={close}>返回目录</button></div><label>进度<input type="range" aria-label="演出进度" min={0} max={duration} step={10} value={Math.min(elapsed,duration)} onChange={e=>update({elapsed:Number(e.target.value)})}/></label><div><button type="button" onClick={()=>update({paused:!paused})}>{paused?'继续':'暂停'}</button><button type="button" onClick={()=>start(selected)}>重播</button><label>速度<select aria-label="播放速度" value={rate} onChange={e=>update({rate:Number(e.target.value)})}><option value={.5}>0.5×</option><option value={1}>1×</option></select></label><output>{(elapsed/1000).toFixed(1)} / {(duration/1000).toFixed(1)} 秒</output></div></div><EventStage key={runId} game={game} {...(receipt?{receipt}:{})} preview playback={{now:1000+elapsed,paused,rate,epoch}}/></>:null}</main>;
 }

@@ -90,6 +90,7 @@ export function GuideOverlay({ mode, ownRole, initialRoleId, onClose }: { mode: 
     document.documentElement.style.overflow = "hidden";
     dialogRef.current?.focus();
     const handleKeyboard = (event: KeyboardEvent) => {
+      if(document.activeElement instanceof Element&&document.activeElement.closest(".room-sheet"))return;
       if (event.key === "Escape") { if (selectedRef.current) closeDetailRef.current(); else closeRef.current(); return; }
       if (event.key !== "Tab" || !dialogRef.current) return;
       if(document.activeElement instanceof Element&&document.activeElement.closest('.room-sheet'))return;
