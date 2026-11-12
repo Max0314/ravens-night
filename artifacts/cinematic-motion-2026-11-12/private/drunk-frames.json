@@ -1,0 +1,11 @@
+{
+  "renderer": "LayeredSceneArt",
+  "method": "renderToStaticMarkup + embedded local raster images + sharp (no browser)",
+  "times": [
+    0,
+    700,
+    1300,
+    2200
+  ],
+  "frames": 36
+}

@@ -1,7 +1,8 @@
 import {experienceTiming,type ExperienceKind,type PresentationVersion,type PrivateSceneDescriptor} from '@ravens/contracts';
 import {privateAudioAllowed} from '../participation-audio.js';
+import {cinematicTiming as contact} from './cinematic-timing.js';
 type Scope='public'|'private'|'ui'|'book';
-export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;playbackId?:string}
+export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
 interface Playing {id:string;scope:Scope;at:number;sample:string;gain:GainNode;bell:boolean;end:number}
 let ctx:AudioContext|undefined,output:GainNode|undefined,unlockFlight:Promise<void>|undefined;
@@ -27,7 +28,7 @@ function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve()
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
 function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
- const version=sample.startsWith('v1:')?'v1':sample.startsWith('v3:')?'v3':'v2',name=sample.replace(/^v[13]:/,'');
+ const prefix=sample.match(/^(v[134]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[134]:/,'');
  const pending=(async()=>{await takeLoadSlot();try{const response=await fetch('/audio/effects/'+version+'/'+name+'.mp3');if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
 function claim(key:string,at:number){if(played.has(key))return false;played.set(key,at);if(played.size>1200)played.delete(played.keys().next().value!);return true;}
@@ -41,7 +42,7 @@ if(typeof window!=='undefined'){
  document.addEventListener('visibilitychange',()=>{if(document.hidden)silenceEffects();});
  window.addEventListener('ravens:ui-feedback',event=>{const detail=(event as CustomEvent<SemanticCue|{cue:SemanticCue;scope:'ui'|'private'}>).detail,cue=typeof detail==='string'?detail:detail.cue;if(['press','select','open','close','success','error'].includes(cue))playSemantic(cue,{scope:typeof detail==='string'?'ui':detail.scope});});
 }
-function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,rate=1,volume=.6,offset=0,lateWindow=100,bell=false){
+function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,rate=1,volume=.6,offset=0,lateWindow=100,bell=false,onStarted?:(buffer:AudioBuffer,when:number)=>void){
  const audio=ctx;if(!audio||!allowed(scope)||delay<0)return;
  if(!epochs.has(id))epochs.set(id,0);const epoch=epochs.get(id),at=audio.currentTime+delay/1000;
  if(!claim(id+':'+cue,at))return;
@@ -49,7 +50,7 @@ function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,ra
   if(ctx!==audio||epochs.get(id)!==epoch||!allowed(scope)||(audio.currentTime-at)*1000>lateWindow||offset>=buffer.duration)return;
   const vocal=/^(hurt-|cough-|butler-voice)/.test(sample),group=(s:Playing)=>/^(hurt-|cough-|butler-voice)/.test(s.sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s)===vocal&&s.at<=at&&s.end>at);if(own.length>=(scope==='ui'||scope==='book'||vocal?1:3))stop(own[0]![0],own[0]![1]);
   if(!bell&&scope!=='ui'&&scope!=='book')for(const row of sources.values())if(row.bell){const duckAt=Math.max(at,audio.currentTime);row.gain.gain.setValueAtTime(row.gain.gain.value,duckAt);row.gain.gain.linearRampToValueAtTime(.035,duckAt+.04);row.gain.gain.linearRampToValueAtTime(.2,duckAt+.34);}
-  const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));sources.set(source,{id,scope,at,sample,gain,bell,end:at+(buffer.duration-offset)/rate});source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};source.start(Math.max(audio.currentTime,at),offset);
+  const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));sources.set(source,{id,scope,at,sample,gain,bell,end:at+(buffer.duration-offset)/rate});source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};const when=Math.max(audio.currentTime,at);source.start(when,offset);onStarted?.(buffer,when);
  }).catch(()=>{/* Missing media never blocks interaction. */});
 }
 const hash=(id:string)=>[...id].reduce((v,c)=>(Math.imul(v,31)+c.charCodeAt(0))>>>0,0);
@@ -60,35 +61,61 @@ export function playSemantic(cue:SemanticCue,options:{variant?:number;scope?:'ui
  const id=scope+':ui:'+(++semanticSeq);if(scope==='private')previousPrivateUi=id;sampleAt(id,cue,sample,0,scope,1,scope==='book'?.23:.16,0,200);
 }
 let currentBell='';
+const publicRanges=new Map<string,{key:number|string;at:number;generation:number}>();
+const publicTails=new Map<string,{sample:string;origin:number;duration:number}>();
 export function scheduleCue(id:string,kind:string,elapsed:number,version:PresentationVersion=1,emptyExecution=false,options:AudioPlayback={}){
- if(!allowed('public'))return;const rate=options.rate??1,timing=experienceTiming(kind as ExperienceKind,version);
+ const mode=options.mode??(options.resume?'RESUME':'START'),epoch=epochs.get(id)??0,key=options.seekKey??epoch;
+ if(mode==='SEEK'&&publicRanges.get(id)?.key!==key){publicRanges.set(id,{key,at:elapsed,generation:(publicRanges.get(id)?.generation??0)+1});if(publicRanges.size>1200)publicRanges.delete(publicRanges.keys().next().value!);}
+ if(options.paused||!allowed('public'))return;
+ const range=publicRanges.get(id),prefix='range:'+(range?.generation??0)+':',rate=options.rate??1,timing=experienceTiming(kind as ExperienceKind,version);
+ const cueAt=(at:number,cue:string,sample:string,volume:number,continuous=false,bell=false)=>{
+  const late=elapsed>at;if(late&&(!continuous||mode!=='RESUME'||range&&at<range.at))return;
+  sampleAt(id,prefix+(late?'resume:'+epoch+':':'base:')+cue,sample,Math.max(0,(at-elapsed)/rate),'public',rate,volume,late?(elapsed-at)/1000:0,100,bell);
+ };
  if((kind==='DAWN'||kind==='NIGHT_FALLS')&&currentBell!==id){if(currentBell)cancelEventAudio(currentBell);currentBell=id;}
- for(const [at,cue]of timing.cues){const delay=(at-elapsed)/rate;if(delay<0)continue;
-  if(cue==='bell'||cue==='dawn'||cue.startsWith('night-bell')||cue.startsWith('dawn-bell'))sampleAt(id,'base:'+at,kind==='DAWN'?'dawn-bell':'night-bell',delay,'public',rate,.3,0,100,true);
-  else if(cue==='shot'){sampleAt(id,'base:shot:'+at,version<4?'v1:shot':'shot',delay,'public',rate,.8);sampleAt(id,'base:glass:'+at,version<4?'v1:glass':'glass-hit',delay,'public',rate,.5);if(version===4)sampleAt(id,'base:shards:'+at,'glass-shards',delay+80,'public',rate,.35);}
-  else if(cue==='mechanism')sampleAt(id,'base:mechanism:'+at,version<4?'v1:impact':'guillotine-impact',delay,'public',rate,.75);
-  else if(cue==='tension'||cue==='frame')sampleAt(id,'base:'+at,'guillotine-tension',delay,'public',rate,.3);
-  else if(cue==='unlock'||cue==='release'||cue==='blade')sampleAt(id,'base:'+at,'guillotine-'+(cue==='release'?'unlock':cue),delay,'public',rate,.45);
-  else if(cue==='cock')sampleAt(id,'base:'+at,version<4?'v1:impact':'gun-cock',delay,'public',rate,.3);
-  else if(cue==='nominate'||cue==='paper')sampleAt(id,'base:'+at,version===4?(cue==='nominate'?'nomination':'vote-stamp'):(cue==='nominate'?'ui-open':'ui-success'),delay,'public',rate,.2);
+ for(const [at,cue]of timing.cues){if(kind==='EXECUTION'&&emptyExecution)continue;
+  if(cue==='bell'||cue==='dawn'||cue.startsWith('night-bell')||cue.startsWith('dawn-bell'))cueAt(at,cue+':'+at,kind==='DAWN'?'dawn-bell':'night-bell',.3,true,true);
+  else if(cue==='shot'){cueAt(at,'shot:'+at,version<4?'v1:shot':'shot',.8);cueAt(at,'glass:'+at,version<4?'v1:glass':'glass-hit',.5);if(version===4)cueAt(at+80,'shards:'+at,'glass-shards',.35);}
+  else if(cue==='mechanism')cueAt(at,'mechanism:'+at,version<4?'v1:impact':'guillotine-impact',.75);
+  else if(cue==='tension'||cue==='frame')cueAt(at,cue+':'+at,'guillotine-tension',.3);
+  else if(cue==='unlock'||cue==='release'||cue==='blade')cueAt(at,cue+':'+at,'guillotine-'+(cue==='release'?'unlock':cue),.45);
+  else if(cue==='cock')cueAt(at,cue+':'+at,version<4?'v1:impact':'gun-cock',.3);
+  else if(cue==='nominate'||cue==='paper')cueAt(at,cue+':'+at,version===4?(cue==='nominate'?'nomination':'vote-stamp'):(cue==='nominate'?'ui-open':'ui-success'),.2);
  }
- if(emptyExecution)sampleAt(id,'empty:wind','guillotine-wind',Math.max(0,300-elapsed)/rate,'public',rate,.4);
- const fresh=elapsed>=timing.resultOffset&&elapsed-timing.resultOffset<=500;
- if(options.resultVisible&&options.outcome==='DEATH'&&['SHOT','EXECUTION','DAWN'].includes(kind)&&fresh&&!emptyExecution)sampleAt(id,'outcome:death',version<4?'v1:scream':(kind==='DAWN'?'hurt-night':'hurt-shot')+'-'+(1+hash(id)%3),0,'public',rate,.58,0,500-(elapsed-timing.resultOffset));
- if(version===4&&options.resultVisible&&options.outcome==='DEATH'&&fresh&&!emptyExecution&&['SHOT','EXECUTION','DAWN'].includes(kind)){sampleAt(id,'outcome:blood','blood-impact',0,'public',rate,.35,0,500);if(kind==='DAWN')sampleAt(id,'outcome:bone','bone-crack',100,'public',rate,.25,0,500);}
- if(kind==='GAME_OVER'&&options.resultVisible&&fresh&&(options.outcome==='GOOD'||options.outcome==='EVIL'))sampleAt(id,'outcome:finale',(version<4?'v1:':'')+(options.outcome==='GOOD'?'good':'evil'),0,'public',rate,.78,0,500-(elapsed-timing.resultOffset));
+ if(emptyExecution)cueAt(300,'empty:wind','guillotine-wind',.4,true);
+ const fresh=elapsed>=timing.resultOffset&&elapsed-timing.resultOffset<=500&&(!range||range.at<timing.resultOffset);
+ const resultTail=(cue:string,sample:string,volume:number)=>{
+  const semantic=prefix+'outcome:'+cue,tailKey=id+':'+semantic,tail=publicTails.get(tailKey);
+  if(mode==='RESUME'){if(tail?.sample===sample){const offset=(elapsed-tail.origin)/1000;if(offset>=0&&offset<tail.duration)sampleAt(id,semantic+':resume:'+epoch,sample,0,'public',rate,volume,offset,150);}return;}
+  if(!fresh)return;const scheduledAt=ctx?.currentTime??0;
+  sampleAt(id,semantic,sample,0,'public',rate,volume,0,500-(elapsed-timing.resultOffset),false,(buffer,when)=>{if(!publicTails.has(tailKey)){publicTails.set(tailKey,{sample,origin:elapsed+(when-scheduledAt)*1000*rate,duration:buffer.duration});if(publicTails.size>1200)publicTails.delete(publicTails.keys().next().value!);}});
+ };
+ if(options.resultVisible&&options.outcome==='DEATH'&&['SHOT','EXECUTION','DAWN'].includes(kind)&&!emptyExecution)resultTail('death',version<4?'v1:scream':(kind==='DAWN'?'hurt-night':'hurt-shot')+'-'+(1+hash(id)%3),.58);
+ if(version===4&&options.resultVisible&&options.outcome==='DEATH'&&fresh&&!emptyExecution&&['SHOT','EXECUTION','DAWN'].includes(kind)){sampleAt(id,prefix+'outcome:blood','blood-impact',0,'public',rate,.35,0,500);if(kind==='DAWN')sampleAt(id,prefix+'outcome:bone','bone-crack',100/rate,'public',rate,.25,0,500);}
+ if(kind==='GAME_OVER'&&options.resultVisible&&(options.outcome==='GOOD'||options.outcome==='EVIL'))resultTail('finale',(version<4?'v1:':'')+(options.outcome==='GOOD'?'good':'evil'),.78);
 }
-export function schedulePrivateCue(id:string,kind:string,elapsed:number,options:AudioPlayback={}){const sample=({POISON:'poison',PROTECT:'shield',BUTLER:'butler',DEMON:'demon'} as Record<string,string>)[kind];if(sample)sampleAt('private:'+id,'base:ritual','v1:'+sample,(120-elapsed)/(options.rate??1),'private',options.rate??1,.74);}
-export function roleAudioCues(scene:PrivateSceneDescriptor):Array<[number,string,number]>{
- const role=scene.themeRoleId,theme=scene.kind==='ROLE_CHANGE'?'scarlet_woman':role;
- if(scene.kind==='ACTION_SUBMITTED'){
-  // Preserve the user's accepted v1 shield, including its transient and decay.
-  if(role==='monk')return[[418,'v1:shield',.74]];
-  if(role==='imp')return[[600,'wing-flap',.43],[850,'wing-air',.22],[1100,'wing-root',.32],[1450,'v3:slash-left',.78],[1750,'v3:slash-right',.78]];
-  if(role==='poisoner')return[[750,'poison-bottle',.65],[1100,'poison-bubbles',.52],[1700,'cough-'+(1+hash(scene.id)%3),.42]];
-  if(role==='butler')return[[500,'role-butler',.3],[1450,'butler-voice',.74]];
- }
- return[[500,'role-'+theme,.5]];
+export function schedulePrivateCue(id:string,kind:string,elapsed:number,options:AudioPlayback={}){
+ const role=({POISON:'poisoner',PROTECT:'monk',BUTLER:'butler',DEMON:'imp'} as Record<string,string>)[kind];if(!role)return;
+ scheduleRoleCue({version:1,id,kind:'ACTION_SUBMITTED',themeRoleId:role,shown:{type:'TARGET_SUBMITTED',action:kind==='POISON'?'POISON':kind==='PROTECT'?'PROTECT':kind==='BUTLER'?'MASTER':'KILL',seats:[]}},elapsed,options);
+}
+/** The optional contact marks a transient inside a clip's lead-in (v1 shield). */
+export type RoleAudioCue=[at:number,sample:string,volume:number,continuity?:'continuous'|'transient',contactAt?:number];
+// Measured output MP3 peaks/onsets, recorded by the immutable v4 manifest.
+const materialLead={cork:9.75,pour:24.6,chop:[10.63,10.09,10.86],coffinOpen:5.35,coffinSettle:11.45} as const;
+export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
+ const role=scene.themeRoleId,variant=1+hash(scene.id)%4;
+ // Scene kind takes priority over the role that received the envelope.
+ if(scene.kind==='EVIL_START')return[[600,'paper-lift-1',.25],[1100,'paper-turn-'+variant,.38]];
+ if(scene.kind==='OLD_DEMON_CONTINUATION')return[[600,'wing-air',.17]];
+ if(scene.kind==='ROLE_CHANGE')return[[500,'role-scarlet_woman',.5]];
+ if(role==='butler')return[[500,'role-butler',.3],[contact.butler.voice,'butler-voice',.74]];
+ if(role==='poisoner')return[[contact.poison.uncork-materialLead.cork,'v4:poison-cork',.56,'transient',contact.poison.uncork],[contact.poison.pour-materialLead.pour,'v4:poison-pour',.48],[contact.poison.bubbles,'poison-bubbles',.4],...(scene.kind==='ACTION_SUBMITTED'?[[contact.poison.cough,'cough-'+(1+hash(scene.id)%3),.42] as RoleAudioCue]:[])];
+ if(role==='monk'&&scene.kind==='ACTION_SUBMITTED')return[[contact.shield.cue,'v1:shield',.74,'transient',contact.shield.contact]];
+ if(role==='imp'&&scene.kind==='ACTION_SUBMITTED')return[[contact.demon.flap,'wing-flap',.43,'transient'],[contact.demon.air,'wing-air',.22],[contact.demon.open,'wing-root',.32,'transient'],[contact.demon.left,'v3:slash-left',.78,'transient'],[contact.demon.right,'v3:slash-right',.78,'transient']];
+ if(role==='chef')return contact.chef.map((at,i)=>[at-materialLead.chop[i]!,'v4:chef-chop-'+(i+1),.5,'transient',at]);
+ if(role==='undertaker')return[[contact.coffin.start-materialLead.coffinOpen,'v4:coffin-open',.42],[contact.coffin.open-materialLead.coffinSettle,'v4:coffin-settle',.36,'transient',contact.coffin.open]];
+ if(role==='librarian'||role==='spy')return[[contact.book.middle,'paper-turn-'+variant,.4]];
+ return[[500,'role-'+role,.5]];
 }
 /** Prepare private media before its local art clock starts. Public timelines never wait. */
 export async function prepareRoleAudio(scene:PrivateSceneDescriptor):Promise<void>{
@@ -98,7 +125,11 @@ export async function prepareRoleAudio(scene:PrivateSceneDescriptor):Promise<voi
  clearTimeout(timer);
 }
 export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,options:AudioPlayback={}){
- const id='private:'+(options.playbackId??scene.id),rate=options.rate??1,cues=roleAudioCues(scene);
- for(const [at,sample,volume]of cues){const late=elapsed>at;if(late&&!options.resume)continue;const offset=late?(elapsed-at)/1000:0;sampleAt(id,(options.resume?'resume:'+epochs.get(id)+':':'')+at+':'+sample,sample,Math.max(0,(at-elapsed)/rate),'private',rate,volume,offset,150);}
+ const id='private:'+(options.playbackId??scene.id),rate=options.rate??1,cues=roleAudioCues(scene),mode=options.mode??(options.resume?'RESUME':'START'),epoch=epochs.get(id)??0;
+ for(const [at,sample,volume,continuity='continuous',contactAt=at]of cues){
+  const late=elapsed>at;if(late&&(mode!=='RESUME'||continuity==='transient'&&elapsed>=contactAt))continue;
+  const offset=late?(elapsed-at)/1000:0,key=(mode==='START'?'':mode.toLowerCase()+':'+epoch+':')+at+':'+sample;
+  sampleAt(id,key,sample,Math.max(0,(at-elapsed)/rate),'private',rate,volume,offset,150);
+ }
 }
-export async function auditionSample(sample:string){if(!/^(?:v[13]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
+export async function auditionSample(sample:string){if(!/^(?:v[134]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}

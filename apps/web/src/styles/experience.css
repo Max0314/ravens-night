@@ -53,4 +53,9 @@
 @media(prefers-reduced-motion:reduce){.private-ritual,.private-ritual *{animation:none!important;transition:none!important}.empty-gallows__wind,.empty-gallows__leaves{display:none}}
 .event-stage.is-reduced .empty-gallows__wind,.event-stage.is-reduced .empty-gallows__leaves{display:none}
 
+/* Four edges apply in portrait and landscape, including WeChat's safe areas. */
+.event-stage{--event-block:clamp(20px,4vw,56px);--event-inline:clamp(20px,4vw,56px);padding:max(var(--event-block),env(safe-area-inset-top,0px)) max(var(--event-inline),env(safe-area-inset-right,0px)) max(var(--event-block),env(safe-area-inset-bottom,0px)) max(var(--event-inline),env(safe-area-inset-left,0px))}
+@media(max-width:650px){.event-stage{--event-block:19px;--event-inline:17px}}
+.event-stage footer button{min-height:44px;min-width:44px}
+
 .event-stage--vote_result .ceremony-seal{left:68%;width:clamp(100px,18vw,200px)}.vote-result-person{position:absolute;left:9%;top:50%;transform:translateY(-50%);width:32%}

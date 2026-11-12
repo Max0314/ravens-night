@@ -33,8 +33,8 @@ export const roleSceneDurations:Record<string,number>={washerwoman:4200,libraria
 export function sceneDuration(scene:PrivateSceneDescriptor,butlerDuration=4000){
   if(scene.kind==='EVIL_START'||scene.kind==='ROLE_CHANGE')return 4600;
   if(scene.kind==='OLD_DEMON_CONTINUATION')return 4200;
-  if(scene.kind==='IDENTITY')return scene.themeRoleId==='baron'||scene.themeRoleId==='drunk'?4000:3600;
   if(scene.themeRoleId==='butler')return butlerDuration;
+  if(scene.kind==='IDENTITY')return scene.themeRoleId==='baron'||scene.themeRoleId==='drunk'?4000:3600;
   if(scene.kind==='ACTION_SUBMITTED'&&['fortune_teller','ravenkeeper'].includes(scene.themeRoleId))return 3000;
   return roleSceneDurations[scene.themeRoleId]??3800;
 }

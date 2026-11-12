@@ -1,0 +1,983 @@
+{
+  "version": 4,
+  "kind": "Cinematic material layers, not timingVersion or role portraits",
+  "files": [
+    {
+      "id": "book-paper-back",
+      "file": "book-paper-back.webp",
+      "sha256": "89ece2a78ec1e60e38f0188e064b9efc04d5b327b5885732e2fa3aaaee631547",
+      "bytes": 23896,
+      "width": 220,
+      "height": 310,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        300,
+        100,
+        250,
+        310
+      ],
+      "pivot": [
+        300,
+        100
+      ],
+      "geometry": {
+        "surface": "BACK",
+        "blank": true
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-26e68454-718f-43ed-979a-3aa940c46782.png",
+        "file": "work/motion-art/props/sources/book.png",
+        "sha256": "135f1368135cf44484bf9267f7aac933a4580955ebeb560402665afc8fc3b208",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 138,
+          "top": 673,
+          "width": 352,
+          "height": 535
+        },
+        "prompt": "Use case: stylized-concept. Production TRANSPARENT texture atlas for a premium realistic dark gothic black/gold mobile game. Square 1536x1536, FOUR clear quadrants, each 768x768, no grid lines, no labels, zero text, no background, real alpha. Every part entirely within its quadrant with 50px padding. Detailed old burgundy leather, aged antique gold fittings and worn creamy parchment, soft material highlights, no external cast shadow, no candles or other props.\nTOP LEFT: one OPEN antique book SHELL seen EXACTLY ORTHOGRAPHIC FROM STRAIGHT OVERHEAD. It lies FLAT, spine vertical precisely at its center, left and right covers symmetric, all outer edges horizontal/vertical, NO three-quarter view or perspective angle. Width 660px height 470px inside cell. Deep burgundy red leather boards, thin ornate gold cornerwork and spine clasp details, two flat BLANK fixed page blocks; both page surfaces are rectangular and level, no curled or raised page, no writing/symbols/pictures/people. Page gutter straight center. This shell stays fixed in game and is not a whole illustration with a floating page.\nTOP RIGHT: ONE detached RECTANGULAR parchment PAGE FRONT texture, 430px wide x600px high, straight edges, blank center, subtle fine paper fibre, warm off-white aged margins, no fold, no curvature, no gold border, no writing or graphics.\nBOTTOM LEFT: matching PAGE BACK texture, same 430x600 rectangle, blank, subtly different paper fibre, no fold or curvature, no writing or pictures.\nBOTTOM RIGHT completely transparent and EMPTY.\nThe renderer will animate the detached paper, so the shell must NOT include any moving/curled page. Each part isolated with crisp alpha edge and no white halo. No tabletop, candle, hand, bookmark ribbon crossing pages, loose books or diagonal/isometric framing."
+      },
+      "processing": "Extract explicit alpha bounds; normalize planar material UV to exact rectangular face (not an animated object transform)."
+    },
+    {
+      "id": "book-paper",
+      "file": "book-paper.webp",
+      "sha256": "4e21dd4be9e12ffd17c9724e830dcc76fe281e36b8cc72d2a811c4bc92ab1f5f",
+      "bytes": 24438,
+      "width": 220,
+      "height": 310,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        300,
+        100,
+        250,
+        310
+      ],
+      "pivot": [
+        300,
+        100
+      ],
+      "geometry": {
+        "surface": "FRONT",
+        "blank": true
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-26e68454-718f-43ed-979a-3aa940c46782.png",
+        "file": "work/motion-art/props/sources/book.png",
+        "sha256": "135f1368135cf44484bf9267f7aac933a4580955ebeb560402665afc8fc3b208",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 793,
+          "top": 47,
+          "width": 351,
+          "height": 512
+        },
+        "prompt": "Use case: stylized-concept. Production TRANSPARENT texture atlas for a premium realistic dark gothic black/gold mobile game. Square 1536x1536, FOUR clear quadrants, each 768x768, no grid lines, no labels, zero text, no background, real alpha. Every part entirely within its quadrant with 50px padding. Detailed old burgundy leather, aged antique gold fittings and worn creamy parchment, soft material highlights, no external cast shadow, no candles or other props.\nTOP LEFT: one OPEN antique book SHELL seen EXACTLY ORTHOGRAPHIC FROM STRAIGHT OVERHEAD. It lies FLAT, spine vertical precisely at its center, left and right covers symmetric, all outer edges horizontal/vertical, NO three-quarter view or perspective angle. Width 660px height 470px inside cell. Deep burgundy red leather boards, thin ornate gold cornerwork and spine clasp details, two flat BLANK fixed page blocks; both page surfaces are rectangular and level, no curled or raised page, no writing/symbols/pictures/people. Page gutter straight center. This shell stays fixed in game and is not a whole illustration with a floating page.\nTOP RIGHT: ONE detached RECTANGULAR parchment PAGE FRONT texture, 430px wide x600px high, straight edges, blank center, subtle fine paper fibre, warm off-white aged margins, no fold, no curvature, no gold border, no writing or graphics.\nBOTTOM LEFT: matching PAGE BACK texture, same 430x600 rectangle, blank, subtly different paper fibre, no fold or curvature, no writing or pictures.\nBOTTOM RIGHT completely transparent and EMPTY.\nThe renderer will animate the detached paper, so the shell must NOT include any moving/curled page. Each part isolated with crisp alpha edge and no white halo. No tabletop, candle, hand, bookmark ribbon crossing pages, loose books or diagonal/isometric framing."
+      },
+      "processing": "Extract explicit alpha bounds; normalize planar material UV to exact rectangular face (not an animated object transform)."
+    },
+    {
+      "id": "book-shell",
+      "file": "book-shell.webp",
+      "sha256": "27f3d1b581d520b0fa40aead3ffe9f6d4d7807b01726a6ac7db1c2c7a90dce64",
+      "bytes": 80556,
+      "width": 600,
+      "height": 500,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        30,
+        71,
+        551,
+        369
+      ],
+      "pivot": null,
+      "geometry": {
+        "spine": [
+          [
+            300,
+            100
+          ],
+          [
+            300,
+            410
+          ]
+        ],
+        "pageLeft": [
+          50,
+          100,
+          250,
+          310
+        ],
+        "pageRight": [
+          300,
+          100,
+          250,
+          310
+        ],
+        "note": "Planar red leather shell. Animated 250x310 surfaces extend from the central hinge to the outer blank-paper edge; sample the 220x310 paper texture across that material UV."
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-26e68454-718f-43ed-979a-3aa940c46782.png",
+        "file": "work/motion-art/props/sources/book.png",
+        "sha256": "135f1368135cf44484bf9267f7aac933a4580955ebeb560402665afc8fc3b208",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 67,
+          "top": 98,
+          "width": 612,
+          "height": 410
+        },
+        "prompt": "Use case: stylized-concept. Production TRANSPARENT texture atlas for a premium realistic dark gothic black/gold mobile game. Square 1536x1536, FOUR clear quadrants, each 768x768, no grid lines, no labels, zero text, no background, real alpha. Every part entirely within its quadrant with 50px padding. Detailed old burgundy leather, aged antique gold fittings and worn creamy parchment, soft material highlights, no external cast shadow, no candles or other props.\nTOP LEFT: one OPEN antique book SHELL seen EXACTLY ORTHOGRAPHIC FROM STRAIGHT OVERHEAD. It lies FLAT, spine vertical precisely at its center, left and right covers symmetric, all outer edges horizontal/vertical, NO three-quarter view or perspective angle. Width 660px height 470px inside cell. Deep burgundy red leather boards, thin ornate gold cornerwork and spine clasp details, two flat BLANK fixed page blocks; both page surfaces are rectangular and level, no curled or raised page, no writing/symbols/pictures/people. Page gutter straight center. This shell stays fixed in game and is not a whole illustration with a floating page.\nTOP RIGHT: ONE detached RECTANGULAR parchment PAGE FRONT texture, 430px wide x600px high, straight edges, blank center, subtle fine paper fibre, warm off-white aged margins, no fold, no curvature, no gold border, no writing or graphics.\nBOTTOM LEFT: matching PAGE BACK texture, same 430x600 rectangle, blank, subtly different paper fibre, no fold or curvature, no writing or pictures.\nBOTTOM RIGHT completely transparent and EMPTY.\nThe renderer will animate the detached paper, so the shell must NOT include any moving/curled page. Each part isolated with crisp alpha edge and no white halo. No tabletop, candle, hand, bookmark ribbon crossing pages, loose books or diagonal/isometric framing."
+      },
+      "processing": "Extract explicit alpha bounds; uniformly scale object into shared transparent viewBox. No repaint or redrawing."
+    },
+    {
+      "id": "butler-bow",
+      "file": "butler-bow.webp",
+      "width": 1920,
+      "height": 1792,
+      "bytes": 408424,
+      "sha256": "39771db9a1f1bfba17defc6f8bcea9fb68139ac5612c76777763253b5bef51e6",
+      "sourceSha256": "0f4468cc443318a96949ee18c24b9a360d156ea5d18b6dc69814698729d1ce3f",
+      "generator": "Deterministic raster skinning of built-in image_gen neutral master",
+      "processing": "Single neutral material; waist/neck/arm skinning; fixed lower limbs; same pose data for atlas and audit",
+      "cell": [
+        320,
+        448
+      ],
+      "frames": 24,
+      "columns": 6,
+      "rows": 4,
+      "decodedBytes": 13762560,
+      "poseSpec": "butler-motion.json"
+    },
+    {
+      "id": "butler-neutral",
+      "file": "butler-neutral.webp",
+      "width": 280,
+      "height": 1024,
+      "bytes": 75704,
+      "sha256": "d36858dfe8ffc8c83c56796991d06839a81281819f34f3c73078897c52c38cc5",
+      "sourceSha256": "0f4468cc443318a96949ee18c24b9a360d156ea5d18b6dc69814698729d1ce3f",
+      "source": "exec-8c7e46bb-851e-46a2-b296-09211da2e8a6.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1024,
+        "height": 1536
+      },
+      "prompt": "Use case: stylized-concept. Produce ONE full body neutral standing master illustration for a premium gothic game animation rig. First reference supplies ONLY costume, face and craftsmanship; do NOT copy its bowed pose. Second reference is a skeleton motion guide: draw ONLY its FIRST upright pose, NOT a sprite sheet. Distinguished mature Victorian male butler, black fitted tailcoat, ivory waistcoat, gold buttons, white gloves, polished dark shoes, face oriented three-quarter toward RIGHT. Torso fully upright and BOTH LEGS PERFECTLY VERTICAL, knees straight, feet close together flat on common baseline, no lean. Near hand on heart with bent elbow, far hand held behind the back. Head upright. Keep coat tails close and behind legs; anatomical hips visibly at the normal waist/pelvis. Fine realistic painterly high-end game rendering, fabric tailoring and face refined, amber rim light, black-gold aesthetic. FULL figure including feet and top of hair with margin. Single person on true transparent alpha background, no floor shadow, no props, no text, no grid. Do not bow him yet; motion will be driven deterministically from this neutral painting. Tall portrait composition.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "chef-board-clean",
+      "file": "chef-board-clean.webp",
+      "sha256": "2bbbdcc75be901d711abeb511b501084e2f6881459752848d6245434eca3c008",
+      "bytes": 52060,
+      "width": 600,
+      "height": 500,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        70,
+        230,
+        460,
+        232
+      ],
+      "pivot": null,
+      "geometry": {
+        "cuttingLineY": 330,
+        "contact": [
+          290,
+          330
+        ],
+        "note": "No food, slices or knife baked into the board."
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-be0ad1f5-7aa9-4226-ae23-f352c82c2106.png",
+        "file": "work/motion-art/props/sources/chef.png",
+        "sha256": "97e821f9cc72642c1fa3b731371fb0a36b937e1638803576ff432f08f9e989d8",
+        "width": 1774,
+        "height": 887,
+        "sourceRect": {
+          "left": 21,
+          "top": 234,
+          "width": 878,
+          "height": 443
+        },
+        "prompt": "Use case: stylized-concept. A TRANSPARENT 1536x1536 two-part atlas for a premium black/gold gothic game's cooking animation. LEFT half: a single EMPTY thick old walnut chopping board, rectangular long horizontal axis, clean upper working surface facing camera from moderately above, a narrow front thickness edge visible. Entire board within left half with at least50px padding. Natural knife scratches but NO food, no cut vegetables, no knife, no herbs, no onion, no cloth or handle decorations; no carving pictures/text. Upper cutting surface nearly screen-horizontal, NOT an isometric diagonal board. Beautiful detailed aged wood and small restrained old brass corner guards; realistic soft highlights and dark tactile grain. RIGHT half: ONE whole raw uncut orange CARROT, a single separate isolated prop lying perfectly HORIZONTAL, thick end and small green stalk at LEFT, pointed tip at RIGHT; entire carrot with padding. No cut slices, no board below it, no knife, no other vegetable or contact shadow. The renderer will deterministically cut the carrot so it MUST be whole and intact. Realistic orange root texture, no face or cartoon. Both objects alone on true alpha, no background, no white/gray matte or halo, no labels. Distinct parts separated by substantial blank alpha so they can be precisely extracted."
+      },
+      "processing": "Extract explicit alpha bounds; uniformly scale object into shared transparent viewBox. No repaint or redrawing."
+    },
+    {
+      "id": "chef-carrot",
+      "file": "chef-carrot.webp",
+      "sha256": "da63f47d10fd9425009f197eb84f58b97d8bd09b8860ccf97a23efe8319c0e52",
+      "bytes": 4646,
+      "width": 190,
+      "height": 80,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        230,
+        285,
+        190,
+        80
+      ],
+      "pivot": null,
+      "geometry": {
+        "contentRect": [
+          12,
+          23,
+          166,
+          34
+        ],
+        "orientation": "thick stalk end left; pointed tip right",
+        "note": "Whole uncut carrot; slice/cut masks are produced by the renderer."
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-be0ad1f5-7aa9-4226-ae23-f352c82c2106.png",
+        "file": "work/motion-art/props/sources/chef.png",
+        "sha256": "97e821f9cc72642c1fa3b731371fb0a36b937e1638803576ff432f08f9e989d8",
+        "width": 1774,
+        "height": 887,
+        "sourceRect": {
+          "left": 955,
+          "top": 359,
+          "width": 781,
+          "height": 162
+        },
+        "prompt": "Use case: stylized-concept. A TRANSPARENT 1536x1536 two-part atlas for a premium black/gold gothic game's cooking animation. LEFT half: a single EMPTY thick old walnut chopping board, rectangular long horizontal axis, clean upper working surface facing camera from moderately above, a narrow front thickness edge visible. Entire board within left half with at least50px padding. Natural knife scratches but NO food, no cut vegetables, no knife, no herbs, no onion, no cloth or handle decorations; no carving pictures/text. Upper cutting surface nearly screen-horizontal, NOT an isometric diagonal board. Beautiful detailed aged wood and small restrained old brass corner guards; realistic soft highlights and dark tactile grain. RIGHT half: ONE whole raw uncut orange CARROT, a single separate isolated prop lying perfectly HORIZONTAL, thick end and small green stalk at LEFT, pointed tip at RIGHT; entire carrot with padding. No cut slices, no board below it, no knife, no other vegetable or contact shadow. The renderer will deterministically cut the carrot so it MUST be whole and intact. Realistic orange root texture, no face or cartoon. Both objects alone on true alpha, no background, no white/gray matte or halo, no labels. Distinct parts separated by substantial blank alpha so they can be precisely extracted."
+      },
+      "processing": "Extract explicit alpha bounds; uniformly scale object into shared transparent viewBox. No repaint or redrawing."
+    },
+    {
+      "id": "coffin-base",
+      "file": "coffin-base.webp",
+      "sha256": "f12ea0d46af406b6c28d463079a11540c0319a25d83de0646ef4fcbee3561478",
+      "bytes": 38524,
+      "width": 600,
+      "height": 500,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        79,
+        225,
+        440,
+        249
+      ],
+      "pivot": null,
+      "geometry": {
+        "hinge": [
+          [
+            110,
+            240
+          ],
+          [
+            490,
+            240
+          ]
+        ],
+        "openingQuad": [
+          [
+            110,
+            240
+          ],
+          [
+            490,
+            240
+          ],
+          [
+            506,
+            359
+          ],
+          [
+            93,
+            359
+          ]
+        ],
+        "frontEdgeY": 359
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-a0f6e378-6436-48be-b56f-ea8eba1364d7.png",
+        "file": "work/motion-art/props/sources/coffin2.png",
+        "sha256": "fc452cc060614cd9bbceb2b06a6882c0ddbf815c5e40c15143c2139514b69f49",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 12,
+          "top": 174,
+          "width": 605,
+          "height": 343
+        },
+        "prompt": "Use case: stylized-concept. Premium realistic gothic walnut and aged gold CASKET ANIMATION texture parts on TRUE TRANSPARENT alpha. Square 1536x1536 atlas in FOUR CLEAR QUADRANTS with no labels, no grid lines, no shadows, no background. Each quadrant768x768, keep50px blank margins. Only 3 separate parts; fourth quadrant empty.\nTOP LEFT: one OPEN EMPTY rectangular funeral casket BASE. CAMERA HIGH ABOVE, about45 degrees above horizon, centered directly in front, no diagonal view. The rectangular visible OPENING must have long horizontal width about600px and vertical screen height about200px (3:1), with straight horizontal/vertical aperture edges and clear four corners. Back rim thin; near FRONT APRON extends below the opening by about130px with ornate bronze gothic carvings. Empty dark burgundy satin inside, no person, no lid, no shovel, no flowers, no skull. A rich dark wood casket with short feet; keep all visible edges in this cell. It must look like a broad rectangular open mouth that can hold a portrait, not a skinny front slit. Symmetric directly frontal alignment.\nTOP RIGHT: matching detached LID OUTSIDE face, FLAT top-down ORTHOGRAPHIC rectangle, width600px height200px, edges exactly horizontal/vertical; dark aged walnut, delicate raised bronze corner ornaments, a centered brass cross, NO perspective projection, no casket behind it, no feet.\nBOTTOM LEFT: detached LID INSIDE face, same flat600x200 rectangle and border silhouette, wine-red diamond-quilt satin and thin gold perimeter. No other objects.\nBOTTOM RIGHT totally empty transparent.\nNo cross-cell overlap. No parts combined into one open coffin, no open-angle lid, no white halo, no white/gray matte. The game renderer will hinge/project these flat lid surfaces around the back horizontal long axis. Soft warm realistic highlights, fine material texture, overall black-gold game tone."
+      },
+      "processing": "Extract explicit alpha bounds; uniformly scale object into shared transparent viewBox. No repaint or redrawing."
+    },
+    {
+      "id": "coffin-lid-back",
+      "file": "coffin-lid-back.webp",
+      "sha256": "4aa1c5ec58cca853628e3d92fd19fe1856d2818b70f1044315725290dff1a6bf",
+      "bytes": 15782,
+      "width": 380,
+      "height": 120,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        110,
+        240,
+        380,
+        120
+      ],
+      "pivot": [
+        110,
+        240
+      ],
+      "geometry": {
+        "surface": "INTERIOR",
+        "hingeAxis": "far long edge"
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-a0f6e378-6436-48be-b56f-ea8eba1364d7.png",
+        "file": "work/motion-art/props/sources/coffin2.png",
+        "sha256": "fc452cc060614cd9bbceb2b06a6882c0ddbf815c5e40c15143c2139514b69f49",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 25,
+          "top": 837,
+          "width": 577,
+          "height": 239
+        },
+        "prompt": "Use case: stylized-concept. Premium realistic gothic walnut and aged gold CASKET ANIMATION texture parts on TRUE TRANSPARENT alpha. Square 1536x1536 atlas in FOUR CLEAR QUADRANTS with no labels, no grid lines, no shadows, no background. Each quadrant768x768, keep50px blank margins. Only 3 separate parts; fourth quadrant empty.\nTOP LEFT: one OPEN EMPTY rectangular funeral casket BASE. CAMERA HIGH ABOVE, about45 degrees above horizon, centered directly in front, no diagonal view. The rectangular visible OPENING must have long horizontal width about600px and vertical screen height about200px (3:1), with straight horizontal/vertical aperture edges and clear four corners. Back rim thin; near FRONT APRON extends below the opening by about130px with ornate bronze gothic carvings. Empty dark burgundy satin inside, no person, no lid, no shovel, no flowers, no skull. A rich dark wood casket with short feet; keep all visible edges in this cell. It must look like a broad rectangular open mouth that can hold a portrait, not a skinny front slit. Symmetric directly frontal alignment.\nTOP RIGHT: matching detached LID OUTSIDE face, FLAT top-down ORTHOGRAPHIC rectangle, width600px height200px, edges exactly horizontal/vertical; dark aged walnut, delicate raised bronze corner ornaments, a centered brass cross, NO perspective projection, no casket behind it, no feet.\nBOTTOM LEFT: detached LID INSIDE face, same flat600x200 rectangle and border silhouette, wine-red diamond-quilt satin and thin gold perimeter. No other objects.\nBOTTOM RIGHT totally empty transparent.\nNo cross-cell overlap. No parts combined into one open coffin, no open-angle lid, no white halo, no white/gray matte. The game renderer will hinge/project these flat lid surfaces around the back horizontal long axis. Soft warm realistic highlights, fine material texture, overall black-gold game tone."
+      },
+      "processing": "Extract explicit alpha bounds; normalize planar material UV to exact rectangular face (not an animated object transform)."
+    },
+    {
+      "id": "coffin-lid-front",
+      "file": "coffin-lid-front.webp",
+      "sha256": "e4852c1795bf6f6dd58d1d0e99276dbc3bb9a533999bcda02348e1069489b53f",
+      "bytes": 21836,
+      "width": 380,
+      "height": 120,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        110,
+        240,
+        380,
+        120
+      ],
+      "pivot": [
+        110,
+        240
+      ],
+      "geometry": {
+        "surface": "EXTERIOR",
+        "hingeAxis": "far long edge"
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-a0f6e378-6436-48be-b56f-ea8eba1364d7.png",
+        "file": "work/motion-art/props/sources/coffin2.png",
+        "sha256": "fc452cc060614cd9bbceb2b06a6882c0ddbf815c5e40c15143c2139514b69f49",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 652,
+          "top": 209,
+          "width": 581,
+          "height": 231
+        },
+        "prompt": "Use case: stylized-concept. Premium realistic gothic walnut and aged gold CASKET ANIMATION texture parts on TRUE TRANSPARENT alpha. Square 1536x1536 atlas in FOUR CLEAR QUADRANTS with no labels, no grid lines, no shadows, no background. Each quadrant768x768, keep50px blank margins. Only 3 separate parts; fourth quadrant empty.\nTOP LEFT: one OPEN EMPTY rectangular funeral casket BASE. CAMERA HIGH ABOVE, about45 degrees above horizon, centered directly in front, no diagonal view. The rectangular visible OPENING must have long horizontal width about600px and vertical screen height about200px (3:1), with straight horizontal/vertical aperture edges and clear four corners. Back rim thin; near FRONT APRON extends below the opening by about130px with ornate bronze gothic carvings. Empty dark burgundy satin inside, no person, no lid, no shovel, no flowers, no skull. A rich dark wood casket with short feet; keep all visible edges in this cell. It must look like a broad rectangular open mouth that can hold a portrait, not a skinny front slit. Symmetric directly frontal alignment.\nTOP RIGHT: matching detached LID OUTSIDE face, FLAT top-down ORTHOGRAPHIC rectangle, width600px height200px, edges exactly horizontal/vertical; dark aged walnut, delicate raised bronze corner ornaments, a centered brass cross, NO perspective projection, no casket behind it, no feet.\nBOTTOM LEFT: detached LID INSIDE face, same flat600x200 rectangle and border silhouette, wine-red diamond-quilt satin and thin gold perimeter. No other objects.\nBOTTOM RIGHT totally empty transparent.\nNo cross-cell overlap. No parts combined into one open coffin, no open-angle lid, no white halo, no white/gray matte. The game renderer will hinge/project these flat lid surfaces around the back horizontal long axis. Soft warm realistic highlights, fine material texture, overall black-gold game tone."
+      },
+      "processing": "Extract explicit alpha bounds; normalize planar material UV to exact rectangular face (not an animated object transform)."
+    },
+    {
+      "id": "crystal-mist",
+      "file": "crystal-mist.webp",
+      "sha256": "46a51eefe190c2917fd31587183cc46bf5c5414ed0e9d3494ba177ae5402638b",
+      "bytes": 34196,
+      "width": 280,
+      "height": 280,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        160,
+        60,
+        280,
+        280
+      ],
+      "pivot": [
+        300,
+        200
+      ],
+      "geometry": {
+        "clip": {
+          "cx": 300,
+          "cy": 200,
+          "r": 137
+        },
+        "note": "Purple mist only; runtime opacity/rotation controlled separately."
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-e7e558a9-9e01-4798-90f2-ae35c88e76ec.png",
+        "file": "work/motion-art/props/sources/crystal.png",
+        "sha256": "806448320109f1d36d866a33f4617ff0a1478d4ea756237cc63da5b36b93b118",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 656,
+          "top": 367,
+          "width": 545,
+          "height": 540
+        },
+        "prompt": "Use case: stylized-concept. TWO independent isolated layers for a premium photorealistic gothic fortune-telling prop on a square transparent 1536x1536 atlas, left and right columns. No words/labels/text. At least70px padding around each object. True transparent alpha, no white matte, no cast ground shadow.\nLEFT: one clear EMPTY GLASS CRYSTAL BALL on a dark plum/burgundy velvet and aged GOLD ornate base, matching luxurious medieval craftsmanship. FRONT VIEW, sphere centered symmetrically, fine filigree base with 3 small feet. The clear sphere is CIRCULAR, its ENTIRE INTERIOR is TRANSPARENT with only very subtle glass reflections at outer edge and a faint rim sheen; NO clouds, no stars, no lightning, no smoke, no bright milky fill, no glowing answer, no environment reflected across its center. The glass shell and base stay fixed while the renderer later inserts separate fog inside its center. Sphere diameter about500px, base about600px width; whole object fits left column and no part cropped. Rich realistic dark-gold metal/soft purple felt, a purple small jewel is allowed at base only.\nRIGHT: one independent round-ish wisp of thin VIOLET/PURPLE NEBULOUS MIST, diffuse translucent alpha, softly curling tendrils toward center, approximately500x500px; NOT encased in glass, no base, no stars, no sphere outline, no background or black/white matte. Gentle purple tinted fog only; edges feather to full transparency. No frozen bright magical sparkles. The game will rotate this standalone fog under the glass shell.\nProduction game textures, precise isolation, premium materials, not a combined illustration. The right mist must not overlap the left glass."
+      },
+      "processing": "Extract explicit alpha bounds; uniformly scale object into shared transparent viewBox. No repaint or redrawing."
+    },
+    {
+      "id": "crystal-shell",
+      "file": "crystal-shell.webp",
+      "sha256": "0538cd18c42012098a12bfa1e11c196a5647d49f505e4affb0096d139e84f973",
+      "bytes": 36782,
+      "width": 600,
+      "height": 500,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        161,
+        63,
+        279,
+        377
+      ],
+      "pivot": null,
+      "geometry": {
+        "sphere": {
+          "cx": 300,
+          "cy": 200,
+          "r": 140
+        },
+        "note": "Clear sphere shell with transparent center; opaque gold/velvet base below. No clouds or answer baked in."
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-a9336436-d048-478b-84bf-6e4b28e4166f.png",
+        "file": "work/motion-art/props/sources/crystal2.png",
+        "sha256": "1c0b30795d9a24104b2cb13d291ae1df4ea9d7a02149e3745a456d44e93651e9",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 210,
+          "top": 86,
+          "width": 820,
+          "height": 1110
+        },
+        "prompt": "Use case: stylized-concept. ONE production layer: an EMPTY transparent crystal-ball GLASS SHELL with an ornate dark-purple velvet and antique GOLD base, frontal symmetric view. TRUE TRANSPARENT alpha background. Main requirement: THE WHOLE CENTER OF THE BALL IS EMPTY TRANSPARENCY, literally invisible/no fill; show ONLY a THIN circular glass perimeter/rim and a few small specular arcs confined to the outermost10percent of radius. Think a perfectly clear hollow glass globe with alpha center, because a game renderer must insert separately moving fog underneath. NO opaque milk-white surface, no white/gray cloudy body, no cloud, no mist, no stars, no glints in the middle, no reflected room/window across the middle. No flat colored disk. The center must show the transparent background just as outside does.\nSphere centered at x50percent, y35percent, diameter65percent of canvas; thin rim only, no fill interior. Below it a rich medieval gold filigree base with dark plum velvet panels and one purple jewel, three small gold feet; base is physically solid opaque. Fine realistic gold patina and aged details matching a premium gothic black-gold game. Keep the entire object with at least60px transparent padding inside1024x1024. No letters or labels, no table, no ground shadows, no other props. Reject a milky or white glass sphere: center transparency is the defining constraint."
+      },
+      "processing": "Extract explicit alpha bounds; uniformly scale object into shared transparent viewBox. No repaint or redrawing."
+    },
+    {
+      "id": "demon-body",
+      "file": "demon-body.webp",
+      "width": 419,
+      "height": 729,
+      "bytes": 138018,
+      "sha256": "21abcab30990222393cca6a056ce27418b90e721638019741fab54dcb3fca3e9",
+      "sourceSha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 570,
+        "height": 724
+      },
+      "prompt": "Use case: precise-object-edit. Edit this approved dark-fantasy demon artwork into an animation layer kit, retaining the same refined face, horns, musculature, tattered black-crimson robes and red translucent bat-wing design. TRUE transparent background. THREE strictly separated vertical cells across a wide canvas, with at least 40 transparent pixels of gap: cell1 LEFT: entire demon BODY from horns to feet with NO WINGS attached, arms down as in reference, no cut off feet; cell2 MIDDLE: the complete LEFT wing alone, outer tip toward LEFT and its thick shoulder attachment at RIGHT edge, no torso or hand; cell3 RIGHT: complete RIGHT wing alone, shoulder attachment at LEFT and outer tip to RIGHT. Each wing includes full red membrane, dark bone struts, fine tears; no duplicated body behind wings. Entire individual wing fully visible in its own cell. Same light/material/style as reference, luxurious detailed painterly realism. No other props, no text, no ground shadow, no border. These separate wings hinge at the shoulder and will NOT stretch the whole character.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "demon-wing-left",
+      "file": "demon-wing-left.webp",
+      "width": 739,
+      "height": 646,
+      "bytes": 126438,
+      "sha256": "e1d33b453f5687b87e648eb56b8b8a600ddfc00d2a69d06da25e76360091343e",
+      "sourceSha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sourceRect": {
+        "left": 585,
+        "top": 0,
+        "width": 795,
+        "height": 724
+      },
+      "prompt": "Use case: precise-object-edit. Edit this approved dark-fantasy demon artwork into an animation layer kit, retaining the same refined face, horns, musculature, tattered black-crimson robes and red translucent bat-wing design. TRUE transparent background. THREE strictly separated vertical cells across a wide canvas, with at least 40 transparent pixels of gap: cell1 LEFT: entire demon BODY from horns to feet with NO WINGS attached, arms down as in reference, no cut off feet; cell2 MIDDLE: the complete LEFT wing alone, outer tip toward LEFT and its thick shoulder attachment at RIGHT edge, no torso or hand; cell3 RIGHT: complete RIGHT wing alone, shoulder attachment at LEFT and outer tip to RIGHT. Each wing includes full red membrane, dark bone struts, fine tears; no duplicated body behind wings. Entire individual wing fully visible in its own cell. Same light/material/style as reference, luxurious detailed painterly realism. No other props, no text, no ground shadow, no border. These separate wings hinge at the shoulder and will NOT stretch the whole character.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "demon-wing-right",
+      "file": "demon-wing-right.webp",
+      "width": 729,
+      "height": 646,
+      "bytes": 129050,
+      "sha256": "ea02f4b6b896666519ad6699939613f1da0ed6d6e6e19f1b34ff12dcd1153d14",
+      "sourceSha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sourceRect": {
+        "left": 1390,
+        "top": 0,
+        "width": 782,
+        "height": 724
+      },
+      "prompt": "Use case: precise-object-edit. Edit this approved dark-fantasy demon artwork into an animation layer kit, retaining the same refined face, horns, musculature, tattered black-crimson robes and red translucent bat-wing design. TRUE transparent background. THREE strictly separated vertical cells across a wide canvas, with at least 40 transparent pixels of gap: cell1 LEFT: entire demon BODY from horns to feet with NO WINGS attached, arms down as in reference, no cut off feet; cell2 MIDDLE: the complete LEFT wing alone, outer tip toward LEFT and its thick shoulder attachment at RIGHT edge, no torso or hand; cell3 RIGHT: complete RIGHT wing alone, shoulder attachment at LEFT and outer tip to RIGHT. Each wing includes full red membrane, dark bone struts, fine tears; no duplicated body behind wings. Entire individual wing fully visible in its own cell. Same light/material/style as reference, luxurious detailed painterly realism. No other props, no text, no ground shadow, no border. These separate wings hinge at the shoulder and will NOT stretch the whole character.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "drunk-glass",
+      "file": "drunk-glass.webp",
+      "width": 558,
+      "height": 1024,
+      "bytes": 162962,
+      "sha256": "8ce365faf61316a3f6476aab57d461702e2b70bd543dbb27b3fdb8113ab49479",
+      "sourceSha256": "af3fab1b95780e5852545bf6fb382d41d63c987ffc2b02b1ade2513f347b0c3c",
+      "source": "exec-88d115ee-5d43-493e-a21f-fc7364524053.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1199,
+        "height": 1312
+      },
+      "prompt": "Premium gothic dark fantasy game prop, ONE empty elegant silver-stemmed clear glass goblet, straight-on view, symmetrical chalice bowl, ornate dark silver/gold foot and stem. No liquid inside. Clear truly ALPHA TRANSPARENT inner bowl/window with only delicate glass edge highlights, no milky white fill or haze. Fine engraved metal, painterly realism. Entire isolated cup only on transparent background with ample margins. No table, cloth, hand, wine, reflections of scenery, glow, text or extra props. The liquid will be drawn and tilted in code.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "guillotine-blade",
+      "file": "guillotine-blade.webp",
+      "width": 365,
+      "height": 387,
+      "bytes": 54240,
+      "sha256": "89dc38b4c2b5752809709847f3893b1d4fe81012dfaf1d9869013cd5dd264fa6",
+      "sourceSha256": "8e755c371c004996357f859dc0a0c45f3b10dcce69d6c62df653bd067ca1f808",
+      "source": "exec-4c2788a1-725c-4c0e-824f-c85863bd49e2.png",
+      "sourceRect": {
+        "left": 624,
+        "top": 560,
+        "width": 360,
+        "height": 460
+      },
+      "prompt": "Use case: stylized-concept. Production-ready premium gothic game animation kit on true transparent background. TWO separate components, spacious gap. LEFT 75%: an elegant tall narrow guillotine wooden FRAME only, front orthographic view, symmetrical dark aged oak, tasteful brass corner fittings, two perfectly vertical parallel tracks, crossbeam, lower lunette with round empty neck aperture and sturdy base. NO blade anywhere in the frame. Open transparent air between the posts, no ropes crossing opening, no head or person, no fabric. Tall 300:480 silhouette proportions, the clear rail channel is central third of width. RIGHT 25%: detached sharp heavy steel GUILLOTINE BLADE alone, with its dark wooden weighted top bar, slanted cutting edge; matching channel width when assembled. Full frame and full blade both visible, no overlap, no blood, no sky, no scenic background. Sophisticated tactile painterly realism and black-gold cinematic materials, not vector or simplified icon. Each object at least 30px clear margin. The frame and blade will be composited and animated independently.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "guillotine-frame",
+      "file": "guillotine-frame.webp",
+      "width": 467,
+      "height": 1024,
+      "bytes": 125112,
+      "sha256": "34df6d6a7c3026954b06808fa03a8565f0917d47cadd088e2019ae499e79fad9",
+      "sourceSha256": "8e755c371c004996357f859dc0a0c45f3b10dcce69d6c62df653bd067ca1f808",
+      "source": "exec-4c2788a1-725c-4c0e-824f-c85863bd49e2.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 720,
+        "height": 1586
+      },
+      "keepRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 620,
+          "height": 1400
+        },
+        {
+          "left": 0,
+          "top": 1400,
+          "width": 720,
+          "height": 186
+        }
+      ],
+      "prompt": "Use case: stylized-concept. Production-ready premium gothic game animation kit on true transparent background. TWO separate components, spacious gap. LEFT 75%: an elegant tall narrow guillotine wooden FRAME only, front orthographic view, symmetrical dark aged oak, tasteful brass corner fittings, two perfectly vertical parallel tracks, crossbeam, lower lunette with round empty neck aperture and sturdy base. NO blade anywhere in the frame. Open transparent air between the posts, no ropes crossing opening, no head or person, no fabric. Tall 300:480 silhouette proportions, the clear rail channel is central third of width. RIGHT 25%: detached sharp heavy steel GUILLOTINE BLADE alone, with its dark wooden weighted top bar, slanted cutting edge; matching channel width when assembled. Full frame and full blade both visible, no overlap, no blood, no sky, no scenic background. Sophisticated tactile painterly realism and black-gold cinematic materials, not vector or simplified icon. Each object at least 30px clear margin. The frame and blade will be composited and animated independently.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "hunting-rifle",
+      "file": "hunting-rifle.webp",
+      "width": 1024,
+      "height": 214,
+      "bytes": 45750,
+      "sha256": "91e9867efcb4cbb42b7d52997118bbbfcb6664a1eef1ec9bd581e0b0149255c4",
+      "sourceSha256": "cef78f0e75819b0a3a3b9c5aed52bc6f121e67a9f86de6503c511208ffded42e",
+      "source": "exec-f25e53c2-4176-4fee-ad13-1d9f7315258b.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 2172,
+        "height": 724
+      },
+      "prompt": "Use case: stylized-concept. Production transparent game prop for a premium gothic dark fantasy game. One exquisite long hunting rifle, a late flintlock sporting long gun, NOT a pistol. Entire object in clean orthographic side profile, exactly horizontal, walnut shoulder stock at LEFT, long steel barrel ending at RIGHT. Muzzle at the far right, stock and trigger fully visible. Dark polished walnut, aged gold engraved inlay only on the firearm itself, fine mechanisms, restrained black-gold painterly realism like premium dark fantasy inventory artwork. One rifle ONLY, NO cloth, NO table, NO powder flask, NO background, NO stand, NO decorative items, NO smoke, NO muzzle flash. Generous 5% transparent margin around entire rifle. Crisp alpha edge, no halo. Wide landscape image. This will be animated with recoil, so the silhouette must be uninterrupted and the barrel straight.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "investigator-stamp",
+      "file": "investigator-stamp.webp",
+      "width": 245,
+      "height": 512,
+      "bytes": 48536,
+      "sha256": "665c71db8f4020da06ad0802f90775699b04ffce53dcef13748d8fe2c300a605",
+      "sourceSha256": "ee1e7042a1b1b6da76138cdea067dcfd97accb01618894ad2910c5898bc1bafa",
+      "source": "exec-3047d12f-3b87-4d6a-81e8-e8c07c2f617e.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1024,
+        "height": 1536
+      },
+      "prompt": "One luxurious antique investigator's sealing stamp tool for a gothic mystery game, isolated on true transparent alpha. Upright short dark carved ebony handle, intricate brass collar, heavy flat round brass stamping base facing down. Front three-quarter almost orthographic profile, full object visible, vertical axis, no paper, wax, desk, fingers or other props. Exquisite tactile black-gold painterly realism, crisp alpha silhouette with no fog or shadow outside, 10% margin. This tool will descend to stamp a document.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "poison-glass",
+      "file": "poison-glass.webp",
+      "width": 638,
+      "height": 1003,
+      "bytes": 189110,
+      "sha256": "2a6b8b54a9b0f665192abaa59bed09ea608f26512444f9f61359ddd1e38e1755",
+      "sourceSha256": "b26598e6b1a79d63bcb738d2888f7ca8ee971d536739b0d0e68d47c7e1348423",
+      "source": "exec-56f1fb46-b777-4ac7-97bc-63d10c6c2403.png",
+      "sourceRect": {
+        "left": 120,
+        "top": 0,
+        "width": 800,
+        "height": 1024
+      },
+      "prompt": "Precise object edit of the provided bottle and separate stopper. Preserve exact design and placement. Remove ALL background halo, haze, glow and floor shadow. Most importantly the glass INNER CAVITY must be genuinely ALPHA TRANSPARENT, not filled white or grey. Render only the fine glass rim highlights and the gold filigree; the center should be an EMPTY TRANSPARENT WINDOW for a game programmer to draw animated emerald liquid behind. No milk, no white fog, no grey wash, no opaque pale glass. Keep the glass silhouette symmetrical and top neck OPEN. The left bottle and right stopper remain well separated. Crisp clean alpha cutout with no broad colored halo outside them. The transparent holes between gold decoration must remain transparent. Strong fine gold details, black-gold gothic realism.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "poison-mist",
+      "file": "poison-mist.webp",
+      "width": 221,
+      "height": 512,
+      "bytes": 36632,
+      "sha256": "6a23e09baa2796b03993ffbffdf00513aa54a61ca4bd9bdf749facf981e11c99",
+      "sourceSha256": "413b90635b4b178f930d8d876ff7dc86c40042fc6ed80a5b13b0b3daaea98bac",
+      "source": "exec-51817c2a-26f1-4a1a-a15a-6511021b609e.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "prompt": "Use case: stylized-concept. One isolated narrow curling ribbon of translucent emerald-green potion vapour, premium gothic game particle texture, detailed soft fluid turbulence and delicate wispy tendrils. True alpha background, soft alpha falloff all the way to zero. All visible fog is dark forest green/emerald, NO grey, NO white, NO pale beige haze, NO background glow, NO bright hard outline. Wisps rise upward from a small point at lower center then broaden modestly, like aromatic poison evaporating from a droplet. No bottle, no ground, no objects, no text. Semi-transparent density, sparse realistic vapor rather than a solid opaque cloud. Landscape 4:3 framing with generous transparent margins.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "poison-stopper",
+      "file": "poison-stopper.webp",
+      "width": 282,
+      "height": 559,
+      "bytes": 61888,
+      "sha256": "72db4d7ed5b3a8b82be236a6ae79d6e260bd8a785404ccab92e7d23479b9ad75",
+      "sourceSha256": "b26598e6b1a79d63bcb738d2888f7ca8ee971d536739b0d0e68d47c7e1348423",
+      "source": "exec-56f1fb46-b777-4ac7-97bc-63d10c6c2403.png",
+      "sourceRect": {
+        "left": 1030,
+        "top": 180,
+        "width": 350,
+        "height": 640
+      },
+      "prompt": "Precise object edit of the provided bottle and separate stopper. Preserve exact design and placement. Remove ALL background halo, haze, glow and floor shadow. Most importantly the glass INNER CAVITY must be genuinely ALPHA TRANSPARENT, not filled white or grey. Render only the fine glass rim highlights and the gold filigree; the center should be an EMPTY TRANSPARENT WINDOW for a game programmer to draw animated emerald liquid behind. No milk, no white fog, no grey wash, no opaque pale glass. Keep the glass silhouette symmetrical and top neck OPEN. The left bottle and right stopper remain well separated. Crisp clean alpha cutout with no broad colored halo outside them. The transparent holes between gold decoration must remain transparent. Strong fine gold details, black-gold gothic realism.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "raven-body",
+      "file": "raven-body.webp",
+      "width": 715,
+      "height": 824,
+      "bytes": 198372,
+      "sha256": "c14cd3d02f71304e16731c3f93f9cbfba41be606cb5e9ce9ead829fe8a3744d2",
+      "sourceSha256": "b3d2c042fbcecb54b3e80989d8f8f6e89bce2653a98c574bbbfc94cb593d7597",
+      "source": "exec-8efe449a-e761-4eb8-b37e-179afddf54b6.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 780,
+        "height": 820
+      },
+      "prompt": "Premium gothic game animation layer kit, TWO clearly separated subjects on TRUE transparent background, no scene or background mist. LEFT cell: exquisite realistically painted black raven standing in profile facing RIGHT on a small dark lantern/branch, its visible near wing REMOVED revealing clean feathered torso, no silhouette or ghost of an extended wing; far wing closed naturally at its back. RIGHT cell: the raven's detached near wing alone fully spread, all detailed individual black iridescent feathers intact, wing-root at upper LEFT, feather tips sweeping RIGHT and down. Match bird body and wing size/material, separated by a generous empty gap, no overlap. Whole bird, lantern and whole wing within margin. Cinematic black-gold fine materials with subtle cool feather highlights, no text, no simplistic vector shapes. The separate wing will hinge at the shoulder.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "raven-wing",
+      "file": "raven-wing.webp",
+      "width": 1024,
+      "height": 664,
+      "bytes": 219690,
+      "sha256": "9c7f94a60396a152eb4269b51f5ed3f37565c3bf01270ecbcf1decc183f8f65f",
+      "sourceSha256": "b3d2c042fbcecb54b3e80989d8f8f6e89bce2653a98c574bbbfc94cb593d7597",
+      "source": "exec-8efe449a-e761-4eb8-b37e-179afddf54b6.png",
+      "sourceRect": {
+        "left": 850,
+        "top": 0,
+        "width": 1068,
+        "height": 820
+      },
+      "prompt": "Premium gothic game animation layer kit, TWO clearly separated subjects on TRUE transparent background, no scene or background mist. LEFT cell: exquisite realistically painted black raven standing in profile facing RIGHT on a small dark lantern/branch, its visible near wing REMOVED revealing clean feathered torso, no silhouette or ghost of an extended wing; far wing closed naturally at its back. RIGHT cell: the raven's detached near wing alone fully spread, all detailed individual black iridescent feathers intact, wing-root at upper LEFT, feather tips sweeping RIGHT and down. Match bird body and wing size/material, separated by a generous empty gap, no overlap. Whole bird, lantern and whole wing within margin. Cinematic black-gold fine materials with subtle cool feather highlights, no text, no simplistic vector shapes. The separate wing will hinge at the shoulder.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "scarlet-cloak",
+      "file": "scarlet-cloak.webp",
+      "width": 937,
+      "height": 1024,
+      "bytes": 242812,
+      "sha256": "c335fd20906a3f148a25f48c4180853ccaa5a8f2a0bcc8aafd72194e4e61c9fe",
+      "sourceSha256": "c59c3fba8394f299758cfd249ad4bc1e0b33309e4dd23c0c29e7d97dfe0f4a6f",
+      "source": "exec-44c34ae2-5992-4eac-852e-b2a9f1bea6f9.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1199,
+        "height": 1312
+      },
+      "prompt": "ONE isolated exquisite scarlet velvet cloak, empty ceremonial garment for a gothic game, hanging upright with the collar centered at the TOP and lower hem softly flared to BOTH sides. No body, no person, no chair, no crown, no feather, no stand, no pole, no background. Closed small gold neck clasp, richly textured deep crimson velvet, restrained black lining and fine antique gold embroidery at hem. Symmetrical overall black-gold dark fantasy composition, fabric folds visibly flow down from collar. Full cloak entirely visible against TRUE alpha transparent background with generous margin, no glow halo, no floor shadow. A refined realistic painted game asset, not a flat icon. The left and right halves will open outward from the neck clasp during an inheritance animation.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "washer-basin-back",
+      "file": "washer-basin-back.webp",
+      "sha256": "6a6631eb078426e63c6e48853fd3e3408bd1c85f39e46361211434cc3098e3c5",
+      "bytes": 30060,
+      "width": 600,
+      "height": 500,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        123,
+        259,
+        355,
+        216
+      ],
+      "pivot": null,
+      "geometry": {
+        "waterEllipse": {
+          "cx": 300,
+          "cy": 318,
+          "rx": 167,
+          "ry": 53
+        },
+        "occludingFrontEllipse": {
+          "cx": 300,
+          "cy": 318,
+          "rx": 167,
+          "ry": 53,
+          "inset": 7
+        },
+        "note": "Empty dry basin. waterEllipse is conservatively inside the actual inner rim; water is generated separately."
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-856ce9b2-ba1d-4f71-a0e1-f93c5d1e4985.png",
+        "file": "work/motion-art/props/sources/basin2.png",
+        "sha256": "96d69899aea25ac5edbfec0a71984de4ddeb7eb2a1d2097661f6721ac55605be",
+        "width": 1448,
+        "height": 1086,
+        "sourceRect": {
+          "left": 56,
+          "top": 177,
+          "width": 1336,
+          "height": 813
+        },
+        "prompt": "Use case: stylized-concept. ONE isolated empty wood washing basin, premium realistic dark aged walnut with restrained antique brass hoops, on a genuinely TRANSPARENT canvas. Centered symmetric front-elevated view, horizontally oriented OVAL mouth. Camera about25 DEGREES ABOVE HORIZON, NOT low front view: show a visibly BROAD oval opening whose width is about650px and vertical ellipse height about250px (ratio2.6:1). Entire basin from rear rim to small base visible, FRONT RIM at ellipse lower edge. The bowl body under the oval opening about180px tall. Dry EMPTY dark wooden interior, NO water, NO splash/droplets/foam, NO linen, NO washboard, no handles, no other props, no ground shadow. Fine realistic stave seams, aged timber and small brass rivets; no pictures or writing. Fill about80percent of a1024x1024 canvas, but at least70px transparent padding all around. The whole basin will be one layer, and its lower/front half will be precisely cropped from this SAME image for occluding animated cloth. Keep the ellipse opening deep enough; do NOT flatten it into a narrow slit. Clear crisp alpha edge without white fringe, no white or gray background matte. Soft warm top-left highlights, dark body shading."
+      },
+      "processing": "Extract explicit alpha bounds; uniformly scale object into shared transparent viewBox. No repaint or redrawing."
+    },
+    {
+      "id": "washer-basin-front",
+      "file": "washer-basin-front.webp",
+      "sha256": "04e24d77e54c840ff780780d11895232ae4aba2f763f9c897f7ba92d6f446f3c",
+      "bytes": 18540,
+      "width": 600,
+      "height": 500,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        123,
+        259,
+        355,
+        216
+      ],
+      "pivot": null,
+      "geometry": {
+        "waterEllipse": {
+          "cx": 300,
+          "cy": 318,
+          "rx": 167,
+          "ry": 53
+        },
+        "occludingFrontEllipse": {
+          "cx": 300,
+          "cy": 318,
+          "rx": 167,
+          "ry": 53,
+          "inset": 7
+        },
+        "note": "Empty dry basin. waterEllipse is conservatively inside the actual inner rim; water is generated separately."
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-856ce9b2-ba1d-4f71-a0e1-f93c5d1e4985.png",
+        "file": "work/motion-art/props/sources/basin2.png",
+        "sha256": "96d69899aea25ac5edbfec0a71984de4ddeb7eb2a1d2097661f6721ac55605be",
+        "width": 1448,
+        "height": 1086,
+        "sourceRect": {
+          "left": 56,
+          "top": 177,
+          "width": 1336,
+          "height": 813
+        },
+        "prompt": "Use case: stylized-concept. ONE isolated empty wood washing basin, premium realistic dark aged walnut with restrained antique brass hoops, on a genuinely TRANSPARENT canvas. Centered symmetric front-elevated view, horizontally oriented OVAL mouth. Camera about25 DEGREES ABOVE HORIZON, NOT low front view: show a visibly BROAD oval opening whose width is about650px and vertical ellipse height about250px (ratio2.6:1). Entire basin from rear rim to small base visible, FRONT RIM at ellipse lower edge. The bowl body under the oval opening about180px tall. Dry EMPTY dark wooden interior, NO water, NO splash/droplets/foam, NO linen, NO washboard, no handles, no other props, no ground shadow. Fine realistic stave seams, aged timber and small brass rivets; no pictures or writing. Fill about80percent of a1024x1024 canvas, but at least70px transparent padding all around. The whole basin will be one layer, and its lower/front half will be precisely cropped from this SAME image for occluding animated cloth. Keep the ellipse opening deep enough; do NOT flatten it into a narrow slit. Clear crisp alpha edge without white fringe, no white or gray background matte. Soft warm top-left highlights, dark body shading."
+      },
+      "processing": "Occlusion cutout from the same basin pixels: keep y >= 318 + 53*sqrt(1-((x-300)/167)^2)-7; no new basin or painted content. Exact shared 600x500 registration.",
+      "derivedFrom": "washer-basin-back"
+    },
+    {
+      "id": "washer-linen",
+      "file": "washer-linen.webp",
+      "sha256": "c84f5d3e9933b6fea976075cf09afe5781809fdc6b05fb66adf406964123ec57",
+      "bytes": 14202,
+      "width": 190,
+      "height": 250,
+      "hasAlpha": true,
+      "viewBox": [
+        0,
+        0,
+        600,
+        500
+      ],
+      "localRect": [
+        205,
+        75,
+        190,
+        250
+      ],
+      "pivot": [
+        300,
+        75
+      ],
+      "geometry": {
+        "clothBounds": [
+          27,
+          12,
+          136,
+          226
+        ],
+        "note": "Separate woven linen only, no frozen droplets or basin pixels."
+      },
+      "source": {
+        "tool": "image_gen built-in",
+        "generationId": "01a1cdd8-664c-73d2-929c-40bccf27cf56",
+        "generatedBasename": "exec-542374af-ded8-4b58-9c1f-465b5b399125.png",
+        "file": "work/motion-art/props/sources/washer.png",
+        "sha256": "baab68a858c395b69a1473032743c7a16ea31643ae9cb32b5f45aec7238e9f07",
+        "width": 1254,
+        "height": 1254,
+        "sourceRect": {
+          "left": 692,
+          "top": 227,
+          "width": 535,
+          "height": 889
+        },
+        "prompt": "Use case: stylized-concept. Produce a transparent bitmap atlas of TWO separate animation props for a premium dark gothic game, realistic aged wood and pale linen, rich tactile details, restrained warm rim light, true alpha, no background or white matte. Square 1536x1536, LEFT and RIGHT columns each768px wide; clear at least60px empty alpha margin around each object; NO text, labels or contact shadows.\nLEFT COLUMN: a single EMPTY antique oval wooden wash basin, FRONT VIEW with camera elevated just enough to see a horizontal oval opening. Entire bowl from back rim to base visible, symmetric left/right, horizontal ellipse centered at roughly (384,750); opening ratio about2.6:1 (600px wide x230px deep); aged walnut slats, two thin antique brass hoops, no handles obscuring opening. Interior empty dark wood, DRY, NO WATER, no splash, no droplets, no foam, no cloth, no washboard. Front rim and body form one contiguous wood piece; front rim's highest point at center is below the back rim. Plain basin, no other props. The game's water will be drawn separately and its front half is cut out of this same basin as an occlusion overlay.\nRIGHT COLUMN: one separate hanging clean OFF-WHITE LINEN CLOTH, roughly500px wide x650px high, rectangle soft ragged edges, long vertical weave folds, entire cloth visible, no hand or support. It is isolated alone without basin/washboard/ribbon attached; NO frozen droplets or splash. Fine woven flax texture, softly shaded neutral cream; not bright pure white. The cloth will be deformed/immersed by the renderer.\nNo duplicated cloth in basin. No extra containers. No photoreal studio background. Crisp alpha without fringe."
+      },
+      "processing": "Extract explicit alpha bounds; uniformly scale object into shared transparent viewBox. No repaint or redrawing."
+    }
+  ]
+}

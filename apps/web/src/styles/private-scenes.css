@@ -3,3 +3,22 @@
 .private-scenes-inbox.private-action-notice{left:50%;right:auto;bottom:calc(73px + env(safe-area-inset-bottom));width:max-content;max-width:85vw;margin:0;z-index:128}
 .private-replay-feedback{position:fixed;left:50%;top:calc(65px + env(safe-area-inset-top));transform:translateX(-50%);z-index:180;padding:10px 12px;background:#17170ef5;color:#d0bd8e;border:1px solid #a88c4750;border-radius:8px;font-size:12px;max-width:90vw}.private-replay-feedback button{border:0;background:transparent;color:inherit;padding:7px}
 .private-scene-content{isolation:isolate}.private-scene-content>.poison-corrosion{z-index:0}.private-scene-content>.demon-screen{z-index:1}.private-scene-content>.private-scene-art{z-index:2}.private-scene-content>h2,.private-scene-content>.private-scene-result{z-index:3}.private-scene-person{position:relative}.private-scene-content>.demon-screen .demon-claw--left{animation-name:private-claw-left}.private-scene-content>.demon-screen .demon-claw--right{animation-name:private-claw-right}@keyframes private-claw-left{0%,34%{opacity:0;clip-path:inset(0 100% 0 0)}35%{opacity:1}40%,64%{opacity:.9;clip-path:inset(0)}100%{opacity:0;clip-path:inset(0)}}@keyframes private-claw-right{0%,41%{opacity:0;clip-path:inset(0 100% 0 0)}42%{opacity:1}48%,70%{opacity:.9;clip-path:inset(0)}100%{opacity:0;clip-path:inset(0)}}
+/* Header/footer own stable safe-area slots; only the result panel may scroll. */
+.private-scene-dialog{min-height:0;max-height:100%;grid-template-rows:minmax(44px,auto) minmax(0,1fr) minmax(44px,auto)}
+.private-scene-content{display:grid;grid-template-rows:minmax(0,1fr) auto minmax(0,auto);justify-items:center;align-content:stretch;justify-content:stretch;gap:8px;min-height:0;max-height:100%;padding:8px 0}
+.private-scene-art{width:min(100%,600px);height:100%;max-height:100%;min-height:0;align-self:stretch}
+.private-scene-result{min-height:0;max-height:min(38dvh,300px);max-width:540px;overscroll-behavior:contain;overflow:auto;animation:none}
+.private-scene-result--pending{height:54px}
+.private-scene-content h2{font-size:clamp(19px,4.5vw,30px);line-height:1.2}
+.private-scene-person>.premium-claw{position:absolute;width:88px;height:88px;inset:-10px auto auto;object-fit:contain;z-index:2;pointer-events:none}
+@media(max-height:580px){.private-scene-dialog{padding:max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}.private-scene-content{gap:4px;padding:4px 0}.private-scene-art{height:100%;min-height:0}.private-scene-result{max-height:32dvh}.private-scene-result>p{font-size:13px;line-height:1.4;margin:4px 8px}.private-scene-content h2{font-size:19px}.private-scene-result--pending{height:30px}.private-scene-person{gap:3px;font-size:10px}}
+
+/* Reserve the readable result slot before reveal, so the art never changes scale at 1900/2200. */
+.private-scene-content{grid-template-rows:minmax(0,1fr) auto minmax(0,38%)}
+.private-scene-content>.private-scene-result{height:100%;max-height:100%;align-self:stretch}
+.private-scene-result--pending{height:100%}
+
+.private-scene-targets{min-width:0}.private-scene-targets>.private-scene-person{min-width:0;flex:1 1 0;max-width:200px}.private-scene-person>span,.private-grimoire strong,.private-start-cards span{overflow-wrap:anywhere}
+
+.private-scene-body{position:relative;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);overflow:hidden}
+.private-scene-body>.private-scene-loading{inset:0;z-index:10}

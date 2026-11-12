@@ -1,0 +1,208 @@
+{
+  "version": 4,
+  "rebuild": "python scripts/build-cinematic-audio.py <existing-v1-source-cache>",
+  "sources": [
+    {
+      "id": "kenney",
+      "author": "Kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0-1.0",
+      "archiveSha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+      "licenseVerified": "Creative Commons Zero, CC0 in archive License.txt",
+      "files": [
+        {
+          "file": "impactWood_heavy_001.ogg",
+          "sha256": "f1b07a53ac10c615fff9ba470511fdeb722b5902e1a8520759fc20ad6f546015"
+        },
+        {
+          "file": "impactSoft_heavy_000.ogg",
+          "sha256": "49e7ca88743fca974bb8676ea138b751cfd8f9033b5e7af8736c2a215d6edbc1"
+        },
+        {
+          "file": "impactMetal_light_001.ogg",
+          "sha256": "fba69c467ddd85da7b1d82e259f936b876d9ba6a3d6f1b24bdd10468e46bfe08"
+        }
+      ]
+    },
+    {
+      "id": "project-liquid",
+      "file": "../v2/poison-bubbles.mp3",
+      "sha256": "c6026f26529e0e317cb0895dd39a84afa2ba99b8f07105e179ba73d25963e1e6",
+      "license": "Original project composition",
+      "build": "scripts/build-effects-v2.py bubbles(); no new field recording"
+    }
+  ],
+  "files": [
+    {
+      "id": "poison-cork",
+      "file": "poison-cork.mp3",
+      "bytes": 4640,
+      "sha256": "364b7794ee2bebd68dac01df1a66d982866eb19cf8e537668ad4637458c07da9",
+      "durationSeconds": 0.2362,
+      "decodedBytes": 41660,
+      "sampleRate": 44100,
+      "channels": 1,
+      "trimStartMs": 0,
+      "trimEndMs": 230,
+      "onsetOffsetMs": 5.15,
+      "peakOffsetMs": 9.75,
+      "peakDbFS": -6.91,
+      "rmsDbFS": -22.03,
+      "sources": [
+        "kenney"
+      ],
+      "processing": "highpass=f=90,lowpass=f=7000",
+      "layers": [
+        "Soft stopper pop from recorded soft material",
+        "Short wood friction and quiet intact-glass-like contact; no glass fracture"
+      ],
+      "license": "CC0-1.0 source foley + original project composition"
+    },
+    {
+      "id": "poison-pour",
+      "file": "poison-pour.mp3",
+      "bytes": 11327,
+      "sha256": "439a0accc7f86717938031a9831bc31746d7206842a09091129424651c898963",
+      "durationSeconds": 0.6541,
+      "decodedBytes": 115388,
+      "sampleRate": 44100,
+      "channels": 1,
+      "trimStartMs": 0,
+      "trimEndMs": 650,
+      "onsetOffsetMs": 24.6,
+      "peakOffsetMs": 107.76,
+      "peakDbFS": -8.98,
+      "rmsDbFS": -17.88,
+      "sources": [
+        "project-liquid"
+      ],
+      "processing": "highpass=f=120,lowpass=f=1600,acompressor=threshold=0.15:ratio=3:attack=4:release=60",
+      "layers": [
+        "Existing authored liquid remixed as a 650ms pouring stream; no bottle break"
+      ],
+      "license": "CC0-1.0 source foley + original project composition"
+    },
+    {
+      "id": "chef-chop-1",
+      "file": "chef-chop-1.mp3",
+      "bytes": 4222,
+      "sha256": "a74058c1d1eda3d0c51e4a63d7d9471a16a32d22b2211da5627d775c0b51690d",
+      "durationSeconds": 0.21,
+      "decodedBytes": 37052,
+      "sampleRate": 44100,
+      "channels": 1,
+      "trimStartMs": 0,
+      "trimEndMs": 190,
+      "onsetOffsetMs": 5.15,
+      "peakOffsetMs": 10.63,
+      "peakDbFS": -7.55,
+      "rmsDbFS": -25.02,
+      "sources": [
+        "kenney"
+      ],
+      "processing": "highpass=f=90,lowpass=f=7000",
+      "layers": [
+        "One recorded wood chopping contact, independently scheduled at 650ms"
+      ],
+      "license": "CC0-1.0 source foley + original project composition"
+    },
+    {
+      "id": "chef-chop-2",
+      "file": "chef-chop-2.mp3",
+      "bytes": 4222,
+      "sha256": "295e41b83a45ca1f51923fff598cbd2e60b589f8fb3d9877575d868a8944358d",
+      "durationSeconds": 0.21,
+      "decodedBytes": 37052,
+      "sampleRate": 44100,
+      "channels": 1,
+      "trimStartMs": 0,
+      "trimEndMs": 190,
+      "onsetOffsetMs": 5.12,
+      "peakOffsetMs": 10.09,
+      "peakDbFS": -7.0,
+      "rmsDbFS": -25.05,
+      "sources": [
+        "kenney"
+      ],
+      "processing": "highpass=f=90,lowpass=f=7000",
+      "layers": [
+        "One recorded wood chopping contact, independently scheduled at 1000ms"
+      ],
+      "license": "CC0-1.0 source foley + original project composition"
+    },
+    {
+      "id": "chef-chop-3",
+      "file": "chef-chop-3.mp3",
+      "bytes": 4222,
+      "sha256": "1c098230e56efcdba7cb25f001c500f0711a1465235264bfbf50018243bbe409",
+      "durationSeconds": 0.21,
+      "decodedBytes": 37052,
+      "sampleRate": 44100,
+      "channels": 1,
+      "trimStartMs": 0,
+      "trimEndMs": 190,
+      "onsetOffsetMs": 5.15,
+      "peakOffsetMs": 10.86,
+      "peakDbFS": -7.85,
+      "rmsDbFS": -25.04,
+      "sources": [
+        "kenney"
+      ],
+      "processing": "highpass=f=90,lowpass=f=7000",
+      "layers": [
+        "One recorded wood chopping contact, independently scheduled at 1350ms"
+      ],
+      "license": "CC0-1.0 source foley + original project composition"
+    },
+    {
+      "id": "coffin-open",
+      "file": "coffin-open.mp3",
+      "bytes": 18015,
+      "sha256": "e30fa38b2388a81a7d58cc991656327e3e3f1644b270607ae2ecdf653eed6e9c",
+      "durationSeconds": 1.0721,
+      "decodedBytes": 189116,
+      "sampleRate": 44100,
+      "channels": 1,
+      "trimStartMs": 0,
+      "trimEndMs": 1050,
+      "onsetOffsetMs": 5.35,
+      "peakOffsetMs": 351.97,
+      "peakDbFS": -12.63,
+      "rmsDbFS": -28.76,
+      "sources": [
+        "kenney"
+      ],
+      "processing": "highpass=f=100,lowpass=f=1900",
+      "layers": [
+        "Low wooden hinge friction from repeated recorded grain; opening begins600ms"
+      ],
+      "license": "CC0-1.0 source foley + original project composition"
+    },
+    {
+      "id": "coffin-settle",
+      "file": "coffin-settle.mp3",
+      "bytes": 5058,
+      "sha256": "92b6cb55a6c94e9792e414d9bf3272fd4e8f3a2db88675bca915944d7128a595",
+      "durationSeconds": 0.2623,
+      "decodedBytes": 46268,
+      "sampleRate": 44100,
+      "channels": 1,
+      "trimStartMs": 0,
+      "trimEndMs": 240,
+      "onsetOffsetMs": 5.15,
+      "peakOffsetMs": 11.45,
+      "peakDbFS": -8.7,
+      "rmsDbFS": -23.55,
+      "sources": [
+        "kenney"
+      ],
+      "processing": "highpass=f=90,lowpass=f=7000",
+      "layers": [
+        "Quiet recorded lid settling, not a corpse or death result"
+      ],
+      "license": "CC0-1.0 source foley + original project composition"
+    }
+  ],
+  "totalBytes": 51706,
+  "totalDecodedBytes": 503588
+}

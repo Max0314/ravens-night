@@ -2,12 +2,13 @@
 import '@testing-library/jest-dom/vitest';
 import {act,cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import {afterEach,expect,test,vi} from 'vitest';
+import * as audio from '../components/experience-audio.js';
 import {EffectsPreview,effectsScenarios,rolePreviewScenarios} from './EffectsPreview.js';
 import {EventStage,eventAt} from '../components/EventStage.js';
 import type {GameView} from '../api.js';
 import type {ExperienceEvent} from '@ravens/contracts';
-vi.mock('../components/PremiumArt.js',async original=>({...await original<typeof import('../components/PremiumArt.js')>(),preparePrivateArt:vi.fn(async()=>{})}));
-afterEach(()=>{cleanup();sessionStorage.clear();localStorage.clear();vi.useRealTimers();vi.unstubAllGlobals();});
+vi.mock('../components/PremiumArt.js',async original=>({...await original<typeof import('../components/PremiumArt.js')>(),preparePrivateArt:vi.fn(async()=>({ready:[],failed:[],timedOut:[]}))}));
+afterEach(()=>{cleanup();sessionStorage.clear();localStorage.clear();vi.useRealTimers();vi.unstubAllGlobals();vi.restoreAllMocks();});
 const epoch=1800000000000;
 function view(events:ExperienceEvent[]):GameView{return{gameId:'new-effects',serverNow:epoch,phase:'DAY_DISCUSSION',day:2,seats:[1,2,3].map(seat=>({seat,nickname:`人${seat}`,alive:true,connected:true,ghostVoteAvailable:true})),events,readyCount:0,aliveCount:3};}
 function event(kind:ExperienceEvent['kind'],rest:Partial<ExperienceEvent>={}):ExperienceEvent{return{id:`fx-${kind}`,gameId:'new-effects',seq:1,kind,startsAt:epoch,occurredAt:epoch,durationMs:2600,timingVersion:3,message:'公开结果',actorSeat:1,targetSeat:3,...rest};}
@@ -37,3 +38,7 @@ test('a deferred audio unlock cannot revive a skipped public event',async()=>{
  vi.stubGlobal('AudioContext',Audio);vi.stubGlobal('fetch',vi.fn(async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)})));
  render(<EventStage game={view([event('SHOT')])}/>);fireEvent.click(screen.getByRole('button',{name:'启用音效'}));fireEvent.click(screen.getByRole('button',{name:'跳过演出'}));await act(async()=>{finish();for(let i=0;i<8;i++)await Promise.resolve();});expect(start).not.toHaveBeenCalled();
 });
+
+test('private preview seek uses future-only audio, then an ordinary pause resumes its current stem',async()=>{vi.useFakeTimers();const cue=vi.spyOn(audio,'scheduleRoleCue');render(<EffectsPreview/>);fireEvent.click(screen.getByRole('button',{name:/管家认主/}));await act(async()=>{for(let i=0;i<8;i++)await Promise.resolve();});expect(cue.mock.calls.at(-1)?.[2]?.mode).toBe('START');fireEvent.click(screen.getByRole('button',{name:'暂停'}));fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'1500'}});fireEvent.click(screen.getByRole('button',{name:'继续'}));expect(cue.mock.calls.at(-1)?.[2]?.mode).toBe('SEEK');fireEvent.click(screen.getByRole('button',{name:'暂停'}));fireEvent.click(screen.getByRole('button',{name:'继续'}));expect(cue.mock.calls.at(-1)?.[2]?.mode).toBe('RESUME');});
+
+test('private preview freezes its anchor while hidden and resumes from the same frame',async()=>{vi.useFakeTimers();Object.defineProperty(document,'hidden',{configurable:true,value:false});const cue=vi.spyOn(audio,'scheduleRoleCue');render(<EffectsPreview/>);fireEvent.click(screen.getByRole('button',{name:/管家认主/}));await act(async()=>{for(let i=0;i<8;i++)await Promise.resolve();});act(()=>vi.advanceTimersByTime(600));Object.defineProperty(document,'hidden',{configurable:true,value:true});act(()=>document.dispatchEvent(new Event('visibilitychange')));const at=Number(screen.getByRole('slider',{name:'演出进度'}).getAttribute('value'));act(()=>vi.advanceTimersByTime(5000));expect(Number(screen.getByRole('slider',{name:'演出进度'}).getAttribute('value'))).toBe(at);Object.defineProperty(document,'hidden',{configurable:true,value:false});act(()=>document.dispatchEvent(new Event('visibilitychange')));expect(cue.mock.calls.at(-1)?.[2]?.mode).toBe('RESUME');act(()=>vi.advanceTimersByTime(200));expect(Number(screen.getByRole('slider',{name:'演出进度'}).getAttribute('value'))).toBeGreaterThan(at);});

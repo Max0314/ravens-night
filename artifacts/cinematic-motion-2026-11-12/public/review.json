@@ -1,0 +1,158 @@
+{
+  "method": "Production React SVGs -> renderToStaticMarkup -> local WebP decoded to embedded PNG -> sharp; no browser, no duplicate motion model",
+  "scope": "Material SVG art only; HTML avatars/header/footer/safe-area are covered by DOM/CSS checks, not represented as a browser screenshot",
+  "rifle": {
+    "canvas": {
+      "width": 600,
+      "height": 500
+    },
+    "image": {
+      "x": 30,
+      "y": 185,
+      "width": 470,
+      "height": 98.0673076923077
+    },
+    "pivot": {
+      "x": 135,
+      "y": 248
+    },
+    "muzzle": {
+      "x": 494.36,
+      "y": 213.92985576923076
+    }
+  },
+  "demon": {
+    "body": {
+      "x": 199.41700960219478,
+      "y": 105,
+      "width": 201.16598079561044,
+      "height": 350
+    },
+    "left": {
+      "x": 4.7085048010973765,
+      "y": 111.19688768606224,
+      "width": 250,
+      "height": 218.53856562922869
+    },
+    "right": {
+      "x": 345.2914951989026,
+      "y": 110.17764060356653,
+      "width": 250,
+      "height": 221.5363511659808
+    },
+    "hinges": {
+      "left": {
+        "x": 249.70850480109738,
+        "y": 185.5
+      },
+      "right": {
+        "x": 350.2914951989026,
+        "y": 185.5
+      }
+    }
+  },
+  "guillotine": {
+    "frame": {
+      "x": 40.61538461538461,
+      "y": 0,
+      "width": 218.76923076923077,
+      "height": 480
+    },
+    "blade": {
+      "x": 106.11681728014106,
+      "y": 62.307692307692314,
+      "width": 85.92021159356403,
+      "height": 91.09896407317612,
+      "travel": 246.52898391007278
+    },
+    "neck": {
+      "x": 149.30769230769232,
+      "y": 381.69230769230774,
+      "diameter": 36
+    }
+  },
+  "scenes": [
+    {
+      "name": "rifle",
+      "times": [
+        600,
+        840,
+        850,
+        878,
+        920,
+        1150,
+        1800
+      ],
+      "end": 2200
+    },
+    {
+      "name": "demon",
+      "times": [
+        0,
+        450,
+        600,
+        850,
+        1100,
+        1450,
+        1750
+      ],
+      "end": 2700
+    },
+    {
+      "name": "execution",
+      "times": [
+        0,
+        850,
+        900,
+        1050,
+        1190,
+        1200,
+        1320
+      ],
+      "end": 2200
+    },
+    {
+      "name": "empty-execution",
+      "times": [
+        0,
+        900,
+        1200,
+        2300
+      ],
+      "end": 2700
+    },
+    {
+      "name": "good-victory",
+      "times": [
+        0,
+        500,
+        1100,
+        2100,
+        3200
+      ],
+      "end": 3600
+    },
+    {
+      "name": "evil-victory",
+      "times": [
+        0,
+        600,
+        1100,
+        2200,
+        3600
+      ],
+      "end": 3600
+    },
+    {
+      "name": "execution-blood",
+      "times": [
+        0,
+        10,
+        80,
+        160,
+        400
+      ],
+      "end": 1500
+    }
+  ]
+}

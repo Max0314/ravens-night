@@ -1,0 +1,14 @@
+.cinematic-rifle,.cinematic-demon{display:block;width:100%;height:100%;overflow:visible;pointer-events:none;user-select:none}
+.cinematic-rifle{position:absolute;inset:0;z-index:3;filter:drop-shadow(0 12px 10px #0009)}
+.demon-figure[data-cinematic]{inset:0;filter:drop-shadow(0 0 14px #a3131938)}
+.demon-figure[data-cinematic] *{animation:none!important;transition:none!important}
+.victory-tableau[data-cinematic] *{animation:none!important;transition:none!important}
+.victory-tableau[data-cinematic]{display:block;width:100%;height:100%;pointer-events:none}
+.victory-tableau[data-cinematic] *::before,.victory-tableau[data-cinematic] *::after{animation:none!important;transition:none!important}
+.victory-tableau[data-cinematic] .demon-figure{inset:1% -4% 14%}
+.victory-tableau[data-cinematic] .victory-embers{position:absolute;inset:0;overflow:hidden}
+.victory-tableau[data-cinematic] .victory-embers>i{position:absolute;border-radius:50%;background:#cf9650;box-shadow:none}
+.victory-tableau[data-cinematic] .victory-fire{filter:none;background:radial-gradient(ellipse at 20% 100%,#ff9b434d,transparent 50%),radial-gradient(ellipse at 85% 100%,#ef5b203d,transparent 55%)}
+.victory-tableau[data-cinematic] .victory-dawn-rays{inset:-5%;background:repeating-conic-gradient(from 0deg at 50% 55%,#fce8ac12 0deg,transparent 12deg,transparent 24deg)}
+.victory-tableau[data-cinematic] .victory-good-symbol>.premium-image{width:65%;height:75%;object-fit:contain}
+.victory-tableau[data-cinematic] .victory-good-symbol>.victory-neutral{color:#e3ca88;font:clamp(80px,22vw,210px) var(--rn-serif)}

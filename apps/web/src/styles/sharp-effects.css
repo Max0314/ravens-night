@@ -8,3 +8,17 @@
 @media(prefers-reduced-motion:reduce){.fracture-v4>i,.fracture-v4__flash{display:none}.guillotine-scene__wind{transform:none!important}.guillotine-scene{transform:none!important}}
 .victory-good-symbol{position:absolute;inset:0;display:grid;place-items:center}.victory-good-symbol>svg{width:clamp(180px,45vw,400px);filter:drop-shadow(0 0 40px #e9ce8380)}.victory-saint-candles{position:absolute;left:15%;right:15%;bottom:10%;display:flex;justify-content:space-around}.victory-saint-candles>i{height:55px;width:12px;background:linear-gradient(90deg,#403a28,#b7a977,#413b2c);position:relative}.victory-saint-candles>i:after{content:"";position:absolute;top:-20px;left:0;width:13px;height:20px;background:#dfb862;border-radius:60% 30% 50% 50%;box-shadow:0 0 20px #cd9b3c;animation:saint-candle-out .6s var(--offset) both}@keyframes saint-candle-out{to{opacity:0;transform:translate(10px,-12px) scale(.2)}}
 .result-blood{position:absolute;left:50%;top:40%;width:100%;height:100%;z-index:5;pointer-events:none;filter:drop-shadow(0 2px 2px #310000)}.result-blood>svg{position:absolute;left:0;top:0;width:125%;height:125%;fill:#a3131b;transform-origin:center;animation:none!important}.result-blood>i{position:absolute;left:0;top:0;border-radius:60% 30% 55% 40%;background:linear-gradient(#d63327,#64080b);animation:none!important}.event-stage.is-reduced .result-blood>i{display:none}
+
+/* One portrait canvas contains both rails and blade. No independently stretched images. */
+.guillotine-scene[data-testid]{width:auto;height:100%;max-width:100%;aspect-ratio:300/480;isolation:isolate}
+.guillotine-scene[data-testid]>.guillotine-mechanism{position:absolute;inset:0;width:100%;height:100%;z-index:2;overflow:visible}
+.guillotine-scene[data-testid] .guillotine-scene__person{top:var(--neck-top);left:var(--neck-left);width:var(--neck-size);transform:translate(-50%,0);z-index:1}
+.guillotine-scene[data-testid] .event-token{width:100%;aspect-ratio:auto;transition:none!important;animation:none!important}
+.guillotine-scene[data-testid] .event-token>.scene-person{padding:0;gap:2px}
+.guillotine-scene[data-testid] .scene-person .player-avatar{width:100%!important;height:auto!important;aspect-ratio:1}
+.guillotine-scene[data-testid] .scene-person strong{font-size:10px;max-width:110%}
+.guillotine-scene__empty-label{position:absolute;left:0;right:0;bottom:7%;z-index:3;text-align:center;font-size:12px;color:#c6b58e;text-shadow:0 2px 8px #000}
+.guillotine-scene__blood{position:absolute;left:var(--neck-left);top:var(--neck-center);width:38%;height:24%;transform:translate(-50%,-40%);z-index:4;pointer-events:none}
+.event-stage--shot .event-token{transition:none;animation:none!important}
+.event-stage--shot .event-token--fallen{transform:translate(-50%,-42%) rotate(8deg)}
+.result-blood--stain{width:80%;height:75%;filter:none}

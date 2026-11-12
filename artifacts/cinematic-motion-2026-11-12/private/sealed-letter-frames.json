@@ -1,0 +1,12 @@
+{
+  "renderer": "LayeredSceneArt",
+  "method": "renderToStaticMarkup + embedded PNG material + sharp; current contact sheets only (no browser)",
+  "times": [
+    0,
+    650,
+    900,
+    1100,
+    1950,
+    2500
+  ]
+}

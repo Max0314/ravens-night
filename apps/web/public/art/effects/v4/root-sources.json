@@ -1,0 +1,289 @@
+{
+  "generator": "built-in image_gen",
+  "files": [
+    {
+      "id": "hunting-rifle",
+      "file": "hunting-rifle.webp",
+      "width": 1024,
+      "height": 214,
+      "bytes": 45750,
+      "sha256": "91e9867efcb4cbb42b7d52997118bbbfcb6664a1eef1ec9bd581e0b0149255c4",
+      "sourceSha256": "cef78f0e75819b0a3a3b9c5aed52bc6f121e67a9f86de6503c511208ffded42e",
+      "source": "exec-f25e53c2-4176-4fee-ad13-1d9f7315258b.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 2172,
+        "height": 724
+      },
+      "prompt": "Use case: stylized-concept. Production transparent game prop for a premium gothic dark fantasy game. One exquisite long hunting rifle, a late flintlock sporting long gun, NOT a pistol. Entire object in clean orthographic side profile, exactly horizontal, walnut shoulder stock at LEFT, long steel barrel ending at RIGHT. Muzzle at the far right, stock and trigger fully visible. Dark polished walnut, aged gold engraved inlay only on the firearm itself, fine mechanisms, restrained black-gold painterly realism like premium dark fantasy inventory artwork. One rifle ONLY, NO cloth, NO table, NO powder flask, NO background, NO stand, NO decorative items, NO smoke, NO muzzle flash. Generous 5% transparent margin around entire rifle. Crisp alpha edge, no halo. Wide landscape image. This will be animated with recoil, so the silhouette must be uninterrupted and the barrel straight.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "demon-body",
+      "file": "demon-body.webp",
+      "width": 419,
+      "height": 729,
+      "bytes": 138018,
+      "sha256": "21abcab30990222393cca6a056ce27418b90e721638019741fab54dcb3fca3e9",
+      "sourceSha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 570,
+        "height": 724
+      },
+      "prompt": "Use case: precise-object-edit. Edit this approved dark-fantasy demon artwork into an animation layer kit, retaining the same refined face, horns, musculature, tattered black-crimson robes and red translucent bat-wing design. TRUE transparent background. THREE strictly separated vertical cells across a wide canvas, with at least 40 transparent pixels of gap: cell1 LEFT: entire demon BODY from horns to feet with NO WINGS attached, arms down as in reference, no cut off feet; cell2 MIDDLE: the complete LEFT wing alone, outer tip toward LEFT and its thick shoulder attachment at RIGHT edge, no torso or hand; cell3 RIGHT: complete RIGHT wing alone, shoulder attachment at LEFT and outer tip to RIGHT. Each wing includes full red membrane, dark bone struts, fine tears; no duplicated body behind wings. Entire individual wing fully visible in its own cell. Same light/material/style as reference, luxurious detailed painterly realism. No other props, no text, no ground shadow, no border. These separate wings hinge at the shoulder and will NOT stretch the whole character.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "demon-wing-left",
+      "file": "demon-wing-left.webp",
+      "width": 739,
+      "height": 646,
+      "bytes": 126438,
+      "sha256": "e1d33b453f5687b87e648eb56b8b8a600ddfc00d2a69d06da25e76360091343e",
+      "sourceSha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sourceRect": {
+        "left": 585,
+        "top": 0,
+        "width": 795,
+        "height": 724
+      },
+      "prompt": "Use case: precise-object-edit. Edit this approved dark-fantasy demon artwork into an animation layer kit, retaining the same refined face, horns, musculature, tattered black-crimson robes and red translucent bat-wing design. TRUE transparent background. THREE strictly separated vertical cells across a wide canvas, with at least 40 transparent pixels of gap: cell1 LEFT: entire demon BODY from horns to feet with NO WINGS attached, arms down as in reference, no cut off feet; cell2 MIDDLE: the complete LEFT wing alone, outer tip toward LEFT and its thick shoulder attachment at RIGHT edge, no torso or hand; cell3 RIGHT: complete RIGHT wing alone, shoulder attachment at LEFT and outer tip to RIGHT. Each wing includes full red membrane, dark bone struts, fine tears; no duplicated body behind wings. Entire individual wing fully visible in its own cell. Same light/material/style as reference, luxurious detailed painterly realism. No other props, no text, no ground shadow, no border. These separate wings hinge at the shoulder and will NOT stretch the whole character.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "demon-wing-right",
+      "file": "demon-wing-right.webp",
+      "width": 729,
+      "height": 646,
+      "bytes": 129050,
+      "sha256": "ea02f4b6b896666519ad6699939613f1da0ed6d6e6e19f1b34ff12dcd1153d14",
+      "sourceSha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sourceRect": {
+        "left": 1390,
+        "top": 0,
+        "width": 782,
+        "height": 724
+      },
+      "prompt": "Use case: precise-object-edit. Edit this approved dark-fantasy demon artwork into an animation layer kit, retaining the same refined face, horns, musculature, tattered black-crimson robes and red translucent bat-wing design. TRUE transparent background. THREE strictly separated vertical cells across a wide canvas, with at least 40 transparent pixels of gap: cell1 LEFT: entire demon BODY from horns to feet with NO WINGS attached, arms down as in reference, no cut off feet; cell2 MIDDLE: the complete LEFT wing alone, outer tip toward LEFT and its thick shoulder attachment at RIGHT edge, no torso or hand; cell3 RIGHT: complete RIGHT wing alone, shoulder attachment at LEFT and outer tip to RIGHT. Each wing includes full red membrane, dark bone struts, fine tears; no duplicated body behind wings. Entire individual wing fully visible in its own cell. Same light/material/style as reference, luxurious detailed painterly realism. No other props, no text, no ground shadow, no border. These separate wings hinge at the shoulder and will NOT stretch the whole character.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "poison-glass",
+      "file": "poison-glass.webp",
+      "width": 638,
+      "height": 1003,
+      "bytes": 189110,
+      "sha256": "2a6b8b54a9b0f665192abaa59bed09ea608f26512444f9f61359ddd1e38e1755",
+      "sourceSha256": "b26598e6b1a79d63bcb738d2888f7ca8ee971d536739b0d0e68d47c7e1348423",
+      "source": "exec-56f1fb46-b777-4ac7-97bc-63d10c6c2403.png",
+      "sourceRect": {
+        "left": 120,
+        "top": 0,
+        "width": 800,
+        "height": 1024
+      },
+      "prompt": "Precise object edit of the provided bottle and separate stopper. Preserve exact design and placement. Remove ALL background halo, haze, glow and floor shadow. Most importantly the glass INNER CAVITY must be genuinely ALPHA TRANSPARENT, not filled white or grey. Render only the fine glass rim highlights and the gold filigree; the center should be an EMPTY TRANSPARENT WINDOW for a game programmer to draw animated emerald liquid behind. No milk, no white fog, no grey wash, no opaque pale glass. Keep the glass silhouette symmetrical and top neck OPEN. The left bottle and right stopper remain well separated. Crisp clean alpha cutout with no broad colored halo outside them. The transparent holes between gold decoration must remain transparent. Strong fine gold details, black-gold gothic realism.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "poison-stopper",
+      "file": "poison-stopper.webp",
+      "width": 282,
+      "height": 559,
+      "bytes": 61888,
+      "sha256": "72db4d7ed5b3a8b82be236a6ae79d6e260bd8a785404ccab92e7d23479b9ad75",
+      "sourceSha256": "b26598e6b1a79d63bcb738d2888f7ca8ee971d536739b0d0e68d47c7e1348423",
+      "source": "exec-56f1fb46-b777-4ac7-97bc-63d10c6c2403.png",
+      "sourceRect": {
+        "left": 1030,
+        "top": 180,
+        "width": 350,
+        "height": 640
+      },
+      "prompt": "Precise object edit of the provided bottle and separate stopper. Preserve exact design and placement. Remove ALL background halo, haze, glow and floor shadow. Most importantly the glass INNER CAVITY must be genuinely ALPHA TRANSPARENT, not filled white or grey. Render only the fine glass rim highlights and the gold filigree; the center should be an EMPTY TRANSPARENT WINDOW for a game programmer to draw animated emerald liquid behind. No milk, no white fog, no grey wash, no opaque pale glass. Keep the glass silhouette symmetrical and top neck OPEN. The left bottle and right stopper remain well separated. Crisp clean alpha cutout with no broad colored halo outside them. The transparent holes between gold decoration must remain transparent. Strong fine gold details, black-gold gothic realism.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "poison-mist",
+      "file": "poison-mist.webp",
+      "width": 221,
+      "height": 512,
+      "bytes": 36632,
+      "sha256": "6a23e09baa2796b03993ffbffdf00513aa54a61ca4bd9bdf749facf981e11c99",
+      "sourceSha256": "413b90635b4b178f930d8d876ff7dc86c40042fc6ed80a5b13b0b3daaea98bac",
+      "source": "exec-51817c2a-26f1-4a1a-a15a-6511021b609e.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1448,
+        "height": 1086
+      },
+      "prompt": "Use case: stylized-concept. One isolated narrow curling ribbon of translucent emerald-green potion vapour, premium gothic game particle texture, detailed soft fluid turbulence and delicate wispy tendrils. True alpha background, soft alpha falloff all the way to zero. All visible fog is dark forest green/emerald, NO grey, NO white, NO pale beige haze, NO background glow, NO bright hard outline. Wisps rise upward from a small point at lower center then broaden modestly, like aromatic poison evaporating from a droplet. No bottle, no ground, no objects, no text. Semi-transparent density, sparse realistic vapor rather than a solid opaque cloud. Landscape 4:3 framing with generous transparent margins.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "guillotine-frame",
+      "file": "guillotine-frame.webp",
+      "width": 467,
+      "height": 1024,
+      "bytes": 125112,
+      "sha256": "34df6d6a7c3026954b06808fa03a8565f0917d47cadd088e2019ae499e79fad9",
+      "sourceSha256": "8e755c371c004996357f859dc0a0c45f3b10dcce69d6c62df653bd067ca1f808",
+      "source": "exec-4c2788a1-725c-4c0e-824f-c85863bd49e2.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 720,
+        "height": 1586
+      },
+      "keepRects": [
+        {
+          "left": 0,
+          "top": 0,
+          "width": 620,
+          "height": 1400
+        },
+        {
+          "left": 0,
+          "top": 1400,
+          "width": 720,
+          "height": 186
+        }
+      ],
+      "prompt": "Use case: stylized-concept. Production-ready premium gothic game animation kit on true transparent background. TWO separate components, spacious gap. LEFT 75%: an elegant tall narrow guillotine wooden FRAME only, front orthographic view, symmetrical dark aged oak, tasteful brass corner fittings, two perfectly vertical parallel tracks, crossbeam, lower lunette with round empty neck aperture and sturdy base. NO blade anywhere in the frame. Open transparent air between the posts, no ropes crossing opening, no head or person, no fabric. Tall 300:480 silhouette proportions, the clear rail channel is central third of width. RIGHT 25%: detached sharp heavy steel GUILLOTINE BLADE alone, with its dark wooden weighted top bar, slanted cutting edge; matching channel width when assembled. Full frame and full blade both visible, no overlap, no blood, no sky, no scenic background. Sophisticated tactile painterly realism and black-gold cinematic materials, not vector or simplified icon. Each object at least 30px clear margin. The frame and blade will be composited and animated independently.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "guillotine-blade",
+      "file": "guillotine-blade.webp",
+      "width": 365,
+      "height": 387,
+      "bytes": 54240,
+      "sha256": "89dc38b4c2b5752809709847f3893b1d4fe81012dfaf1d9869013cd5dd264fa6",
+      "sourceSha256": "8e755c371c004996357f859dc0a0c45f3b10dcce69d6c62df653bd067ca1f808",
+      "source": "exec-4c2788a1-725c-4c0e-824f-c85863bd49e2.png",
+      "sourceRect": {
+        "left": 624,
+        "top": 560,
+        "width": 360,
+        "height": 460
+      },
+      "prompt": "Use case: stylized-concept. Production-ready premium gothic game animation kit on true transparent background. TWO separate components, spacious gap. LEFT 75%: an elegant tall narrow guillotine wooden FRAME only, front orthographic view, symmetrical dark aged oak, tasteful brass corner fittings, two perfectly vertical parallel tracks, crossbeam, lower lunette with round empty neck aperture and sturdy base. NO blade anywhere in the frame. Open transparent air between the posts, no ropes crossing opening, no head or person, no fabric. Tall 300:480 silhouette proportions, the clear rail channel is central third of width. RIGHT 25%: detached sharp heavy steel GUILLOTINE BLADE alone, with its dark wooden weighted top bar, slanted cutting edge; matching channel width when assembled. Full frame and full blade both visible, no overlap, no blood, no sky, no scenic background. Sophisticated tactile painterly realism and black-gold cinematic materials, not vector or simplified icon. Each object at least 30px clear margin. The frame and blade will be composited and animated independently.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "drunk-glass",
+      "file": "drunk-glass.webp",
+      "width": 558,
+      "height": 1024,
+      "bytes": 162962,
+      "sha256": "8ce365faf61316a3f6476aab57d461702e2b70bd543dbb27b3fdb8113ab49479",
+      "sourceSha256": "af3fab1b95780e5852545bf6fb382d41d63c987ffc2b02b1ade2513f347b0c3c",
+      "source": "exec-88d115ee-5d43-493e-a21f-fc7364524053.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1199,
+        "height": 1312
+      },
+      "prompt": "Premium gothic dark fantasy game prop, ONE empty elegant silver-stemmed clear glass goblet, straight-on view, symmetrical chalice bowl, ornate dark silver/gold foot and stem. No liquid inside. Clear truly ALPHA TRANSPARENT inner bowl/window with only delicate glass edge highlights, no milky white fill or haze. Fine engraved metal, painterly realism. Entire isolated cup only on transparent background with ample margins. No table, cloth, hand, wine, reflections of scenery, glow, text or extra props. The liquid will be drawn and tilted in code.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "investigator-stamp",
+      "file": "investigator-stamp.webp",
+      "width": 245,
+      "height": 512,
+      "bytes": 48536,
+      "sha256": "665c71db8f4020da06ad0802f90775699b04ffce53dcef13748d8fe2c300a605",
+      "sourceSha256": "ee1e7042a1b1b6da76138cdea067dcfd97accb01618894ad2910c5898bc1bafa",
+      "source": "exec-3047d12f-3b87-4d6a-81e8-e8c07c2f617e.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1024,
+        "height": 1536
+      },
+      "prompt": "One luxurious antique investigator's sealing stamp tool for a gothic mystery game, isolated on true transparent alpha. Upright short dark carved ebony handle, intricate brass collar, heavy flat round brass stamping base facing down. Front three-quarter almost orthographic profile, full object visible, vertical axis, no paper, wax, desk, fingers or other props. Exquisite tactile black-gold painterly realism, crisp alpha silhouette with no fog or shadow outside, 10% margin. This tool will descend to stamp a document.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "raven-body",
+      "file": "raven-body.webp",
+      "width": 715,
+      "height": 824,
+      "bytes": 198372,
+      "sha256": "c14cd3d02f71304e16731c3f93f9cbfba41be606cb5e9ce9ead829fe8a3744d2",
+      "sourceSha256": "b3d2c042fbcecb54b3e80989d8f8f6e89bce2653a98c574bbbfc94cb593d7597",
+      "source": "exec-8efe449a-e761-4eb8-b37e-179afddf54b6.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 780,
+        "height": 820
+      },
+      "prompt": "Premium gothic game animation layer kit, TWO clearly separated subjects on TRUE transparent background, no scene or background mist. LEFT cell: exquisite realistically painted black raven standing in profile facing RIGHT on a small dark lantern/branch, its visible near wing REMOVED revealing clean feathered torso, no silhouette or ghost of an extended wing; far wing closed naturally at its back. RIGHT cell: the raven's detached near wing alone fully spread, all detailed individual black iridescent feathers intact, wing-root at upper LEFT, feather tips sweeping RIGHT and down. Match bird body and wing size/material, separated by a generous empty gap, no overlap. Whole bird, lantern and whole wing within margin. Cinematic black-gold fine materials with subtle cool feather highlights, no text, no simplistic vector shapes. The separate wing will hinge at the shoulder.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "raven-wing",
+      "file": "raven-wing.webp",
+      "width": 1024,
+      "height": 664,
+      "bytes": 219690,
+      "sha256": "9c7f94a60396a152eb4269b51f5ed3f37565c3bf01270ecbcf1decc183f8f65f",
+      "sourceSha256": "b3d2c042fbcecb54b3e80989d8f8f6e89bce2653a98c574bbbfc94cb593d7597",
+      "source": "exec-8efe449a-e761-4eb8-b37e-179afddf54b6.png",
+      "sourceRect": {
+        "left": 850,
+        "top": 0,
+        "width": 1068,
+        "height": 820
+      },
+      "prompt": "Premium gothic game animation layer kit, TWO clearly separated subjects on TRUE transparent background, no scene or background mist. LEFT cell: exquisite realistically painted black raven standing in profile facing RIGHT on a small dark lantern/branch, its visible near wing REMOVED revealing clean feathered torso, no silhouette or ghost of an extended wing; far wing closed naturally at its back. RIGHT cell: the raven's detached near wing alone fully spread, all detailed individual black iridescent feathers intact, wing-root at upper LEFT, feather tips sweeping RIGHT and down. Match bird body and wing size/material, separated by a generous empty gap, no overlap. Whole bird, lantern and whole wing within margin. Cinematic black-gold fine materials with subtle cool feather highlights, no text, no simplistic vector shapes. The separate wing will hinge at the shoulder.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "scarlet-cloak",
+      "file": "scarlet-cloak.webp",
+      "width": 937,
+      "height": 1024,
+      "bytes": 242812,
+      "sha256": "c335fd20906a3f148a25f48c4180853ccaa5a8f2a0bcc8aafd72194e4e61c9fe",
+      "sourceSha256": "c59c3fba8394f299758cfd249ad4bc1e0b33309e4dd23c0c29e7d97dfe0f4a6f",
+      "source": "exec-44c34ae2-5992-4eac-852e-b2a9f1bea6f9.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1199,
+        "height": 1312
+      },
+      "prompt": "ONE isolated exquisite scarlet velvet cloak, empty ceremonial garment for a gothic game, hanging upright with the collar centered at the TOP and lower hem softly flared to BOTH sides. No body, no person, no chair, no crown, no feather, no stand, no pole, no background. Closed small gold neck clasp, richly textured deep crimson velvet, restrained black lining and fine antique gold embroidery at hem. Symmetrical overall black-gold dark fantasy composition, fabric folds visibly flow down from collar. Full cloak entirely visible against TRUE alpha transparent background with generous margin, no glow halo, no floor shadow. A refined realistic painted game asset, not a flat icon. The left and right halves will open outward from the neck clasp during an inheritance animation.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    },
+    {
+      "id": "butler-neutral",
+      "file": "butler-neutral.webp",
+      "width": 280,
+      "height": 1024,
+      "bytes": 75704,
+      "sha256": "d36858dfe8ffc8c83c56796991d06839a81281819f34f3c73078897c52c38cc5",
+      "sourceSha256": "0f4468cc443318a96949ee18c24b9a360d156ea5d18b6dc69814698729d1ce3f",
+      "source": "exec-8c7e46bb-851e-46a2-b296-09211da2e8a6.png",
+      "sourceRect": {
+        "left": 0,
+        "top": 0,
+        "width": 1024,
+        "height": 1536
+      },
+      "prompt": "Use case: stylized-concept. Produce ONE full body neutral standing master illustration for a premium gothic game animation rig. First reference supplies ONLY costume, face and craftsmanship; do NOT copy its bowed pose. Second reference is a skeleton motion guide: draw ONLY its FIRST upright pose, NOT a sprite sheet. Distinguished mature Victorian male butler, black fitted tailcoat, ivory waistcoat, gold buttons, white gloves, polished dark shoes, face oriented three-quarter toward RIGHT. Torso fully upright and BOTH LEGS PERFECTLY VERTICAL, knees straight, feet close together flat on common baseline, no lean. Near hand on heart with bent elbow, far hand held behind the back. Head upright. Keep coat tails close and behind legs; anatomical hips visibly at the normal waist/pelvis. Fine realistic painterly high-end game rendering, fabric tailoring and face refined, amber rim light, black-gold aesthetic. FULL figure including feet and top of hair with margin. Single person on true transparent alpha background, no floor shadow, no props, no text, no grid. Do not bow him yet; motion will be driven deterministically from this neutral painting. Tall portrait composition.",
+      "processing": "Explicit source rectangle; optional atlas isolation mask; trim transparent margin; one uniform scale; preserve alpha; 8px transparent safe border"
+    }
+  ]
+}

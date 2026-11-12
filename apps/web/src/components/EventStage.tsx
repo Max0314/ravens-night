@@ -14,9 +14,10 @@ import '../styles/effects-v3.css';
 import {Avatar} from "./Avatar.js";
 import {FractureLayer,GlassRefraction,GuillotineScene,ResultBlood} from './SharpEffects.js';
 import {ButlerBow,butlerBowTiming} from './ButlerBow.js';
+import {HuntingRifleScene} from './CinematicPublicArt.js';
 
 export interface PrivateReceipt { id: string; kind: "POISON" | "PROTECT" | "DIVINE" | "SEALED" | "BUTLER" | "DEMON"; target: string; targetSeats?:number[] }
-export interface EffectsPlayback {now:number;paused:boolean;rate:number;epoch:number}
+export interface EffectsPlayback {now:number;paused:boolean;rate:number;epoch:number;mode?:'START'|'RESUME'|'SEEK'}
 export function privateSceneDuration(kind:PrivateReceipt['kind']){return kind==='BUTLER'?butlerBowTiming.durationMs:kind==='DEMON'?4200:4000;}
 export const noticeEvent=(event:PublicEvent)=>event.kind==='NOMINATION'||event.kind==='VOTE_RESULT';
 type PublicEvent = Partial<ExperienceEvent> & { seq: number; message: string };
@@ -46,6 +47,8 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   const seenKey = useRef(gameKey);
   if (seenKey.current !== gameKey) { seen.current = loadCursor(gameKey); seenKey.current = gameKey; }
   const previousEvent = useRef<ExperienceEvent | undefined>(undefined);
+  const publicAudio=useRef<{id:string;paused:boolean;epoch:number|undefined}>({id:'',paused:false,epoch:undefined});
+  const noticeAudio=useRef<{id:string;paused:boolean;epoch:number|undefined}>({id:'',paused:false,epoch:undefined});
   const stageRef = useRef<HTMLElement>(null),privateRef=useRef<HTMLElement>(null);
   const privateStart=useRef({id:'',at:now});
   const receiptIds = useRef(new Set<string>());
@@ -72,6 +75,9 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   const privateElapsed=now-privateStart.current.at;
   const visiblePrivate=privateScene&&privateElapsed>=0&&privateElapsed<privateSceneDuration(privateScene.kind)?privateScene:undefined;
   const active = eventAt(game?.events ?? [], now, new Set([...seen.current, ...dismissed]));
+  // Re-sample the authoritative clock per painted frame; do not invent a CSS clock.
+  const [,renderMotion]=useState(0);
+  useEffect(()=>{if(!active||frozen||hidden||playback)return;let frame=0;const tick=()=>{renderMotion(n=>n+1);frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);},[active?.id,frozen,hidden,!!playback]);
   const quiet=!!active&&(reading||quietEvents.current.has(active.id));
   if(quiet&&active)quietEvents.current.add(active.id);
   const notice=(game?.events??[]).filter(isCinematic).find(event=>noticeEvent(event)&&!dismissed.includes(event.id)&&now>=event.startsAt&&now<event.startsAt+event.durationMs);
@@ -89,10 +95,19 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   }, [active?.id,now]);
   const resultVisible=Boolean(active?.outcome)&&elapsed>=(active?experienceTiming(active.kind,active.timingVersion??1).resultOffset:0);
   useEffect(()=>{
-    if(active&&!frozen&&!hidden&&(!quiet||active.kind==='SHOT'))scheduleCue(active.id,active.kind,elapsed,active.timingVersion??1,active.kind==='EXECUTION'&&active.targetSeat===undefined,{rate,outcome:active.outcome,resultVisible});
-  },[active?.id,active?.outcome,resultVisible,frozen,hidden,sound,quiet,clockEpoch,audioEpoch]);
+    if(!active){publicAudio.current={id:'',paused:false,epoch:undefined};return;}
+    const changed=publicAudio.current.id!==active.id||publicAudio.current.epoch!==clockEpoch;
+    const paused=frozen||hidden||quiet&&active.kind!=='SHOT',mode=playback?.mode&&changed?playback.mode:publicAudio.current.id===active.id&&publicAudio.current.paused?'RESUME':'START';
+    scheduleCue(active.id,active.kind,elapsed,active.timingVersion??1,active.kind==='EXECUTION'&&active.targetSeat===undefined,{rate,outcome:active.outcome,resultVisible,mode,paused,seekKey:clockEpoch??0});
+    publicAudio.current={id:active.id,paused,epoch:clockEpoch};
+  },[active?.id,active?.outcome,resultVisible,frozen,hidden,sound,quiet,clockEpoch,audioEpoch,playback?.mode,rate]);
   useEffect(()=>{const id=active?.id,end=active?active.startsAt+active.durationMs:0;return()=>{if(id){if(nowRef.current>=end)completeEventAudio(id);else cancelEventAudio(id);}};},[active?.id,frozen,hidden,clockEpoch]);
-  useEffect(()=>{if(notice&&!frozen&&!hidden)scheduleCue(notice.id,notice.kind,now-notice.startsAt,notice.timingVersion??1,false,{rate});return()=>{if(notice)cancelEventAudio(notice.id);};},[notice?.id,frozen,hidden,sound,clockEpoch,audioEpoch]);
+  useEffect(()=>{
+    if(!notice){noticeAudio.current={id:'',paused:false,epoch:undefined};return;}
+    const changed=noticeAudio.current.id!==notice.id||noticeAudio.current.epoch!==clockEpoch,mode=playback?.mode&&changed?playback.mode:noticeAudio.current.id===notice.id&&noticeAudio.current.paused?'RESUME':'START';
+    scheduleCue(notice.id,notice.kind,now-notice.startsAt,notice.timingVersion??1,false,{rate,mode,paused:frozen||hidden,seekKey:clockEpoch??0});noticeAudio.current={id:notice.id,paused:frozen||hidden,epoch:clockEpoch};
+    return()=>cancelEventAudio(notice.id);
+  },[notice?.id,frozen,hidden,sound,clockEpoch,audioEpoch,playback?.mode,rate]);
   useEffect(()=>{if(visiblePrivate&&!frozen&&!hidden&&privateSound)schedulePrivateCue(visiblePrivate.id,visiblePrivate.kind,privateElapsed,{rate});return()=>{if(privateScene)cancelEventAudio('private:'+privateScene.id);};},[privateScene?.id,frozen,hidden,sound,privateSound,clockEpoch,audioEpoch]);
   useLayoutEffect(()=>{
     for(const [element,position]of [[stageRef.current,elapsed],[privateRef.current,privateElapsed]] as const){
@@ -137,16 +152,16 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
     {event?.kind==='SHOT'?<><FractureLayer seed={event.id} elapsedMs={elapsed} impactAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced}/><GlassRefraction seed={event.id} elapsedMs={elapsed} impactAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced}/></>:null}
     {event&&quiet?<aside className="phase-reading-notice" role="status"><span>{elapsed<0?event.kind==='DAWN'?'即将天亮':event.kind==='NIGHT_FALLS'?'即将入夜':'即将公布':title}</span><FeedbackButton type="button" onClick={skip}>知道了</FeedbackButton></aside>:null}
     {event&&!quiet ? <section key={event.id} data-timing-version={event.timingVersion??1} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${staticMotion ? " is-reduced" : ""}${frozen?" is-frozen":""}${emptyExecution?" is-empty-execution":""}${showResult&&event.outcome==="DEATH"?" has-death":""}`} role="dialog" aria-label="城镇公开演出" aria-modal={!preview} style={{ "--scene-delay": canSeek?"0ms":`${animationAnchor.current?.delay??0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
-      {event.kind==="GAME_OVER"&&showResult&&(event.outcome==="GOOD"||event.outcome==="EVIL")?<VictoryArt winner={event.outcome} cause={game?.winReason?.includes('圣徒')?'SAINT':game?.winReason?.includes('镇长')?'MAYOR':game?.winReason?.includes('恶魔')?'DEMON':'OTHER'}/>:null}
+      {event.kind==="GAME_OVER"&&showResult&&(event.outcome==="GOOD"||event.outcome==="EVIL")?<VictoryArt winner={event.outcome} elapsedMs={elapsed-experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced} cause={game?.winReason?.includes('圣徒')?'SAINT':game?.winReason?.includes('镇长')?'MAYOR':game?.winReason?.includes('恶魔')?'DEMON':'OTHER'}/>:null}
       <div className="event-stage__grain" aria-hidden="true" /><div className="event-stage__halo" aria-hidden="true" />
       <header><span>RAVENS AT MIDNIGHT</span><span>{preview ? "演出预览" : "全员公开事件"}</span></header>
       <div className="event-stage__body">
         <p className="event-stage__eyebrow">{event.kind === "DAWN" ? `第 ${event.day ?? game?.day ?? 1} 天 · 黎明` : event.kind === "SHOT" ? "猎魔人 · 公开宣称" : event.kind === "EXECUTION" ? "城镇公决" : "钟声回响"}</p>
         <h1>{elapsed<0?"即将开始":title}</h1>
         <div className="event-stage__theatre" aria-hidden="true">
-          {event.kind === "SHOT" ? <><div className="shot-smoke"><i /><i /><i /></div><div className="shot-gun"><ArtImage name="slayer"/></div><div className="shot-flare" /><ScenePerson game={game} seat={event.actorSeat} label="开枪者" className="shot-actor"/><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><ScenePerson game={game} seat={event.targetSeat} label="射击目标"/><div className="seal-fracture" />{showResult&&event.outcome==='DEATH'?<ResultBlood reduced={staticMotion} variant="right" elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/>:null}</div></> : null}
-          {event.kind === "EXECUTION" ? <GuillotineScene reduced={staticMotion} elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} empty={emptyExecution} death={showResult&&event.outcome==='DEATH'}>{!emptyExecution?<div className="event-token"><ScenePerson game={game} seat={event.targetSeat} label="被处决者"/>{showResult&&event.outcome==='DEATH'?<ResultBlood reduced={staticMotion} elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/>:null}</div>:null}</GuillotineScene> : null}
-          {event.kind === "DAWN" ? <div className="dawn-tableau"><div className="dawn-sun" /><div className="dawn-windows"><i /><i /><i /></div>{showResult ? <div className="dawn-memorial">{deaths.length ? deaths.map((seat) => <div key={seat}><div className="dawn-person-impact"><ScenePerson game={game} seat={seat} label="已死亡" className="dawn-person"/><Claw/><ResultBlood reduced={staticMotion} elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/></div><span className="memorial-candle" /></div>) : <div><span className="memorial-candle is-lit" /><strong>所有灯火，仍然亮着</strong></div>}</div> : null}</div> : null}
+          {event.kind === "SHOT" ? <><HuntingRifleScene elapsedMs={elapsed} fireAt={experienceTiming(event.kind,event.timingVersion??1).cues.find(([,cue])=>cue==='shot')?.[0]??experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced}/><ScenePerson game={game} seat={event.actorSeat} label="开枪者" className="shot-actor"/><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><ScenePerson game={game} seat={event.targetSeat} label="射击目标"/>{showResult&&event.outcome==='DEATH'?<ResultBlood reduced={reduced} variant="right" elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/>:null}</div></> : null}
+          {event.kind === "EXECUTION" ? <GuillotineScene reduced={reduced} elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} empty={emptyExecution} resultVisible={showResult} death={showResult&&event.outcome==='DEATH'} blood={showResult&&event.outcome==='DEATH'?<ResultBlood reduced={reduced} elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/>:undefined}>{!emptyExecution?<div className="event-token"><ScenePerson game={game} seat={event.targetSeat} label="被处决者"/></div>:null}</GuillotineScene> : null}
+          {event.kind === "DAWN" ? <div className="dawn-tableau"><div className="dawn-sun" /><div className="dawn-windows"><i /><i /><i /></div>{showResult ? <div className="dawn-memorial">{deaths.length ? deaths.map((seat) => <div key={seat}><div className="dawn-person-impact"><ScenePerson game={game} seat={seat} label="已死亡" className="dawn-person"/><Claw/><ResultBlood reduced={reduced} variant="stain" elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/></div><span className="memorial-candle" /></div>) : <div><span className="memorial-candle is-lit" /><strong>所有灯火，仍然亮着</strong></div>}</div> : null}</div> : null}
           {event.kind==="NOMINATION"?<div className="nomination-tableau"><div className="nomination-orbit"/><ScenePerson game={game} seat={event.actorSeat} label="提名" className="nomination-actor"/><div className="nomination-summons"><ArtImage name="sealed-letter"/><span>→</span></div><ScenePerson game={game} seat={event.targetSeat} label="被提名" className="nomination-target"/></div>:null}
           {event.kind==="VOTE_RESULT"?<ScenePerson game={game} seat={event.targetSeat} label="本轮被提名" className="vote-result-person"/>:null}
           {!['SHOT', 'EXECUTION', 'DAWN', 'NOMINATION'].includes(event.kind) ? <div className={`ceremony-seal ceremony-seal--${event.kind.toLowerCase()}`}><span>{event.kind === "VOTE_RESULT" ? `${event.votes ?? "—"}` : event.kind === "NIGHT_FALLS" ? "☾" : "⚜"}</span><small>{event.kind === "VOTE_RESULT" ? "票" : "RAVENS"}</small></div> : null}
@@ -157,7 +172,7 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
       <footer><FeedbackButton type="button" onClick={toggleSound}>{sound ? "关闭音效" : "启用音效"}</FeedbackButton><span>{reduced ? "已尊重减少动态效果偏好" : "所有屏幕共享同一段钟声"}</span><FeedbackButton type="button" onClick={skip}>跳过演出</FeedbackButton></footer>
       <div className="event-stage__progress" style={{ transform: `scaleX(${Math.min(1, Math.max(0, 1 - elapsed / event.durationMs))})` }} />
     </section> : null}
-    {visiblePrivate ? <section data-private-feedback="true" ref={privateRef} key={visiblePrivate.id} className={`private-ritual private-ritual--${visiblePrivate.kind.toLowerCase()}${event&&elapsed>=0?' private-ritual--compact':''}${staticMotion?' is-reduced':''}${frozen?' is-frozen':''}`} style={{'--private-duration':`${privateSceneDuration(visiblePrivate.kind)}ms`,'--scene-duration':`${privateSceneDuration(visiblePrivate.kind)}ms`,'--scene-delay':canSeek?'0ms':`${-privateElapsed}ms`} as CSSProperties} role="status" aria-label="仅你可见的行动回执"><FeedbackButton type="button" onClick={()=>setPrivateScene(undefined)}>收起 ×</FeedbackButton><p>仅你可见 · 行动已提交</p>{visiblePrivate.kind==='POISON'?<PoisonScreen/>:visiblePrivate.kind==='DEMON'?<DemonScreen/>:null}<div className="private-ritual__art" aria-hidden="true">{visiblePrivate.kind==='POISON'?<PoisonArt/>:visiblePrivate.kind==='PROTECT'?<ShieldArt/>:visiblePrivate.kind==='BUTLER'?<ButlerBow elapsedMs={privateElapsed} reducedMotion={reduced}/>:visiblePrivate.kind==='DEMON'?<DemonArt/>:<div className="private-sigil">{visiblePrivate.kind==='DIVINE'?'✧':'☾'}</div>}</div><h2>{({POISON:'毒液倾下',PROTECT:'守护之盾',BUTLER:'谨遵吩咐',DEMON:'暗翼掠过',DIVINE:'问询已提交',SEALED:'选择已封存'} as const)[visiblePrivate.kind]}</h2><div className="private-ritual__players">{visiblePrivate.targetSeats?.map(seat=><div className="private-target" key={seat}><ScenePerson game={game} seat={seat}/>{visiblePrivate.kind==='DEMON'?<Claw/>:null}</div>)}</div><strong>{visiblePrivate.target}</strong><small>选择已提交，实际结果以规则结算为准。</small></section> : null}
+    {visiblePrivate ? <section data-private-feedback="true" ref={privateRef} key={visiblePrivate.id} className={`private-ritual private-ritual--${visiblePrivate.kind.toLowerCase()}${event&&elapsed>=0?' private-ritual--compact':''}${staticMotion?' is-reduced':''}${frozen?' is-frozen':''}`} style={{'--private-duration':`${privateSceneDuration(visiblePrivate.kind)}ms`,'--scene-duration':`${privateSceneDuration(visiblePrivate.kind)}ms`,'--scene-delay':canSeek?'0ms':`${-privateElapsed}ms`} as CSSProperties} role="status" aria-label="仅你可见的行动回执"><FeedbackButton type="button" onClick={()=>setPrivateScene(undefined)}>收起 ×</FeedbackButton><p>仅你可见 · 行动已提交</p>{visiblePrivate.kind==='POISON'?<PoisonScreen/>:visiblePrivate.kind==='DEMON'?<DemonScreen/>:null}<div className="private-ritual__art" aria-hidden="true">{visiblePrivate.kind==='POISON'?<PoisonArt/>:visiblePrivate.kind==='PROTECT'?<ShieldArt/>:visiblePrivate.kind==='BUTLER'?<ButlerBow elapsedMs={privateElapsed} reducedMotion={reduced}/>:visiblePrivate.kind==='DEMON'?<DemonArt elapsedMs={privateElapsed} reduced={reduced}/>:<div className="private-sigil">{visiblePrivate.kind==='DIVINE'?'✧':'☾'}</div>}</div><h2>{({POISON:'毒液倾下',PROTECT:'守护之盾',BUTLER:'谨遵吩咐',DEMON:'暗翼掠过',DIVINE:'问询已提交',SEALED:'选择已封存'} as const)[visiblePrivate.kind]}</h2><div className="private-ritual__players">{visiblePrivate.targetSeats?.map(seat=><div className="private-target" key={seat}><ScenePerson game={game} seat={seat}/>{visiblePrivate.kind==='DEMON'?<Claw/>:null}</div>)}</div><strong>{visiblePrivate.target}</strong><small>选择已提交，实际结果以规则结算为准。</small></section> : null}
 
   </>;
 }
