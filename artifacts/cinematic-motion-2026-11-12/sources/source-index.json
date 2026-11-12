@@ -1,0 +1,181 @@
+{
+  "files": [
+    {
+      "asset": "hunting-rifle.webp",
+      "source": "exec-f25e53c2-4176-4fee-ad13-1d9f7315258b.png",
+      "sha256": "cef78f0e75819b0a3a3b9c5aed52bc6f121e67a9f86de6503c511208ffded42e",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "demon-body.webp",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "demon-wing-left.webp",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "demon-wing-right.webp",
+      "source": "exec-25f935d0-d00b-460d-8065-e838f3fa7baa.png",
+      "sha256": "e05831d956581336ac7a0dc77298621855c30528422709c2b71b7189cba3a7a7",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "poison-glass.webp",
+      "source": "exec-56f1fb46-b777-4ac7-97bc-63d10c6c2403.png",
+      "sha256": "b26598e6b1a79d63bcb738d2888f7ca8ee971d536739b0d0e68d47c7e1348423",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "poison-stopper.webp",
+      "source": "exec-56f1fb46-b777-4ac7-97bc-63d10c6c2403.png",
+      "sha256": "b26598e6b1a79d63bcb738d2888f7ca8ee971d536739b0d0e68d47c7e1348423",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "poison-mist.webp",
+      "source": "exec-51817c2a-26f1-4a1a-a15a-6511021b609e.png",
+      "sha256": "413b90635b4b178f930d8d876ff7dc86c40042fc6ed80a5b13b0b3daaea98bac",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "guillotine-frame.webp",
+      "source": "exec-4c2788a1-725c-4c0e-824f-c85863bd49e2.png",
+      "sha256": "8e755c371c004996357f859dc0a0c45f3b10dcce69d6c62df653bd067ca1f808",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "guillotine-blade.webp",
+      "source": "exec-4c2788a1-725c-4c0e-824f-c85863bd49e2.png",
+      "sha256": "8e755c371c004996357f859dc0a0c45f3b10dcce69d6c62df653bd067ca1f808",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "drunk-glass.webp",
+      "source": "exec-88d115ee-5d43-493e-a21f-fc7364524053.png",
+      "sha256": "af3fab1b95780e5852545bf6fb382d41d63c987ffc2b02b1ade2513f347b0c3c",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "investigator-stamp.webp",
+      "source": "exec-3047d12f-3b87-4d6a-81e8-e8c07c2f617e.png",
+      "sha256": "ee1e7042a1b1b6da76138cdea067dcfd97accb01618894ad2910c5898bc1bafa",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "raven-body.webp",
+      "source": "exec-8efe449a-e761-4eb8-b37e-179afddf54b6.png",
+      "sha256": "b3d2c042fbcecb54b3e80989d8f8f6e89bce2653a98c574bbbfc94cb593d7597",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "raven-wing.webp",
+      "source": "exec-8efe449a-e761-4eb8-b37e-179afddf54b6.png",
+      "sha256": "b3d2c042fbcecb54b3e80989d8f8f6e89bce2653a98c574bbbfc94cb593d7597",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "scarlet-cloak.webp",
+      "source": "exec-44c34ae2-5992-4eac-852e-b2a9f1bea6f9.png",
+      "sha256": "c59c3fba8394f299758cfd249ad4bc1e0b33309e4dd23c0c29e7d97dfe0f4a6f",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "butler-neutral.webp",
+      "source": "exec-8c7e46bb-851e-46a2-b296-09211da2e8a6.png",
+      "sha256": "0f4468cc443318a96949ee18c24b9a360d156ea5d18b6dc69814698729d1ce3f",
+      "provenance": "root-sources.json"
+    },
+    {
+      "asset": "coffin-base.webp",
+      "source": "exec-a0f6e378-6436-48be-b56f-ea8eba1364d7.png",
+      "sha256": "fc452cc060614cd9bbceb2b06a6882c0ddbf815c5e40c15143c2139514b69f49",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "coffin-lid-front.webp",
+      "source": "exec-a0f6e378-6436-48be-b56f-ea8eba1364d7.png",
+      "sha256": "fc452cc060614cd9bbceb2b06a6882c0ddbf815c5e40c15143c2139514b69f49",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "coffin-lid-back.webp",
+      "source": "exec-a0f6e378-6436-48be-b56f-ea8eba1364d7.png",
+      "sha256": "fc452cc060614cd9bbceb2b06a6882c0ddbf815c5e40c15143c2139514b69f49",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "book-shell.webp",
+      "source": "exec-26e68454-718f-43ed-979a-3aa940c46782.png",
+      "sha256": "135f1368135cf44484bf9267f7aac933a4580955ebeb560402665afc8fc3b208",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "book-paper.webp",
+      "source": "exec-26e68454-718f-43ed-979a-3aa940c46782.png",
+      "sha256": "135f1368135cf44484bf9267f7aac933a4580955ebeb560402665afc8fc3b208",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "book-paper-back.webp",
+      "source": "exec-26e68454-718f-43ed-979a-3aa940c46782.png",
+      "sha256": "135f1368135cf44484bf9267f7aac933a4580955ebeb560402665afc8fc3b208",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "washer-basin-back.webp",
+      "source": "exec-856ce9b2-ba1d-4f71-a0e1-f93c5d1e4985.png",
+      "sha256": "96d69899aea25ac5edbfec0a71984de4ddeb7eb2a1d2097661f6721ac55605be",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "washer-basin-front.webp",
+      "source": "exec-856ce9b2-ba1d-4f71-a0e1-f93c5d1e4985.png",
+      "sha256": "96d69899aea25ac5edbfec0a71984de4ddeb7eb2a1d2097661f6721ac55605be",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "washer-linen.webp",
+      "source": "exec-542374af-ded8-4b58-9c1f-465b5b399125.png",
+      "sha256": "baab68a858c395b69a1473032743c7a16ea31643ae9cb32b5f45aec7238e9f07",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "chef-board-clean.webp",
+      "source": "exec-be0ad1f5-7aa9-4226-ae23-f352c82c2106.png",
+      "sha256": "97e821f9cc72642c1fa3b731371fb0a36b937e1638803576ff432f08f9e989d8",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "chef-carrot.webp",
+      "source": "exec-be0ad1f5-7aa9-4226-ae23-f352c82c2106.png",
+      "sha256": "97e821f9cc72642c1fa3b731371fb0a36b937e1638803576ff432f08f9e989d8",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "crystal-shell.webp",
+      "source": "exec-a9336436-d048-478b-84bf-6e4b28e4166f.png",
+      "sha256": "1c0b30795d9a24104b2cb13d291ae1df4ea9d7a02149e3745a456d44e93651e9",
+      "provenance": "props-sources.json"
+    },
+    {
+      "asset": "crystal-mist.webp",
+      "source": "exec-e7e558a9-9e01-4798-90f2-ae35c88e76ec.png",
+      "sha256": "806448320109f1d36d866a33f4617ff0a1478d4ea756237cc63da5b36b93b118",
+      "provenance": "props-sources.json"
+    }
+  ],
+  "audio_sources": [
+    {
+      "file": "kenney.zip",
+      "sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+      "license": "CC0-1.0",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license_text": "\t\r\n\r\n\tImpact Sounds (1.0)\r\n\r\n\tCreated/distributed by Kenney (www.kenney.nl)\r\n\tCreation date: 19-12-2019\r\n\r\n\t\t\t------------------------------\r\n\r\n\tLicense: (Creative Commons Zero, CC0)\r\n\thttp://creativecommons.org/publicdomain/zero/1.0/\r\n\r\n\tThis content is free to use in personal, educational and commercial projects.\r\r\n\tSupport us by crediting Kenney or www.kenney.nl (this is not mandatory)\r\n\r\n\t\t\t------------------------------\r\n\r\n\tDonate:   http://support.kenney.nl\r\n\tRequest:  http://request.kenney.nl\r\n\tPatreon:  http://patreon.com/kenney/\r\n\r\n\tFollow on Twitter for updates:\r\n\thttp://twitter.com/KenneyNL"
+    }
+  ]
+}
