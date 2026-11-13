@@ -2,7 +2,7 @@ import {useEffect,useRef} from 'react';
 import type {RoomView} from '../api.js';
 import {useGameClock} from '../use-game-clock.js';
 import {createGameScorePlayer,gameScoreTrack} from './game-score.js';
-import {globalAudioEnabled,globalAudioEvent,effectsPreviewActive,scoreDuckingActive,reportAudioStatus} from './experience-audio.js';
+import {globalAudioEnabled,globalAudioEvent,effectsPreviewActive,scoreDuckingActive,reportAudioStatus,unlockEffectsAudio} from './experience-audio.js';
 
 /** Replace the old opening owner at the single stable App slot. No controls or child renders. */
 export function GameScoreOwner({screen,room}:{screen:string;room?:RoomView|undefined}){
@@ -10,8 +10,9 @@ export function GameScoreOwner({screen,room}:{screen:string;room?:RoomView|undef
  const sync=useRef<()=>void>(()=>{});
  useEffect(()=>{
   const player=createGameScorePlayer(reportAudioStatus);
-  const update=()=>{const s=latest.current;return player.update({track:gameScoreTrack(s.screen==='GAME'?s.room?.game:undefined,s.now),active:!['LOADING','LOGIN','DISPLAY'].includes(s.screen)&&globalAudioEnabled()&&!document.hidden&&!effectsPreviewActive()&&s.room?.timeline?.mode!=='MANUAL',ducked:scoreDuckingActive(),context:(s.room?.roomInstanceId??s.room?.code??'menu')+':'+(s.room?.game?.gameId??'setup')});};
-  const gesture=(event:Event)=>{if(event.target instanceof Element&&event.target.closest('[data-global-audio-control]'))return;if(!update())player.gesture();};
+  const active=()=>{const s=latest.current;return !['LOADING','LOGIN','DISPLAY'].includes(s.screen)&&globalAudioEnabled()&&!document.hidden&&!effectsPreviewActive()&&s.room?.timeline?.mode!=='MANUAL';};
+  const update=()=>{const s=latest.current;return player.update({track:gameScoreTrack(s.screen==='GAME'?s.room?.game:undefined,s.now),active:active(),ducked:scoreDuckingActive(),context:(s.room?.roomInstanceId??s.room?.code??'menu')+':'+(s.room?.game?.gameId??'setup')});};
+  const gesture=(event:Event)=>{if(event.target instanceof Element&&event.target.closest('[data-global-audio-control]'))return;if(active())void unlockEffectsAudio();if(!update())player.gesture();};
   const total=()=>{if(!update()&&globalAudioEnabled())player.gesture();};
   sync.current=update;window.addEventListener(globalAudioEvent,total);
   window.addEventListener('ravens-effects-audio',update);document.addEventListener('visibilitychange',update);
