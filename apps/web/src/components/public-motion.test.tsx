@@ -1,3 +1,4 @@
+import {AtmosphericSky} from './AtmosphericSky.js';
 // @vitest-environment jsdom
 import {afterEach,expect,test} from 'vitest';
 import {cleanup,render} from '@testing-library/react';
@@ -43,3 +44,20 @@ test('reduced rifle and defeated demon keep one fixed key pose across elapsed ti
  expect(riflePose(0,850,true)).toEqual(riflePose(5000,850,true));expect(demonPose(0,true,true)).toEqual(demonPose(5000,true,true));
  const ui=render(<DemonLayers elapsedMs={0} defeated reduced/>),before=ui.container.innerHTML;ui.rerender(<DemonLayers elapsedMs={5000} defeated reduced/>);expect(ui.container.innerHTML).toBe(before);
 });
+
+test('celestial rise is independent of town crops and reduced mode stays fixed',()=>{
+ const ui=render(<AtmosphericSky phase="NIGHT_FALLS" elapsedMs={0} durationMs={5000}/>),disc=()=>ui.container.querySelector<SVGSVGElement>('.atmospheric-sky__disc')!;
+ const initial=parseFloat(disc().style.top);ui.rerender(<AtmosphericSky phase="NIGHT_FALLS" elapsedMs={4250} durationMs={5000}/>);
+ expect(parseFloat(disc().style.top)).toBeLessThan(initial);expect(ui.container.querySelector('image')?.getAttribute('href')).toMatch(/v5\/moon/);
+ ui.rerender(<AtmosphericSky phase="DAWN" elapsedMs={0} durationMs={5000} reduced/>);const fixed=disc().style.top;
+ ui.rerender(<AtmosphericSky phase="DAWN" elapsedMs={5000} durationMs={5000} reduced/>);expect(disc().style.top).toBe(fixed);expect(ui.container.querySelector('image')).toBeNull();
+});
+test('victory separates viewport atmosphere from the undistorted central subject',()=>{
+ const ui=render(<VictoryArt winner="EVIL" elapsedMs={1200}/>),root=ui.container.querySelector('svg')!;
+ expect(root.hasAttribute('viewBox')).toBe(false);
+ expect(ui.container.querySelector('[data-victory-layer="town"]')?.getAttribute('href')).toBe('/art/effects/v5/burning-town.webp');
+ expect(ui.container.querySelector('[data-victory-layer="atmosphere"]')?.getAttribute('preserveAspectRatio')).toBe('none');
+ expect(ui.container.querySelector('[data-victory-layer="subject"]')?.getAttribute('preserveAspectRatio')).toBe('xMidYMid meet');
+ expect(ui.container.querySelectorAll('[data-wing]')).toHaveLength(2);
+});
+

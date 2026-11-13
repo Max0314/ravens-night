@@ -48,7 +48,8 @@ export function LayeredSceneArt({role,kind,elapsedMs,imprint,readyAssets,resolve
  }else if(role==='monk'||role==='soldier'){
   const hit=Math.max(0,1-(t-700)/350),dy=t<700?-65*(1-smooth(t,220,700)):reducedMotion?0:Math.sin((t-700)/28)*hit*7;body=<><g transform={`translate(0 ${dy})`}>{art(role)}</g>{!reducedMotion&&t>=700&&t<1050?<g><path d="M170 220L140 205M430 220L460 205M300 130V100" stroke="#d2c49a" strokeWidth={3} opacity={hit}/></g>:null}</>;
  }else if(role==='mayor'){
-  const staff='M88 5L177 0L255 55L280 122L248 184L550 475L515 494L209 225L151 240L99 168L67 79Z',drop=t<850?-8*(1-smooth(t,400,850)):reducedMotion?0:Math.sin((t-850)/40)*4*(1-smooth(t,850,1200));body=<><defs><clipPath id={`${id}-staff`}><path d={staff}/></clipPath><mask id={`${id}-town`}><rect width={600} height={500} fill="white"/><path d={staff} fill="black"/></mask></defs><g mask={`url(#${id}-town)`}>{art(role)}</g><g transform={`translate(0 ${drop})`}><g clipPath={`url(#${id}-staff)`}>{art(role)}</g></g>{[0,1,2,3,4].map(i=><circle key={i} cx={160+i*70} cy={405+(i%2)*13} r={3} fill="#ebc878" opacity={smooth(t,1000+i*100,1400+i*100)*.6}/>)}</>;
+  const rise=1-smooth(t,400,850),bounce=reducedMotion?0:t<850?0:Math.sin((t-850)/35)*3*(1-smooth(t,850,1100));
+  body=<>{art('mayor')}<ellipse cx={522} cy={443} rx={20} ry={5} fill="#17120c" opacity={.35*(1-rise)}/><g transform={`translate(0 ${-35*rise+bounce}) ${rotation(-4*rise,{x:522,y:443})}`} data-mayor-scepter="true">{art('mayor-scepter',45,20,510,466)}</g>{[0,1,2].map(i=><ellipse key={i} cx={420+i*9} cy={205+i*13} rx={2} ry={4} fill="#edc46b" opacity={smooth(t,1000+i*100,1400+i*100)*.45}/>)}</>;
  }else if(role==='recluse'){
   const angle=reducedMotion?0:Math.sin(t/420)*6*(1-smooth(t,2400,3000));body=<><ellipse cx={300+angle*4} cy={430} rx={95} ry={15} fill="#000" opacity={.35}/><g transform={rotation(angle,{x:300,y:90})}>{art(role)}</g></>;
  }else if(role==='scarlet_woman'){
