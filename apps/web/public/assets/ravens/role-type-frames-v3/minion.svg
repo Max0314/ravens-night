@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="320" viewBox="0 0 240 320">
+  <title>minion minimal dark bronze portrait frame</title>
+  <defs><g id="corner" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M7 39C10 24 25 12 42 11M10 13C21 22 21 35 40 37" stroke-width="2.3"/>
+      <path d="M14 27L8 19L19 23ZM19 22L22 12L24 25ZM25 33L20 41L31 35ZM34 35L41 29L39 38Z" fill="#786344" stroke-width=".7"/></g></defs>
+  <g fill="#151913" fill-opacity=".86">
+    <path d="M8 47V17Q8 8 17 8H53Q24 21 8 47Z"/>
+    <path d="M8 47V17Q8 8 17 8H53Q24 21 8 47Z" transform="translate(240 0) scale(-1 1)"/>
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M58 3H18Q3 3 3 18V302Q3 317 18 317H222Q237 317 237 302V18Q237 3 222 3H182" stroke="#51452f" stroke-width="1.2" opacity=".85"/>
+    <path d="M8 91C14 49 65 18 120 9C175 18 226 49 232 91V299Q232 312 219 312H21Q8 312 8 299Z" stroke="#786344" stroke-width="1.35" opacity=".78"/>
+  </g>
+  <g stroke="#786344" stroke-width="1.85" opacity=".86">
+    <use href="#corner" transform="translate(6 6)"/>
+    <use href="#corner" transform="translate(234 6) scale(-1 1)"/>
+  </g>
+</svg>
