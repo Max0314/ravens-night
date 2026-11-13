@@ -1,0 +1,262 @@
+{
+  "version": 8,
+  "group": "remaining-material-detail",
+  "rebuild": "python scripts/build-role-audio-v8.py",
+  "sourceIndex": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v8/sources.json",
+  "license": "CC0-1.0 recordings; original project material arrangement",
+  "files": [
+    {
+      "id": "scepter-contact",
+      "file": "scepter-contact.mp3",
+      "sha256": "8a587c09b947d0793adc1e954f2b94603d5a97aa938de44b77a903245c16d2ad",
+      "bytes": 6730,
+      "durationMs": 340.658,
+      "decodedBytes": 60092,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 5.17,
+      "peakOffsetMs": 10.816,
+      "peakDbFS": -10.43,
+      "rmsDbFS": -24.41,
+      "sources": [
+        "wood-contact",
+        "light-metal"
+      ],
+      "layers": [
+        "Recorded wood contact plus quiet metal fitting rattle, one scepter footfall"
+      ],
+      "processing": "highpass=f=70,lowpass=f=4500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -24,
+        "peakCap": 0.63,
+        "appliedGain": 1.166104,
+        "attackMs": 3.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "soldier-shield",
+      "file": "soldier-shield.mp3",
+      "sha256": "58bcef31385cd9573af589b9c2acd0a1df5770ffc708b74711a3cd19ff894a70",
+      "bytes": 13835,
+      "durationMs": 800.0,
+      "decodedBytes": 141120,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 5.193,
+      "peakOffsetMs": 16.803,
+      "peakDbFS": -11.93,
+      "rmsDbFS": -24.45,
+      "sources": [
+        "metal-contact"
+      ],
+      "layers": [
+        "Single recorded metal contact with damped tail; no second armor strike or shot-result sound"
+      ],
+      "processing": "highpass=f=120,lowpass=f=5500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -24,
+        "peakCap": 0.63,
+        "appliedGain": 1.877377,
+        "attackMs": 4.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "cloak-unfold",
+      "file": "cloak-unfold.mp3",
+      "sha256": "b33d8f86256ab7fdef9a3ae8ea2be6d9d42e792cd7d7929e0127ca19edcca745",
+      "bytes": 18851,
+      "durationMs": 1100.0,
+      "decodedBytes": 194040,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 64.989,
+      "peakOffsetMs": 225.488,
+      "peakDbFS": -15.65,
+      "rmsDbFS": -27.44,
+      "sources": [
+        "cloth-heavy"
+      ],
+      "layers": [
+        "Recorded heavy cloth stretched to follow opening cape, no wing or low musical drone"
+      ],
+      "processing": "highpass=f=100,lowpass=f=6500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -27,
+        "peakCap": 0.63,
+        "appliedGain": 0.475495,
+        "attackMs": 55.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "cloak-hem",
+      "file": "cloak-hem.mp3",
+      "sha256": "e5b1cfeb8997befa12c5c165dcd96be6652bd2649f5abd93bc763008bf333848",
+      "bytes": 10074,
+      "durationMs": 550.0,
+      "decodedBytes": 97020,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 31.315,
+      "peakOffsetMs": 179.433,
+      "peakDbFS": -16.72,
+      "rmsDbFS": -30.45,
+      "sources": [
+        "cloth"
+      ],
+      "layers": [
+        "Different light cloth take for delayed hem friction, no impact"
+      ],
+      "processing": "highpass=f=160,lowpass=f=6500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -30,
+        "peakCap": 0.63,
+        "appliedGain": 0.363907,
+        "attackMs": 60.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "cup-sway-left",
+      "file": "cup-sway-left.mp3",
+      "sha256": "e789e3ca322ec6ce7479c27b316ae2160fef5643e2e4bc12ee61fdbc0f5a737f",
+      "bytes": 8402,
+      "durationMs": 470.0,
+      "decodedBytes": 82908,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 39.501,
+      "peakOffsetMs": 338.027,
+      "peakDbFS": -16.57,
+      "rmsDbFS": -29.41,
+      "sources": [
+        "wine-liquid"
+      ],
+      "layers": [
+        "Fixed recorded wine-liquid excerpt 1200..1700ms, softened as small liquid agitation during cup sway; no invented bubbles or clink"
+      ],
+      "processing": "highpass=f=120,lowpass=f=3000 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -29,
+        "peakCap": 0.63,
+        "appliedGain": 2.750312,
+        "attackMs": 50.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "cup-sway-right",
+      "file": "cup-sway-right.mp3",
+      "sha256": "7c462545b8bb78916c08a308e01b7051b5c852fa1efe7585c8dcd67212bb461e",
+      "bytes": 8402,
+      "durationMs": 470.0,
+      "decodedBytes": 82908,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 7.891,
+      "peakOffsetMs": 155.079,
+      "peakDbFS": -17.96,
+      "rmsDbFS": -31.46,
+      "sources": [
+        "wine-liquid"
+      ],
+      "layers": [
+        "Different wine-liquid excerpt 2700..3200ms for opposite return sway; material foley, not claimed as an isolated real swirl recording"
+      ],
+      "processing": "highpass=f=120,lowpass=f=3000 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -31,
+        "peakCap": 0.63,
+        "appliedGain": 5.971256,
+        "attackMs": 50.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "empath-pulse",
+      "file": "empath-pulse.mp3",
+      "sha256": "d39c89b19a7ada3df04bad3f7bbeb23178edadfcd29dcdae78daf260e3ca20a0",
+      "bytes": 4640,
+      "durationMs": 220.0,
+      "decodedBytes": 38808,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 8.095,
+      "peakOffsetMs": 22.744,
+      "peakDbFS": -12.51,
+      "rmsDbFS": -26.45,
+      "sources": [],
+      "layers": [
+        "Original authored single low pulse with quiet upper partials; shared visual clock supplies the same fixed left/right double-beat pattern for every result; not a real heartbeat recording"
+      ],
+      "processing": "highpass=f=38,lowpass=f=260 -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -26,
+        "peakCap": 0.63,
+        "appliedGain": 0.34047,
+        "attackMs": 10.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "mayor-document",
+      "file": "mayor-document.mp3",
+      "sha256": "bf2678f8c0cfa0b4dfce3ca9dc9a1565ed5c6f274e273235e271de36871d7cd9",
+      "bytes": 10492,
+      "durationMs": 600.0,
+      "decodedBytes": 105840,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 18.798,
+      "peakOffsetMs": 397.415,
+      "peakDbFS": -16.02,
+      "rmsDbFS": -29.43,
+      "sources": [
+        "paper-draw"
+      ],
+      "layers": [
+        "Real paper unfolding during council document movement, no stamp, ding or success cue"
+      ],
+      "processing": "highpass=f=150,lowpass=f=6000 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -29,
+        "peakCap": 0.63,
+        "appliedGain": 1.874513,
+        "attackMs": 40.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "flower-ribbon",
+      "file": "flower-ribbon.mp3",
+      "sha256": "fb1ce0818764c5b4acf080933a819d52c724a64309af2e710f0beca721ead92b",
+      "bytes": 7984,
+      "durationMs": 420.0,
+      "decodedBytes": 74088,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 25.125,
+      "peakOffsetMs": 138.594,
+      "peakDbFS": -19.41,
+      "rmsDbFS": -32.43,
+      "sources": [
+        "cloth"
+      ],
+      "layers": [
+        "Very quiet recorded cloth friction as silk ribbon foley during flower opening; no invented petal impact"
+      ],
+      "processing": "highpass=f=240,lowpass=f=6500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -32,
+        "peakCap": 0.63,
+        "appliedGain": 0.31389,
+        "attackMs": 70.0,
+        "releaseMs": 70
+      }
+    }
+  ],
+  "totalBytes": 89410,
+  "totalDecodedBytes": 876824
+}

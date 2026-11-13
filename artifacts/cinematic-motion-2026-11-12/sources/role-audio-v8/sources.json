@@ -1,0 +1,103 @@
+{
+  "sources": [
+    {
+      "id": "wood-contact",
+      "file": "wood-contact.ogg",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v8/wood-contact.ogg",
+      "sourcePage": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "archivePath": "artifacts/cinematic-motion-2026-11-12/sources/kenney.zip",
+      "archiveSha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+      "archiveMember": "Audio/impactWood_heavy_001.ogg",
+      "sha256": "f1b07a53ac10c615fff9ba470511fdeb722b5902e1a8520759fc20ad6f546015",
+      "bytes": 6239
+    },
+    {
+      "id": "metal-contact",
+      "file": "metal-contact.ogg",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v8/metal-contact.ogg",
+      "sourcePage": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "archivePath": "artifacts/cinematic-motion-2026-11-12/sources/kenney.zip",
+      "archiveSha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+      "archiveMember": "Audio/impactMetal_heavy_000.ogg",
+      "sha256": "e07045693e4a2b3d165c424e3dab4c781d9ff8880a386880ac89a51315d7f831",
+      "bytes": 6110
+    },
+    {
+      "id": "light-metal",
+      "file": "light-metal.ogg",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v8/light-metal.ogg",
+      "sourcePage": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "archivePath": "artifacts/cinematic-motion-2026-11-12/sources/kenney.zip",
+      "archiveSha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+      "archiveMember": "Audio/impactMetal_light_001.ogg",
+      "sha256": "fba69c467ddd85da7b1d82e259f936b876d9ba6a3d6f1b24bdd10468e46bfe08",
+      "bytes": 6967
+    },
+    {
+      "id": "cloth",
+      "file": "cloth.wav",
+      "sha256": "d829b5ed7a47086771c639495713498e44ce28814f4ea6ddf30cb1f18c085c3f",
+      "bytes": 132918,
+      "archiveSha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "archiveMember": "RPG Sound Pack/inventory/cloth.wav",
+      "page": "https://opengameart.org/content/rpg-sound-pack",
+      "url": "https://opengameart.org/sites/default/files/rpg_sound_pack.zip",
+      "author": "artisticdude",
+      "license": "CC0-1.0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-11-13",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v6/cloth.wav"
+    },
+    {
+      "id": "cloth-heavy",
+      "file": "cloth-heavy.wav",
+      "sha256": "73bbbd383b5bbc8b8313f6fee84040aecc1de09714afbe51ba4e5162cbac3528",
+      "bytes": 108792,
+      "archiveSha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "archiveMember": "RPG Sound Pack/inventory/cloth-heavy.wav",
+      "page": "https://opengameart.org/content/rpg-sound-pack",
+      "url": "https://opengameart.org/sites/default/files/rpg_sound_pack.zip",
+      "author": "artisticdude",
+      "license": "CC0-1.0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-11-13",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v6/cloth-heavy.wav"
+    },
+    {
+      "id": "wine-liquid",
+      "file": "wine-liquid.flac",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v8/wine-liquid.flac",
+      "sourcePage": "https://bigsoundbank.com/serving-wine-1-s1721.html",
+      "downloadUrl": "https://bigsoundbank.com/UPLOAD/flac/1721.flac",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "a9c3dbcb1a316a1b42fd69e64f52012332ef06ad8dc98c390db2a4af26d5b10e",
+      "bytes": 556280,
+      "description": "Actual wine poured into glass; only liquid excerpt as cup movement foley, not claimed as an isolated swirl recording"
+    },
+    {
+      "id": "paper-draw",
+      "file": "paper-draw.mp3",
+      "url": "https://bigsoundbank.com/UPLOAD/mp3/2213.mp3",
+      "page": "https://bigsoundbank.com/pages-that-turn-6-s2213.html",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://bigsoundbank.com/licenses.html",
+      "sha256": "34167cc701a517c6d8501ec60fee0d90b6edc8f22b1dca1fdd94ce352968cf34",
+      "bytes": 42464,
+      "checked": "2026-11-13",
+      "format": "Unmodified publisher MP3 source (protected runtime paper tracks unchanged)",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v6/paper-draw.mp3"
+    }
+  ]
+}
