@@ -1,0 +1,239 @@
+{
+  "collection": "historical-a-independent-frames-v1",
+  "createdAt": "2026-11-13",
+  "tool": "built-in image_gen",
+  "sourceRevision": "9a07e75",
+  "processing": "Whole-image proportional resize and lossless encoding; original alpha preserved. New complete painted reconstruction, not a pixel extraction of old portraits.",
+  "aspectRatio": "3:4",
+  "integration": "Independent overlay art only; not enabled in UI here. Use one frame overlay, avoid an additional decorative CSS border. Player avatars and town dead-seat frames are outside this collection.",
+  "frames": [
+    {
+      "id": "lancet-square",
+      "name": "双尖窗角板直底框",
+      "structure": "Upper twin pointed-window/trefoil panels; column-like side rails; square bottom corners and straight bottom rail.",
+      "roles": [
+        "washerwoman",
+        "librarian",
+        "fortune_teller",
+        "undertaker",
+        "virgin",
+        "recluse",
+        "scarlet_woman"
+      ],
+      "styleReference": "artifacts/character-production-a-2026-09-29/originals/librarian.png",
+      "historicalSources": [
+        {
+          "role": "washerwoman",
+          "file": "artifacts/character-production-a-2026-09-29/originals/washerwoman.png",
+          "sha256": "5881c72d63032ec2031473ca57de1b7724abbea0c1a74e5db85b23e6d8d46c05"
+        },
+        {
+          "role": "librarian",
+          "file": "artifacts/character-production-a-2026-09-29/originals/librarian.png",
+          "sha256": "c06a7d474912fddb27cfbf266277182467cf5ea042f7d4380a03e9a9b77a42ab"
+        },
+        {
+          "role": "fortune_teller",
+          "file": "artifacts/character-production-a-2026-09-29/originals/fortune_teller.png",
+          "sha256": "9a8a852216839c9a3290599390d58c37585634ea6cf53cfeed5c69575434aef7"
+        },
+        {
+          "role": "undertaker",
+          "file": "artifacts/character-production-a-2026-09-29/originals/undertaker.png",
+          "sha256": "f7247957045b1322816a54ab07669e0e5d894fc8dbc3959102206831839f7db8"
+        },
+        {
+          "role": "virgin",
+          "file": "artifacts/character-production-a-2026-09-29/originals/virgin.png",
+          "sha256": "76c016fbb53e80f602e4938c6f53acddf429254b328c6bf6a9b7435481a29b87"
+        },
+        {
+          "role": "recluse",
+          "file": "artifacts/character-production-a-2026-09-29/originals/recluse.png",
+          "sha256": "778a8ab8d4b2b75393cd65a923c91f760a7e7c089aada484b8d9402efe909440"
+        },
+        {
+          "role": "scarlet_woman",
+          "file": "artifacts/character-production-a-2026-09-29/originals/scarlet_woman.png",
+          "sha256": "f1705b5fa0796abbe6cc4113df56ff80bff41ba34f19b76938eccfe2682119af"
+        }
+      ],
+      "source": "artifacts/independent-frames-2026-11-13/originals/lancet-square.png",
+      "sourceSha256": "159fa21da4478dc82604ea6bafbcd61c4e65fb4c3aed15e7e6dbb72c4d56867d",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "sourceCentreAlpha": 0,
+      "sourceCentralRegionMaxAlpha": 1,
+      "variants": [
+        {
+          "file": "lancet-square.png",
+          "width": 960,
+          "height": 1280,
+          "bytes": 763645,
+          "sha256": "dcd9d6420f50914bae805fcb811e04b6f73a1d9454882cc1f018dbbe3081cbf9"
+        },
+        {
+          "file": "lancet-square.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 457576,
+          "sha256": "949637a1dde7bc738267a155b5afee64ee864bf8e61b09a034d78db130b5f7b5"
+        }
+      ]
+    },
+    {
+      "id": "fleur-rounded",
+      "name": "百合长矛圆底框",
+      "structure": "Upper fleur-de-lis spear with diagonal sprig; lower concave quarter-circle corner plates with fleur-de-lis relief.",
+      "roles": [
+        "chef",
+        "monk",
+        "mayor",
+        "ravenkeeper",
+        "baron"
+      ],
+      "styleReference": "artifacts/character-production-a-2026-09-29/originals/baron.png",
+      "historicalSources": [
+        {
+          "role": "chef",
+          "file": "artifacts/character-production-a-2026-09-29/originals/chef.png",
+          "sha256": "6efaa889cf520f2bb461e3383a7b2be2a3dd70cd32c91a0e6f5fe4b6621c8ead"
+        },
+        {
+          "role": "monk",
+          "file": "artifacts/character-production-a-2026-09-29/originals/monk.png",
+          "sha256": "c03be8a3ab9937d1dd2078d922d3397b435003b3a09337f5a3ec3e844c7c6659"
+        },
+        {
+          "role": "mayor",
+          "file": "artifacts/character-production-a-2026-09-29/originals/mayor.png",
+          "sha256": "d1380887d33983cf2a4023a22fc4c1a56937a44d84bfe129da9ce967247a3699"
+        },
+        {
+          "role": "ravenkeeper",
+          "file": "artifacts/character-production-a-2026-09-29/originals/ravenkeeper.png",
+          "sha256": "9eb769065c6f1523ddf922c64ab9c9fedcaf03a561fdd178e9f6c5b307f8a293"
+        },
+        {
+          "role": "baron",
+          "file": "artifacts/character-production-a-2026-09-29/originals/baron.png",
+          "sha256": "6f893dbf46572df9bbdc5ff4bfdef845748bde67fa0ce9be54002114aa3193a6"
+        }
+      ],
+      "source": "artifacts/independent-frames-2026-11-13/originals/fleur-rounded.png",
+      "sourceSha256": "be3a4822848854a095da32771cc8fc27976d4bd3d8d204c09d71159944079057",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "sourceCentreAlpha": 0,
+      "sourceCentralRegionMaxAlpha": 1,
+      "variants": [
+        {
+          "file": "fleur-rounded.png",
+          "width": 960,
+          "height": 1280,
+          "bytes": 762036,
+          "sha256": "9bf795676a5a1e7f774be287fa55059479b9b14fae12056303602a8967a55303"
+        },
+        {
+          "file": "fleur-rounded.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 444160,
+          "sha256": "33369c8bf214bac7cae9431da841b94f8c0158590c1c386207acf17451060f3b"
+        }
+      ]
+    },
+    {
+      "id": "leaf-rounded",
+      "name": "镂空叶枪圆底框",
+      "structure": "Upper openwork trefoil/leaf-spear tracery; lower concave quarter-circle plates with scroll vines and three-lobed flowers.",
+      "roles": [
+        "investigator",
+        "empath",
+        "slayer",
+        "butler",
+        "drunk",
+        "saint",
+        "poisoner",
+        "spy",
+        "imp",
+        "soldier"
+      ],
+      "styleReference": "artifacts/character-production-a-2026-09-29/originals/investigator.png",
+      "historicalSources": [
+        {
+          "role": "investigator",
+          "file": "artifacts/character-production-a-2026-09-29/originals/investigator.png",
+          "sha256": "56cb8e739a12523293f22ea4a19df063ecd04aa8056a1e1b520b6038656d1c4f"
+        },
+        {
+          "role": "empath",
+          "file": "artifacts/character-production-a-2026-09-29/originals/empath.png",
+          "sha256": "14af4f9fb9476c5bc632901c39cfe4fb7ee087938def99f08e4a688f32c913fe"
+        },
+        {
+          "role": "slayer",
+          "file": "artifacts/character-production-a-2026-09-29/originals/slayer.png",
+          "sha256": "ee52e51dca5a2472829ca3e9275e29d7ea6c0cb338dcd9700973e4da0380c612"
+        },
+        {
+          "role": "butler",
+          "file": "artifacts/character-production-a-2026-09-29/originals/butler.png",
+          "sha256": "521e2ad7430e20b016b8af2dbf798afc82e20b6a813e995a42ea392f2d217310"
+        },
+        {
+          "role": "drunk",
+          "file": "artifacts/character-production-a-2026-09-29/originals/drunk.png",
+          "sha256": "adb55c98d61f7e6fec206128b79aa1b80c04c730a4b62936db7873a3461a91fd"
+        },
+        {
+          "role": "saint",
+          "file": "artifacts/character-production-a-2026-09-29/originals/saint.png",
+          "sha256": "8cbfda6d1c6f8374f60132ea768a4e6d6bdf258d604c82678973429f73e752b6"
+        },
+        {
+          "role": "poisoner",
+          "file": "artifacts/character-production-a-2026-09-29/originals/poisoner.png",
+          "sha256": "30df55e9d8b7f1ccc2cf657c9f62112c7b73af374367b617726a4d52fef27b5f"
+        },
+        {
+          "role": "spy",
+          "file": "artifacts/character-production-a-2026-09-29/originals/spy.png",
+          "sha256": "d6d5ebbe83639f7a7c7fe3265dd3ae825b51deb9c306de7e346ec6e88cbbc937"
+        },
+        {
+          "role": "imp",
+          "file": "artifacts/character-production-a-2026-09-29/originals/imp.png",
+          "sha256": "82359c0de4ca95e3c15c5ed31ac9d9ac75a1871d09b3840d52ef7e5f64c594bf"
+        },
+        {
+          "role": "soldier",
+          "file": "artifacts/character-production-a-2026-09-29/originals/soldier.png",
+          "sha256": "fc70ff9ec2ef9ce824856e43c69b8d6ad46899f1580e4f7a44eb225f708285e4"
+        }
+      ],
+      "source": "artifacts/independent-frames-2026-11-13/originals/leaf-rounded.png",
+      "sourceSha256": "328aa48d0c654e2aa0eaf9e32adddde55d2907744dd6b909481185035a08d0db",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "sourceCentreAlpha": 0,
+      "sourceCentralRegionMaxAlpha": 1,
+      "variants": [
+        {
+          "file": "leaf-rounded.png",
+          "width": 960,
+          "height": 1280,
+          "bytes": 722741,
+          "sha256": "d2e74812cf338d454e8221c5141dd514691c6a1d750e7a25545c70a9239e9fab"
+        },
+        {
+          "file": "leaf-rounded.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 434404,
+          "sha256": "a633c22032393199a65e2fde6213299bd5c42fca105eddec3b1f6f21e6df1841"
+        }
+      ]
+    }
+  ]
+}
