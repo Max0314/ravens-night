@@ -64,10 +64,15 @@ for part in contract['groups'][args.group]['parts']:
         visible = bounds(material.getchannel('A'), 8)
         assert visible, source
         crop = (max(0,visible[0]-1)+region[0],max(0,visible[1]-1)+region[1],min(material.width,visible[2]+1)+region[0],min(material.height,visible[3]+1)+region[1])
-        x,y,w,h = part['targetRect']
-        image = Image.new('RGBA',(600,500))
-        image.alpha_composite(original.crop(crop).resize((w,h),Image.Resampling.LANCZOS),(x,y))
-        save(image, {'id':part['id'],'group':args.group,'source':str(source.relative_to(ROOT)).replace('\\','/'),'sourceSha256':sha(source),'sourceSize':original.size,'sourceRegion':region,'sourceRect':crop,'targetRect':part['targetRect'],'prompt':str(prompt.relative_to(ROOT)).replace('\\','/'),'processing':'One naturally separate generated sprite from its declared non-overlapping source region; preserve painted alpha and normalize only this complete sprite to target rect, no geometric repaint.'})
+        if 'localSize' in part:
+            image = original.crop(crop).resize(tuple(part['localSize']),Image.Resampling.LANCZOS)
+            placement = {'localSize':part['localSize']}
+        else:
+            x,y,w,h = part['targetRect']
+            image = Image.new('RGBA',(600,500))
+            image.alpha_composite(original.crop(crop).resize((w,h),Image.Resampling.LANCZOS),(x,y))
+            placement = {'targetRect':part['targetRect']}
+        save(image, {'id':part['id'],'group':args.group,'source':str(source.relative_to(ROOT)).replace('\\','/'),'sourceSha256':sha(source),'sourceSize':original.size,'sourceRegion':region,'sourceRect':crop,**placement,'prompt':str(prompt.relative_to(ROOT)).replace('\\','/'),'processing':'One naturally separate generated sprite from its declared non-overlapping source region; preserve painted alpha and normalize only this complete sprite to declared world rect/local size, no geometric repaint.'})
         continue
     if mode in ['project-plane', 'local-plane']:
         visible = bounds(original.getchannel('A'), 8)
@@ -96,8 +101,13 @@ for part in contract['groups'][args.group]['parts']:
         wx, wy = part['worldAnchor']
         scale = part['uniformScale']
         affine = (1 / scale, 0, sx - wx / scale, 0, 1 / scale, sy - wy / scale)
-        image = original.transform((600, 500), Image.Transform.AFFINE, affine, Image.Resampling.BICUBIC)
-        save(image, {'id': part['id'], 'group': args.group, 'source': str(source.relative_to(ROOT)).replace('\\', '/'), 'sourceSha256': sha(source), 'sourceSize': original.size, 'prompt': str(prompt.relative_to(ROOT)).replace('\\', '/'), 'sourceAnchor': part['sourceAnchor'], 'worldAnchor': part['worldAnchor'], 'uniformScale': scale, 'affineOutputToSource': affine, 'processing': 'Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.'})
+        material = original
+        if 'sourceRegion' in part:
+            material = Image.new('RGBA',original.size)
+            region = part['sourceRegion']
+            material.paste(original.crop(tuple(region)),tuple(region[:2]))
+        image = material.transform((600, 500), Image.Transform.AFFINE, affine, Image.Resampling.BICUBIC)
+        save(image, {'id': part['id'], 'group': args.group, 'source': str(source.relative_to(ROOT)).replace('\\', '/'), 'sourceSha256': sha(source), 'sourceSize': original.size, 'sourceRegion':part.get('sourceRegion'),'prompt': str(prompt.relative_to(ROOT)).replace('\\', '/'), 'sourceAnchor': part['sourceAnchor'], 'worldAnchor': part['worldAnchor'], 'uniformScale': scale, 'affineOutputToSource': affine, 'processing': 'Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.'})
         continue
     if mode == 'calibrate-transparent-hole':
         a = original.getchannel('A')
@@ -218,7 +228,7 @@ if args.group == 'coffin':
             draw.text((column*600+12,row*520+4), name+' / offline only', fill='#ccb88b')
     qa.save(HERE / 'qa/coffin-assembly.png')
 
-if args.group in ['recluse', 'saint', 'feather']:
+if args.group in ['recluse', 'saint', 'feather', 'carriage']:
     composed = Image.new('RGBA', (600,500))
     for name in contract['groups'][args.group]['defaultZ']:
         composed = Image.alpha_composite(composed, images[name])
@@ -231,6 +241,15 @@ if args.group in ['recluse', 'saint', 'feather']:
             qa.paste(panel.convert('RGB'), (column*600,row*520+20))
             draw.text((column*600+12,row*520+4), name+' / offline still only', fill='#ccb88b')
     qa.save(HERE / ('qa/'+args.group+'-assembly.png'))
+    if args.group == 'carriage':
+        papers = Image.new('RGB',(480,680),'#0b0e0d')
+        draw = ImageDraw.Draw(papers)
+        for column, name in enumerate(['carriage-paper-1','carriage-paper-2']):
+            for row, background in enumerate(['#0b0e0d','#797977']):
+                panel = Image.alpha_composite(Image.new('RGBA',(220,310),background),images[name])
+                papers.paste(panel.convert('RGB'),(column*240+10,row*340+20))
+                draw.text((column*240+10,row*340+4),name+' / local220x310',fill='#ccb88b')
+        papers.save(HERE / 'qa/carriage-papers.png')
 
 if args.group == 'raven':
     composed = Image.new('RGBA', (600, 500))
