@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="320" viewBox="0 0 240 320">
+  <title>Shared inset double-line dark gold arch</title>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 120A117 117 0 0 1 237 120V302Q237 317 222 317H18Q3 317 3 302Z" stroke="#51452f" stroke-width="1.2" opacity=".85"/>
+    <path d="M8 120A112 112 0 0 1 232 120V299Q232 312 219 312H21Q8 312 8 299Z" stroke="#786344" stroke-width="1.35" opacity=".78"/>
+  </g>
+</svg>
