@@ -15,3 +15,7 @@ test('only bounded mono excerpts enter WebAudio and all original music and runti
  for(const r of m.files){expect(createHash('sha256').update(readFileSync(r.sourcePath)).digest('hex')).toBe(r.sourceSha256);expect(createHash('sha256').update(readFileSync('apps/web/public/audio/music/v2/'+r.file)).digest('hex')).toBe(r.sha256);if(r.excerptSeconds){expect(r.durationSeconds).toBeLessThan(4.1);expect(r.offsetSeconds).toBe(r.id==='M03'?3:0);}}
  const old=JSON.parse(readFileSync('apps/web/public/audio/music/v1/manifest.json','utf8'));expect(createHash('sha256').update(readFileSync('apps/web/public/audio/music/v1/lobby-m19.mp3')).digest('hex')).toBe(old.sha256);
 });
+test('fortune divine submission uses M22 while unrelated active submissions remain quiet',()=>{
+ const divine={...scene('fortune_teller'),kind:'ACTION_SUBMITTED' as const,shown:{type:'TARGET_SUBMITTED' as const,action:'DIVINE' as const,seats:[2,3]}};
+ expect(roleMusicCues(divine)).toEqual([[0,'score:M22',.5,'continuous']]);expect(roleMusicCues({...divine,themeRoleId:'monk'})).toEqual([]);expect(roleMusicCues({...divine,shown:{...divine.shown,action:'PROTECT'}})).toEqual([]);
+});
