@@ -106,7 +106,7 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
   const audioCommand=init?.method==='POST'?/^\/api\/rooms\/([^/]+)\/(nominate|vote)$/.exec(url):null;
   const audioObservation:RoomAudioObservation|undefined=audioCommand?{liveKind:audioCommand[2]==='nominate'?'NOMINATION':'VOTE_RESULT',afterSeq:Math.max(-Infinity,...(contexts.get(contextKey(audioCommand[1]!,headers.get('x-room-mode')==='DISPLAY'?'DISPLAY':'PLAYER'))?.game?.events??[]).map(event=>event.seq))}:undefined;
   // Only receipt-backed commands can be safely retried after an ambiguous disconnect.
-  const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step|\/command)?|rehearsal\/(?:clock|advance|role)|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|first-night-info\/ack|profile|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
+  const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step|\/command)?|rehearsal\/(?:clock|advance|role)|rules|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|first-night-info\/ack|profile|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
   for (let attempt = 0; ; attempt++) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10_000);
@@ -149,16 +149,16 @@ export function claimGuest(preview:GuestPreview){return request<{claimed:true;co
 export function login(accessPassword: string) { return request<{ authorized: boolean }>("/api/auth/login", { method: "POST", body: JSON.stringify({ accessPassword }) }); }
 
 export function notifyStorageFailure(){window.dispatchEvent(new Event('ravens:storage-warning'));}
-export interface CreationIntent { creationVersion?:2;avatar?:string|null;expectedProfileRevision?:number;commandId:string;createTicket:string;playerCount:number;organizerName:string;playMode?:RoomPlayMode;voiceRoomUrl?:string }
+export interface CreationIntent { sixPlayerEvilCooperation?:boolean;creationVersion?:2;avatar?:string|null;expectedProfileRevision?:number;commandId:string;createTicket:string;playerCount:number;organizerName:string;playMode?:RoomPlayMode;voiceRoomUrl?:string }
 const creationKey=()=>`ravens_creation:${roomSessionKey()}`;
 let creationIntent:CreationIntent|undefined;
 const creationFlights=new Map<string,{fingerprint:string;promise:Promise<{code:string;organizerToken:string}>}>();
 export function readCreationIntent():CreationIntent|undefined {try{return creationIntent??=JSON.parse(sessionStorage.getItem(creationKey())??'null')??undefined;}catch{return creationIntent;}}
 export function finishCreationIntent(){creationIntent=undefined;try{sessionStorage.removeItem(creationKey());}catch{}}
 function creationWire(intent:CreationIntent){const{commandId,avatar,expectedProfileRevision,...wire}=intent;return wire;}
-export function createRoom(playerCount:number,organizerName:string,playMode:RoomPlayMode='IN_PERSON',voiceRoomUrl?:string,profile?:PlayerSelection){
+export function createRoom(playerCount:number,organizerName:string,playMode:RoomPlayMode='IN_PERSON',voiceRoomUrl?:string,profile?:PlayerSelection,sixPlayerEvilCooperation=false){
   const previous=readCreationIntent(),key=creationKey();
-  const values=previous&&!previous.creationVersion?{playerCount,organizerName:organizerName.trim(),playMode,...(playMode!=='IN_PERSON'&&voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{})}:{creationVersion:2 as const,playerCount,organizerName:organizerName.trim(),...(voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{}),...(profile?{avatar:profile.avatar,...(profile.expectedProfileRevision!==undefined?{expectedProfileRevision:profile.expectedProfileRevision}:{})}:{})};
+  const values=previous&&!previous.creationVersion?{playerCount,organizerName:organizerName.trim(),playMode,...(playMode!=='IN_PERSON'&&voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{})}:{creationVersion:2 as const,playerCount,organizerName:organizerName.trim(),...(voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{}),...(profile?{avatar:profile.avatar,...(profile.expectedProfileRevision!==undefined?{expectedProfileRevision:profile.expectedProfileRevision}:{})}:{}),...(sixPlayerEvilCooperation?{sixPlayerEvilCooperation:true}:{})};
   const fingerprint=JSON.stringify(values),current=creationFlights.get(key);
   if(current)return current.fingerprint===fingerprint?current.promise:Promise.reject(new ApiError('正在创建房间，请等待原操作结果',409,'CREATION_PENDING'));
   if(previous){const{commandId,createTicket,...old}=previous;if(JSON.stringify(old)!==fingerprint)return Promise.reject(new ApiError('上次创建结果待确认，请继续原操作',409,'CREATION_PENDING'));}
@@ -168,7 +168,7 @@ export function createRoom(playerCount:number,organizerName:string,playMode:Room
     catch(error){if(error instanceof ApiError&&error.status<500&&error.status!==429)finishCreationIntent();throw error;}
   })().finally(()=>{if(creationFlights.get(key)===flight)creationFlights.delete(key);});creationFlights.set(key,flight);return flight.promise;
 }
-export interface RoomSummary {code?:string;roomInstanceId:string;state:RoomView['state'];canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number;playerCount?:number;occupiedAvatars:string[]}
+export interface RoomSummary {sixPlayerEvilCooperation?:boolean;code?:string;roomInstanceId:string;state:RoomView['state'];canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number;playerCount?:number;occupiedAvatars:string[]}
 export function getRoomSummary(code:string){return request<RoomSummary>(`/api/rooms/${encodeURIComponent(code)}/summary`);}
 export function manageBots(code:string,intent:{count?:number;fill?:boolean;clear?:boolean}){return request<PrivateView>(`/api/rooms/${code}/bots`,{method:"POST",body:JSON.stringify(intent)});}
 export function controlBots(code:string,intent:{autoNominate?:boolean;mode?:"RUNNING"|"PAUSED";pace?:"NORMAL"|"SLOW"}){return request<PrivateView>(`/api/rooms/${code}/bots/control`,{method:"POST",body:JSON.stringify(intent)});}
@@ -258,6 +258,7 @@ export function retryPendingRoomSwitch():Promise<JoinResult>{
 export function leaveRoom(code: string) { return request<{ left: true; roomDestroyed: boolean; organizerChanged: boolean }>(`/api/rooms/${code}/leave`, { method: "DELETE", body: "{}" }); }
 
 export function getRoom(code: string, mode?: "PLAYER" | "DISPLAY") { return request<RoomView>(`/api/rooms/${code}`, mode ? { headers: { "x-room-mode": mode } } : undefined); }
+export function setSixPlayerEvilCooperation(code:string,enabled:boolean){return request<RoomView>(`/api/rooms/${code}/rules`,{method:'POST',body:JSON.stringify({sixPlayerEvilCooperation:enabled})});}
 export function setRoomReady(code: string, ready: boolean) { return request<RoomView>(`/api/rooms/${code}/ready`, { method: "POST", body: JSON.stringify({ ready }) }); }
 export function reorderRoomSeats(code: string, participantIds: string[]) { return request<RoomView>(`/api/rooms/${code}/seats`, { method: "POST", body: JSON.stringify({ participantIds }) }); }
 export function startRoom(code: string, tutorialMode: "SKIP" | "OPTIONAL" = "SKIP") { return request<RoomView>(`/api/rooms/${code}/start`, { method: "POST", body: JSON.stringify({ tutorialMode, markHostReady: true }) }); }
