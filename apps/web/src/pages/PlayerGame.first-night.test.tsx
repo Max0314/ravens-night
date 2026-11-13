@@ -35,3 +35,14 @@ test('a locally completed identity cannot hold dawn forever while its art acknow
  const day={...view,game:{...view.game!,phase:'DAY_DISCUSSION' as const,day:1,serverNow:5000,events:[{seq:2,id:'after-identity-dawn',kind:'DAWN' as const,startsAt:5000,occurredAt:5000,durationMs:6600,timingVersion:4 as const,gameId:'integrated',day:1,outcome:'NO_DEATH' as const,message:'天亮了',seats:[]}]}};
  ui.rerender(<PlayerGame {...handlers} view={day} roomCode="ABCDEF"/>);await advance(0);expect(screen.getByRole('dialog',{name:'城镇公开演出'})).toBeVisible();expect(screen.queryByRole('button',{name:'知道了'})).toBeNull();
 });
+
+test.each([['empath','共情者','INFORMATION'],['fortune_teller','占卜师','IDENTITY']] as const)('first-night automatic %s presentation hides only its duplicate task notice, then exposes the real choice',async(roleId,name,kind)=>{
+ const view=fixture();view.role={...view.role!,roleId,name};view.roleConfirmed=true;view.game!.phase='FIRST_NIGHT';view.game!.presentationUntil=0;view.game!.events=[];view.action={kind:'SELECT_ONE',legalSeats:[2],minTargets:1,maxTargets:1,prompt:'选择今晚的目标'};view.presentations!.pending=[{historySeq:1,scene:{...identity,themeRoleId:roleId,kind,shown:kind==='IDENTITY'?{type:'IDENTITY',roleId,summary:'能力'}:{type:'COUNT',value:1}}}];
+ const ui=render(<PlayerGame {...handlers} view={view} roomCode="ABCDEF"/>);await advance(0);expect(screen.getByRole('dialog',{name:'仅你可见的完整演出'})).toBeVisible();expect(screen.queryByLabelText('我的行动提醒')).toBeNull();
+ ui.rerender(<PlayerGame {...handlers} view={view} roomCode="ABCDEF" guideOpen/>);await advance(0);expect(screen.getByLabelText('我的行动提醒')).toBeVisible();ui.rerender(<PlayerGame {...handlers} view={view} roomCode="ABCDEF"/>);await advance(0);expect(screen.queryByLabelText('我的行动提醒')).toBeNull();
+ await advance(4600);expect(screen.queryByRole('dialog',{name:'仅你可见的完整演出'})).toBeNull();expect(screen.getByRole('button',{name:'确认选择（0/1）'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'记录'}));await advance(0);expect(screen.getByLabelText('我的行动提醒')).toBeVisible();
+});
+test('another night keeps its real action notice while automatic information plays',async()=>{
+ const view=fixture();view.roleConfirmed=true;view.game!.phase='OTHER_NIGHT';view.game!.presentationUntil=0;view.game!.events=[];view.action={kind:'SELECT_ONE',legalSeats:[2],minTargets:1,maxTargets:1,prompt:'选择今晚的目标'};view.presentations!.pending=[{historySeq:2,scene:{version:1,id:'later-info',kind:'INFORMATION',themeRoleId:'empath',shown:{type:'COUNT',value:1}}}];
+ render(<PlayerGame {...handlers} view={view} roomCode="ABCDEF"/>);await advance(0);expect(screen.getByRole('dialog',{name:'仅你可见的完整演出'})).toBeVisible();expect(screen.getByLabelText('我的行动提醒')).toBeVisible();
+});
