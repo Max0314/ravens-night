@@ -6,7 +6,7 @@
 
 全曲使用每轨至多一个HTMLAudio，稳定owner缓存4个曲播放器，普通交叠2000ms、实际前景期间0.8→0.26于240ms调整，两个包络独立，重复playing/Promise确认不重开淡化。总静音、后台、MANUAL时间暂停、预览停正式播放；恢复同曲保留playhead；换房/下一把取消旧曲和过期请求。新曲未实际准备好前保留旧曲，拒绝播放/8秒未起播由全局音符状态提供重试；用户手势同栈play，晚到请求不恢复被取消的曲。DISPLAY/LOADING/LOGIN沿旧owner禁用，不自行新增投屏音乐。
 
-私密配乐由独立`role-score.ts`附加，不重写物体roleAudioCues：7善良信息角色washerwoman/chef/investigator/librarian/empath/undertaker/ravenkeeper的IDENTITY或INFORMATION用M03原曲3秒处起4秒；fortune_teller同两类演出用M22原曲0秒处4秒；其他及ACTION_SUBMITTED/EVIL_START/ROLE_CHANGE不增加配乐。YES/NO、情报数字、候选/真假/席位不改变选曲。片段单声道、80ms淡入/末300ms淡出，不延长私密4秒轴。全部同master/private参与方式门控；独立music限额1，不挤掉洗衣水布/滴水或窃语。暂停offset续、跳过取消、离页/后台/线下静音全停。
+私密配乐由独立`role-score.ts`附加，不重写物体roleAudioCues：7善良信息角色washerwoman/chef/investigator/librarian/empath/undertaker/ravenkeeper的IDENTITY或INFORMATION用M03原曲3秒处起4秒；fortune_teller同两类演出以及其合法ACTION_SUBMITTED/TARGET_SUBMITTED.action=DIVINE晶球提交演出用M22原曲0秒处4秒；其他主动提交及EVIL_START/ROLE_CHANGE不增加配乐。YES/NO、情报数字、候选/真假/席位不改变选曲。片段单声道、80ms淡入/末300ms淡出，不延长私密4秒轴。全部同master/private参与方式门控；独立music限额1，不挤掉洗衣水布/滴水或窃语。暂停offset续、跳过取消、离页/后台/线下静音全停。
 
 `scoreDuckingActive()`只查询已经创建且当前时间实际覆盖的允许播放音源，预热/打开私密UI无声时为false；IN_PERSON不能仅因秘密界面打开改变本机背景。公开枪/钟/三式与投票已有音源可轻压背景，L02/L03/L04完整尾音仍按既有逻辑播放，不因配乐切换而剪掉。预览临时设置不写正式偏好且不压正式背景，返回恢复原正式状态。
 
