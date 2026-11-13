@@ -9,7 +9,7 @@ export const cinematicTiming = {
   washer: { dipStart: 600, immersed: 1100, scrubStart: 1100, liftStart: 1650, raised: 2100, dripStart: 1700, dripEnd: 2900, inkStart: 1900, inkSet: 2250 },
   book: { start: 650, middle: 1150, end: 1850 },
   coffin: { start: 600, open: 1600, reveal: 1900 },
-  raven: { attention: 350, flapStart: 650, spread: 1225, flapEnd: 1800, settle: 2400 },
+  raven: { attention: 350, flapStart: 650, spread: 1225, feather: 1350, flapEnd: 1800, featherLanded: 1850, settle: 2400 },
   empath: { left: 650, right: 1050, echoDelay: 170, settle: 1850 },
   mayor: { lift: 400, contact: 850, document: 1050, settle: 1650 },
   armor: { contact: 700, settle: 1350 },
