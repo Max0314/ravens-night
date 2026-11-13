@@ -2,6 +2,7 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
+import {PageTextureCache} from './page-textures.js';
 import { GuideOverlay } from "./GuideOverlay.js";
 import { tutorialSteps } from "../guide-content.js";
 import {StrictMode} from 'react';
@@ -202,10 +203,40 @@ test('live guide pointer wiring selects the starting vertical corner and tracks 
   Object.defineProperties(book,{clientWidth:{value:360},clientHeight:{value:600}});
   fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:300,clientY:40});fireEvent.pointerMove(book,{pointerId:1,clientX:220,clientY:90});
   expect(document.querySelector('.page-turn-layer')?.getAttribute('data-turn-corner')).toBe('top');
-  const first=document.querySelector<HTMLElement>('.page-turn-old')!.style.clipPath;
-  fireEvent.pointerMove(book,{pointerId:1,clientX:220,clientY:140});expect(document.querySelector<HTMLElement>('.page-turn-old')!.style.clipPath).not.toBe(first);
+  const first=document.querySelector<HTMLElement>('.page-turn-next')!.style.clipPath;
+  fireEvent.pointerMove(book,{pointerId:1,clientX:220,clientY:140});expect(document.querySelector<HTMLElement>('.page-turn-next')!.style.clipPath).not.toBe(first);
   fireEvent.pointerCancel(book,{pointerId:1,clientX:220,clientY:140});act(()=>vi.advanceTimersByTime(200));expect(book).toHaveAttribute('data-page-key','tutorial:0');expect(audio.turn).not.toHaveBeenCalled();
   fireEvent.pointerDown(book,{pointerId:2,button:0,clientX:300,clientY:550});fireEvent.pointerMove(book,{pointerId:2,clientX:140,clientY:500});
   expect(document.querySelector('.page-turn-layer')?.getAttribute('data-turn-corner')).toBe('bottom');
   fireEvent.pointerUp(book,{pointerId:2,clientX:140,clientY:500});act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).toHaveBeenCalledOnce();
+});
+
+
+test('a held touch keeps the original decoded role images and never starts a second outgoing grid',()=>{
+  installPointer();vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);const book=document.querySelector<HTMLElement>('.guide-book')!,surface=document.querySelector('.guide-page-surface')!,images=[...surface.querySelectorAll('img')];
+  Object.defineProperties(book,{clientWidth:{value:360},clientHeight:{value:600}});
+  fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:300,clientY:60});
+  expect(document.querySelector('.page-turn-layer')).toBeNull();expect([...surface.querySelectorAll('img')]).toEqual(images);
+  fireEvent.pointerMove(book,{pointerId:1,clientX:200,clientY:90});expect(document.querySelector('.page-turn-layer--live')).not.toBeNull();expect(document.querySelector('.page-turn-old')).toBeNull();
+  expect([...surface.querySelectorAll('img')].every((image,i)=>image===images[i])).toBe(true);
+  fireEvent.pointerCancel(book,{pointerId:1,clientX:200,clientY:90});act(()=>vi.advanceTimersByTime(200));
+  expect(book).toHaveAttribute('data-page-key','roles:TOWNSFOLK:grid');expect([...surface.querySelectorAll('img')].every((image,i)=>image===images[i])).toBe(true);
+});
+
+test('pressing a suspended book does not resume offscreen texture cloning before the scene releases it',async()=>{
+  installPointer();const prepare=vi.spyOn(PageTextureCache.prototype,'prepare').mockResolvedValue(undefined);
+  render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);const book=document.querySelector<HTMLElement>('.guide-book')!;Object.defineProperties(book,{clientWidth:{value:360},clientHeight:{value:600}});
+  fireEvent(window,new Event('ravens:release-book-textures'));prepare.mockClear();
+  fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:150,clientY:100});fireEvent.pointerUp(book,{pointerId:1,clientX:150,clientY:100});
+  expect(prepare).not.toHaveBeenCalled();
+  await act(async()=>{fireEvent(window,new Event('ravens:resume-book-textures'));});expect(prepare).toHaveBeenCalled();cleanup();prepare.mockRestore();
+});
+
+test('the first role category returns rightward to the last tutorial and comes back leftward with its saved scroll',()=>{
+  installPointer();render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);const book=document.querySelector('.guide-book')!,list=document.querySelector<HTMLElement>('.guide-page-surface .role-compendium')!;
+  list.scrollTop=180;swipePage(book,'back');expect(book).toHaveAttribute('data-page-key',`tutorial:${tutorialSteps.length-1}`);expect(screen.getByText(`规则 ${tutorialSteps.length} / ${tutorialSteps.length}`)).toBeVisible();
+  swipePage(book,'next');expect(book).toHaveAttribute('data-page-key','roles:TOWNSFOLK:grid');expect(document.querySelector<HTMLElement>('.guide-page-surface .role-compendium')!.scrollTop).toBe(180);
+  swipePage(book,'next');expect(book).toHaveAttribute('data-page-key','roles:OUTSIDER:grid');
+  fireEvent.click(screen.getByRole('button',{name:'新手教程'}));fireEvent.click(screen.getByRole('button',{name:'继续看角色表'}));expect(book).toHaveAttribute('data-page-key','roles:TOWNSFOLK:grid');
 });
