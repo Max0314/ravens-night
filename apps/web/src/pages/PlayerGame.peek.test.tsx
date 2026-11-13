@@ -66,3 +66,7 @@ test('a restored opening-night lock removes a role peek and never revives it at 
  ui.rerender(<PlayerGame {...handlers} view={locked}/>);expect(screen.queryByRole('dialog',{name:'我的角色立绘'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'查看我的角色立绘'})).not.toBeInTheDocument();expect(screen.queryByText('厨师')).not.toBeInTheDocument();
  ui.rerender(<PlayerGame {...handlers} view={{...locked,game:{...locked.game!,serverNow:7200}}}/>);expect(screen.getByRole('button',{name:'查看我的角色立绘'})).toBeVisible();expect(screen.queryByRole('dialog',{name:'我的角色立绘'})).not.toBeInTheDocument();
 });
+
+test('town header keeps day and alive counts while only avatar seats retain seat numbers',()=>{
+ const ui=render(<PlayerGame {...handlers} view={fixture()}/>),header=ui.container.querySelector('.game-header')!;expect(header).toHaveTextContent('第1天');expect(header).toHaveTextContent('存 3');expect(header).not.toHaveTextContent('我 1');expect(header.querySelector('[aria-label="你是1号"]')).toBeNull();expect(ui.container.querySelector('[data-seat-number="1"]')).not.toBeNull();
+});
