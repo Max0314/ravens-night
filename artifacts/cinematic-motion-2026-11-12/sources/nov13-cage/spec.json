@@ -1,0 +1,60 @@
+{
+  "id": "nomination-cage",
+  "file": "nomination-cage.png",
+  "generator": "built-in image_gen",
+  "prompt": "Use case: stylized-concept. A single exquisite TRANSPARENT UI overlay prop for a premium gothic social game: an unmistakable SQUARE PRISON CAGE/GATE that will cover a small player avatar. Main FRONT FACE is exactly square and seen straight on. Four robust dark forged BLACK IRON perimeter rails, three thin straight vertical iron bars, discreet crossbar top and bottom. Restrained WARM GOLD reflections along iron edges and rivets for readability at 42px. Small amount of 3D depth only toward the upper-right: visible narrow top cage roof ribs and right side ribs, no solid panels. Keep the entire central interior genuinely TRANSPARENT, with only the narrow metal bars crossing it, avatar face must remain highly visible. About 80 percent of square opening should be empty transparent space. Clearly a prison cage, NOT a decorative portrait frame, NOT a crown/classification frame, no floral gold ornament, no emblems or gem. Finely painted realistic iron with tactile rivets, premium game prop polish, crisp alpha edges. One object only. No background, no floor, no ground shadow, no person or face, no text, no rope or noose, no gallows, no other objects. Centered whole cage with generous transparent safety margin on all four sides; true alpha transparency; square image.",
+  "sourceCanvas": {
+    "width": 1254,
+    "height": 1254
+  },
+  "frontFaceRect": {
+    "x": 182,
+    "y": 244,
+    "width": 836,
+    "height": 836
+  },
+  "avatarAnchor": {
+    "cx": 600,
+    "cy": 660,
+    "diameter": 660
+  },
+  "avatarSafeSquare": {
+    "x": 270,
+    "y": 330,
+    "width": 660,
+    "height": 660
+  },
+  "clearWindows": [
+    {
+      "x": 270,
+      "y": 330,
+      "width": 125,
+      "height": 650
+    },
+    {
+      "x": 450,
+      "y": 330,
+      "width": 126,
+      "height": 650
+    },
+    {
+      "x": 630,
+      "y": 330,
+      "width": 125,
+      "height": 650
+    },
+    {
+      "x": 810,
+      "y": 330,
+      "width": 115,
+      "height": 650
+    }
+  ],
+  "placement": {
+    "imageWidthPercentOfAvatar": 190,
+    "imageLeftPercentOfAvatar": -40.90909090909091,
+    "imageTopPercentOfAvatar": -50,
+    "note": "Use the front opening anchor, not the full-image centre. Overlay must be outside the circular avatar clipping; preserve square image ratio."
+  },
+  "integrationOwner": "Gameplay session; no SeatRing, nomination/public state or detail code changed. Keep old rope asset. Highest-vote pending execution combines this cage with the existing public gallows graphic; no second gallows asset required."
+}
