@@ -16,6 +16,12 @@ async function roomFixture(app: ReturnType<typeof buildApp>) {
   return { code, cookie, player };
 }
 describe("HTTP and websocket authorization boundaries", () => {
+  test("the old sequential-ballot client must refresh before joining the new voting protocol",async()=>{
+    const app=appFixture();
+    const response=await app.inject({url:'/api/rooms/ABCDEF',headers:{'x-ravens-protocol':'6'}});
+    expect(response.statusCode).toBe(426);expect(response.json()).toMatchObject({errorCode:'CLIENT_UPGRADE_REQUIRED',refreshRequired:true});
+  });
+
   test("player and display cookies coexist, and display sessions never receive a private projection", async () => {
     const app = appFixture(); const { code, cookie, player } = await roomFixture(app);
     const display = await app.inject({ method: "POST", url: `/api/rooms/${code}/join`, payload: { nickname: "TV", mode: "DISPLAY" } });
@@ -26,7 +32,7 @@ describe("HTTP and websocket authorization boundaries", () => {
     expect((await app.inject({ url: `/api/rooms/${code}/me`, headers: { cookie: both } })).json().participant.nickname).toBe("Host");
     expect((await app.inject({ url: `/api/rooms/${code}/me`, headers: { cookie: displayCookie } })).statusCode).toBe(403);
     await app.ready();
-    const ws = await app.injectWS(`/api/rooms/${code}/live?protocol=6&mode=DISPLAY`, { headers: { cookie: both } });
+    const ws = await app.injectWS(`/api/rooms/${code}/live?protocol=7&mode=DISPLAY`, { headers: { cookie: both } });
     try {
       const received = new Promise<string>((resolve) => ws.once("message", (message: { toString(): string }) => resolve(message.toString())));
       ws.send("ping");

@@ -170,7 +170,7 @@ test("result API excludes anonymous callers and revokes removed members after re
     expect((await app.inject(url)).json().lastResult).toBeUndefined();
     expect((await app.inject(`${url}/result?token=${t.players[1]!.token}`)).json().result.gameId).toBe(saved.lastResult!.gameId);
     const me=(await app.inject(`${url}/me?token=${t.players[0]!.token}`)).json();
-    const removed=await app.inject({method:"POST",url:`${url}/participants/${t.players[1]!.participant.id}/remove`,headers:{"x-ravens-protocol":"6","x-command-id":"result-remove-member"},payload:{token:t.players[0]!.token,roomInstanceId:me.roomInstanceId,setupId:me.setupId,expectedCommandVersion:me.self.commandVersion,confirm:true}});
+    const removed=await app.inject({method:"POST",url:`${url}/participants/${t.players[1]!.participant.id}/remove`,headers:{"x-ravens-protocol":"7","x-command-id":"result-remove-member"},payload:{token:t.players[0]!.token,roomInstanceId:me.roomInstanceId,setupId:me.setupId,expectedCommandVersion:me.self.commandVersion,confirm:true}});
     expect(removed.statusCode).toBe(200);
     expect((await app.inject(`${url}/result?token=${t.players[1]!.token}`)).statusCode).toBe(403);
     expect((await app.inject(`${url}/result?token=${t.players[0]!.token}`)).json().result).toEqual(saved.lastResult);
