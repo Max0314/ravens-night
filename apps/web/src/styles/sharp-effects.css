@@ -23,4 +23,5 @@
 .event-stage--shot .event-token--fallen{transform:translate(-50%,-42%) rotate(8deg)}
 .result-blood--stain{width:80%;height:75%;filter:none}
 
-.guillotine-scene__canvas{position:absolute;left:50%;top:50%;width:min(100cqw,100cqh);height:min(100cqw,100cqh);transform:translate(-50%,-50%);isolation:isolate}
+.guillotine-scene__canvas{position:absolute;left:50%;top:50%;width:min(78vw,28vh);height:min(78vw,28vh);transform:translate(-50%,-50%);isolation:isolate}
+@supports(width:1cqw){.guillotine-scene__canvas{width:min(100cqw,100cqh);height:min(100cqw,100cqh)}}
