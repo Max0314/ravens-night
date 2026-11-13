@@ -39,6 +39,8 @@ function table(roleIds: string[], perceived: Record<number, string> = {}, cinema
   const nominateAndVote = (nominator: number, nominee: number, yes: number[]) => {
     service.nominate(room.code, players[nominator - 1]!.token, nominee);
     for (const player of players) if (service.privateView(room.code, player.token).canVote) service.vote(room.code, player.token, yes.includes(player.participant.seat!));
+    if(service.privateView(room.code,players[nominee-1]!.token).canFinishDefense)service.finishDefense(room.code,players[nominee-1]!.token);
+    const end=service.publicView(room.code).game!.nomination?.voteEndsAt;if(end!==undefined){now=end;service.advanceTime(now);}
   };
   return { service, room, players, organizerToken, mutate, settle, day, endDay, nominateAndVote, advance: (ms: number) => { now += ms; service.advanceTime(now); }, now: () => now };
 }

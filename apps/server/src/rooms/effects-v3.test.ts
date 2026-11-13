@@ -17,6 +17,16 @@ function table(version:1|2|3=3,successor=false){
   return{service,code,players,now:()=>now,advance(ms:number){now+=ms;service.advanceTime(now);}};
 }
 
+
+function restoreClockwiseBallot(t:ReturnType<typeof table>){
+  const {service,code}=t,saved=service.snapshot(code),runtime=saved.game!,sim=runtime.nomination!;
+  const legacy={ballotId:sim.ballotId,nominatorSeat:sim.nominatorSeat,nomineeSeat:sim.nomineeSeat,defenseUntil:sim.voteStartsAt!,voteStartsAt:sim.voteStartsAt!,voteEndsAt:sim.voteStartsAt!+sim.voterOrder!.length*1500,nextCountAt:sim.voteStartsAt!+1500,voteStarted:false,voterOrder:[...sim.voterOrder!],countedSeats:[] as number[],countedVotes:{} as Record<number,boolean>};
+  runtime.nomination=legacy;runtime.phaseDeadlineAt=legacy.voteEndsAt;
+  if(runtime.publicProjection?.nomination?.ballotId===legacy.ballotId){runtime.publicProjection.nomination=structuredClone(legacy);runtime.publicProjection.phaseDeadlineAt=legacy.voteEndsAt;}
+  for(const node of runtime.pendingPublications??[])if(node.patch.nomination?.ballotId===legacy.ballotId)node.patch.nomination=structuredClone(legacy);
+  if(saved.metadata)delete saved.metadata.ballotRulesVersion;service.restore([saved]);
+}
+
 test('v3 nomination commits a usable public ballot and immediate hand change survives later announcement frames',()=>{
   const t=table();t.service.nominate(t.code,t.players[0]!.token,2);
   const raw=t.service.find(t.code).game!,ballotId=raw.nomination!.ballotId;
@@ -24,24 +34,24 @@ test('v3 nomination commits a usable public ballot and immediate hand change sur
   expect(t.service.privateView(t.code,t.players[2]!.token)).toMatchObject({canVote:true,canClaimSlayer:true});
   t.service.vote(t.code,t.players[2]!.token,true);t.advance(900);
   expect(t.service.privateView(t.code,t.players[2]!.token).voteRaised).toBe(true);
-  expect(t.service.find(t.code).game!.nomination).toMatchObject({ballotId,countedSeats:[]});
+  expect(t.service.find(t.code).game!.nomination).toMatchObject({ballotId,mode:'SIMULTANEOUS',countdownStarted:false});
   expect(t.service.find(t.code).game!.presentationUntil).toBe(0);
 });
 
-test('v3 nomination can be followed immediately by a public shot without resetting hands, locked seats or ballot',()=>{
+test('v3 simultaneous nomination can be followed immediately by a public shot without resetting hands or its ballot',()=>{
   const t=table();t.service.nominate(t.code,t.players[1]!.token,3);t.service.vote(t.code,t.players[3]!.token,true);
   const before=structuredClone(t.service.find(t.code).game!.nomination!);
   t.service.useDayAbility(t.code,t.players[0]!.token,2);
   expect(t.service.find(t.code).game!.nomination!.voteStartsAt).toBe(before.voteStartsAt!+2850);
-  expect(t.service.find(t.code).game!.nomination!.countedSeats).toEqual(before.countedSeats);
+  expect(t.service.publicView(t.code).game!.nomination).toMatchObject({mode:'SIMULTANEOUS',countdownStarted:false});
   t.advance(250);expect(t.service.publicView(t.code).game!.nomination!.ballotId).toBe(before.ballotId);
   t.advance(850);expect(t.service.privateView(t.code,t.players[3]!.token).voteRaised).toBe(true);
-  t.advance(1750);expect(t.service.find(t.code).game!.nomination!.countedSeats).toEqual([]);
+  t.advance(1750);expect(t.service.publicView(t.code).game!.nomination!.currentVoterSeat).toBeUndefined();
   expect(t.service.privateView(t.code,t.players[3]!.token).canVote).toBe(true);
 });
 
 test('a shot after clockwise counting keeps the already locked votes and shifts only remaining timing',()=>{
-  const t=table();t.service.nominate(t.code,t.players[1]!.token,3);t.service.vote(t.code,t.players[3]!.token,true);t.advance(21_600);
+  const t=table();t.service.nominate(t.code,t.players[1]!.token,3);restoreClockwiseBallot(t);t.service.vote(t.code,t.players[3]!.token,true);t.advance(21_600);
   const before=structuredClone(t.service.find(t.code).game!.nomination!);
   expect(before.countedSeats).toEqual([4]);
   t.service.useDayAbility(t.code,t.players[0]!.token,2);
