@@ -1,0 +1,6 @@
+/* Night only: all motion is sampled from EventStage elapsed time, so pause/seek stays aligned. */
+.event-stage.event-stage--night_falls>.night-arrival{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.night-arrival>.night-arrival__plate{display:block;width:100%;height:100%;position:absolute;inset:0}
+.night-arrival>.night-arrival__mist{position:absolute;inset:28% -5% 30%;background:radial-gradient(ellipse at 22% 43%,#b6c6cb7a,transparent 45%),radial-gradient(ellipse at 70% 67%,#9aaeb850,transparent 49%);filter:blur(12px);mask-image:linear-gradient(transparent,#000 30%,#000 65%,transparent);-webkit-mask-image:linear-gradient(transparent,#000 30%,#000 65%,transparent);will-change:transform,opacity}
+.event-stage.event-stage--night_falls>.event-stage__halo{display:none}
+@media(prefers-reduced-motion:reduce){.night-arrival>.night-arrival__mist{will-change:auto}}
