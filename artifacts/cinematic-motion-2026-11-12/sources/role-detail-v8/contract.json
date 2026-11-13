@@ -561,6 +561,260 @@
           ]
         }
       ]
+    },
+    "carriage": {
+      "bodyReferenceAnchor": [
+        350,
+        300
+      ],
+      "wheelAxles": {
+        "nearFront": [
+          201,
+          332
+        ],
+        "nearRear": [
+          514,
+          282
+        ],
+        "farFront": [
+          126,
+          304
+        ]
+      },
+      "doorClosedQuad": [
+        [
+          350,
+          235
+        ],
+        [
+          425,
+          235
+        ],
+        [
+          425,
+          307
+        ],
+        [
+          350,
+          307
+        ]
+      ],
+      "doorHinge": [
+        [
+          425,
+          235
+        ],
+        [
+          425,
+          307
+        ]
+      ],
+      "lanternPivots": {
+        "near": [
+          273,
+          160
+        ],
+        "far": [
+          183,
+          161
+        ],
+        "inner": [
+          388,
+          128
+        ]
+      },
+      "paperLocalSize": [
+        220,
+        310
+      ],
+      "seals": "reuse separate envelope-seal and complementary fragments; no wax on paper",
+      "defaultZ": [
+        "carriage-wheel-far-front",
+        "carriage-wheel-near-rear",
+        "carriage-base",
+        "carriage-wheel-near-front",
+        "carriage-door",
+        "carriage-lantern-far",
+        "carriage-lantern-inner",
+        "carriage-lantern-near"
+      ],
+      "parts": [
+        {
+          "id": "carriage-base",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            840,
+            600
+          ],
+          "worldAnchor": [
+            350,
+            300
+          ],
+          "uniformScale": 0.35
+        },
+        {
+          "id": "carriage-wheel-near-front",
+          "sourceFile": "carriage-wheels.png",
+          "promptFile": "carriage-wheels.txt",
+          "processingMode": "anchor-fit",
+          "sourceRegion": [
+            0,
+            0,
+            820,
+            1024
+          ],
+          "sourceAnchor": [
+            548,
+            515
+          ],
+          "worldAnchor": [
+            201,
+            332
+          ],
+          "uniformScale": 0.19
+        },
+        {
+          "id": "carriage-wheel-near-rear",
+          "sourceFile": "carriage-wheels.png",
+          "promptFile": "carriage-wheels.txt",
+          "processingMode": "anchor-fit",
+          "sourceRegion": [
+            0,
+            0,
+            820,
+            1024
+          ],
+          "sourceAnchor": [
+            548,
+            515
+          ],
+          "worldAnchor": [
+            514,
+            282
+          ],
+          "uniformScale": 0.18
+        },
+        {
+          "id": "carriage-wheel-far-front",
+          "sourceFile": "carriage-wheels.png",
+          "promptFile": "carriage-wheels.txt",
+          "processingMode": "anchor-fit",
+          "sourceRegion": [
+            820,
+            0,
+            1536,
+            1024
+          ],
+          "sourceAnchor": [
+            1227,
+            530
+          ],
+          "worldAnchor": [
+            126,
+            304
+          ],
+          "uniformScale": 0.145
+        },
+        {
+          "id": "carriage-door",
+          "processingMode": "project-plane",
+          "targetQuad": [
+            [
+              350,
+              235
+            ],
+            [
+              425,
+              235
+            ],
+            [
+              425,
+              307
+            ],
+            [
+              350,
+              307
+            ]
+          ]
+        },
+        {
+          "id": "carriage-lantern-near",
+          "sourceFile": "carriage-lantern.png",
+          "promptFile": "carriage-lantern.txt",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            655,
+            75
+          ],
+          "worldAnchor": [
+            273,
+            160
+          ],
+          "uniformScale": 0.06
+        },
+        {
+          "id": "carriage-lantern-far",
+          "sourceFile": "carriage-lantern.png",
+          "promptFile": "carriage-lantern.txt",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            655,
+            75
+          ],
+          "worldAnchor": [
+            183,
+            161
+          ],
+          "uniformScale": 0.055
+        },
+        {
+          "id": "carriage-lantern-inner",
+          "sourceFile": "carriage-lantern.png",
+          "promptFile": "carriage-lantern.txt",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            655,
+            75
+          ],
+          "worldAnchor": [
+            388,
+            128
+          ],
+          "uniformScale": 0.04
+        },
+        {
+          "id": "carriage-paper-1",
+          "sourceFile": "carriage-papers.png",
+          "promptFile": "carriage-papers.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            0,
+            0,
+            768,
+            1024
+          ],
+          "localSize": [
+            220,
+            310
+          ]
+        },
+        {
+          "id": "carriage-paper-2",
+          "sourceFile": "carriage-papers.png",
+          "promptFile": "carriage-papers.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            768,
+            0,
+            1536,
+            1024
+          ],
+          "localSize": [
+            220,
+            310
+          ]
+        }
+      ]
     }
   }
 }

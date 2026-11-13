@@ -521,6 +521,94 @@
           "sha256": "87a48415c92f5bfca3d58d98b41cd705a16b70cb4d8622aafa548ce35ebbaff3"
         }
       ]
+    },
+    {
+      "id": "carriage-base",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/carriage-base.png",
+      "outputSha256": "801f8c02f68123439697c72bf7472b493a62395ee557dbd4509e688185b6f452",
+      "prompt": "prompts/carriage-base.txt",
+      "promptSha256": "2dde93c34ef5409726e0b9414cb9b32312203b0e81baf654c1962941af07fe96",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/baron.webp",
+          "sha256": "b53a54ed6fafe660c3e1e70b60f78e11aa9061bb953109285926d15ead845b9c"
+        }
+      ]
+    },
+    {
+      "id": "carriage-wheels",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/carriage-wheels.png",
+      "outputSha256": "b2989147ee30b2bd496d38d76bbbd97faf2bd405a8361b6bf0135e59eb8ed54a",
+      "prompt": "prompts/carriage-wheels.txt",
+      "promptSha256": "eae392c3c6f6a824e6f6f7b90297a798aad9bc4ed8464dee137b4ec04d54720a",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/baron.webp",
+          "sha256": "b53a54ed6fafe660c3e1e70b60f78e11aa9061bb953109285926d15ead845b9c"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-base.png",
+          "sha256": "801f8c02f68123439697c72bf7472b493a62395ee557dbd4509e688185b6f452"
+        }
+      ]
+    },
+    {
+      "id": "carriage-door",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/carriage-door.png",
+      "outputSha256": "3094640a34d1ce4e137024b378318fc5216eb6ab21fa42a266fcc1068ff19f41",
+      "prompt": "prompts/carriage-door.txt",
+      "promptSha256": "061d481bac9f8889988e746000fc94496e06608e86daab63facd1b6e72c19cdf",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/baron.webp",
+          "sha256": "b53a54ed6fafe660c3e1e70b60f78e11aa9061bb953109285926d15ead845b9c"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-base.png",
+          "sha256": "801f8c02f68123439697c72bf7472b493a62395ee557dbd4509e688185b6f452"
+        }
+      ]
+    },
+    {
+      "id": "carriage-lantern",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/carriage-lantern.png",
+      "outputSha256": "df29ba6201c42646a1f74fa125b1a1c86b267a35609fb00e2cca74c08bc76104",
+      "prompt": "prompts/carriage-lantern.txt",
+      "promptSha256": "63ef989052ddef9671b21733f36a57cbf9b7473c0ef429e011beeea2d35b8e86",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/baron.webp",
+          "sha256": "b53a54ed6fafe660c3e1e70b60f78e11aa9061bb953109285926d15ead845b9c"
+        }
+      ]
+    },
+    {
+      "id": "carriage-papers",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/carriage-papers.png",
+      "outputSha256": "2dc236071a76df8d277e67d167dac3e593bc3a7ae959958808a5331216af3b7e",
+      "prompt": "prompts/carriage-papers.txt",
+      "promptSha256": "7e75551c7819180890b3ad6ed8ae9c2f6ca03935c149e02c3286d159370fa56f",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/baron.webp",
+          "sha256": "b53a54ed6fafe660c3e1e70b60f78e11aa9061bb953109285926d15ead845b9c"
+        }
+      ]
     }
   ]
 }

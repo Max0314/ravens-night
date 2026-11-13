@@ -2143,6 +2143,757 @@
           "499": null
         }
       }
+    },
+    {
+      "id": "carriage-base",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-base.png",
+      "sourceSha256": "801f8c02f68123439697c72bf7472b493a62395ee557dbd4509e688185b6f452",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRegion": null,
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-base.txt",
+      "sourceAnchor": [
+        840,
+        600
+      ],
+      "worldAnchor": [
+        350,
+        300
+      ],
+      "uniformScale": 0.35,
+      "affineOutputToSource": [
+        2.857142857142857,
+        0,
+        -160.0000000000001,
+        0,
+        2.857142857142857,
+        -257.1428571428572
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "2dde93c34ef5409726e0b9414cb9b32312203b0e81baf654c1962941af07fe96",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-base.webp",
+      "url": "/art/effects/v8/carriage-base.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 164656,
+      "sha256": "881e90f453afcdd24b08c7de727b980bbf941c061c281d0bf272051b5b6c56c9",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          104,
+          90,
+          526,
+          353
+        ],
+        "alphaAbove128Bounds": [
+          104,
+          90,
+          526,
+          353
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            314,
+            324
+          ],
+          "135": [
+            220,
+            324
+          ],
+          "273": [
+            114,
+            333
+          ],
+          "300": [
+            113,
+            331
+          ],
+          "327": [
+            107,
+            331
+          ],
+          "465": [
+            126,
+            305
+          ],
+          "490": [
+            199,
+            293
+          ],
+          "499": [
+            198,
+            288
+          ]
+        }
+      }
+    },
+    {
+      "id": "carriage-wheel-near-front",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-wheels.png",
+      "sourceSha256": "b2989147ee30b2bd496d38d76bbbd97faf2bd405a8361b6bf0135e59eb8ed54a",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRegion": [
+        0,
+        0,
+        820,
+        1024
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-wheels.txt",
+      "sourceAnchor": [
+        548,
+        515
+      ],
+      "worldAnchor": [
+        201,
+        332
+      ],
+      "uniformScale": 0.19,
+      "affineOutputToSource": [
+        5.2631578947368425,
+        0,
+        -509.8947368421052,
+        0,
+        5.2631578947368425,
+        -1232.3684210526314
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "eae392c3c6f6a824e6f6f7b90297a798aad9bc4ed8464dee137b4ec04d54720a",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-wheel-near-front.webp",
+      "url": "/art/effects/v8/carriage-wheel-near-front.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 40504,
+      "sha256": "5c8bfabde92f0bc4f7703abd5b7f2af5d411c0834a435c9febab1795e45817fd",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          114,
+          240,
+          247,
+          425
+        ],
+        "alphaAbove128Bounds": [
+          114,
+          240,
+          247,
+          425
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": [
+            272,
+            403
+          ],
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "carriage-wheel-near-rear",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-wheels.png",
+      "sourceSha256": "b2989147ee30b2bd496d38d76bbbd97faf2bd405a8361b6bf0135e59eb8ed54a",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRegion": [
+        0,
+        0,
+        820,
+        1024
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-wheels.txt",
+      "sourceAnchor": [
+        548,
+        515
+      ],
+      "worldAnchor": [
+        514,
+        282
+      ],
+      "uniformScale": 0.18,
+      "affineOutputToSource": [
+        5.555555555555555,
+        0,
+        -2307.5555555555557,
+        0,
+        5.555555555555555,
+        -1051.6666666666667
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "eae392c3c6f6a824e6f6f7b90297a798aad9bc4ed8464dee137b4ec04d54720a",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-wheel-near-rear.webp",
+      "url": "/art/effects/v8/carriage-wheel-near-rear.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 36552,
+      "sha256": "65d0fc4e26abb5a1842dde2b70d423c90228b74daf1297f655bf58584e7b34f5",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          431,
+          195,
+          557,
+          370
+        ],
+        "alphaAbove128Bounds": [
+          432,
+          195,
+          557,
+          370
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": [
+            210,
+            362
+          ],
+          "490": [
+            196,
+            369
+          ],
+          "499": [
+            195,
+            368
+          ]
+        }
+      }
+    },
+    {
+      "id": "carriage-wheel-far-front",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-wheels.png",
+      "sourceSha256": "b2989147ee30b2bd496d38d76bbbd97faf2bd405a8361b6bf0135e59eb8ed54a",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRegion": [
+        820,
+        0,
+        1536,
+        1024
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-wheels.txt",
+      "sourceAnchor": [
+        1227,
+        530
+      ],
+      "worldAnchor": [
+        126,
+        304
+      ],
+      "uniformScale": 0.145,
+      "affineOutputToSource": [
+        6.8965517241379315,
+        0,
+        358.0344827586206,
+        0,
+        6.8965517241379315,
+        -1566.5517241379312
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "eae392c3c6f6a824e6f6f7b90297a798aad9bc4ed8464dee137b4ec04d54720a",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-wheel-far-front.webp",
+      "url": "/art/effects/v8/carriage-wheel-far-front.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 15212,
+      "sha256": "f0a0af81371dcf84da898e31c38479cf33262320fc6e63df1ba9b6940bc23589",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          75,
+          245,
+          158,
+          363
+        ],
+        "alphaAbove128Bounds": [
+          75,
+          246,
+          158,
+          363
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            253,
+            358
+          ],
+          "110": [
+            247,
+            362
+          ],
+          "135": [
+            250,
+            354
+          ],
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "carriage-door",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-door.png",
+      "sourceSha256": "3094640a34d1ce4e137024b378318fc5216eb6ab21fa42a266fcc1068ff19f41",
+      "sourceSize": [
+        1315,
+        1196
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-door.txt",
+      "sourceRect": [
+        66,
+        86,
+        1249,
+        1090
+      ],
+      "sourceQuad": [
+        [
+          66,
+          86
+        ],
+        [
+          1249,
+          86
+        ],
+        [
+          1249,
+          1090
+        ],
+        [
+          66,
+          1090
+        ]
+      ],
+      "targetQuad": [
+        [
+          350,
+          235
+        ],
+        [
+          425,
+          235
+        ],
+        [
+          425,
+          307
+        ],
+        [
+          350,
+          307
+        ]
+      ],
+      "perspectiveOutputToSource": [
+        15.77333333333333,
+        -4.007623102680088e-15,
+        -5454.666666666664,
+        -3.209981300375041e-15,
+        13.944444444444438,
+        -3190.9444444444416,
+        4.529356084526531e-18,
+        -6.67364267643562e-18
+      ],
+      "processing": "Whole independently generated material, explicit plane normalization/projective placement only; natural painted bevel silhouette retained, no painted polygon replacement.",
+      "promptSha256": "061d481bac9f8889988e746000fc94496e06608e86daab63facd1b6e72c19cdf",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-door.webp",
+      "url": "/art/effects/v8/carriage-door.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 13400,
+      "sha256": "351b43f12b0789d20cbb372e768488a8cc9f0b0fd1ef50a7f8522d42034c0a04",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          350,
+          235,
+          425,
+          307
+        ],
+        "alphaAbove128Bounds": [
+          350,
+          235,
+          425,
+          307
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "carriage-lantern-near",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-lantern.png",
+      "sourceSha256": "df29ba6201c42646a1f74fa125b1a1c86b267a35609fb00e2cca74c08bc76104",
+      "sourceSize": [
+        1312,
+        1199
+      ],
+      "sourceRegion": null,
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-lantern.txt",
+      "sourceAnchor": [
+        655,
+        75
+      ],
+      "worldAnchor": [
+        273,
+        160
+      ],
+      "uniformScale": 0.06,
+      "affineOutputToSource": [
+        16.666666666666668,
+        0,
+        -3895.0,
+        0,
+        16.666666666666668,
+        -2591.666666666667
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "63ef989052ddef9671b21733f36a57cbf9b7473c0ef429e011beeea2d35b8e86",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-lantern-near.webp",
+      "url": "/art/effects/v8/carriage-lantern-near.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 3314,
+      "sha256": "b26314562816891be823af5aed4440dc642e4c31b270ee0d049d5da67ec7b3c5",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          259,
+          160,
+          288,
+          220
+        ],
+        "alphaAbove128Bounds": [
+          259,
+          160,
+          287,
+          220
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            160,
+            217
+          ],
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "carriage-lantern-far",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-lantern.png",
+      "sourceSha256": "df29ba6201c42646a1f74fa125b1a1c86b267a35609fb00e2cca74c08bc76104",
+      "sourceSize": [
+        1312,
+        1199
+      ],
+      "sourceRegion": null,
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-lantern.txt",
+      "sourceAnchor": [
+        655,
+        75
+      ],
+      "worldAnchor": [
+        183,
+        161
+      ],
+      "uniformScale": 0.055,
+      "affineOutputToSource": [
+        18.181818181818183,
+        0,
+        -2672.2727272727275,
+        0,
+        18.181818181818183,
+        -2852.2727272727275
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "63ef989052ddef9671b21733f36a57cbf9b7473c0ef429e011beeea2d35b8e86",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-lantern-far.webp",
+      "url": "/art/effects/v8/carriage-lantern-far.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 2796,
+      "sha256": "28525f64487a27d1d64bc6fa632e1359f6c4df78fd783eebb009ae9f7950b520",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          170,
+          161,
+          196,
+          216
+        ],
+        "alphaAbove128Bounds": [
+          170,
+          161,
+          196,
+          216
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "carriage-lantern-inner",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-lantern.png",
+      "sourceSha256": "df29ba6201c42646a1f74fa125b1a1c86b267a35609fb00e2cca74c08bc76104",
+      "sourceSize": [
+        1312,
+        1199
+      ],
+      "sourceRegion": null,
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-lantern.txt",
+      "sourceAnchor": [
+        655,
+        75
+      ],
+      "worldAnchor": [
+        388,
+        128
+      ],
+      "uniformScale": 0.04,
+      "affineOutputToSource": [
+        25.0,
+        0,
+        -9045.0,
+        0,
+        25.0,
+        -3125.0
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "63ef989052ddef9671b21733f36a57cbf9b7473c0ef429e011beeea2d35b8e86",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-lantern-inner.webp",
+      "url": "/art/effects/v8/carriage-lantern-inner.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 1622,
+      "sha256": "ccecf6e1d6e382ac8fa20f65f662d63d12fca79ad9f67a0548d516da95126a43",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          378,
+          128,
+          398,
+          168
+        ],
+        "alphaAbove128Bounds": [
+          378,
+          128,
+          398,
+          168
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "carriage-paper-1",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-papers.png",
+      "sourceSha256": "2dc236071a76df8d277e67d167dac3e593bc3a7ae959958808a5331216af3b7e",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRegion": [
+        0,
+        0,
+        768,
+        1024
+      ],
+      "sourceRect": [
+        34,
+        29,
+        736,
+        996
+      ],
+      "localSize": [
+        220,
+        310
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-papers.txt",
+      "processing": "One naturally separate generated sprite from its declared non-overlapping source region; preserve painted alpha and normalize only this complete sprite to declared world rect/local size, no geometric repaint.",
+      "promptSha256": "7e75551c7819180890b3ad6ed8ae9c2f6ca03935c149e02c3286d159370fa56f",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-paper-1.webp",
+      "url": "/art/effects/v8/carriage-paper-1.webp",
+      "width": 220,
+      "height": 310,
+      "bytes": 81162,
+      "sha256": "a4ea6a98a04ce15621cff14a7ed7fb424f1dc876eadebeb2415998bab34e1c2b",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          0,
+          0,
+          220,
+          310
+        ],
+        "alphaAbove128Bounds": [
+          1,
+          1,
+          219,
+          310
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            2,
+            308
+          ],
+          "110": [
+            3,
+            308
+          ],
+          "135": [
+            4,
+            307
+          ],
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "carriage-paper-2",
+      "group": "carriage",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/carriage-papers.png",
+      "sourceSha256": "2dc236071a76df8d277e67d167dac3e593bc3a7ae959958808a5331216af3b7e",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRegion": [
+        768,
+        0,
+        1536,
+        1024
+      ],
+      "sourceRect": [
+        790,
+        27,
+        1505,
+        997
+      ],
+      "localSize": [
+        220,
+        310
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/carriage-papers.txt",
+      "processing": "One naturally separate generated sprite from its declared non-overlapping source region; preserve painted alpha and normalize only this complete sprite to declared world rect/local size, no geometric repaint.",
+      "promptSha256": "7e75551c7819180890b3ad6ed8ae9c2f6ca03935c149e02c3286d159370fa56f",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "carriage-paper-2.webp",
+      "url": "/art/effects/v8/carriage-paper-2.webp",
+      "width": 220,
+      "height": 310,
+      "bytes": 80478,
+      "sha256": "e7deb1662c778fb1d5a625d2f7b1595354e73ba3cb186b0f280a82e23ccd856c",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          0,
+          0,
+          220,
+          310
+        ],
+        "alphaAbove128Bounds": [
+          0,
+          1,
+          219,
+          309
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            6,
+            307
+          ],
+          "110": [
+            4,
+            306
+          ],
+          "135": [
+            3,
+            307
+          ],
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
     }
   ],
   "contracts": {
@@ -2698,6 +3449,260 @@
             135,
             15,
             37
+          ]
+        }
+      ]
+    },
+    "carriage": {
+      "bodyReferenceAnchor": [
+        350,
+        300
+      ],
+      "wheelAxles": {
+        "nearFront": [
+          201,
+          332
+        ],
+        "nearRear": [
+          514,
+          282
+        ],
+        "farFront": [
+          126,
+          304
+        ]
+      },
+      "doorClosedQuad": [
+        [
+          350,
+          235
+        ],
+        [
+          425,
+          235
+        ],
+        [
+          425,
+          307
+        ],
+        [
+          350,
+          307
+        ]
+      ],
+      "doorHinge": [
+        [
+          425,
+          235
+        ],
+        [
+          425,
+          307
+        ]
+      ],
+      "lanternPivots": {
+        "near": [
+          273,
+          160
+        ],
+        "far": [
+          183,
+          161
+        ],
+        "inner": [
+          388,
+          128
+        ]
+      },
+      "paperLocalSize": [
+        220,
+        310
+      ],
+      "seals": "reuse separate envelope-seal and complementary fragments; no wax on paper",
+      "defaultZ": [
+        "carriage-wheel-far-front",
+        "carriage-wheel-near-rear",
+        "carriage-base",
+        "carriage-wheel-near-front",
+        "carriage-door",
+        "carriage-lantern-far",
+        "carriage-lantern-inner",
+        "carriage-lantern-near"
+      ],
+      "parts": [
+        {
+          "id": "carriage-base",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            840,
+            600
+          ],
+          "worldAnchor": [
+            350,
+            300
+          ],
+          "uniformScale": 0.35
+        },
+        {
+          "id": "carriage-wheel-near-front",
+          "sourceFile": "carriage-wheels.png",
+          "promptFile": "carriage-wheels.txt",
+          "processingMode": "anchor-fit",
+          "sourceRegion": [
+            0,
+            0,
+            820,
+            1024
+          ],
+          "sourceAnchor": [
+            548,
+            515
+          ],
+          "worldAnchor": [
+            201,
+            332
+          ],
+          "uniformScale": 0.19
+        },
+        {
+          "id": "carriage-wheel-near-rear",
+          "sourceFile": "carriage-wheels.png",
+          "promptFile": "carriage-wheels.txt",
+          "processingMode": "anchor-fit",
+          "sourceRegion": [
+            0,
+            0,
+            820,
+            1024
+          ],
+          "sourceAnchor": [
+            548,
+            515
+          ],
+          "worldAnchor": [
+            514,
+            282
+          ],
+          "uniformScale": 0.18
+        },
+        {
+          "id": "carriage-wheel-far-front",
+          "sourceFile": "carriage-wheels.png",
+          "promptFile": "carriage-wheels.txt",
+          "processingMode": "anchor-fit",
+          "sourceRegion": [
+            820,
+            0,
+            1536,
+            1024
+          ],
+          "sourceAnchor": [
+            1227,
+            530
+          ],
+          "worldAnchor": [
+            126,
+            304
+          ],
+          "uniformScale": 0.145
+        },
+        {
+          "id": "carriage-door",
+          "processingMode": "project-plane",
+          "targetQuad": [
+            [
+              350,
+              235
+            ],
+            [
+              425,
+              235
+            ],
+            [
+              425,
+              307
+            ],
+            [
+              350,
+              307
+            ]
+          ]
+        },
+        {
+          "id": "carriage-lantern-near",
+          "sourceFile": "carriage-lantern.png",
+          "promptFile": "carriage-lantern.txt",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            655,
+            75
+          ],
+          "worldAnchor": [
+            273,
+            160
+          ],
+          "uniformScale": 0.06
+        },
+        {
+          "id": "carriage-lantern-far",
+          "sourceFile": "carriage-lantern.png",
+          "promptFile": "carriage-lantern.txt",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            655,
+            75
+          ],
+          "worldAnchor": [
+            183,
+            161
+          ],
+          "uniformScale": 0.055
+        },
+        {
+          "id": "carriage-lantern-inner",
+          "sourceFile": "carriage-lantern.png",
+          "promptFile": "carriage-lantern.txt",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            655,
+            75
+          ],
+          "worldAnchor": [
+            388,
+            128
+          ],
+          "uniformScale": 0.04
+        },
+        {
+          "id": "carriage-paper-1",
+          "sourceFile": "carriage-papers.png",
+          "promptFile": "carriage-papers.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            0,
+            0,
+            768,
+            1024
+          ],
+          "localSize": [
+            220,
+            310
+          ]
+        },
+        {
+          "id": "carriage-paper-2",
+          "sourceFile": "carriage-papers.png",
+          "promptFile": "carriage-papers.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            768,
+            0,
+            1536,
+            1024
+          ],
+          "localSize": [
+            220,
+            310
           ]
         }
       ]
