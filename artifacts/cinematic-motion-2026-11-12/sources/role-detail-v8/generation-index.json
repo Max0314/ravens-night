@@ -657,6 +657,46 @@
           "sha256": "327c1b1f5fecc0288267efd5d75544a3aeac70710c3558e8aa8179364738fb6f"
         }
       ]
+    },
+    {
+      "id": "empath-heart-base",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/empath-heart-base.png",
+      "outputSha256": "63e85cc28f2907a78a12733be99f9ee179a7b9c1bd91bfd2ba89a54497150657",
+      "prompt": "prompts/empath-heart-base.txt",
+      "promptSha256": "f9c0a248ece67b6a1850ae9f327a0e4ffbac50bfef0ebe9fd539619f038aa6b2",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/empath.webp",
+          "sha256": "6a90bb6145e68530292bf4a492d88e50f7b41f2aeb38ff09e8176434d00d3ba1"
+        }
+      ]
+    },
+    {
+      "id": "empath-chain",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/empath-chain.png",
+      "outputSha256": "1f8e35eb79acb20ba5b78259c5a11c255976d97b8e84e0c6f37b432324272ccb",
+      "prompt": "prompts/empath-chain.txt",
+      "promptSha256": "20d7d3d5d013483cd3824660bbecfc1632be923ead1faeb305cbc30092717124",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/empath.webp",
+          "sha256": "6a90bb6145e68530292bf4a492d88e50f7b41f2aeb38ff09e8176434d00d3ba1"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/empath-heart-base.png",
+          "sha256": "63e85cc28f2907a78a12733be99f9ee179a7b9c1bd91bfd2ba89a54497150657"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/empath-chain.png",
+          "sha256": "9b27476b2a87dcd79839470090615d141b03fa31e9fa59accf46d44d1c30ace1"
+        }
+      ]
     }
   ]
 }
