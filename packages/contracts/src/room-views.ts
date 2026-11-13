@@ -27,7 +27,7 @@ export interface GameView {
   winner?: "GOOD" | "EVIL";
   winReason?: string;
 }
-export interface RoomView extends Partial<RoomProtocolView> { botControl?:BotControlView;timeline?:Pick<RoomTimeline,"mode"|"epoch">;activeHumanCount?:number;botCount?:number; code: string; state: string; playerCount: number; playMode?: RoomPlayMode; voiceRoomUrl?: string; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView; rulesSummary?: string; hostClaimAt?: number; tutorialCompleteCount?: number }
+export interface RoomView extends Partial<RoomProtocolView> { sixPlayerEvilCooperation?:boolean;botControl?:BotControlView;timeline?:Pick<RoomTimeline,"mode"|"epoch">;activeHumanCount?:number;botCount?:number; code: string; state: string; playerCount: number; playMode?: RoomPlayMode; voiceRoomUrl?: string; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView; rulesSummary?: string; hostClaimAt?: number; tutorialCompleteCount?: number }
 export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
 export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 export interface PrivateHistoryEntry {
