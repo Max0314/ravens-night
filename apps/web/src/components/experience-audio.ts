@@ -1,14 +1,14 @@
 import {experienceTiming,type ExperienceKind,type PresentationVersion,type PrivateSceneDescriptor} from '@ravens/contracts';
 import {privateAudioAllowed} from '../participation-audio.js';
 import {cinematicTiming as contact} from './cinematic-timing.js';
-type Scope='public'|'private'|'ui'|'book';
+type Scope='public'|'private'|'ui'|'book'|'nomination'|'ballot';
 export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
 interface Playing {id:string;scope:Scope;at:number;sample:string;gain:GainNode;bell:boolean;end:number}
 let ctx:AudioContext|undefined,output:GainNode|undefined,unlockAttempt=0;
 let enabled=readPreference(),status='',semanticSeq=0;
 let previewAudio:{enabled:boolean;volume:number}|undefined;
-const bookOwners=new Set<object>();
+const bookOwners=new Set<object>(),nominationOwners=new Set<object>();
 function previewPrivateAllowed(){return !!previewAudio||privateAudioAllowed();}
 export function effectsAudioVolume(){return previewAudio?.volume??.72;}
 export function setEffectsPreviewVolume(value:number){if(!previewAudio||!Number.isFinite(value))return;previewAudio.volume=Math.max(0,Math.min(1,value));if(output)output.gain.value=previewAudio.volume;}
@@ -54,7 +54,8 @@ function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else ac
 function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
  const prefix=sample.match(/^(v[1345]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[1345]:/,'');
- const pending=(async()=>{await takeLoadSlot();try{const response=await fetch('/audio/effects/'+version+'/'+name+'.mp3');if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
+ const candidate=/^candidate:(L02|L03|L04|A03)$/.exec(sample)?.[1],url=candidate?'/audio-candidates/2026-11-12-v1/'+candidate+'.mp3':'/audio/effects/'+version+'/'+name+'.mp3';
+ const pending=(async()=>{await takeLoadSlot();try{const response=await fetch(url);if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
 /** Invoke directly in the book's user gesture; no global/private sound preference changes. */
 export function prepareBookAudio(owner:object):Promise<boolean>{
@@ -75,15 +76,15 @@ if(typeof window!=='undefined'){
  document.addEventListener('visibilitychange',()=>{if(document.hidden)silenceEffects();});
  window.addEventListener('ravens:ui-feedback',event=>{const detail=(event as CustomEvent<SemanticCue|{cue:SemanticCue;scope:'ui'|'private'}>).detail,cue=typeof detail==='string'?detail:detail.cue;if(['press','select','open','close','success','error'].includes(cue))playSemantic(cue,{scope:typeof detail==='string'?'ui':detail.scope});});
 }
-function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,rate=1,volume=.6,offset=0,lateWindow=100,bell=false,onStarted?:(buffer:AudioBuffer,when:number)=>void){
+function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,rate=1,volume=.6,offset=0,lateWindow=100,bell=false,onStarted?:(buffer:AudioBuffer,when:number,source:AudioBufferSourceNode)=>void){
  const audio=ctx;if(!audio||!allowed(scope)||delay<0)return;
  if(!epochs.has(id))epochs.set(id,0);const epoch=epochs.get(id),at=audio.currentTime+delay/1000;
  if(!claim(id+':'+cue,at))return;
  void load(sample).then(buffer=>{
   if(ctx!==audio||epochs.get(id)!==epoch||!allowed(scope)||(audio.currentTime-at)*1000>lateWindow||offset>=buffer.duration)return;
-  const vocal=/^(hurt-|cough-|butler-voice)/.test(sample),group=(s:Playing)=>/^(hurt-|cough-|butler-voice)/.test(s.sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s)===vocal&&s.at<=at&&s.end>at);if(own.length>=(scope==='ui'||scope==='book'||vocal?1:3))stop(own[0]![0],own[0]![1]);
+  const vocal=/^(hurt-|cough-|butler-voice)/.test(sample),group=(s:Playing)=>/^(hurt-|cough-|butler-voice)/.test(s.sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s)===vocal&&s.at<=at&&s.end>at);if(scope!=='nomination'&&own.length>=(scope==='ui'||scope==='book'||vocal?1:3))stop(own[0]![0],own[0]![1]);
   if(!bell&&scope!=='ui'&&scope!=='book')for(const row of sources.values())if(row.bell){const duckAt=Math.max(at,audio.currentTime);row.gain.gain.setValueAtTime(row.gain.gain.value,duckAt);row.gain.gain.linearRampToValueAtTime(.035,duckAt+.04);row.gain.gain.linearRampToValueAtTime(.2,duckAt+.34);}
-  const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));sources.set(source,{id,scope,at,sample,gain,bell,end:at+(buffer.duration-offset)/rate});source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};const when=Math.max(audio.currentTime,at);source.start(when,offset);onStarted?.(buffer,when);
+  const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));sources.set(source,{id,scope,at,sample,gain,bell,end:at+(buffer.duration-offset)/rate});source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};const when=Math.max(audio.currentTime,at);source.start(when,offset);onStarted?.(buffer,when,source);
  }).catch(()=>{/* Missing media never blocks interaction. */});
 }
 const hash=(id:string)=>[...id].reduce((v,c)=>(Math.imul(v,31)+c.charCodeAt(0))>>>0,0);
@@ -115,7 +116,7 @@ export function scheduleCue(id:string,kind:string,elapsed:number,version:Present
   else if(cue==='tension'||cue==='frame')cueAt(at,cue+':'+at,'guillotine-tension',.3);
   else if(cue==='unlock'||cue==='release'||cue==='blade')cueAt(at,cue+':'+at,'guillotine-'+(cue==='release'?'unlock':cue),.45);
   else if(cue==='cock')cueAt(at,cue+':'+at,version<4?'v1:impact':'gun-cock',.3);
-  else if(cue==='nominate'||cue==='paper')cueAt(at,cue+':'+at,version===4?(cue==='nominate'?'nomination':'vote-stamp'):(cue==='nominate'?'ui-open':'ui-success'),.2);
+  else if((cue==='nominate'||cue==='paper')&&!(nominationOwners.size&&['NOMINATION','VOTE_RESULT'].includes(kind)))cueAt(at,cue+':'+at,version===4?(cue==='nominate'?'nomination':'vote-stamp'):(cue==='nominate'?'ui-open':'ui-success'),.2);
  }
  if(emptyExecution)cueAt(300,'empty:wind','guillotine-wind',.4,true);
  const fresh=elapsed>=timing.resultOffset&&elapsed-timing.resultOffset<=500&&(!range||range.at<timing.resultOffset);
@@ -169,3 +170,65 @@ export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,opti
  }
 }
 export async function auditionSample(sample:string){if(!/^(?:v[1345]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
+
+
+export type NominationSoundEvent={id?:string;kind?:string;startsAt?:number;durationMs?:number;outcome?:string};
+export function nominationSound(kind:string|undefined,outcome?:string){return kind==='NOMINATION'?'L03':kind==='VOTE_RESULT'?(outcome==='ON_BLOCK'?'L04':outcome==='NONE'||outcome==='TIED'?'L02':undefined):undefined;}
+export function nominationSoundDuration(kind:string|undefined,outcome?:string){const sample=nominationSound(kind,outcome);return sample==='L03'?16000:sample==='L04'?20000:sample==='L02'?15000:0;}
+export async function prepareNominationAudio(){if(!effectsAudioEnabled()||!ctx)return;await Promise.allSettled(['L02','L03','L04','A03'].map(id=>load('candidate:'+id)));}
+function cancelOwnerEvent(id:string){for(const [source,row]of sources)if(row.id===id)stop(source,row,0);cancelEventAudio(id);}
+const nominationDucked=new WeakSet<GainNode>();
+function duckNominationTails(id:string,when:number){for(const row of sources.values())if(row.scope==='nomination'&&row.id!==id&&row.at<=when&&!nominationDucked.has(row.gain)){nominationDucked.add(row.gain);row.gain.gain.setValueAtTime(row.gain.gain.value,when);row.gain.gain.linearRampToValueAtTime(.12,when+.06);}}
+/** A notice's visual lifetime never owns these long public tails. */
+export function createNominationAudio(ownerId:string){
+ const owner={},events=new Map<string,{id:string;at:number}>();nominationOwners.add(owner);let disposed=false,initialized=false,lastEpoch:number|string|undefined,previewKey='';
+ const cancel=()=>{for(const row of events.values())cancelEventAudio(row.id);};
+ const interrupt=(now:number)=>{cancel();for(const [key,row]of events)if(row.at>now)events.delete(key);};
+ return {
+  update(list:NominationSoundEvent[],now:number,options:{paused?:boolean;epoch?:number|string}={}){
+   if(disposed)return;const initial=!initialized;initialized=true;if(lastEpoch!==undefined&&lastEpoch!==options.epoch)interrupt(now);lastEpoch=options.epoch;
+   const blocked=options.paused||!allowed('nomination');if(blocked)interrupt(now);
+   for(const event of list){const sample=nominationSound(event.kind,event.outcome),at=event.startsAt;if(!sample||!event.id||typeof at!=='number'||!Number.isFinite(at)||events.has(event.id))continue;
+    if(at>now+1500)continue;const id='nomination:'+ownerId+':'+event.id;
+    if(initial&&at<now||at<now-500||blocked){if(at<=now)events.set(event.id,{id,at});continue;}
+    events.set(event.id,{id,at});sampleAt(id,'full', 'candidate:'+sample,Math.max(0,at-now),'nomination',1,.52,0,500,false,(_buffer,when)=>duckNominationTails(id,when));
+   }
+  },
+  preview(event:NominationSoundEvent,elapsed:number,options:AudioPlayback={}){
+   if(disposed)return;const sample=nominationSound(event.kind,event.outcome),id='nomination:'+ownerId+':'+event.id,key=String(event.id)+':'+String(options.seekKey??0);
+   if(key!==previewKey){cancel();previewKey=key;events.clear();}events.set(event.id??'',{id,at:0});
+   if(options.paused||!allowed('nomination')){cancelEventAudio(id);return;}if(!sample||elapsed<0||elapsed>=nominationSoundDuration(event.kind,event.outcome))return;
+   sampleAt(id,'preview:'+(epochs.get(id)??0),'candidate:'+sample,0,'nomination',options.rate??1,.52,elapsed/1000,150);
+  },
+  interrupt,
+  dispose(){if(disposed)return;disposed=true;cancel();nominationOwners.delete(owner);},
+ };
+}
+export interface BallotAudioWindow {id:string;startsAt:number;endsAt:number}
+/** Offsets and the hard end are mapped from the current authoritative clock, never an 8s UI timer. */
+export function createBallotCountdownAudio(ownerId:string){
+ let disposed=false,current:{key:string;id:string;window:BallotAudioWindow;pending:boolean;scheduled:boolean;deadline:number;generation:number;retryAfter:number}|undefined,generation=0;
+ let anchor={now:0,audio:0},lastEpoch:number|string|undefined;
+ const cancel=()=>{generation++;if(current){cancelOwnerEvent(current.id);current.pending=false;current.scheduled=false;current.retryAfter=0;}};
+ const finished=new Set<string>();
+ const update=(window:BallotAudioWindow|undefined,now:number,options:{paused?:boolean;epoch?:number|string;retry?:boolean}={})=>{
+  if(disposed)return;const audio=ctx;anchor={now,audio:audio?.currentTime??0};
+  const valid=window&&Number.isFinite(window.startsAt)&&Number.isFinite(window.endsAt)&&window.endsAt-window.startsAt===8000,key=valid?window.id+':'+window.startsAt+':'+window.endsAt:'';
+  if(current?.key!==key){cancel();current=valid?{key,id:'ballot:'+ownerId+':'+key,window,pending:false,scheduled:false,deadline:0,generation,retryAfter:0}:undefined;}
+  if(!current)return;
+  if(now>=current.window.endsAt){cancel();finished.add(key);return;}
+  if(options.paused||!allowed('ballot')){cancel();lastEpoch=options.epoch;return;}
+  if(finished.has(key)||!audio)return;
+  const deadline=audio.currentTime+(current.window.endsAt-now)/1000;
+  if(current.scheduled&&(lastEpoch!==options.epoch||Math.abs(deadline-current.deadline)>.12))cancel();lastEpoch=options.epoch;
+  if(current.pending||current.scheduled||!options.retry&&now<current.retryAfter)return;current.pending=true;const request=++generation,row=current;
+  void load('candidate:A03').then(()=>{
+   if(disposed||current!==row||request!==generation||!allowed('ballot'))return;
+   const liveNow=anchor.now+(audio.currentTime-anchor.audio)*1000,offset=Math.max(0,(liveNow-row.window.startsAt)/1000),delay=Math.max(0,row.window.startsAt-liveNow);
+   if(liveNow>=row.window.endsAt){row.pending=false;finished.add(key);return;}
+   row.deadline=audio.currentTime+(row.window.endsAt-liveNow)/1000;
+   sampleAt(row.id,'segment:'+request,'candidate:A03',delay,'ballot',1,.48,offset,120,false,(_buffer,_when,source)=>{if(disposed||current!==row||request!==generation){try{source.stop();}catch{}return;}row.pending=false;row.scheduled=true;source.stop(row.deadline);});
+  }).catch(()=>{if(current===row&&request===generation){row.pending=false;row.retryAfter=anchor.now+(audio.currentTime-anchor.audio)*1000+1000;}});
+ };
+ return {update,interrupt:cancel,dispose(){disposed=true;cancel();current=undefined;}};
+}
