@@ -50,10 +50,10 @@ test('a dawn received while reading stays lightweight, preserves focus, and does
  const dawn=shot({id:'reading-dawn',kind:'DAWN',startsAt:epoch,outcome:'NO_DEATH',seats:[]});
  const ui=render(<><button type="button">阅读位置</button><EventStage game={game([dawn])} reading/></>);
  const anchor=screen.getByRole('button',{name:'阅读位置'});anchor.focus();
- expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'知道了'})).toBeVisible();
+ expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();expect(screen.getByRole('status',{name:'阶段变化'})).toBeVisible();expect(screen.queryByRole('button',{name:'知道了'})).toBeNull();
  ui.rerender(<><button type="button">阅读位置</button><EventStage game={game([dawn])}/></>);
  expect(anchor).toHaveFocus();expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();
- fireEvent.click(screen.getByRole('button',{name:'知道了'}));ui.unmount();render(<EventStage game={game([dawn])}/>);
+ act(()=>vi.advanceTimersByTime(dawn.durationMs));expect(screen.queryByRole('status',{name:'阶段变化'})).toBeNull();expect(anchor).toHaveFocus();ui.unmount();render(<EventStage game={game([dawn],epoch+dawn.durationMs)}/>);
  expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();
 });
 
@@ -159,7 +159,15 @@ test('historical dawns and a deferred dawn from a previous night are never repla
 });
 
 test('a genuine handbook still receives a lightweight dawn even while a private identity waits',()=>{
- const dawn=shot({id:'reading-blocked-dawn',kind:'DAWN',startsAt:epoch,outcome:'NO_DEATH'});render(<EventStage game={game([dawn])} reading blocked/>);expect(screen.getByRole('button',{name:'知道了'})).toBeVisible();expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).toBeNull();
+ const dawn=shot({id:'reading-blocked-dawn',kind:'DAWN',startsAt:epoch,outcome:'NO_DEATH'});render(<EventStage game={game([dawn])} reading blocked/>);expect(screen.getByRole('status',{name:'阶段变化'})).toBeVisible();expect(screen.queryByRole('button',{name:'知道了'})).toBeNull();expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).toBeNull();
+});
+
+test.each([false,true])('dawn names every publicly revealed victim without revealing them early (reading=%s)',reading=>{
+ vi.useFakeTimers();vi.setSystemTime(epoch);
+ const dawn=shot({id:'named-dawn',kind:'DAWN',startsAt:epoch,durationMs:6600,timingVersion:4,outcome:'DEATH',seats:[2,4],message:'黎明时发现有人死亡。'}),g=game([dawn]);g.seats[1]!.nickname='犬夜叉';g.seats[3]!.nickname='皮卡丘';
+ const ui=render(<EventStage game={g} reading={reading}/>);expect(ui.container.textContent).not.toMatch(/犬夜叉|皮卡丘/);
+ act(()=>vi.advanceTimersByTime(1760));expect(ui.container.textContent).not.toMatch(/犬夜叉|皮卡丘/);
+ act(()=>vi.advanceTimersByTime(80));const result=reading?screen.getByRole('status',{name:'阶段变化'}):screen.getByRole('heading',{name:/未能等到黎明/});expect(result).toHaveTextContent('[犬夜叉]、[皮卡丘]未能等到黎明');expect(screen.queryByRole('button',{name:'知道了'})).toBeNull();
 });
 
 test.each(['ABORTED','GAME_OVER','DAY_DISCUSSION'] as const)('a queued nightfall cannot play after entering %s',phase=>{

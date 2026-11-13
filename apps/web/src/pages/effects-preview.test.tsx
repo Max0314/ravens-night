@@ -22,7 +22,7 @@ test('new death and victory effects remain gated by the actual reveal point',()=
  ui.rerender(<EventStage game={view([event('GAME_OVER',{id:'finale',startsAt:epoch+880,durationMs:5200,outcome:'EVIL'})])}/>);expect(ui.container.querySelector('.victory-tableau')).toBeNull();expect(ui.container.textContent).not.toContain('暗夜属于邪恶');act(()=>vi.advanceTimersByTime(960));expect(ui.container.querySelector('.victory-tableau--evil')).not.toBeNull();
 });
 test('a shot while reading preserves the reader focus and offers a nonmodal result',()=>{
- vi.useFakeTimers();vi.setSystemTime(epoch);const ui=render(<><button>原阅读位置</button><EventStage reading game={view([event('SHOT')])}/></>);const anchor=screen.getByRole('button',{name:'原阅读位置'});anchor.focus();act(()=>vi.advanceTimersByTime(1000));expect(anchor).toHaveFocus();expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'知道了'})).toBeVisible();ui.unmount();
+ vi.useFakeTimers();vi.setSystemTime(epoch);const ui=render(<><button>原阅读位置</button><EventStage reading game={view([event('SHOT')])}/></>);const anchor=screen.getByRole('button',{name:'原阅读位置'});anchor.focus();act(()=>vi.advanceTimersByTime(1000));expect(anchor).toHaveFocus();expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(screen.getByRole('status',{name:'阶段变化'})).toBeVisible();expect(screen.queryByRole('button',{name:'知道了'})).toBeNull();ui.unmount();
 });
 test('laboratory drives private and public frames with pause, seek and new replay ids without room writes',async()=>{
  vi.useFakeTimers();vi.setSystemTime(epoch);const fetch=vi.fn();vi.stubGlobal('fetch',fetch);render(<EffectsPreview/>);

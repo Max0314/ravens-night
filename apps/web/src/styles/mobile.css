@@ -31,8 +31,6 @@ button:focus-visible,a:focus-visible,summary:focus-visible { outline:2px solid #
 .room-tools>summary { padding:8px 12px;background:#25212a;border:1px solid #8e754a;border-radius:12px; }
 .room-tools>section { width:min(92vw,380px);max-height:calc(var(--viewport-height) - 80px);overflow:auto;overscroll-behavior:contain;background:#161b27;padding:16px;border:1px solid #8e754a; }
 .room-tools button,.room-tools input { min-height:44px; }.room-tools input { width:100%; }.room-tools code { user-select:all;overflow-wrap:anywhere; }
-.room-tools .gramophone { position:static; }.room-tools .gramophone__panel { position:static;width:100%; }.room-tools .gramophone iframe { width:100%; }
-.room-tools .gramophone__toggle { width:100%; }
 .invite-tools img { display:block;margin:8px auto; }.invite-tools a { display:block;min-height:44px;overflow-wrap:anywhere; }
 .role-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px; }
 .role-grid>button { display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:8px 2px;background:#1c202b;border:1px solid #554735;border-radius:12px;color:inherit; }

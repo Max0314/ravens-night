@@ -93,7 +93,7 @@
  .game-page--town>.room-action-bar{grid-column:1;grid-row:4;padding:2px 0}.game-page--town>.room-action-bar>.rn-button{padding:5px;font-size:11px;min-height:44px}
 }
 
-.phase-reading-notice{position:fixed;z-index:510;left:50%;top:calc(8px + env(safe-area-inset-top));transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100% - 24px);padding:4px 10px;border:1px solid #c3a96a55;border-radius:12px;background:#17180ff0;color:#dac69b;box-shadow:0 4px 18px #0004;font-size:12px}.phase-reading-notice>span{flex:1}.phase-reading-notice>button{flex:none;min-height:44px;border:0;background:transparent;color:#d8be83;font-size:11px}
+.phase-reading-notice{position:fixed;pointer-events:none;z-index:510;left:50%;top:calc(8px + env(safe-area-inset-top));transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:calc(100% - 24px);padding:8px 12px;line-height:1.5;overflow-wrap:anywhere;border:1px solid #c3a96a55;border-radius:12px;background:#17180ff0;color:#dac69b;box-shadow:0 4px 18px #0004;font-size:12px}.phase-reading-notice>span{flex:1}
 
 /* Keep the same viewport budget when prompts or ballots arrive. */
 .player-session{position:relative}

@@ -1,7 +1,6 @@
 @keyframes orbit { to { transform: rotate(360deg); } }
 @keyframes breathe { 0%, 100% { opacity: .45; transform: scale(.96); } 50% { opacity: 1; transform: scale(1.04); } }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes gramophone-spin { to { transform: rotate(360deg); } }
 @keyframes death-reveal-in { from { opacity: 0; transform: scale(1.025); filter: blur(5px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
 @keyframes ravens-dawn-strip { 0%, 32% { background-position: 0 center; } 33%, 65% { background-position: 50% center; } 66%, 100% { background-position: 100% center; } }
 
@@ -357,18 +356,6 @@ a { color: inherit; }
 .role-detail p { color: #c6c2b9; line-height: 1.9; }
 
 /* Music and dramatic notices */
-.gramophone { position: fixed; z-index: 170; right: max(18px,env(safe-area-inset-right)); bottom: max(18px,env(safe-area-inset-bottom)); display: grid; justify-items: end; gap: 10px; }
-.gramophone__toggle { min-height: 48px; padding: 7px 14px; border: 1px solid rgba(218,185,120,.55); border-radius: 999px; background: linear-gradient(135deg,rgba(31,22,13,.98),rgba(7,11,17,.98)); box-shadow: var(--rn-shadow-sm), inset 0 1px 0 rgba(255,224,160,.12); color: #e4c990; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.gramophone__toggle > span:first-child { width: 28px; height: 28px; border: 3px double #d7b36d; border-radius: 50%; display: grid; place-items: center; font-size: .68rem; animation: gramophone-spin 8s linear infinite; }
-.gramophone__panel { width: min(390px,calc(100vw - 36px)); overflow: hidden; border: 1px solid var(--rn-border); border-radius: 10px; background: #091019; box-shadow: 0 22px 70px rgba(0,0,0,.62); }
-.gramophone__panel header { display: flex; align-items: start; justify-content: space-between; padding: 14px 15px 7px; }
-.gramophone__panel header div { display: grid; gap: 2px; }
-.gramophone__panel header span { color: #d6b676; }
-.gramophone__panel header small, .gramophone__panel p { color: #8995a0; font-size: .76rem; }
-.gramophone__panel header button { border: 0; background: none; color: #d7c7a4; font-size: 1.4rem; cursor: pointer; }
-.gramophone__panel p { margin: 0; padding: 0 15px 10px; line-height: 1.55; }
-.gramophone__panel iframe { display: block; width: 100%; height: 300px; border: 0; background: #091019; }
-.gramophone__panel > a { display: block; min-height: 44px; padding: 12px 15px; color: #dfbf82; background: rgba(199,155,83,.07); text-align: center; text-underline-offset: 4px; }
 .death-reveal { position: fixed; z-index: 150; inset: 0; overflow: hidden; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 28px; isolation: isolate; background: rgba(3,7,12,.92); box-shadow: inset 0 0 170px rgba(0,0,0,.84); text-align: center; animation: death-reveal-in .7s ease-out both; }
 .death-reveal::before { content: ""; position: absolute; z-index: -1; inset: 0; opacity: .44; background: url('/assets/ravens/dawn-death-strip.png') 0 center / 300% auto no-repeat; animation: ravens-dawn-strip 7s steps(1,end) both; }
 .death-reveal__moon { width: 88px; height: 88px; display: grid; place-items: center; border: 1px solid rgba(223,193,137,.65); border-radius: 50%; color: #edcf91; font-size: 3.6rem; box-shadow: 0 0 58px rgba(197,153,73,.2); }
@@ -466,10 +453,6 @@ a { color: inherit; }
   .role-detail { grid-template-columns: 1fr; }
   .role-detail__portrait { min-height: 340px; box-shadow: inset 0 -25px 40px rgba(3,5,9,.45); }
   .role-detail__copy { padding: 0 20px 24px; }
-  .gramophone { right: max(12px,env(safe-area-inset-right)); bottom: max(12px,env(safe-area-inset-bottom)); }
-  .gramophone__toggle { width: 48px; padding: 7px; justify-content: center; }
-  .gramophone__toggle > span:last-child { display: none; }
-  .gramophone__panel iframe { height: 260px; }
   .death-reveal--display h2 { font-size: 2.4rem; }
   .death-reveal::before { opacity: .26; }
 }
@@ -505,7 +488,7 @@ a { color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .waiting-orbit, .gramophone__toggle > span:first-child, .death-reveal::before { animation: none; }
+  .waiting-orbit, .death-reveal::before { animation: none; }
   .death-reveal::before { background-position: 100% center; }
 }
 
