@@ -1,3 +1,8 @@
+/** Decode the mounted images we will actually reveal, without creating a second image cache. */
+export async function decodePageImages(element:HTMLElement){
+  await Promise.allSettled(Array.from(element.querySelectorAll('img')).map(img=>img.decode?.()??Promise.resolve()));
+}
+
 type Capture={key:string;generation:number;element:HTMLElement;width:number;height:number;done:(canvas:HTMLCanvasElement|undefined)=>void};
 export const releaseTexture=(canvas:HTMLCanvasElement)=>{canvas.width=0;canvas.height=0;};
 
@@ -32,8 +37,8 @@ export class PageTextureCache {
   }
   private async capture(job:Capture){
     const original=[job.element,...job.element.querySelectorAll<HTMLElement>('*')];
-    // html2canvas's renderer does not implement CSS filters. Keep filtered art on the live DOM path.
-    if(original.some(node=>{const style=getComputedStyle(node),backdrop=style.backdropFilter||style.getPropertyValue('-webkit-backdrop-filter');return !!(style.filter&&style.filter!=='none'||backdrop&&backdrop!=='none');}))return undefined;
+    // html2canvas's renderer does not implement CSS filters or masks. Keep those paintings on the live DOM path.
+    if(original.some(node=>{const style=getComputedStyle(node),backdrop=style.backdropFilter||style.getPropertyValue('-webkit-backdrop-filter');const mask=style.maskImage||style.getPropertyValue('-webkit-mask-image');return !!(style.filter&&style.filter!=='none'||backdrop&&backdrop!=='none'||mask&&mask!=='none');}))return undefined;
     const module=await import('html2canvas');
     if(this.disposed||job.generation!==this.generation)return undefined;
     const clone=job.element.cloneNode(true) as HTMLElement;

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import {useRef} from 'react';
 import {act,cleanup,render} from '@testing-library/react';
 import {afterEach,expect,test,vi} from 'vitest';
 import {PageTurnLayer} from './PageTurnLayer.js';
@@ -48,4 +49,13 @@ test('the canvas never repaints the flat original page and keeps its backing siz
   renderLayer(turn,true,true);expect(context.drawImage).not.toHaveBeenCalled();width.mockClear();height.mockClear();
   act(()=>turn.track(.3,{x:.7,y:.12}));expect(context.drawImage).toHaveBeenCalled();expect(width).not.toHaveBeenCalled();expect(height).not.toHaveBeenCalled();
   context.drawImage.mockClear();act(()=>turn.track(0,{x:1,y:0}));expect(context.drawImage).not.toHaveBeenCalled();
+});
+
+
+test('an external incoming sheet is clipped in place and cleanup removes turn styles when it becomes current',()=>{
+  const turn=controller('dom');function Sheets(){const ref=useRef<HTMLDivElement>(null);return <><div ref={ref} data-target-sheet>one real target</div><PageTurnLayer controller={turn} incomingRef={ref} onSlow={vi.fn()}/></>;}
+  const view=render(<Sheets/>),sheet=view.container.querySelector<HTMLElement>('[data-target-sheet]')!;
+  expect(sheet.style.clipPath).toContain('polygon(');expect(sheet.style.opacity).toBe('1');expect(view.container.querySelector('.page-turn-next')).toBeNull();
+  act(()=>turn.track(.4,{x:.6,y:.2}));expect(view.container.querySelector('[data-target-sheet]')).toBe(sheet);
+  act(()=>turn.finishImmediately(true));expect(sheet.style.clipPath).toBe('');expect(sheet.style.opacity).toBe('');expect(sheet.textContent).toBe('one real target');
 });
