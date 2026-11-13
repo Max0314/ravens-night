@@ -1,0 +1,29 @@
+{
+  "method": "Production React SVGs -> local PNG embedded -> sharp; static only; no browser",
+  "avatars": "Synthetic Candidate A/B fixtures, not game/player/hidden truth data",
+  "washerTimes": [
+    1300,
+    1899,
+    1900,
+    2300
+  ],
+  "avatarTiles": [
+    {
+      "size": 64,
+      "side": "left"
+    },
+    {
+      "size": 64,
+      "side": "right"
+    },
+    {
+      "size": 42,
+      "side": "left"
+    },
+    {
+      "size": 42,
+      "side": "right"
+    }
+  ],
+  "zoom": 2
+}

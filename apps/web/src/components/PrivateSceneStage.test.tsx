@@ -80,3 +80,30 @@ test('identity playback waits for authoritative confirmation, including the last
  ui.rerender(<PrivateSceneStage {...props} view={{...view,revision:2,roleConfirmed:true,game:{...view.game!,phase:'FIRST_NIGHT'}}}/>);
  expect(screen.getByRole('dialog')).toBeInTheDocument();await advance(3800);expect(acknowledgePresentations).toHaveBeenCalledTimes(1);
 });
+
+test('washer linen prints only the actual shown candidates, including a default avatar, after the reveal',()=>{
+ const view=fixture();view.game!.seats=[
+  {seat:2,nickname:'未获知对象',avatar:'/other.webp',alive:true,connected:true,ghostVoteAvailable:true},
+  {seat:3,nickname:'已获知甲',avatar:'/shown-three.webp',alive:true,connected:true,ghostVoteAvailable:true},
+  {seat:5,nickname:'已获知乙',alive:true,connected:true,ghostVoteAvailable:true}];
+ const washer={...scene,themeRoleId:'washerwoman',shown:{type:'CANDIDATES' as const,roleId:'saint',seats:[3,5] as [number,number]}};
+ const ui=render(<PrivateSceneContent scene={washer} view={view} elapsedMs={1899}/>);
+ expect(ui.container.querySelector('.washer-imprints')).toBeNull();
+ ui.rerender(<PrivateSceneContent scene={washer} view={view} elapsedMs={1900}/>);
+ const prints=ui.container.querySelector('.washer-imprints')!;
+ expect(prints.querySelectorAll('[data-washer-candidate]')).toHaveLength(2);
+ expect(prints.querySelector('image')?.getAttribute('href')).toBe('/shown-three.webp');
+ expect(prints.textContent).toContain('已获知甲');expect(prints.textContent).toContain('已获知乙');
+ expect(prints.textContent).not.toContain('未获知对象');expect(prints.querySelector('image[href="/other.webp"]')).toBeNull();
+ expect(prints.querySelector('[data-washer-candidate="1"] text')).toHaveTextContent('已');
+ expect(ui.container.querySelector('.private-scene-result')).toHaveTextContent('二人中有一位是圣徒');
+ expect(ui.container.querySelectorAll('[data-washer-strip] use')).toHaveLength(10);
+});
+test('demon decals are anchored inside the avatar box, separately from a long nickname',()=>{
+ const view=fixture();view.game!.seats=[{seat:2,nickname:'很长昵称'.repeat(6),avatar:'/shown.webp',alive:true,connected:true,ghostVoteAvailable:true}];
+ const demon={...scene,kind:'ACTION_SUBMITTED' as const,themeRoleId:'imp',shown:{type:'TARGET_SUBMITTED' as const,action:'KILL' as const,seats:[2]}};
+ const ui=render(<PrivateSceneContent scene={demon} view={view} elapsedMs={2350}/>),box=ui.container.querySelector('.private-scene-avatar')!;
+ expect(box.querySelector('.player-avatar')).not.toBeNull();expect(box.querySelectorAll('.private-avatar-claw')).toHaveLength(2);
+ expect(box.textContent).not.toContain('很长昵称');expect(box.nextElementSibling).toHaveTextContent('很长昵称');
+ ui.rerender(<PrivateSceneContent scene={demon} view={view} elapsedMs={2050} readyAssets={new Set()}/>);expect(ui.container.querySelector('.private-avatar-claw')).toBeNull();
+});

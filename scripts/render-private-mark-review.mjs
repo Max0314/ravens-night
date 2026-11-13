@@ -1,0 +1,21 @@
+// Static frames from the runtime components, fake A/B avatar fixtures only.
+// No browser, no game page, no animation playback.
+import {build} from 'esbuild';
+import {mkdir,readFile,writeFile,unlink} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import sharp from 'sharp';
+const webRequire=createRequire(resolve('apps/web/package.json')),out=resolve('artifacts/cinematic-motion-2026-11-12/private');await mkdir(out,{recursive:true});
+const bundle=resolve(out,'mark-renderer.mjs');
+await build({stdin:{contents:`export {LayeredSceneArt} from './apps/web/src/components/LayeredSceneArt.tsx';export {PrivateAvatarClaw} from './apps/web/src/components/PrivateAvatarClaw.tsx';`,resolveDir:process.cwd(),loader:'tsx'},outfile:bundle,bundle:true,platform:'node',format:'esm',packages:'external',loader:{'.css':'empty'},jsx:'automatic',plugins:[{name:'web-react',setup(build){build.onResolve({filter:/^react(?:\/|$)/},args=>({path:pathToFileURL(webRequire.resolve(args.path)).href,external:true}));}}]});
+const {LayeredSceneArt,PrivateAvatarClaw}=await import(pathToFileURL(bundle).href),{createElement}=webRequire('react'),{renderToStaticMarkup}=webRequire('react-dom/server');
+const cache=new Map();async function embed(markup){for(const match of [...markup.matchAll(/href="(\/[^"]+)"/g)]){const url=match[1];if(!cache.has(url))cache.set(url,(await sharp(await readFile(resolve('apps/web/public',url.slice(1)))).png().toBuffer()).toString('base64'));markup=markup.replaceAll(`href="${url}"`,`href="data:image/png;base64,${cache.get(url)}"`);}return markup;}
+async function avatar(color,letter){return sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="${color}"/><circle cx="40" cy="30" r="16" fill="#ccb78e"/><ellipse cx="40" cy="76" rx="32" ry="27" fill="#817965"/><text x="40" y="72" fill="#fff" text-anchor="middle" font-size="19">${letter}</text></svg>`)).png().toBuffer();}
+const a=await avatar('#4b5f77','A'),b=await avatar('#714c50','B'),url=buffer=>'data:image/png;base64,'+buffer.toString('base64');
+const imprint={label:'shown candidates',marks:[{label:'Candidate A',name:'Candidate A',avatar:url(a)},{label:'Candidate B',name:'Candidate B',avatar:url(b)}]};
+const frames=[];for(const t of [1300,1899,1900,2300]){const markup=await embed(renderToStaticMarkup(createElement(LayeredSceneArt,{role:'washerwoman',kind:'INFORMATION',elapsedMs:t,...(t>=1900?{imprint}:{})})));frames.push(await sharp(Buffer.from(markup)).flatten({background:'#151812'}).resize(360,300).png().toBuffer());}
+await sharp({create:{width:1440,height:328,channels:4,background:'#151812'}}).composite(frames.map((input,i)=>({input,left:i*360,top:28}))).png().toFile(resolve(out,'washer-marks-2026-11-13.png'));
+const tiles=[];for(const size of [64,42])for(const side of ['left','right']){const svg=(await embed(renderToStaticMarkup(createElement(PrivateAvatarClaw,{side})))).replace('<svg ',`<svg width="${size}" height="${size}" `),ink=await sharp(Buffer.from(svg)).png().toBuffer(),face=await sharp(a).resize(size,size).composite([{input:Buffer.from(`<svg width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${size/2}" fill="white"/></svg>`),blend:'dest-in'}]).png().toBuffer();tiles.push(await sharp({create:{width:100,height:100,channels:4,background:'#373c38'}}).composite([{input:face,left:Math.round((100-size)/2),top:Math.round((100-size)/2)},{input:ink,left:Math.round((100-size)/2),top:Math.round((100-size)/2)}]).png().toBuffer());}
+const strip=await sharp({create:{width:400,height:100,channels:4,background:'#373c38'}}).composite(tiles.map((input,i)=>({input,left:i*100,top:0}))).png().toBuffer();await sharp(strip).resize(800,200,{kernel:'nearest'}).png().toFile(resolve(out,'avatar-claw-anchors-2026-11-13.png'));
+await writeFile(resolve(out,'private-mark-review-2026-11-13.json'),JSON.stringify({method:'Production React SVGs -> local PNG embedded -> sharp; static only; no browser',avatars:'Synthetic Candidate A/B fixtures, not game/player/hidden truth data',washerTimes:[1300,1899,1900,2300],avatarTiles:[{size:64,side:'left'},{size:64,side:'right'},{size:42,side:'left'},{size:42,side:'right'}],zoom:2},null,2)+'\n');await unlink(bundle);console.log(out);
