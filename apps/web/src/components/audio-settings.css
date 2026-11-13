@@ -17,3 +17,16 @@
 .audio-settings__volume input{display:block;box-sizing:border-box;width:100%;min-width:0;height:44px;margin:0;padding:0;accent-color:#c4a15e;touch-action:none;overscroll-behavior:contain;cursor:ew-resize}
 .audio-settings__note{margin:0;color:#a89a7a;font-size:12px;line-height:1.65}
 .audio-settings button:focus-visible,.audio-settings input:focus-visible{outline:2px solid #d6b368;outline-offset:3px}
+.display .display__header .audio-settings-entry--display{width:auto}
+.audio-settings-entry--display>span{display:none}
+/* TV controls scale locally; player-phone sheets keep their existing sizes. */
+.room-sheet:has(.audio-settings--display){--audio-tv-unit:clamp(18px,2.3vh,50px);width:min(90vw,calc(var(--audio-tv-unit)*29));max-width:none}
+.room-sheet:has(.audio-settings--display)>header{padding:calc(var(--audio-tv-unit)*.6)}
+.room-sheet:has(.audio-settings--display)>header h2{font-size:calc(var(--audio-tv-unit)*1.2)}
+.room-sheet:has(.audio-settings--display)>header button{font-size:var(--audio-tv-unit);min-width:calc(var(--audio-tv-unit)*2);min-height:calc(var(--audio-tv-unit)*2)}
+.audio-settings--display{gap:calc(var(--audio-tv-unit)*.6)}
+.audio-settings--display .audio-settings__master,.audio-settings--display .audio-settings__channel{padding:calc(var(--audio-tv-unit)*.6)}
+.audio-settings--display .audio-settings__master,.audio-settings--display .audio-settings__row,.audio-settings--display .audio-settings__volume,.audio-settings--display .audio-settings__channel legend{font-size:var(--audio-tv-unit)}
+.audio-settings--display button{font-size:var(--audio-tv-unit);min-height:calc(var(--audio-tv-unit)*2);min-width:calc(var(--audio-tv-unit)*4)}
+.audio-settings--display .audio-settings__volume input{height:calc(var(--audio-tv-unit)*2)}
+.audio-settings--display .audio-settings__note,.audio-settings--display .audio-settings__master small{font-size:calc(var(--audio-tv-unit)*.7)}

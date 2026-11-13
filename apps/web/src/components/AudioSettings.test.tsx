@@ -8,6 +8,14 @@ import {GameScoreOwner} from './GameScoreOwner.js';
 import * as audio from './experience-audio.js';
 import * as prefs from './audio-preferences.js';
 import {setParticipationMode} from '../participation-audio.js';
+import {Display} from '../pages/Display.js';
+import {getRoom,type RoomView} from '../api.js';
+import type {RoomPacket} from '../room-live.js';
+const publicFeed=vi.hoisted(()=>({receive:undefined as ((packet:RoomPacket)=>void)|undefined}));
+vi.mock('../api.js',async original=>({...await original<object>(),getRoom:vi.fn()}));
+vi.mock('../room-live.js',()=>({connectRoomFeed:(_code:string,_mode:string,receive:(packet:RoomPacket)=>void)=>{publicFeed.receive=receive;return()=>{};}}));
+vi.mock('../invite.js',()=>({invitationQr:async()=>'/test-qr.png'}));
+vi.mock('./EventStage.js',()=>({EventStage:()=>null,publicEventsAt:(events:unknown[])=>events}));
 const calls:string[]=[],players:Media[]=[],buffers:Node[]=[],musicGains=new Map<Media,Node>();let context:Context|undefined;
 class Media extends EventTarget{loop=false;preload='';volume=1;muted=false;paused=true;readyState=4;currentTime=0;duration=100;error=null;constructor(public src:string){super();players.push(this);}load(){}pause(){this.paused=true;}play(){calls.push('play');this.paused=false;return Promise.resolve();}}
 class Param{value=0;setValueAtTime(){}linearRampToValueAtTime(){}}
@@ -30,4 +38,20 @@ test('preview exposes no formal setting controls and its sound changes cannot ov
 });
 test('master-on with silent channels is explicit and restoring master does not reset either user choice',async()=>{
  prefs.setAudioChannelEnabled('music',false);prefs.setAudioChannelVolume('effects',0);await audio.enableEffectsAudio(true);render(<><GlobalAudioButton/><AudioSettings/></>);expect(screen.getByRole('button',{name:'音乐和音效均静音，关闭声音总开关'})).toHaveTextContent('♩');fireEvent.click(screen.getByRole('button',{name:/^声音设置/}));expect(within(screen.getByRole('dialog')).getByText('音乐和音效均静音')).toBeVisible();expect(screen.getByText('可开启下列通道或提高音量')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'开启总静音'}));fireEvent.click(screen.getByRole('button',{name:'解除总静音'}));expect(prefs.audioPreferences()).toMatchObject({music:{enabled:false},effects:{enabled:true,volume:0}});expect(screen.getByRole('button',{name:'音乐和音效均静音，关闭声音总开关'})).toHaveAttribute('aria-pressed','true');
+});
+
+test('public display owns music from its live public room through day, night and the revealed finale',async()=>{
+ const room:RoomView={code:'TV1234',roomInstanceId:'tv',revision:1,state:'RUNNING',playerCount:6,participants:[],game:{gameId:'tv-game',phase:'DAY_DISCUSSION',day:1,serverNow:Date.now(),aliveCount:6,readyCount:0,events:[],seats:[]}};
+ vi.mocked(getRoom).mockResolvedValue(room);await audio.enableEffectsAudio(true);render(<Display code={room.code} onBack={()=>{}} onRoomClosed={()=>{}}/>);await flush();
+ const day=players.find(p=>p.src.endsWith('background-m15.mp3'));expect(day?.paused).toBe(false);
+ const night:RoomView={...room,revision:2,game:{...room.game!,phase:'OTHER_NIGHT'}};
+ act(()=>publicFeed.receive!({type:'view',room:night,serverNow:Date.now()}));await flush();act(()=>vi.advanceTimersByTime(2100));expect(players.find(p=>p.src.endsWith('background-m18.mp3'))?.paused).toBe(false);expect(day?.paused).toBe(true);
+ const finale:RoomView={...night,revision:3,game:{...night.game!,phase:'GAME_OVER',winner:'GOOD',revealComplete:true}};
+ act(()=>publicFeed.receive!({type:'view',room:finale,serverNow:Date.now()}));await flush();expect(players.find(p=>p.src.endsWith('background-m01.mp3'))?.paused).toBe(false);
+});
+
+test('public display exposes independent music and effects settings on the projecting device',async()=>{
+ vi.mocked(getRoom).mockResolvedValue({code:'TV1234',state:'LOBBY',playerCount:6,participants:[]});render(<Display code="TV1234" onBack={()=>{}} onRoomClosed={()=>{}}/>);await flush();
+ fireEvent.click(screen.getByRole('button',{name:'声音设置'}));expect(screen.getByRole('dialog',{name:'声音设置'})).toBeVisible();expect(screen.getByLabelText('本设备声音设置')).toHaveClass('audio-settings--display');
+ fireEvent.change(screen.getByRole('slider',{name:'音乐音量'}),{target:{value:'37'}});fireEvent.change(screen.getByRole('slider',{name:'音效音量'}),{target:{value:'22'}});expect(prefs.audioPreferences()).toMatchObject({music:{volume:.37},effects:{volume:.22}});expect(screen.getByText('仅保存于这台投屏设备，不影响玩家手机。')).toBeVisible();
 });

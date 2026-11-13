@@ -5,7 +5,7 @@ import {createGameScorePlayer,gameScoreTrack} from './game-score.js';
 import {globalAudioEnabled,globalAudioEvent,effectsPreviewActive,scoreDuckingActive,reportAudioStatus,unlockEffectsAudio} from './experience-audio.js';
 import {audioPreferences,audioPreferencesEvent} from './audio-preferences.js';
 
-/** Replace the old opening owner at the single stable App slot. No controls or child renders. */
+/** One active music owner per surface; Display supplies its own live public snapshot. */
 export function GameScoreOwner({screen,room}:{screen:string;room?:RoomView|undefined}){
  const now=useGameClock(room?.game,room),latest=useRef({screen,room,now});latest.current={screen,room,now};
  const sync=useRef<()=>void>(()=>{});

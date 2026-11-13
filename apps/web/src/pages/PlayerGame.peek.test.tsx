@@ -13,6 +13,15 @@ function fixture():PrivateView{return {state:'RUNNING',roomInstanceId:'room',par
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'查看我的角色立绘'}));
 beforeEach(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});localStorage.clear();});
 afterEach(async()=>{cleanup();await new Promise(r=>setTimeout(r,20));window.history.replaceState({},'','/');vi.clearAllMocks();});
+
+test('role chip labels only the perceived good category and omits evil categories',()=>{
+ const view=fixture(),ui=render(<PlayerGame {...handlers} view={view}/>);
+ for(const[type,alignment,category]of [['TOWNSFOLK','GOOD','镇民'],['OUTSIDER','GOOD','外来者'],['MINION','EVIL',undefined],['DEMON','EVIL',undefined]] as const){
+  ui.rerender(<PlayerGame {...handlers} view={{...view,role:{...view.role!,type,alignment}}}/>);
+  const label=screen.getByRole('button',{name:'查看我的角色立绘'}).querySelector('.role-chip__category');
+  if(category)expect(label).toHaveTextContent(category);else expect(label).toBeNull();
+ }
+});
 test('role chip opens only its perceived art without classification framing and image click or Escape closes',()=>{
  const ui=render(<PlayerGame {...handlers} view={fixture()}/>),chip=screen.getByRole('button',{name:'查看我的角色立绘'});chip.focus();open();
  const dialog=screen.getByRole('dialog',{name:'我的角色立绘'}),image=within(dialog).getByRole('img',{name:'厨师立绘'});expect(ui.container.contains(dialog)).toBe(false);expect(image).toHaveAttribute('src',roleArt('chef').portraitUrl);expect(dialog.querySelector('[data-role-type],.role-portrait-frame,.rn-role-portrait-frame')).toBeNull();expect(chip).toHaveAttribute('aria-expanded','true');
