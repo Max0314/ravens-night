@@ -1,0 +1,1457 @@
+{
+  "version": 8,
+  "world": [
+    600,
+    500
+  ],
+  "generator": "built-in image_gen",
+  "files": [
+    {
+      "id": "envelope-back",
+      "group": "envelope",
+      "targetRect": [
+        100,
+        220,
+        400,
+        210
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-back.png",
+      "sourceSha256": "6af5508cddfe4046c236a05fdcc30ec224814ded3e05e3d555d3bfca414f7313",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        223,
+        492,
+        1151,
+        976
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-back.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-back.webp",
+      "url": "/art/effects/v8/envelope-back.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 120546,
+      "sha256": "51cad2e4d6d64be3b259fd5812c5871de1d17695f2c6541ac861b93e10513b59",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          100,
+          220,
+          500,
+          429
+        ],
+        "alphaAbove128Bounds": [
+          101,
+          221,
+          499,
+          429
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            222,
+            427
+          ],
+          "135": [
+            222,
+            427
+          ],
+          "273": [
+            222,
+            427
+          ],
+          "300": [
+            222,
+            427
+          ],
+          "327": [
+            222,
+            427
+          ],
+          "465": [
+            222,
+            427
+          ],
+          "490": [
+            222,
+            427
+          ],
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-front",
+      "group": "envelope",
+      "targetRect": [
+        100,
+        220,
+        400,
+        210
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-front.png",
+      "sourceSha256": "bd52e5463dae3a296d76f396542dca61ed9a3b98e409a42ffd09356f34b8c95c",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        214,
+        495,
+        1159,
+        1004
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-front.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-front.webp",
+      "url": "/art/effects/v8/envelope-front.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 95886,
+      "sha256": "66b166b5fe86ed34d6b73408c06fab8b9e6d9e1428380df8e6005fb356503b0b",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          101,
+          220,
+          499,
+          430
+        ],
+        "alphaAbove128Bounds": [
+          102,
+          221,
+          499,
+          429
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            224,
+            428
+          ],
+          "135": [
+            241,
+            427
+          ],
+          "273": [
+            329,
+            427
+          ],
+          "300": [
+            346,
+            427
+          ],
+          "327": [
+            328,
+            427
+          ],
+          "465": [
+            240,
+            427
+          ],
+          "490": [
+            223,
+            427
+          ],
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-flap-front",
+      "group": "envelope",
+      "targetRect": [
+        100,
+        220,
+        400,
+        125
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-flap-front.png",
+      "sourceSha256": "de6967c73b13cd0bdfa314a2c7f153db7e0deffbe3d5842f63e78d10c889af42",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        223,
+        486,
+        1147,
+        851
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-flap-front.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-flap-front.webp",
+      "url": "/art/effects/v8/envelope-flap-front.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 47876,
+      "sha256": "36dd417345aec61302278482b3096c0dac8d9d9cdbee52bee0436b82ad23c5c4",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          100,
+          220,
+          500,
+          345
+        ],
+        "alphaAbove128Bounds": [
+          101,
+          221,
+          499,
+          344
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            221,
+            229
+          ],
+          "135": [
+            221,
+            246
+          ],
+          "273": [
+            221,
+            329
+          ],
+          "300": [
+            221,
+            343
+          ],
+          "327": [
+            221,
+            327
+          ],
+          "465": [
+            221,
+            245
+          ],
+          "490": [
+            221,
+            229
+          ],
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-flap-back",
+      "group": "envelope",
+      "targetRect": [
+        100,
+        220,
+        400,
+        125
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-flap-back.png",
+      "sourceSha256": "adb461134d66df771249fbe34608f016201c7d98e79b6bd4ffd5043583261db3",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        227,
+        489,
+        1146,
+        827
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-flap-back.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-flap-back.webp",
+      "url": "/art/effects/v8/envelope-flap-back.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 46222,
+      "sha256": "dd69496b83bda9c5c57dc50bef437e53b29f006eb8e55127a51c453091c99236",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          100,
+          220,
+          500,
+          345
+        ],
+        "alphaAbove128Bounds": [
+          101,
+          221,
+          499,
+          344
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            221,
+            229
+          ],
+          "135": [
+            221,
+            244
+          ],
+          "273": [
+            221,
+            328
+          ],
+          "300": [
+            221,
+            343
+          ],
+          "327": [
+            221,
+            327
+          ],
+          "465": [
+            221,
+            244
+          ],
+          "490": [
+            221,
+            228
+          ],
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-seal",
+      "group": "envelope",
+      "targetRect": [
+        273,
+        298,
+        54,
+        54
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-seal.png",
+      "sourceSha256": "0435ad3fc5419a233261eb8cd90842bc0a7d693dae2457de9300fac7d7466bff",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        154,
+        115,
+        1098,
+        1106
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-seal.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-seal.webp",
+      "url": "/art/effects/v8/envelope-seal.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 5924,
+      "sha256": "a976de4d37ba3ed3e8ac38412caeef71efc94ebfecb76a5272ca6382d77c3249",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          273,
+          298,
+          327,
+          352
+        ],
+        "alphaAbove128Bounds": [
+          273,
+          298,
+          327,
+          352
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            319,
+            322
+          ],
+          "300": [
+            298,
+            351
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-paper",
+      "group": "envelope",
+      "targetRect": [
+        135,
+        230,
+        330,
+        200
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-paper.png",
+      "sourceSha256": "5c796854ce65fdec8133541b55bbb9c1cd0561a3e8827f6766282add0e841636",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        251,
+        531,
+        1122,
+        1041
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-paper.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-paper.webp",
+      "url": "/art/effects/v8/envelope-paper.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 76004,
+      "sha256": "7083bac6990a5c292727d41070d06577d66dc15051e6d1b63e39cb19d131dc27",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          135,
+          230,
+          465,
+          430
+        ],
+        "alphaAbove128Bounds": [
+          136,
+          231,
+          464,
+          429
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            233,
+            427
+          ],
+          "300": [
+            232,
+            426
+          ],
+          "327": [
+            232,
+            428
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-seal-broken-left",
+      "group": "envelope",
+      "derivedFrom": "envelope-seal",
+      "fractureWorldOffsets": [
+        0,
+        -1.5,
+        1,
+        -2,
+        1.5,
+        -0.7,
+        2.2,
+        0.3,
+        -2.5,
+        0.8,
+        1.8,
+        -0.5,
+        0
+      ],
+      "processing": "Complementary irregular fracture of the same painted wax material, requested by motion owner; no new flat wax shapes. Two unmoved pieces reconstruct the intact alpha exactly.",
+      "file": "envelope-seal-broken-left.webp",
+      "url": "/art/effects/v8/envelope-seal-broken-left.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 3324,
+      "sha256": "fd8abaec5b5db8276ae5f413956f8d8c5e1c69d61e73b185c7058da26fc40e8b",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          273,
+          298,
+          303,
+          352
+        ],
+        "alphaAbove128Bounds": [
+          273,
+          298,
+          303,
+          352
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            319,
+            322
+          ],
+          "300": [
+            298,
+            351
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-seal-broken-right",
+      "group": "envelope",
+      "derivedFrom": "envelope-seal",
+      "fractureWorldOffsets": [
+        0,
+        -1.5,
+        1,
+        -2,
+        1.5,
+        -0.7,
+        2.2,
+        0.3,
+        -2.5,
+        0.8,
+        1.8,
+        -0.5,
+        0
+      ],
+      "processing": "Complementary irregular fracture of the same painted wax material, requested by motion owner; no new flat wax shapes. Two unmoved pieces reconstruct the intact alpha exactly.",
+      "file": "envelope-seal-broken-right.webp",
+      "url": "/art/effects/v8/envelope-seal-broken-right.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 3006,
+      "sha256": "00481243e56eee4c93e50a9e381a70350e5c817315468f13335ecf95466fc536",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          299,
+          298,
+          327,
+          352
+        ],
+        "alphaAbove128Bounds": [
+          299,
+          298,
+          327,
+          352
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": [
+            300,
+            336
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "investigator-evidence",
+      "group": "lens",
+      "targetRect": [
+        55,
+        75,
+        490,
+        390
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-evidence.png",
+      "sourceSha256": "6a3bbde4b8c1cb5ecc3d9b0f7af3c65acccc65e5dc40588b52376f0712768111",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        114,
+        166,
+        1259,
+        1096
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-evidence.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "investigator-evidence.webp",
+      "url": "/art/effects/v8/investigator-evidence.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 239168,
+      "sha256": "e50c9e015b043adc8eb173bff6e397819b156ae39bdacdad2737ce6b29db33e2",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          55,
+          76,
+          545,
+          465
+        ],
+        "alphaAbove128Bounds": [
+          56,
+          77,
+          544,
+          464
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            77,
+            442
+          ],
+          "110": [
+            77,
+            445
+          ],
+          "135": [
+            77,
+            437
+          ],
+          "273": [
+            77,
+            443
+          ],
+          "300": [
+            77,
+            453
+          ],
+          "327": [
+            77,
+            443
+          ],
+          "465": [
+            77,
+            437
+          ],
+          "490": [
+            77,
+            445
+          ],
+          "499": [
+            77,
+            440
+          ]
+        }
+      }
+    },
+    {
+      "id": "investigator-magnifier",
+      "group": "lens",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-magnifier.png",
+      "sourceSha256": "f69f93ca360e8348255aa9b7e81659507455c97ccf3e68c46393a2cb03decf71",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-magnifier.txt",
+      "sourceHoleBoundsAlphaAtMost8": [
+        483,
+        269,
+        857,
+        649
+      ],
+      "affineOutputToSource": [
+        2.2,
+        0,
+        10.0,
+        0,
+        2.235294117647059,
+        0.7647058823529278
+      ],
+      "lensCentre": [
+        300,
+        205
+      ],
+      "nominalHoleRadius": 85,
+      "clearRadius82MaxAlpha": 0,
+      "measuredOuterCardinalRadiiAbove128": {
+        "left": 104,
+        "right": 104,
+        "top": 103,
+        "bottom": 101
+      },
+      "processing": "One affine calibrated from actual enclosed source hole. Normalize clear-hole bbox to radius85 so entire R82 is naturally alpha0; no alpha clearing/cut or baked lens contents. Original painted metal retained.",
+      "file": "investigator-magnifier.webp",
+      "url": "/art/effects/v8/investigator-magnifier.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 49756,
+      "sha256": "2a42ff472b23ec5da505d33f9658ba49107918529f5ae242ff5de3a925cc1b57",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          195,
+          101,
+          467,
+          416
+        ],
+        "alphaAbove128Bounds": [
+          196,
+          102,
+          466,
+          415
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            106,
+            303
+          ],
+          "300": [
+            102,
+            306
+          ],
+          "327": [
+            105,
+            302
+          ],
+          "465": [
+            394,
+            402
+          ],
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "investigator-lens-glint",
+      "group": "lens",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-lens-glint.png",
+      "sourceSha256": "6d20370f578f986539e443a9b3da6c72cb924169e6828be2df6d2e745ff9e2b9",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-lens-glint.txt",
+      "glassLocalScale": 0.9,
+      "maxAlpha": 55,
+      "centralRadius60MaxAlpha": 0,
+      "processing": "Resample whole generated canvas then scale0.9 around calibrated glass centre, apply declared0.22 opacity and clip to calibrated aperture only; no metal or filled glass disk.",
+      "file": "investigator-lens-glint.webp",
+      "url": "/art/effects/v8/investigator-lens-glint.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 1698,
+      "sha256": "5dc3023f5fdb80cd78b93e705a3ace3b2a7a4a0597c3d72ae544a5797fbb82bf",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          221,
+          125,
+          357,
+          258
+        ],
+        "alphaAbove128Bounds": null,
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "raven-perch",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-perch.png",
+      "sourceSha256": "9297700720cf67bb89181657a7bfb40c96db5adb0d416379fd1507b8a94af41d",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-perch.txt",
+      "sourceAnchor": [
+        750,
+        737
+      ],
+      "worldAnchor": [
+        315,
+        340
+      ],
+      "uniformScale": 0.3,
+      "affineOutputToSource": [
+        3.3333333333333335,
+        0,
+        -300.0,
+        0,
+        3.3333333333333335,
+        -396.3333333333335
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-perch.webp",
+      "url": "/art/effects/v8/raven-perch.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 41514,
+      "sha256": "224e5317203b6914ce9f00b8ff72c59e9e11f4b7fa0d4ced481ea7a093bd2661",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          149,
+          269,
+          452,
+          441
+        ],
+        "alphaAbove128Bounds": [
+          149,
+          269,
+          451,
+          441
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            320,
+            357
+          ],
+          "300": [
+            338,
+            367
+          ],
+          "327": [
+            341,
+            366
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "a0dc3fc0bc11e395ef3d3cbf4e97a4c8993b1ce30b881a5e5dc2574434e38604"
+    },
+    {
+      "id": "raven-body",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-body.png",
+      "sourceSha256": "f51e28b8230fe0ce9f8da903a6eff0fe07e4d838b945c33e0386a9b1fa5d141e",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-body.txt",
+      "sourceAnchor": [
+        667,
+        956
+      ],
+      "worldAnchor": [
+        315,
+        350
+      ],
+      "uniformScale": 0.26,
+      "affineOutputToSource": [
+        3.846153846153846,
+        0,
+        -544.5384615384614,
+        0,
+        3.846153846153846,
+        -390.1538461538462
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-body.webp",
+      "url": "/art/effects/v8/raven-body.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 29592,
+      "sha256": "eda36863de9934c43cfc733c7af8a02de6d59a8dc8fe42cbdcb822f0b73f5aea",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          272,
+          181,
+          387,
+          350
+        ],
+        "alphaAbove128Bounds": [
+          272,
+          181,
+          387,
+          350
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            237,
+            246
+          ],
+          "300": [
+            197,
+            339
+          ],
+          "327": [
+            181,
+            346
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "843df50dfb9843a5826f9ddb8271d9b13a1f7a9f04720dbe56c1952e5a0aeab7"
+    },
+    {
+      "id": "raven-head-neck",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-head-neck.png",
+      "sourceSha256": "d60ff8906951149fbe4bcb31729221588c778671a46c5b85da958c86f01f44a9",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-head-neck.txt",
+      "sourceAnchor": [
+        650,
+        850
+      ],
+      "worldAnchor": [
+        330,
+        218
+      ],
+      "uniformScale": 0.17,
+      "affineOutputToSource": [
+        5.88235294117647,
+        0,
+        -1291.1764705882351,
+        0,
+        5.88235294117647,
+        -432.3529411764705
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-head-neck.webp",
+      "url": "/art/effects/v8/raven-head-neck.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 26634,
+      "sha256": "02a2d3e705f24161a4aabb615d89ebda01cbd82f8869a4decdc7d30c45cdc332",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          285,
+          97,
+          406,
+          246
+        ],
+        "alphaAbove128Bounds": [
+          285,
+          97,
+          406,
+          246
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": [
+            146,
+            218
+          ],
+          "327": [
+            106,
+            242
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "9006a2579791d652229c3f5b3b6b8abfefe667a2e96b14e45d6c3a170a8bd415"
+    },
+    {
+      "id": "raven-tail",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-tail.png",
+      "sourceSha256": "ba435a1e5aa7b26aeef4dde060e428b89b45d6ae4907b2f184326a14cc28ebda",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-tail.txt",
+      "sourceAnchor": [
+        980,
+        140
+      ],
+      "worldAnchor": [
+        300,
+        290
+      ],
+      "uniformScale": 0.125,
+      "affineOutputToSource": [
+        8.0,
+        0,
+        -1420.0,
+        0,
+        8.0,
+        -2180.0
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-tail.webp",
+      "url": "/art/effects/v8/raven-tail.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 14648,
+      "sha256": "8f4c5afaa34d512e72dd1e9099db5aa9f1be357d7d9b70a0c4401f396e2f8171",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          215,
+          284,
+          307,
+          404
+        ],
+        "alphaAbove128Bounds": [
+          215,
+          284,
+          307,
+          404
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            307,
+            387
+          ],
+          "300": [
+            284,
+            326
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "146b7479d60a1ab393e6d31ffafa35b896dd76f181c01d5c8b22462fe93e1bf4"
+    },
+    {
+      "id": "raven-wing-left",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-wing-left.png",
+      "sourceSha256": "2d6cf4db5a1735cedede7357e43725a9f1a78ed00c6cbbb2ccb375ddba1553ab",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-wing-left.txt",
+      "sourceAnchor": [
+        1230,
+        450
+      ],
+      "worldAnchor": [
+        303,
+        214
+      ],
+      "uniformScale": 0.19,
+      "affineOutputToSource": [
+        5.2631578947368425,
+        0,
+        -364.7368421052631,
+        0,
+        5.2631578947368425,
+        -676.3157894736842
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-wing-left.webp",
+      "url": "/art/effects/v8/raven-wing-left.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 44556,
+      "sha256": "ae41fb668f33b956cb4ad18b9c6fa142220d09bf1b066a15cabf54db254e625b",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          73,
+          178,
+          325,
+          293
+        ],
+        "alphaAbove128Bounds": [
+          73,
+          178,
+          325,
+          293
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            196,
+            262
+          ],
+          "110": [
+            194,
+            257
+          ],
+          "135": [
+            187,
+            259
+          ],
+          "273": [
+            206,
+            285
+          ],
+          "300": [
+            199,
+            267
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "65443a85eb8bcc4091a093d33bf248134b779c6d6ecf2ed086579cc6e49bc48e"
+    },
+    {
+      "id": "raven-wing-right",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-wing-right.png",
+      "sourceSha256": "b591b5b96cea57726339f4fbcac8c61578d6690951624351a5b57640e7e07341",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-wing-right.txt",
+      "sourceAnchor": [
+        180,
+        550
+      ],
+      "worldAnchor": [
+        350,
+        214
+      ],
+      "uniformScale": 0.165,
+      "affineOutputToSource": [
+        6.0606060606060606,
+        0,
+        -1941.212121212121,
+        0,
+        6.0606060606060606,
+        -746.969696969697
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-wing-right.webp",
+      "url": "/art/effects/v8/raven-wing-right.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 33300,
+      "sha256": "cc5d5ce4961ec4e7431073581a6ff872f5262f036ded78dc8b4022cf91aef846",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          329,
+          154,
+          540,
+          281
+        ],
+        "alphaAbove128Bounds": [
+          329,
+          154,
+          540,
+          281
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": [
+            159,
+            236
+          ],
+          "490": [
+            156,
+            243
+          ],
+          "499": [
+            155,
+            232
+          ]
+        }
+      },
+      "promptSha256": "4bd4d75073880182f3cc8f9831d1cfe63eca07e5f4fc1a1b4a598bc8e2493a14"
+    }
+  ],
+  "contracts": {
+    "envelope": {
+      "hinge": [
+        [
+          100,
+          220
+        ],
+        [
+          500,
+          220
+        ]
+      ],
+      "closedFlapTip": [
+        300,
+        345
+      ],
+      "paperInitialRect": [
+        135,
+        230,
+        330,
+        200
+      ],
+      "paperTravelY": -185,
+      "sealCentre": [
+        300,
+        325
+      ],
+      "sealDiameter": 54,
+      "defaultZ": [
+        "envelope-back",
+        "envelope-paper",
+        "envelope-front",
+        "envelope-flap-front",
+        "envelope-seal"
+      ],
+      "parts": [
+        {
+          "id": "envelope-back",
+          "targetRect": [
+            100,
+            220,
+            400,
+            210
+          ]
+        },
+        {
+          "id": "envelope-front",
+          "targetRect": [
+            100,
+            220,
+            400,
+            210
+          ]
+        },
+        {
+          "id": "envelope-flap-front",
+          "targetRect": [
+            100,
+            220,
+            400,
+            125
+          ]
+        },
+        {
+          "id": "envelope-flap-back",
+          "targetRect": [
+            100,
+            220,
+            400,
+            125
+          ]
+        },
+        {
+          "id": "envelope-seal",
+          "targetRect": [
+            273,
+            298,
+            54,
+            54
+          ]
+        },
+        {
+          "id": "envelope-paper",
+          "targetRect": [
+            135,
+            230,
+            330,
+            200
+          ]
+        }
+      ]
+    },
+    "lens": {
+      "centre": [
+        300,
+        205
+      ],
+      "requestedOuterRadius": 100,
+      "measuredHoleNormalizeRadius": 85,
+      "guaranteedClearRadius": 82,
+      "requestedHandleEnd": [
+        450,
+        415
+      ],
+      "evidenceTextureFocus": [
+        165,
+        245
+      ],
+      "defaultZ": [
+        "investigator-evidence",
+        "runtime-reprojected-same-evidence",
+        "investigator-lens-glint",
+        "investigator-magnifier"
+      ],
+      "parts": [
+        {
+          "id": "investigator-evidence",
+          "targetRect": [
+            55,
+            75,
+            490,
+            390
+          ]
+        },
+        {
+          "id": "investigator-magnifier",
+          "processingMode": "calibrate-transparent-hole"
+        },
+        {
+          "id": "investigator-lens-glint",
+          "processingMode": "whole-canvas-glint",
+          "glassLocalScale": 0.9,
+          "opacity": 0.22
+        }
+      ]
+    },
+    "raven": {
+      "footContact": [
+        315,
+        340
+      ],
+      "hip": [
+        330,
+        310
+      ],
+      "nearWingShoulder": [
+        303,
+        214
+      ],
+      "farWingShoulder": [
+        350,
+        214
+      ],
+      "neckRoot": [
+        330,
+        218
+      ],
+      "headPivot": [
+        356,
+        124
+      ],
+      "tailRoot": [
+        300,
+        290
+      ],
+      "orientation": "three-quarter facing right; wings spread; left is near wing",
+      "defaultZ": [
+        "raven-perch",
+        "raven-wing-right",
+        "raven-tail",
+        "raven-body",
+        "raven-wing-left",
+        "raven-head-neck"
+      ],
+      "parts": [
+        {
+          "id": "raven-perch",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            750,
+            737
+          ],
+          "worldAnchor": [
+            315,
+            340
+          ],
+          "uniformScale": 0.3
+        },
+        {
+          "id": "raven-body",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            667,
+            956
+          ],
+          "worldAnchor": [
+            315,
+            350
+          ],
+          "uniformScale": 0.26
+        },
+        {
+          "id": "raven-head-neck",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            650,
+            850
+          ],
+          "worldAnchor": [
+            330,
+            218
+          ],
+          "uniformScale": 0.17
+        },
+        {
+          "id": "raven-tail",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            980,
+            140
+          ],
+          "worldAnchor": [
+            300,
+            290
+          ],
+          "uniformScale": 0.125
+        },
+        {
+          "id": "raven-wing-left",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            1230,
+            450
+          ],
+          "worldAnchor": [
+            303,
+            214
+          ],
+          "uniformScale": 0.19
+        },
+        {
+          "id": "raven-wing-right",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            180,
+            550
+          ],
+          "worldAnchor": [
+            350,
+            214
+          ],
+          "uniformScale": 0.165
+        }
+      ],
+      "branchContactSurface": [
+        315,
+        340
+      ],
+      "footTip": [
+        315,
+        350
+      ]
+    }
+  }
+}

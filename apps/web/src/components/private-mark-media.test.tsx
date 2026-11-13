@@ -4,6 +4,7 @@ import {expect,test} from 'vitest';
 import sharp from 'sharp';
 import {PrivateAvatarClaw} from './PrivateAvatarClaw.js';
 import {LayeredSceneArt} from './LayeredSceneArt.js';
+import {magnifierPose,bookProject} from './private-prop-motion.js';
 
 const publicFile=(url:string)=>readFileSync(new URL(`../../public${url}`,import.meta.url));
 async function embed(markup:string){for(const match of [...markup.matchAll(/href="(\/[^"]+)"/g)]){const url=match[1]!,png=await sharp(publicFile(url)).png().toBuffer();markup=markup.replaceAll(`href="${url}"`,`href="data:image/png;base64,${png.toString('base64')}"`);}return markup;}
@@ -20,11 +21,31 @@ test('3.2x slashes keep the measured centre and visibly overflow 64px and 42px a
   expect(large.left).toBeLessThan((fullSize-size)/2);expect(large.right).toBeGreaterThan((fullSize+size)/2);
  }
 });
-test('actual printed avatars follow fabric slices and disappear behind the basin when submerged',async()=>{
+test('wet candidate ink waits for lifting and stays legible on the settled fabric',async()=>{
  const avatar=async(fill:string)=>'data:image/png;base64,'+(await sharp({create:{width:68,height:68,channels:4,background:fill}}).png().toBuffer()).toString('base64');
  const imprint={label:'获知候选',marks:[{label:'甲',name:'甲',avatar:await avatar('#fa0000')},{label:'乙',name:'乙',avatar:await avatar('#0000fa')}]};
  async function colorCounts(t:number){let markup=renderToStaticMarkup(<LayeredSceneArt role="washerwoman" kind="INFORMATION" elapsedMs={t} imprint={imprint}/>);markup=await embed(markup);const {data}=await sharp(Buffer.from(markup)).ensureAlpha().raw().toBuffer({resolveWithObject:true});let red=0,blue=0;for(let i=0;i<data.length;i+=4){if(data[i]!>180&&data[i+1]!<50&&data[i+2]!<50)red++;if(data[i+2]!>180&&data[i]!<50&&data[i+1]!<70)blue++;}return{red,blue};}
  const sunk=await colorCounts(1300),raised=await colorCounts(2300);
- expect(sunk.red).toBeGreaterThan(1000);expect(sunk.blue).toBe(0);
- expect(raised.red).toBeGreaterThan(2000);expect(raised.blue).toBeGreaterThan(2000);
+ expect(sunk.red).toBeLessThan(100);expect(sunk.blue).toBe(0);
+ expect(raised.red).toBeGreaterThan(2000);expect(raised.blue).toBeGreaterThan(2000);expect(await colorCounts(3000)).toEqual(raised);
+});
+
+test('the independent lens has a real transparent optical hole and magnifies the evidence beneath it',async()=>{
+ const {data:hardware,info}=await sharp(publicFile('/art/effects/v8/investigator-magnifier.webp')).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+ expect([info.width,info.height]).toEqual([600,500]);
+ for(let y=123;y<=287;y++)for(let x=218;x<=382;x++)if(Math.hypot(x-300,y-205)<=82)expect(hardware[(y*600+x)*4+3]).toBe(0);
+ const t=1800,p=magnifierPose(t),c=p.centre,zoom=1.2+p.focus*.38,material=(await sharp(publicFile('/art/effects/v8/investigator-evidence.webp')).png().toBuffer()).toString('base64');
+ const image=`<image href="data:image/png;base64,${material}" width="600" height="500"/>`,raster=async(svg:string)=>(await sharp(Buffer.from(svg)).ensureAlpha().raw().toBuffer()),wrap=(body:string)=>`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="500">${body}</svg>`;
+ const actual=await raster(await embed(renderToStaticMarkup(<LayeredSceneArt role="investigator" kind="INFORMATION" elapsedMs={t}/>))),expected=await raster(wrap(`${image}<g transform="translate(${c.x} ${c.y}) scale(${zoom}) translate(${-c.x} ${-c.y})">${image}</g>`)),unmagnified=await raster(wrap(image));
+ let error=0,unchangedError=0;
+ // Right-of-centre stays inside clear glass and away from the independent left reflection.
+ for(let y=Math.round(c.y)-20;y<=Math.round(c.y)+20;y++)for(let x=Math.round(c.x)+10;x<=Math.round(c.x)+35;x++)for(let ch=0;ch<3;ch++){const i=(y*600+x)*4+ch;error+=Math.abs(actual[i]!-expected[i]!);unchangedError+=Math.abs(actual[i]!-unmagnified[i]!);}
+ expect(unchangedError).toBeGreaterThan(1000);expect(error).toBeLessThan(unchangedError*.15);
+});
+
+test('the authorized book portrait is printed once on the turned leaf in its projected coordinates',async()=>{
+ const avatar='data:image/png;base64,'+(await sharp({create:{width:36,height:36,channels:4,background:'#fa0000'}}).png().toBuffer()).toString('base64');
+ const render=async(withAvatar:boolean)=>sharp(Buffer.from(await embed(renderToStaticMarkup(<LayeredSceneArt role="librarian" kind="INFORMATION" elapsedMs={2300} imprint={{label:'获知候选',marks:[{label:'甲',...(withAvatar?{avatar}:{})}]}}/>)))).ensureAlpha().raw().toBuffer(),data=await render(true),baseline=await render(false);let mass=0,xSum=0,ySum=0;
+ for(let y=0;y<500;y++)for(let x=0;x<600;x++){const i=(y*600+x)*4;if(data[i]!>200&&data[i+1]!<30&&data[i+2]!<30&&baseline[i+1]!-data[i+1]!>50){mass++;xSum+=x;ySum+=y;}}
+ const expected=bookProject(112.5,165);expect(mass).toBeGreaterThan(300);expect(mass).toBeLessThan(700);expect(Math.abs(xSum/mass-expected.x)).toBeLessThan(1);expect(Math.abs(ySum/mass-expected.y)).toBeLessThan(1);
 });

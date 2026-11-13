@@ -1,0 +1,117 @@
+{
+  "version": 2,
+  "rebuild": "python scripts/build-game-score.py",
+  "files": [
+    {
+      "id": "M01",
+      "file": "background-m01.mp3",
+      "sha256": "6fbc5881dd62e147ae4ab352e7d44e257c113b8ca373de951a258acc8fd20e94",
+      "bytes": 3963864,
+      "durationSeconds": 198.138776,
+      "decodedBytesEstimate": 69903360,
+      "offsetSeconds": 0,
+      "excerptSeconds": null,
+      "sourcePath": "artifacts/audio-candidates-2026-11-12/music/M01__music_home__moonlight-hall__Kevin-MacLeod__full-v01.mp3",
+      "sourceSha256": "5decdbc9ec96d4c075825bfb10c2d00dbc854f72721eeba7c1f9e3aa70369060",
+      "sourcePages": [
+        "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200095"
+      ],
+      "author": "Kevin MacLeod",
+      "license": "CC-BY-3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "processing": "loudnorm=I=-20:TP=-2:LRA=7,afade=t=in:d=0.05",
+      "integratedLUFS": -19.26,
+      "truePeakDb": -4.03,
+      "originalTitle": "Moonlight Hall"
+    },
+    {
+      "id": "M15",
+      "file": "background-m15.mp3",
+      "sha256": "25e45d86dac03aab65e493be0d51a80b1bfcc05510180377eafb5d8e5e6b088e",
+      "bytes": 961350,
+      "durationSeconds": 48.0,
+      "decodedBytesEstimate": 16934400,
+      "offsetSeconds": 0,
+      "excerptSeconds": null,
+      "sourcePath": "artifacts/audio-candidates-2026-11-12/music/M15__music_vote-investigation__unsolved-investigation__full-v01.ogg",
+      "sourceSha256": "2877e423ff90cb99b3082840e66cf79d69a809708466c6f27c750c0e1ce2a912",
+      "sourcePages": [
+        "https://opengameart.org/content/unsolved-investigation"
+      ],
+      "author": "isaiah658",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "processing": "loudnorm=I=-20:TP=-2:LRA=7,afade=t=in:d=0.05",
+      "integratedLUFS": -20.13,
+      "truePeakDb": -8.55,
+      "originalTitle": "Unsolved Investigation"
+    },
+    {
+      "id": "M18",
+      "file": "background-m18.mp3",
+      "sha256": "1a31d72afb09817846a4084a66fd51b77e4c13b947825f3e0904e9a512673cdf",
+      "bytes": 1132713,
+      "durationSeconds": 56.572517,
+      "decodedBytesEstimate": 19958784,
+      "offsetSeconds": 0,
+      "excerptSeconds": null,
+      "sourcePath": "artifacts/audio-candidates-2026-11-12/music/M18__music_night-shrine__dark-shrine-loop__full-v01.ogg",
+      "sourceSha256": "9580618dc851f70c3a11b5ff87672867de44cd38b35dabf926d6befde20e78d0",
+      "sourcePages": [
+        "https://opengameart.org/content/dark-shrine-loop"
+      ],
+      "author": "qubodup; original composition by yd",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "processing": "loudnorm=I=-20:TP=-2:LRA=7,afade=t=in:d=0.05",
+      "integratedLUFS": -19.86,
+      "truePeakDb": -5.37,
+      "originalTitle": "Dark Shrine Loop"
+    },
+    {
+      "id": "M03",
+      "file": "scene-m03.mp3",
+      "sha256": "7cb98ebf08cff6c3ca23d5db39a4af1a116e72ed3b1e0fd325d0ba13e5888935",
+      "bytes": 65244,
+      "durationSeconds": 4.0,
+      "decodedBytesEstimate": 705600,
+      "offsetSeconds": 3,
+      "excerptSeconds": 4,
+      "sourcePath": "artifacts/audio-candidates-2026-11-12/music/M03__music_day-discussion__comfortable-mystery__Kevin-MacLeod__full-v01.mp3",
+      "sourceSha256": "43cea2c91a80524d3fdaee00c0823d8e3b001a40332253f8d0b3ea8b36ff73a4",
+      "sourcePages": [
+        "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100287"
+      ],
+      "author": "Kevin MacLeod",
+      "license": "CC-BY-3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "processing": "atrim=duration=4,asetpts=PTS-STARTPTS,loudnorm=I=-27:TP=-2:LRA=7,afade=t=in:d=0.08,afade=t=out:st=3.7:d=0.3",
+      "integratedLUFS": -24.15,
+      "truePeakDb": -12.6,
+      "originalTitle": "Comfortable Mystery"
+    },
+    {
+      "id": "M22",
+      "file": "scene-m22.mp3",
+      "sha256": "b0d35d9ee69eb888ae160247868ed0b58cdba94db7787044d0b21a2a130fd539",
+      "bytes": 65244,
+      "durationSeconds": 4.0,
+      "decodedBytesEstimate": 705600,
+      "offsetSeconds": 0,
+      "excerptSeconds": 4,
+      "sourcePath": "artifacts/audio-candidates-2026-11-12/music/M22__music_cinematic-resolution__no-more-magic__full-v01.mp3",
+      "sourceSha256": "d5f7fb5c6d179cb58c378684d6adddb46d86df96b91be00ad4d096a63b84a35e",
+      "sourcePages": [
+        "https://opengameart.org/content/no-more-magic"
+      ],
+      "author": "HorrorPen",
+      "license": "CC-BY-3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "processing": "atrim=duration=4,asetpts=PTS-STARTPTS,loudnorm=I=-27:TP=-2:LRA=7,afade=t=in:d=0.08,afade=t=out:st=3.7:d=0.3",
+      "integratedLUFS": -31.03,
+      "truePeakDb": -19.5,
+      "originalTitle": "No More Magic"
+    }
+  ],
+  "m19": "Existing /audio/music/v1/lobby-m19.mp3 unchanged; .8 base volume retained"
+}

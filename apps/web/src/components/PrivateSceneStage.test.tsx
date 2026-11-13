@@ -96,7 +96,7 @@ test('washer linen prints only the actual shown candidates, including a default 
  expect(prints.textContent).not.toContain('未获知对象');expect(prints.querySelector('image[href="/other.webp"]')).toBeNull();
  expect(prints.querySelector('[data-washer-candidate="1"] text')).toHaveTextContent('已');
  expect(ui.container.querySelector('.private-scene-result')).toHaveTextContent('二人中有一位是圣徒');
- expect(ui.container.querySelectorAll('[data-washer-strip] use')).toHaveLength(10);
+ expect(ui.container.querySelectorAll('[data-washer-strip]')).toHaveLength(10);expect(ui.container.querySelectorAll('[data-washer-strip] use')).toHaveLength(20);
 });
 test('demon decals are anchored inside the avatar box, separately from a long nickname',()=>{
  const view=fixture();view.game!.seats=[{seat:2,nickname:'很长昵称'.repeat(6),avatar:'/shown.webp',alive:true,connected:true,ghostVoteAvailable:true}];

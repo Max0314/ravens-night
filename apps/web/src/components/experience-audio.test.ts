@@ -2,13 +2,13 @@
 import {afterEach,beforeEach,expect,test,vi} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
-const names=['shot','glass','impact','scream','poison','shield','butler','demon','good','evil','night-bell','dawn-bell','paper-turn-1','paper-turn-2','paper-turn-3','paper-turn-4','paper-lift-1','paper-lift-2','ui-press','ui-open','nomination','vote-stamp','guillotine-tension','guillotine-unlock','guillotine-blade','guillotine-impact','guillotine-wind','glass-hit','glass-shards','gun-cock','hurt-shot-1','hurt-shot-2','hurt-shot-3','hurt-night-1','hurt-night-2','hurt-night-3','blood-impact','bone-crack','role-baron','role-scarlet_woman','role-imp','role-monk','role-butler','wing-flap','wing-air','wing-root','slash-left','slash-right','poison-bottle','poison-bubbles','poison-cork','poison-pour','chef-chop-1','chef-chop-2','chef-chop-3','coffin-open','coffin-settle','cough-1','cough-2','cough-3','butler-voice'];
+const names=['shot','glass','impact','scream','poison','shield','butler','demon','good','evil','night-bell','dawn-bell','paper-turn-1','paper-turn-2','paper-turn-3','paper-turn-4','paper-lift-1','paper-lift-2','ui-press','ui-open','nomination','vote-stamp','guillotine-tension','guillotine-unlock','guillotine-blade','guillotine-impact','guillotine-wind','glass-hit','glass-shards','gun-cock','hurt-shot-1','hurt-shot-2','hurt-shot-3','hurt-night-1','hurt-night-2','hurt-night-3','blood-impact','bone-crack','role-baron','role-scarlet_woman','role-imp','role-monk','role-butler','wing-flap','wing-air','wing-root','slash-left','slash-right','poison-bottle','poison-bubbles','poison-cork','poison-pour','chef-chop-1','chef-chop-2','chef-chop-3','coffin-open','coffin-settle','cough-1','cough-2','cough-3','butler-voice','washer-dip','washer-scrub','washer-drops','washer-whisper','crystal-resonance','crystal-shiver','investigator-lens','investigator-evidence','envelope-seal','envelope-flap','envelope-draw','raven-short-call','raven-wing-open','raven-wing-fold','raven-feathers','coffin-hinge','scepter-contact','soldier-shield','cloak-unfold','cloak-hem','cup-sway-left','cup-sway-right','empath-pulse','mayor-document','flower-ribbon','scene-m03','scene-m22'];
 const started:Array<{sample:number;at:number;offset:number;rate:number;stopped:boolean;stopAt?:number}>=[];
 class Param{value=0;setValueAtTime(){}linearRampToValueAtTime(){}exponentialRampToValueAtTime(){}}
 class Node{gain=new Param();frequency=new Param();playbackRate=new Param();buffer:{sample:number}|undefined;onended:(()=>void)|null=null;row:typeof started[number]|undefined;connect(){}disconnect(){}start(at:number,offset=0){this.row={sample:this.buffer?.sample??-1,at,offset,rate:this.playbackRate.value,stopped:false};started.push(this.row);}stop(at?:number){if(this.row){this.row.stopped=true;this.row.stopAt=at??0;}}}
 const gains:Node[]=[];
 let context:Context;
-class Context{state='running';currentTime=10;sampleRate=48000;destination={};constructor(){context=this;}async resume(){}createGain(){const node=new Node();gains.push(node);return node;}createBufferSource(){return new Node();}createOscillator(){return new Node();}async decodeAudioData(data:ArrayBuffer){return{sample:new Uint8Array(data)[0],duration:({shield:1.7,'slash-left':.42,'slash-right':.42,'wing-flap':.45,'wing-air':.65,'wing-root':.35,'butler-voice':.768,'role-butler':2.6,'night-bell':9,'dawn-bell':10.5,'poison-pour':.6541,'poison-cork':.2362,'chef-chop-1':.21,'chef-chop-2':.21,'chef-chop-3':.21} as Record<string,number>)[names[new Uint8Array(data)[0]!]!]??3};}createBuffer(){return{getChannelData:()=>new Float32Array(100)};}}
+class Context{state='running';currentTime=10;sampleRate=48000;destination={};constructor(){context=this;}async resume(){}createGain(){const node=new Node();gains.push(node);return node;}createBufferSource(){return new Node();}createOscillator(){return new Node();}async decodeAudioData(data:ArrayBuffer){return{sample:new Uint8Array(data)[0],duration:({shield:1.7,'slash-left':.42,'slash-right':.42,'wing-flap':.45,'wing-air':.65,'wing-root':.35,'butler-voice':.768,'role-butler':2.6,'night-bell':9,'dawn-bell':10.5,'poison-pour':.6541,'poison-cork':.2362,'chef-chop-1':.21,'chef-chop-2':.21,'chef-chop-3':.21,'washer-dip':.5,'washer-scrub':.72,'washer-drops':1.2,'washer-whisper':1.6,'crystal-resonance':2.7,'crystal-shiver':1.25,'investigator-lens':.8,'investigator-evidence':.4,'envelope-seal':.22,'envelope-flap':.6,'envelope-draw':.7,'raven-short-call':.6,'raven-wing-open':.42,'raven-wing-fold':.48,'raven-feathers':1.150454,'coffin-hinge':1.06,'coffin-settle':.6,'scepter-contact':.340658,'soldier-shield':.8,'cloak-unfold':1.1,'cloak-hem':.55,'cup-sway-left':.47,'cup-sway-right':.47,'empath-pulse':.22,'mayor-document':.6,'flower-ribbon':.42,'scene-m03':4,'scene-m22':4} as Record<string,number>)[names[new Uint8Array(data)[0]!]!]??3};}createBuffer(){return{getChannelData:()=>new Float32Array(100)};}}
 let audio:typeof import('./experience-audio.js'),preferences:typeof import('../participation-audio.js');
 async function flush(){for(let i=0;i<20;i++)await Promise.resolve();}
 beforeEach(async()=>{vi.resetModules();localStorage.clear();started.length=0;gains.length=0;vi.stubGlobal('AudioContext',Context);vi.stubGlobal('fetch',vi.fn(async(url:string)=>({ok:true,arrayBuffer:async()=>new Uint8Array([(()=>{const sample=names.indexOf(url.split('/').at(-1)!.replace('.mp3',''));if(sample<0)throw Error('Unmodelled audio '+url);return sample;})()]).buffer})));audio=await import('./experience-audio.js');preferences=await import('../participation-audio.js');await audio.enableEffectsAudio(true);await flush();});
@@ -48,7 +48,7 @@ test.each([1,2,3,4] as const)('empty execution v%s keeps only wind; no release, 
 });
 
 test('pause immediately cancels a cue that was due less than 40ms in the future',async()=>{audio.scheduleCue('near-future','SHOT',825,4);await flush();const future=started.filter(s=>s.at>10);expect(future.length).toBeGreaterThan(0);audio.cancelEventAudio('near-future');expect(future.every(s=>s.stopped&&s.stopAt===10)).toBe(true);});
-test('a former Baron inherits with the succession theme instead of disclosing old prop audio',async()=>{preferences.setParticipationMode('ONLINE');audio.scheduleRoleCue({version:1,id:'succession',kind:'ROLE_CHANGE',themeRoleId:'baron',shown:{type:'NEW_ROLE',roleId:'imp'}},0);await flush();expect(started.some(s=>s.sample===names.indexOf('role-scarlet_woman'))).toBe(true);expect(started.some(s=>s.sample===names.indexOf('role-baron'))).toBe(false);});
+test('a former Baron inherits with cape material instead of disclosing old prop audio',async()=>{preferences.setParticipationMode('ONLINE');audio.scheduleRoleCue({version:1,id:'succession',kind:'ROLE_CHANGE',themeRoleId:'baron',shown:{type:'NEW_ROLE',roleId:'imp'}},0);await flush();expect(started.some(s=>s.sample===names.indexOf('cloak-unfold'))).toBe(true);expect(started.some(s=>s.sample===names.indexOf('role-baron'))).toBe(false);});
 
 test('in-person mode suppresses private menu feedback while public menu foley remains available',async()=>{audio.playSemantic('open',{scope:'private'});await flush();expect(started).toHaveLength(0);audio.playSemantic('open',{scope:'ui'});await flush();expect(started.some(s=>s.sample===names.indexOf('ui-open'))).toBe(true);preferences.setParticipationMode('ONLINE');const count=started.length;audio.playSemantic('open',{scope:'private'});await flush();expect(started.length).toBe(count+1);});
 
@@ -75,7 +75,7 @@ test('scene kind wins over its recipient role and Butler identity keeps the acce
  preferences.setParticipationMode('ONLINE');const imp=submitted('imp');
  const opening={...imp,id:'start',kind:'EVIL_START' as const,shown:{type:'EVIL_START' as const,infoId:'start-info'}};
  const continuation={...imp,id:'continued',kind:'OLD_DEMON_CONTINUATION' as const,shown:{type:'CONTINUATION' as const}};
- expect(audio.roleAudioCues(opening).map(c=>c[1])).toEqual(['paper-lift-1',expect.stringMatching(/^paper-turn-/)]);
+ expect(audio.roleAudioCues(opening).map(c=>c[1])).toEqual(['v6:envelope-seal','v6:envelope-flap','v6:envelope-draw']);
  expect(audio.roleAudioCues(continuation).map(c=>c[1])).toEqual(['wing-air']);
  const identity={...submitted('butler'),id:'intro',kind:'IDENTITY' as const,shown:{type:'IDENTITY' as const,roleId:'butler',summary:'介绍'}};
  await audio.prepareRoleAudio(identity);audio.scheduleRoleCue(identity,0);await flush();expect(started.find(s=>names[s.sample]==='butler-voice')?.at).toBe(11.45);
@@ -178,4 +178,59 @@ test('a new gesture retries resume synchronously while an older automatic reques
 test('no total preference defaults on, explicit total off wins, and obsolete music/book preferences do not gate sound',async()=>{
  vi.resetModules();localStorage.clear();localStorage.setItem('ravens_lobby_music','off');localStorage.setItem('ravens_book_audio','off');const fresh=await import('./experience-audio.js');expect(fresh.effectsAudioEnabled()).toBe(true);
  localStorage.setItem('ravens_effects_audio','off');vi.resetModules();const muted=await import('./experience-audio.js');expect(muted.effectsAudioEnabled()).toBe(false);
+});
+
+
+test('role detail group one lands decoded material onsets and seal peak on the shared contacts',async()=>{
+ const {cinematicTiming:c}=await import('./cinematic-timing.js');
+ const manifest=JSON.parse(readFileSync(resolve('apps/web/public/audio/effects/v6/manifest.json'),'utf8')) as {files:Array<{id:string;onsetOffsetMs:number;peakOffsetMs:number}>};const media=new Map(manifest.files.map(r=>[r.id,r]));
+ const fixtures=[{scene:submitted('washerwoman'),at:[c.washer.dipStart,c.washer.scrubStart,c.washer.dripStart,c.washer.dipStart]},{scene:submitted('fortune_teller'),at:[c.crystal.start,c.crystal.answer]},{scene:submitted('investigator'),at:[c.investigator.scanStart,c.investigator.turn]},{scene:{...submitted('imp'),kind:'EVIL_START' as const,shown:{type:'EVIL_START' as const,infoId:'group-one'}},at:[c.envelope.seal,c.envelope.flapStart,c.envelope.paperStart]}];
+ for(const {scene,at}of fixtures)for(const [i,cue]of audio.roleAudioCues(scene).entries()){const data=media.get(cue[1].slice(3))!;expect(cue[0]+(cue[3]==='transient'?data.peakOffsetMs:data.onsetOffsetMs)).toBeCloseTo(at[i]!,3);expect(cue[1]).toMatch(/^v6:/);}
+});
+test('new washer layers remain private online, retain four audible sources and resume only their living tails',async()=>{
+ const scene=submitted('washerwoman');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();expect(started).toHaveLength(0);preferences.setParticipationMode('ONLINE');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();expect(started.map(s=>names[s.sample])).toEqual(['washer-dip','washer-scrub','washer-drops','washer-whisper']);expect(started.every(s=>!s.stopped)).toBe(true);expect(fetch).toHaveBeenCalledWith('/audio/effects/v6/washer-whisper.mp3');
+ context.currentTime=11.9;audio.cancelEventAudio('private:'+scene.id);const count=started.length;audio.scheduleRoleCue(scene,1900,{mode:'RESUME'});await flush();expect(started.slice(count).map(s=>names[s.sample])).toEqual(['washer-drops','washer-whisper']);expect(started.slice(count).every(s=>s.offset>0)).toBe(true);
+});
+test('oracle ambience and investigator friction do not encode hidden YES/NO or stamp impacts',()=>{
+ const base={...submitted('fortune_teller'),kind:'INFORMATION' as const};const yes={...base,shown:{type:'DIVINATION' as const,value:'YES' as const,seats:[2,3] as [number,number]}},no={...base,shown:{type:'DIVINATION' as const,value:'NO' as const,seats:[2,3] as [number,number]}};
+ expect(audio.roleAudioCues(yes)).toEqual(audio.roleAudioCues(no));expect(audio.roleAudioCues(yes).map(c=>c[1])).toEqual(['v6:crystal-resonance','v6:crystal-shiver']);expect(audio.roleAudioCues(submitted('investigator')).some(c=>c[1]==='role-investigator')).toBe(false);
+});
+
+test('raven material follows shared bird contacts and stays identical across identity and revealed information',async()=>{
+ const {cinematicTiming:c}=await import('./cinematic-timing.js');const manifest=JSON.parse(readFileSync('apps/web/public/audio/effects/v7/manifest.json','utf8'));const media=new Map<string,{onsetOffsetMs:number}>(manifest.files.map((r:{id:string;onsetOffsetMs:number})=>[r.id,r]));
+ const identity={...submitted('ravenkeeper'),kind:'IDENTITY' as const,shown:{type:'IDENTITY' as const,roleId:'ravenkeeper',summary:'介绍'}};
+ const cues=audio.roleAudioCues(identity);expect(cues).toEqual(audio.roleAudioCues(submitted('ravenkeeper')));
+ for(const [i,cue]of cues.entries())expect(cue[0]+media.get(cue[1].slice(3))!.onsetOffsetMs).toBeCloseTo([c.raven.attention,c.raven.flapStart,c.raven.flapStart,c.raven.spread][i]!,3);
+ await audio.prepareRoleAudio(identity);audio.scheduleRoleCue(identity,0);await flush();expect(started).toHaveLength(0);
+ preferences.setParticipationMode('ONLINE');await audio.prepareRoleAudio(identity);audio.scheduleRoleCue(identity,0);await flush();expect(started).toHaveLength(5);expect(started.every(s=>!s.stopped)).toBe(true);expect(fetch).toHaveBeenCalledWith('/audio/effects/v7/raven-wing-open.mp3');
+ preferences.setParticipationMode('IN_PERSON');expect(started.every(s=>s.stopped)).toBe(true);
+});
+test('coffin friction resumes but the settled wood attack never backfills after its contact',async()=>{
+ preferences.setParticipationMode('ONLINE');const scene=submitted('undertaker');await audio.prepareRoleAudio(scene);
+ const {roleAudioV7:m}=await import('./role-audio-v7.js');const cues=audio.roleAudioCues(scene);expect(cues.map(c=>c[1])).toEqual(['v7:coffin-hinge','v7:coffin-settle']);expect(cues[0]![0]+m['coffin-hinge'].onset).toBeCloseTo(600);expect(cues[1]![0]+m['coffin-settle'].peak).toBeCloseTo(1600);
+ audio.scheduleRoleCue(scene,1000,{mode:'RESUME'});await flush();expect(started).toHaveLength(2);expect(started[0]?.offset).toBeGreaterThan(.4);expect(started[1]?.offset).toBe(0);
+ audio.cancelEventAudio('private:'+scene.id);const count=started.length;audio.scheduleRoleCue(scene,1700,{mode:'RESUME'});await flush();expect(started).toHaveLength(count);
+ await audio.auditionSample('v7:coffin-settle');await flush();expect(fetch).toHaveBeenCalledWith('/audio/effects/v7/coffin-settle.mp3');
+});
+
+test('remaining prop contacts follow the shared clock rather than old embedded role themes',async()=>{
+ const {cinematicTiming:c}=await import('./cinematic-timing.js');const manifest=JSON.parse(readFileSync('apps/web/public/audio/effects/v8/manifest.json','utf8'));const media=new Map<string,{onsetOffsetMs:number;peakOffsetMs:number}>(manifest.files.map((r:{id:string;onsetOffsetMs:number;peakOffsetMs:number})=>[r.id,r]));
+ const fixtures=[{role:'soldier',at:[c.armor.contact]},{role:'mayor',at:[c.mayor.contact,c.mayor.document]},{role:'drunk',at:[c.drunk.lean,c.drunk.return]},{role:'scarlet_woman',at:[c.scarlet.start,c.scarlet.open]},{role:'virgin',at:[c.flower.ribbon]},{role:'empath',at:[c.empath.left,c.empath.left+c.empath.echoDelay,c.empath.right,c.empath.right+c.empath.echoDelay]}];
+ for(const {role,at}of fixtures)for(const [i,cue]of audio.roleAudioCues(submitted(role)).entries()){expect(cue[1]).toMatch(/^v8:/);const m=media.get(cue[1].slice(3))!;expect(cue[0]+(cue[3]==='transient'?m.peakOffsetMs:m.onsetOffsetMs)).toBeCloseTo(at[i]!,3);}
+ const emp=(value:0|2)=>({...submitted('empath'),kind:'INFORMATION' as const,shown:{type:'COUNT' as const,value}});
+ expect(audio.roleAudioCues(emp(0))).toEqual(audio.roleAudioCues(emp(2)));expect(audio.roleAudioCues(submitted('drunk')).some(c=>c[1].includes('bubble'))).toBe(false);
+});
+test('four fixed empath beats survive the source cap, keep private gating and skip past attacks on resume',async()=>{
+ const scene=submitted('empath');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();expect(started).toHaveLength(0);
+ preferences.setParticipationMode('ONLINE');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();expect(started).toHaveLength(4);expect(started.every(s=>!s.stopped)).toBe(true);expect(fetch).toHaveBeenCalledWith('/audio/effects/v8/empath-pulse.mp3');
+ audio.cancelEventAudio('private:'+scene.id);const count=started.length;audio.scheduleRoleCue(scene,900,{mode:'RESUME'});await flush();expect(started.length-count).toBe(2);expect(started.slice(count).every(s=>s.offset===0)).toBe(true);
+ await audio.enableEffectsAudio(false);expect(started.every(s=>s.stopped)).toBe(true);
+});
+
+test('private accompaniment warms without ducking, starts only online, and never displaces washer foley or whisper',async()=>{
+ const scene={...submitted('washerwoman'),kind:'IDENTITY' as const,shown:{type:'IDENTITY' as const,roleId:'washerwoman',summary:'fixed'}};
+ await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();expect(started).toHaveLength(0);expect(audio.scoreDuckingActive()).toBe(false);
+ preferences.setParticipationMode('ONLINE');await audio.prepareRoleAudio(scene);expect(audio.scoreDuckingActive()).toBe(false);audio.scheduleRoleCue(scene,0);await flush();expect(started).toHaveLength(5);expect(started.every(s=>!s.stopped)).toBe(true);expect(fetch).toHaveBeenCalledWith('/audio/music/v2/scene-m03.mp3');expect(audio.scoreDuckingActive()).toBe(true);
+ audio.cancelEventAudio('private:'+scene.id);expect(audio.scoreDuckingActive()).toBe(false);audio.scheduleRoleCue(scene,2000,{mode:'RESUME'});await flush();expect(started.filter(s=>!s.stopped&&names[s.sample]==='scene-m03').at(-1)?.offset).toBe(2);
+ preferences.setParticipationMode('IN_PERSON');expect(audio.scoreDuckingActive()).toBe(false);expect(started.every(s=>s.stopped)).toBe(true);
 });

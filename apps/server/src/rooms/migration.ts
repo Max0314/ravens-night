@@ -8,6 +8,7 @@ export function validateLegacyRoom(room: RoomRecord): void {
   const players=room.participants.filter(p=>p.mode==="PLAYER");
   if(new Set(players.map(p=>p.seat)).size!==players.length||players.some(p=>!Number.isInteger(p.seat)||p.seat!<1||p.seat!>room.playerCount))fail("seat layout");
   const game=room.game;if(!game)return;
+  if(game.openingNightVersion!==undefined&&game.openingNightVersion!==1)fail("opening night version");
   if(!Array.isArray(game.events)||!Array.isArray(game.aliveSeats)||!Array.isArray(game.ghostVoteSeats)||!Array.isArray(game.readySeats))fail("game collections");
   if(!["ROLE_REVEAL","FIRST_NIGHT","OTHER_NIGHT","DAY_DISCUSSION","NOMINATION","VOTING","GAME_OVER","ABORTED"].includes(game.phase))fail("phase");
   if(room.assignments.length!==room.playerCount||game.aliveSeats.some(s=>!players.some(p=>p.seat===s)))fail("role/seat references");

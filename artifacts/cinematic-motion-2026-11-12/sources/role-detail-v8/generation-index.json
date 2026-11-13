@@ -1,0 +1,312 @@
+{
+  "date": "2026-11-13",
+  "referencePathBase": "repository root; prompts and outputs relative to this directory",
+  "generations": [
+    {
+      "id": "envelope-back",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-back.png",
+      "outputSha256": "6af5508cddfe4046c236a05fdcc30ec224814ded3e05e3d555d3bfca414f7313",
+      "prompt": "prompts/envelope-back.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/sealed-letter.webp",
+          "sha256": "9c24c075b4353a5216d323acafd3afc2d0f674e65f26579ea7985362dd95425c"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-back.png",
+          "sha256": "7356e818431602ebecfe600bcbe85fe25f3799cb08abc5019a5f9f586f3db1af"
+        }
+      ]
+    },
+    {
+      "id": "envelope-front",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-front.png",
+      "outputSha256": "bd52e5463dae3a296d76f396542dca61ed9a3b98e409a42ffd09356f34b8c95c",
+      "prompt": "prompts/envelope-front.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-back.png",
+          "sha256": "6af5508cddfe4046c236a05fdcc30ec224814ded3e05e3d555d3bfca414f7313"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-front.png",
+          "sha256": "5a1c1713250209cb53d4a2e8087f0b838847b745db03147659f5a69d3b216824"
+        },
+        {
+          "file": "apps/web/public/art/effects/v3/sealed-letter.webp",
+          "sha256": "9c24c075b4353a5216d323acafd3afc2d0f674e65f26579ea7985362dd95425c"
+        }
+      ]
+    },
+    {
+      "id": "envelope-flap-front",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-flap-front.png",
+      "outputSha256": "de6967c73b13cd0bdfa314a2c7f153db7e0deffbe3d5842f63e78d10c889af42",
+      "prompt": "prompts/envelope-flap-front.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-front.png",
+          "sha256": "bd52e5463dae3a296d76f396542dca61ed9a3b98e409a42ffd09356f34b8c95c"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-flap-front.png",
+          "sha256": "dd5647b904b5e0d8123cdbdfe2e1bf71e3cc45361b5ba5aaabcd00fd34109d3f"
+        }
+      ]
+    },
+    {
+      "id": "envelope-flap-back",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-flap-back.png",
+      "outputSha256": "adb461134d66df771249fbe34608f016201c7d98e79b6bd4ffd5043583261db3",
+      "prompt": "prompts/envelope-flap-back.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-flap-front.png",
+          "sha256": "de6967c73b13cd0bdfa314a2c7f153db7e0deffbe3d5842f63e78d10c889af42"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-flap-back.png",
+          "sha256": "b208ce22083d73b7021435e89b5dcb98d51f8fb9607992069589da31e34fa29e"
+        }
+      ]
+    },
+    {
+      "id": "envelope-paper",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-paper.png",
+      "outputSha256": "5c796854ce65fdec8133541b55bbb9c1cd0561a3e8827f6766282add0e841636",
+      "prompt": "prompts/envelope-paper.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-back.png",
+          "sha256": "6af5508cddfe4046c236a05fdcc30ec224814ded3e05e3d555d3bfca414f7313"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-paper.png",
+          "sha256": "df44b2c2c516f5db9e10ac49a8f57e444e5b00cf1c8914a2f8f09b49d9491375"
+        }
+      ]
+    },
+    {
+      "id": "envelope-seal",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-seal.png",
+      "outputSha256": "0435ad3fc5419a233261eb8cd90842bc0a7d693dae2457de9300fac7d7466bff",
+      "prompt": "prompts/envelope-seal.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/sealed-letter.webp",
+          "sha256": "9c24c075b4353a5216d323acafd3afc2d0f674e65f26579ea7985362dd95425c"
+        }
+      ]
+    },
+    {
+      "id": "investigator-magnifier-initial",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/investigator-magnifier-before-length.png",
+      "outputSha256": "04ba52509fe7bb4973cb276d18e9cc3b0154976b81b6fec1e8de53262035e14c",
+      "prompt": "prompts/investigator-magnifier-initial.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/investigator.webp",
+          "sha256": "c5933f3fea950484858471f89e6b5695cdcd9a3a3be80b8206c96c6b71795e9b"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/investigator-magnifier.png",
+          "sha256": "bd57ba72ba106eeb42a85c285d6d561b686646966678584b3c19cc6ab4e57394"
+        }
+      ]
+    },
+    {
+      "id": "investigator-magnifier",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/investigator-magnifier.png",
+      "outputSha256": "f69f93ca360e8348255aa9b7e81659507455c97ccf3e68c46393a2cb03decf71",
+      "prompt": "prompts/investigator-magnifier.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-magnifier-before-length.png",
+          "sha256": "04ba52509fe7bb4973cb276d18e9cc3b0154976b81b6fec1e8de53262035e14c"
+        }
+      ]
+    },
+    {
+      "id": "investigator-evidence",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/investigator-evidence.png",
+      "outputSha256": "6a3bbde4b8c1cb5ecc3d9b0f7af3c65acccc65e5dc40588b52376f0712768111",
+      "prompt": "prompts/investigator-evidence.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/investigator.webp",
+          "sha256": "c5933f3fea950484858471f89e6b5695cdcd9a3a3be80b8206c96c6b71795e9b"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/investigator-evidence.png",
+          "sha256": "f1ce7ac5e2095051575886f9d00ecd3000f23e3cf79cf9fe598bb03748eb036e"
+        }
+      ]
+    },
+    {
+      "id": "investigator-lens-glint",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/investigator-lens-glint.png",
+      "outputSha256": "6d20370f578f986539e443a9b3da6c72cb924169e6828be2df6d2e745ff9e2b9",
+      "prompt": "prompts/investigator-lens-glint.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-magnifier.png",
+          "sha256": "f69f93ca360e8348255aa9b7e81659507455c97ccf3e68c46393a2cb03decf71"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/investigator-lens-glint.png",
+          "sha256": "ca1892340339a35b75b163c45cd1145fec409642ccd528a06d47f010a5c4d016"
+        }
+      ]
+    },
+    {
+      "id": "raven-perch",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/raven-perch.png",
+      "outputSha256": "9297700720cf67bb89181657a7bfb40c96db5adb0d416379fd1507b8a94af41d",
+      "prompt": "prompts/raven-perch.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/ravenkeeper.webp",
+          "sha256": "0ef7d26683bb528498702e5cc6795c0de5a43683e4148ac1d68bec9cd55f7357"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/raven-perch.png",
+          "sha256": "f466ce11662b64463e20d9f415ece5fefcb41aa6caaaf4bc9ef9e85068a537d7"
+        }
+      ],
+      "promptSha256": "a0dc3fc0bc11e395ef3d3cbf4e97a4c8993b1ce30b881a5e5dc2574434e38604"
+    },
+    {
+      "id": "raven-body",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/raven-body.png",
+      "outputSha256": "f51e28b8230fe0ce9f8da903a6eff0fe07e4d838b945c33e0386a9b1fa5d141e",
+      "prompt": "prompts/raven-body.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/ravenkeeper.webp",
+          "sha256": "0ef7d26683bb528498702e5cc6795c0de5a43683e4148ac1d68bec9cd55f7357"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/raven-body.png",
+          "sha256": "71f61da13070dae51bef0628553b058d73b77bcfdd58b2024b636679e1c2820d"
+        }
+      ],
+      "promptSha256": "843df50dfb9843a5826f9ddb8271d9b13a1f7a9f04720dbe56c1952e5a0aeab7"
+    },
+    {
+      "id": "raven-head-neck",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/raven-head-neck.png",
+      "outputSha256": "d60ff8906951149fbe4bcb31729221588c778671a46c5b85da958c86f01f44a9",
+      "prompt": "prompts/raven-head-neck.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/ravenkeeper.webp",
+          "sha256": "0ef7d26683bb528498702e5cc6795c0de5a43683e4148ac1d68bec9cd55f7357"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-body.png",
+          "sha256": "f51e28b8230fe0ce9f8da903a6eff0fe07e4d838b945c33e0386a9b1fa5d141e"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/raven-head-neck.png",
+          "sha256": "8ac9e160ed987a5fd8a057834d7afe3b4bbdbaecbd7dc8cd37773e3d2740e07a"
+        }
+      ],
+      "promptSha256": "9006a2579791d652229c3f5b3b6b8abfefe667a2e96b14e45d6c3a170a8bd415"
+    },
+    {
+      "id": "raven-tail",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/raven-tail.png",
+      "outputSha256": "ba435a1e5aa7b26aeef4dde060e428b89b45d6ae4907b2f184326a14cc28ebda",
+      "prompt": "prompts/raven-tail.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/ravenkeeper.webp",
+          "sha256": "0ef7d26683bb528498702e5cc6795c0de5a43683e4148ac1d68bec9cd55f7357"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-body.png",
+          "sha256": "f51e28b8230fe0ce9f8da903a6eff0fe07e4d838b945c33e0386a9b1fa5d141e"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/raven-tail.png",
+          "sha256": "ec7e27e904589df1c6f3c70b2eb0f1ae8a5b0cb11942cf3e1abf867484103208"
+        }
+      ],
+      "promptSha256": "146b7479d60a1ab393e6d31ffafa35b896dd76f181c01d5c8b22462fe93e1bf4"
+    },
+    {
+      "id": "raven-wing-left",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/raven-wing-left.png",
+      "outputSha256": "2d6cf4db5a1735cedede7357e43725a9f1a78ed00c6cbbb2ccb375ddba1553ab",
+      "prompt": "prompts/raven-wing-left.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/ravenkeeper.webp",
+          "sha256": "0ef7d26683bb528498702e5cc6795c0de5a43683e4148ac1d68bec9cd55f7357"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-body.png",
+          "sha256": "f51e28b8230fe0ce9f8da903a6eff0fe07e4d838b945c33e0386a9b1fa5d141e"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/raven-wing-left.png",
+          "sha256": "873050e0560cc8ba80854d0e904a0e0a800ec8cb4614ea9c7aa069bbde67c261"
+        }
+      ],
+      "promptSha256": "65443a85eb8bcc4091a093d33bf248134b779c6d6ecf2ed086579cc6e49bc48e"
+    },
+    {
+      "id": "raven-wing-right",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/raven-wing-right.png",
+      "outputSha256": "b591b5b96cea57726339f4fbcac8c61578d6690951624351a5b57640e7e07341",
+      "prompt": "prompts/raven-wing-right.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/ravenkeeper.webp",
+          "sha256": "0ef7d26683bb528498702e5cc6795c0de5a43683e4148ac1d68bec9cd55f7357"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-body.png",
+          "sha256": "f51e28b8230fe0ce9f8da903a6eff0fe07e4d838b945c33e0386a9b1fa5d141e"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/raven-wing-right.png",
+          "sha256": "8de990458835762d8c843fcc94297e2aa53c59e29467cfbc78c7b2773be4f5fa"
+        }
+      ],
+      "promptSha256": "4bd4d75073880182f3cc8f9831d1cfe63eca07e5f4fc1a1b4a598bc8e2493a14"
+    }
+  ]
+}

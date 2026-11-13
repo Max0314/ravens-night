@@ -1,0 +1,56 @@
+{
+  "sources": [
+    {
+      "id": "bird-wings",
+      "file": "bird-wings.flac",
+      "sourcePage": "https://bigsoundbank.com/flight-of-a-pigeon-s0840.html",
+      "downloadUrl": "https://bigsoundbank.com/UPLOAD/flac/0840.flac",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "description": "Actual pigeon takeoff from branch, used as natural wing material for stylized raven, not claimed as a raven recording",
+      "sha256": "457d819c696d1c121351d423a6aa6fce4be53029180000e5c3bda028b4526dc2",
+      "bytes": 103677,
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v7/bird-wings.flac"
+    },
+    {
+      "id": "door-creak",
+      "file": "door-creak.flac",
+      "sourcePage": "https://bigsoundbank.com/creaking-door-2-s3205.html",
+      "downloadUrl": "https://bigsoundbank.com/UPLOAD/flac/3205.flac",
+      "author": "Joseph SARDIN & Axeline T.",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "description": "Recorded door opening creak, used as coffin long-edge hinge friction foley",
+      "sha256": "bb95ebd32071c7e4d2b9650ec5ce8d0cd4e67ba6277c17b3371b8702477c6859",
+      "bytes": 268268,
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v7/door-creak.flac"
+    },
+    {
+      "id": "wood-small",
+      "file": "wood-small.wav",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v7/wood-small.wav",
+      "sourcePage": "https://opengameart.org/content/rpg-sound-pack",
+      "downloadUrl": "https://opengameart.org/sites/default/files/rpg_sound_pack.zip",
+      "author": "artisticdude",
+      "license": "CC0-1.0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "archiveSha256": "f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421",
+      "archiveMember": "RPG Sound Pack/inventory/wood-small.wav",
+      "sha256": "679184e2a0c37e68450f8f2b511daca8ce187af306789215197dc73c0193386e",
+      "bytes": 83546
+    },
+    {
+      "id": "crow-call",
+      "file": "A05__ambience_distant-crows__source-v01.ogg",
+      "path": "artifacts/audio-candidates-2026-11-12/ambience/A05__ambience_distant-crows__source-v01.ogg",
+      "sourcePage": "https://opengameart.org/content/crows-singing",
+      "author": "IgnasD",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "c2ac86edfe858402a5440488ad8bfa17921e2f4831b58facb544a928f20c3cad",
+      "bytes": 103892,
+      "description": "Existing unchanged A05 original; reference in place rather than duplicate it"
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+{
+  "world": [
+    600,
+    500
+  ],
+  "runtimeRoot": "/art/effects/v8/",
+  "lighting": "Warm upper-left key light; natural muted parchment/wax/brass/wood, transparent surround.",
+  "groups": {
+    "envelope": {
+      "hinge": [
+        [
+          100,
+          220
+        ],
+        [
+          500,
+          220
+        ]
+      ],
+      "closedFlapTip": [
+        300,
+        345
+      ],
+      "paperInitialRect": [
+        135,
+        230,
+        330,
+        200
+      ],
+      "paperTravelY": -185,
+      "sealCentre": [
+        300,
+        325
+      ],
+      "sealDiameter": 54,
+      "defaultZ": [
+        "envelope-back",
+        "envelope-paper",
+        "envelope-front",
+        "envelope-flap-front",
+        "envelope-seal"
+      ],
+      "parts": [
+        {
+          "id": "envelope-back",
+          "targetRect": [
+            100,
+            220,
+            400,
+            210
+          ]
+        },
+        {
+          "id": "envelope-front",
+          "targetRect": [
+            100,
+            220,
+            400,
+            210
+          ]
+        },
+        {
+          "id": "envelope-flap-front",
+          "targetRect": [
+            100,
+            220,
+            400,
+            125
+          ]
+        },
+        {
+          "id": "envelope-flap-back",
+          "targetRect": [
+            100,
+            220,
+            400,
+            125
+          ]
+        },
+        {
+          "id": "envelope-seal",
+          "targetRect": [
+            273,
+            298,
+            54,
+            54
+          ]
+        },
+        {
+          "id": "envelope-paper",
+          "targetRect": [
+            135,
+            230,
+            330,
+            200
+          ]
+        }
+      ]
+    },
+    "lens": {
+      "centre": [
+        300,
+        205
+      ],
+      "requestedOuterRadius": 100,
+      "measuredHoleNormalizeRadius": 85,
+      "guaranteedClearRadius": 82,
+      "requestedHandleEnd": [
+        450,
+        415
+      ],
+      "evidenceTextureFocus": [
+        165,
+        245
+      ],
+      "defaultZ": [
+        "investigator-evidence",
+        "runtime-reprojected-same-evidence",
+        "investigator-lens-glint",
+        "investigator-magnifier"
+      ],
+      "parts": [
+        {
+          "id": "investigator-evidence",
+          "targetRect": [
+            55,
+            75,
+            490,
+            390
+          ]
+        },
+        {
+          "id": "investigator-magnifier",
+          "processingMode": "calibrate-transparent-hole"
+        },
+        {
+          "id": "investigator-lens-glint",
+          "processingMode": "whole-canvas-glint",
+          "glassLocalScale": 0.9,
+          "opacity": 0.22
+        }
+      ]
+    },
+    "raven": {
+      "footContact": [
+        315,
+        340
+      ],
+      "hip": [
+        330,
+        310
+      ],
+      "nearWingShoulder": [
+        303,
+        214
+      ],
+      "farWingShoulder": [
+        350,
+        214
+      ],
+      "neckRoot": [
+        330,
+        218
+      ],
+      "headPivot": [
+        356,
+        124
+      ],
+      "tailRoot": [
+        300,
+        290
+      ],
+      "orientation": "three-quarter facing right; wings spread; left is near wing",
+      "defaultZ": [
+        "raven-perch",
+        "raven-wing-right",
+        "raven-tail",
+        "raven-body",
+        "raven-wing-left",
+        "raven-head-neck"
+      ],
+      "parts": [
+        {
+          "id": "raven-perch",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            750,
+            737
+          ],
+          "worldAnchor": [
+            315,
+            340
+          ],
+          "uniformScale": 0.3
+        },
+        {
+          "id": "raven-body",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            667,
+            956
+          ],
+          "worldAnchor": [
+            315,
+            350
+          ],
+          "uniformScale": 0.26
+        },
+        {
+          "id": "raven-head-neck",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            650,
+            850
+          ],
+          "worldAnchor": [
+            330,
+            218
+          ],
+          "uniformScale": 0.17
+        },
+        {
+          "id": "raven-tail",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            980,
+            140
+          ],
+          "worldAnchor": [
+            300,
+            290
+          ],
+          "uniformScale": 0.125
+        },
+        {
+          "id": "raven-wing-left",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            1230,
+            450
+          ],
+          "worldAnchor": [
+            303,
+            214
+          ],
+          "uniformScale": 0.19
+        },
+        {
+          "id": "raven-wing-right",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            180,
+            550
+          ],
+          "worldAnchor": [
+            350,
+            214
+          ],
+          "uniformScale": 0.165
+        }
+      ],
+      "branchContactSurface": [
+        315,
+        340
+      ],
+      "footTip": [
+        315,
+        350
+      ]
+    }
+  }
+}

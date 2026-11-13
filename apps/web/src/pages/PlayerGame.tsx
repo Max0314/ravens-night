@@ -171,6 +171,7 @@ function PlayerGameContent({ privateVisible=true, guideOpen=false, reading=false
 }
 
 export function hasPrivateTownTask(view?:PrivateView){
+  if(view?.game?.phase==='ROLE_REVEAL'&&(view.game.presentationUntil??0)>(view.game.serverNow??Date.now()))return false;
   return !!view&&((['FIRST_NIGHT','OTHER_NIGHT'].includes(view.game?.phase??'')&&(view.action?.kind==='SELECT_ONE'||view.action?.kind==='SELECT_TWO'))||(view.game?.phase==='FIRST_NIGHT'&&!!view.startInfo&&!view.startInfo.acknowledged)||(view.game?.phase==='ROLE_REVEAL'&&!view.roleConfirmed));
 }
 function PrivateActionNotice({active,view,onReturn}:{active:boolean;view?:PrivateView|undefined;onReturn:()=>void}){

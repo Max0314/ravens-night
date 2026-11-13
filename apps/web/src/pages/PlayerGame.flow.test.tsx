@@ -2,7 +2,7 @@
 import '@testing-library/jest-dom/vitest';
 import {act,cleanup,fireEvent,render,screen} from '@testing-library/react';
 import {afterEach,expect,test,vi} from 'vitest';
-import {PlayerGame} from './PlayerGame.js';
+import {PlayerGame,hasPrivateTownTask} from './PlayerGame.js';
 import type {PrivateView} from '../api.js';
 import {RoomSheet} from '../components/RoomPage.js';
 vi.mock('../components/PrivateSceneStage.js',()=>({PrivateSceneStage:({onHandleTask}:{onHandleTask:()=>void})=><button onClick={onHandleTask}>测试处理当前操作</button>}));
@@ -57,4 +57,9 @@ test.each([false,true])('opening night hides all role content even if already co
  fireEvent.click(screen.getByRole('button',{name:'跳过演出'}));expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();expect(screen.getByRole('heading',{name:'夜幕正在降临'})).toBeVisible();expect(screen.queryByRole('button',{name:'确认身份'})).not.toBeInTheDocument();
  ui.rerender(<PlayerGame {...handlers} view={{...view,revision:2,game:{...view.game!,serverNow:7449}}}/>);expect(ui.container.querySelector('.role-chip,.rn-role-card,.town-role-confirm')).toBeNull();
  ui.rerender(<PlayerGame {...handlers} view={{...view,revision:3,game:{...view.game!,serverNow:7450}}}/>);if(!confirmed){expect(screen.getByRole('dialog',{name:'身份确认'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'确认身份'}));expect(handlers.onConfirmRole).toHaveBeenCalledOnce();}else expect(screen.getByRole('status')).toHaveTextContent('身份已确认');
+});
+
+test('opening reading does not prompt a role action or reserve its notice space before confirmation unlocks',()=>{
+ const view=fixture();view.game!.presentationUntil=7450;view.game!.serverNow=7449;expect(hasPrivateTownTask(view)).toBe(false);
+ view.game!.serverNow=7450;expect(hasPrivateTownTask(view)).toBe(true);view.roleConfirmed=true;expect(hasPrivateTownTask(view)).toBe(false);
 });
