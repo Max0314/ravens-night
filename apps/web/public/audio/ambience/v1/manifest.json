@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "group": "dawn-warm-door",
+  "rebuild": "python scripts/build-dawn-audio.py",
+  "sourceIndex": "artifacts/cinematic-motion-2026-11-12/sources/dawn-audio-v1/sources.json",
+  "license": "CC0-1.0 recordings; original project material arrangement",
+  "files": [
+    {
+      "id": "dawn-door",
+      "file": "dawn-door.mp3",
+      "sha256": "986089d546e8aa66c8bfff87a084ce13d45eb0d33ab3d463a8c9a88c617b8a64",
+      "bytes": 29718,
+      "durationMs": 1800.0,
+      "decodedBytes": 317520,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 122.834,
+      "peakOffsetMs": 727.664,
+      "peakDbFS": -15.37,
+      "rmsDbFS": -25.45,
+      "sources": [
+        "wood-door",
+        "wood-light"
+      ],
+      "layers": [
+        "Actual wooden apartment-door friction excerpt 1200..2500ms, unpitched and at original speed",
+        "A separate quiet recorded light wood contact at 1350ms relative to clip, no heavy slam",
+        "Offscreen morning ambience only, not a player/kill/protection/identity result or an actual tavern field recording"
+      ],
+      "processing": "highpass=f=160,lowpass=f=6000 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -25,
+        "peakCap": 0.63,
+        "appliedGain": 3.918495,
+        "attackMs": 25.0,
+        "releaseMs": 70
+      }
+    }
+  ],
+  "totalBytes": 29718,
+  "totalDecodedBytes": 317520
+}
