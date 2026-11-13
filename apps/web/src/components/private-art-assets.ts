@@ -1,6 +1,6 @@
 import type {PrivateSceneDescriptor} from '@ravens/contracts';
 const v4=new Set(['book-shell','book-paper','book-paper-back','coffin-base','coffin-lid-front','coffin-lid-back','washer-basin-back','washer-basin-front','washer-linen','chef-board-clean','chef-carrot','crystal-shell','crystal-mist','poison-glass','poison-stopper','poison-mist','drunk-glass','raven-body','raven-wing','investigator-stamp','scarlet-cloak']);
-const v8=new Set(['envelope-back','envelope-front','envelope-flap-front','envelope-flap-back','envelope-seal','envelope-paper','envelope-seal-broken-left','envelope-seal-broken-right','investigator-evidence','investigator-magnifier','investigator-lens-glint','raven-perch','raven-body','raven-head-neck','raven-tail','raven-wing-left','raven-wing-right']);
+const v8=new Set(['envelope-back','envelope-front','envelope-flap-front','envelope-flap-back','envelope-seal','envelope-paper','envelope-seal-broken-left','envelope-seal-broken-right','investigator-evidence','investigator-magnifier','investigator-lens-glint','raven-perch','raven-body','raven-head-neck','raven-tail','raven-wing-left','raven-wing-right','coffin-oblique-base','coffin-oblique-lining','coffin-oblique-lid-front','coffin-oblique-lid-back','coffin-oblique-lid-edge']);
 const v5=new Set(['mayor-scepter','poison-vapour']);
 export const privateAssetUrl=(name:string)=>v8.has(name)?`/art/effects/v8/${name}.webp`:name==='mayor'?'/art/effects/v5/mayor-base.webp':v5.has(name)?`/art/effects/v5/${name}.webp`:`/art/effects/${v4.has(name)?'v4':'v3'}/${name}.webp`;
 export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
@@ -11,7 +11,7 @@ export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
  else if(role==='butler')names=[]; // ButlerBow owns its bounded atlas and advertises its URL below.
  else if(role==='imp'||role==='slayer')names=[];
  else if(role==='librarian'||role==='spy')names=['book-shell','book-paper','book-paper-back'];
- else if(role==='undertaker')names=['coffin-base','coffin-lid-front','coffin-lid-back'];
+ else if(role==='undertaker')names=['coffin-oblique-base','coffin-oblique-lining','coffin-oblique-lid-front','coffin-oblique-lid-back','coffin-oblique-lid-edge'];
  else if(role==='washerwoman')names=['washer-basin-back','washer-basin-front','washer-linen'];
  else if(role==='chef')names=['chef-board-clean','chef-carrot','chef-cleaver'];
  else if(role==='fortune_teller')names=['crystal-shell','crystal-mist'];

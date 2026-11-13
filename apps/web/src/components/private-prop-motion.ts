@@ -1,7 +1,7 @@
 import {cinematicTiming as timing,smooth,unit} from './cinematic-timing.js';
 
 export type Point={x:number;y:number};
-export const propGeometry={book:{spine:{x:300,y:100},width:250,height:310},coffin:{x:110,y:240,width:380,height:120},bottle:{pivot:{x:300,y:210},mouth:{x:300,y:128.1},landing:{x:475,y:405}},water:{x:300,y:318,rx:167,ry:53}} as const;
+export const propGeometry={book:{spine:{x:300,y:100},width:250,height:310},bottle:{pivot:{x:300,y:210},mouth:{x:300,y:128.1},landing:{x:475,y:405}},water:{x:300,y:318,rx:167,ry:53}} as const;
 export function rotatePoint(p:Point,pivot:Point,degrees:number):Point{const a=degrees*Math.PI/180,c=Math.cos(a),s=Math.sin(a);return{x:pivot.x+(p.x-pivot.x)*c-(p.y-pivot.y)*s,y:pivot.y+(p.x-pivot.x)*s+(p.y-pivot.y)*c};}
 export const rotation=(degrees:number,pivot:Point)=>`rotate(${degrees} ${pivot.x} ${pivot.y})`;
 /** The shell, page hinge and material all share the same oblique book plane.
@@ -20,9 +20,6 @@ export function bookStrips(elapsed:number){
   return{index:i,sourceX:i*(220/16),sourceWidth:220/16,back:Math.cos(a)<0,left,right,quad:[leftTop,rightTop,rightBottom,leftBottom] as Quad,shade:.72+.28*Math.abs(Math.cos(a))};
  });
 }
-/** Project the lid's real upward lift as well as its receding depth.
- * A 90-degree lid is vertical and fully visible, not a collapsed line. */
-export function coffinPose(t:number){const angle=105*smooth(t,timing.coffin.start,timing.coffin.open),a=angle*Math.PI/180,depth=Math.cos(a),dy=119*depth-135*Math.sin(a),scaleY=dy/119;return{angle,scaleY,quad:[{x:110,y:240},{x:490,y:240},{x:490+16*depth,y:240+dy},{x:110-17*depth,y:240+dy}] as Quad,back:dy<0,matrix:`matrix(1 0 0 ${scaleY} 110 240)`};}
 export const cavity:Point[]=[{x:279.1,y:137.9},{x:320.9,y:137.9},{x:320.9,y:209.6},{x:340,y:224.5},{x:376,y:269.4},{x:380,y:305},{x:365,y:345},{x:340,y:371},{x:260,y:371},{x:235,y:345},{x:220,y:305},{x:224,y:269.4},{x:260,y:224.5},{x:279.1,y:209.6}];
 export function polygonArea(points:readonly Point[]):number{return Math.abs(points.reduce((a,p,i)=>{const n=points[(i+1)%points.length]!;return a+p.x*n.y-n.x*p.y;},0))/2;}
 export function belowWater(points:readonly Point[],level:number):Point[]{const out:Point[]=[];for(let i=0;i<points.length;i++){const a=points[i]!,b=points[(i+1)%points.length]!,inside=a.y>=level,next=b.y>=level;if(inside)out.push(a);if(inside!==next){const p=(level-a.y)/(b.y-a.y);out.push({x:a.x+(b.x-a.x)*p,y:level});}}return out;}
