@@ -21,3 +21,8 @@
 .town-center .town-night-confirm>div>button{max-width:50%;min-width:44px}
 .town-center .town-night-confirm>div>button>span:not(.player-avatar){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .town-center .town-night-confirm>div>button>b{font-weight:400;flex:none}
+
+.game-page--town .game-tabs.game-tabs--with-sound{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 44px}
+.game-page--town .game-tabs.game-tabs--with-sound>.game-tabs__sound[data-global-audio-control]{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.game-page--town .game-header>button.role-chip{display:inline-flex;align-items:center;justify-content:center;min-height:44px;cursor:pointer}
+@media(orientation:landscape) and (max-height:540px){.game-page--town>.game-tabs.game-tabs--with-sound>.game-tabs__sound{align-self:center}}
