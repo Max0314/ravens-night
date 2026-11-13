@@ -22,7 +22,7 @@ export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
  const urls=names.map(privateAssetUrl);
  const normal=scene.kind!=='EVIL_START'&&scene.kind!=='OLD_DEMON_CONTINUATION'&&scene.kind!=='ROLE_CHANGE';
  if((normal&&role==='imp')||scene.kind==='ROLE_CHANGE')urls.push('/art/effects/v4/demon-body.webp','/art/effects/v4/demon-wing-left.webp','/art/effects/v4/demon-wing-right.webp');
- if(normal&&role==='slayer')urls.push('/art/effects/v4/hunting-rifle.webp','/art/effects/v3/glass-cloud.webp');
+ if(normal&&role==='slayer')urls.push('/art/effects/v5/short-shotgun.webp','/art/effects/v3/glass-cloud.webp');
  if(normal&&role==='butler')urls.push('/art/effects/v4/butler-bow.webp');
  if(normal&&role==='imp'&&scene.kind==='ACTION_SUBMITTED')urls.push(...['claw-screen-left','claw-screen-right','claw-avatar-left','claw-avatar-right'].map(privateAssetUrl));
  return urls;

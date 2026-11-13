@@ -11,16 +11,16 @@ export function FractureLayer({seed,elapsedMs,impactAt=850,reduced=false}:{seed:
 }
 export function GuillotineMechanism({elapsedMs,resultAt,empty,reduced=false}:{elapsedMs:number;resultAt:number;empty:boolean;reduced?:boolean}){
  const p=guillotinePose(elapsedMs,resultAt,empty,reduced);
- return <svg viewBox="0 0 300 480" className="guillotine-mechanism" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+ return <svg viewBox="0 0 340 480" className="guillotine-mechanism" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
   <image className="guillotine-blade" href="/art/effects/v4/guillotine-blade.webp" x={executionGeometry.blade.x} y={executionGeometry.blade.y+executionGeometry.blade.travel*p.drop} width={executionGeometry.blade.width} height={executionGeometry.blade.height} preserveAspectRatio="xMidYMid meet" data-drop={p.drop}/>
-  <image href="/art/effects/v4/guillotine-frame.webp" {...executionGeometry.frame} preserveAspectRatio="xMidYMid meet"/>
+  <image href="/art/effects/v5/guillotine-frame.webp" {...executionGeometry.frame} preserveAspectRatio="xMidYMid meet"/>
   {empty&&!reduced?<g fill="none" stroke="#bead8370" strokeWidth=".8" transform={`translate(${p.wind} 0)`}><path d="M25 300Q100 268 180 295T290 282"/><path d="M-5 332Q70 312 160 335T300 322"/>{[0,1,2].map(i=><ellipse key={i} cx={25+(elapsedMs/12+i*87)%260} cy={350+Math.sin(elapsedMs/360+i)*12} rx="5" ry="1.5" fill="#a58e5b65"/>)}</g>:null}
   {p.dust>0?<g opacity={p.dust} fill="#b59c71">{Array.from({length:10},(_,i)=>{const age=Math.max(0,elapsedMs-resultAt)/650;return <ellipse key={i} cx={executionGeometry.neck.x+(i-5)*4+Math.sin(i*7)*age*23} cy={executionGeometry.neck.y-age*(14+i%4*6)+age*age*40} rx={1+i%2} ry="1"/>;})}</g>:null}
  </svg>;
 }
 export function GuillotineScene({elapsedMs,resultAt,death,empty,children,blood,reduced=false,resultVisible=false}:{elapsedMs:number;resultAt:number;death:boolean;empty:boolean;children?:ReactNode;blood?:ReactNode;reduced?:boolean;resultVisible?:boolean}){
  const p=guillotinePose(elapsedMs,resultAt,empty,reduced);
- return <div className={`guillotine-scene${empty?' is-empty':''}${death?' has-death':''}`} style={{transform:`translateX(${p.shake}px)`,'--neck-left':`${executionGeometry.neck.x/3}%`,'--neck-top':`${(executionGeometry.neck.y-executionGeometry.neck.diameter/2)/4.8}%`,'--neck-center':`${executionGeometry.neck.y/4.8}%`,'--neck-size':`${executionGeometry.neck.diameter/3}%`} as CSSProperties} data-testid="guillotine-scene"><GuillotineMechanism elapsedMs={elapsedMs} resultAt={resultAt} empty={empty} reduced={reduced}/>{!empty?<div className="guillotine-scene__person">{children}</div>:resultVisible?<span className="guillotine-scene__empty-label">无人被处决</span>:null}{!empty&&death&&blood?<div className="guillotine-scene__blood">{blood}</div>:null}</div>;
+ return <div className={`guillotine-scene${empty?' is-empty':''}${death?' has-death':''}`} style={{transform:`translateX(${p.shake}px)`,'--neck-left':`${executionGeometry.neck.x/3.4}%`,'--neck-top':`${(executionGeometry.neck.y-executionGeometry.neck.diameter/2)/4.8}%`,'--neck-center':`${executionGeometry.neck.y/4.8}%`,'--neck-size':`${executionGeometry.neck.diameter/3.4}%`} as CSSProperties} data-testid="guillotine-scene"><GuillotineMechanism elapsedMs={elapsedMs} resultAt={resultAt} empty={empty} reduced={reduced}/>{!empty?<div className="guillotine-scene__person">{children}</div>:resultVisible?<span className="guillotine-scene__empty-label">无人被处决</span>:null}{!empty&&death&&blood?<div className="guillotine-scene__blood">{blood}</div>:null}</div>;
 }
 
 /** Result-relative particles, so a late public result never restarts a death. */

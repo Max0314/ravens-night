@@ -1,0 +1,23 @@
+[
+  {
+    "id": "short-shotgun",
+    "file": "short-shotgun.png",
+    "prompt": "One isolated transparent short barrel double barrel hunting shotgun; fine gothic walnut engraved steel; stock left, muzzle right; no cloth, scenery or hands.",
+    "trim": true,
+    "opaque": false
+  },
+  {
+    "id": "guillotine-frame",
+    "file": "guillotine-frame.png",
+    "prompt": "Broad sturdy gothic guillotine frame with transparent rail channel and circular neck hole; no blade or victim.",
+    "trim": false,
+    "opaque": false
+  },
+  {
+    "id": "burning-town",
+    "file": "burning-town.png",
+    "prompt": "Detailed gothic town engulfed in fire at night, clocktower and red-black sky; background only; no demons, wings, creatures or people.",
+    "trim": false,
+    "opaque": true
+  }
+]

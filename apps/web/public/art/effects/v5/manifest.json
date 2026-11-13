@@ -1,0 +1,41 @@
+{
+  "generator": "built-in image_gen; scripts/build-cinematics-v5.mjs",
+  "files": [
+    {
+      "id": "short-shotgun",
+      "file": "short-shotgun.png",
+      "prompt": "One isolated transparent short barrel double barrel hunting shotgun; fine gothic walnut engraved steel; stock left, muzzle right; no cloth, scenery or hands.",
+      "trim": true,
+      "opaque": false,
+      "width": 1024,
+      "height": 382,
+      "sha256": "44911a4b16cd1dd804489abc90a735a16c30a912c0e89371bf8ef58f1993333a",
+      "sourceSha256": "41c8fec7913751aebfc83f3cbe820c50a352bb01d1b2b0914afa01d925c18351",
+      "processing": "Uniform fit within1008; 8px safe border; no stretching; preserve alpha"
+    },
+    {
+      "id": "guillotine-frame",
+      "file": "guillotine-frame.png",
+      "prompt": "Broad sturdy gothic guillotine frame with transparent rail channel and circular neck hole; no blade or victim.",
+      "trim": false,
+      "opaque": false,
+      "width": 736,
+      "height": 1024,
+      "sha256": "0e8c914a5161ea0b5274816143ecf7676bc376b83d13ca65d90ea9a13a21bee7",
+      "sourceSha256": "4e5ff3d5a846531e73417182b2c344b40cc10436c20332feb1f0763a34e04f56",
+      "processing": "Uniform fit within1008; 8px safe border; no stretching; preserve alpha"
+    },
+    {
+      "id": "burning-town",
+      "file": "burning-town.png",
+      "prompt": "Detailed gothic town engulfed in fire at night, clocktower and red-black sky; background only; no demons, wings, creatures or people.",
+      "trim": false,
+      "opaque": true,
+      "width": 1024,
+      "height": 583,
+      "sha256": "590c26b7c5dca0b417beefe762c7ef3957de1e64cc5f210013ebd65c2e21511f",
+      "sourceSha256": "0059413dd8adae541346e0789a5e26fd43e2ce25250a6396e768a25b3af45bd2",
+      "processing": "Uniform fit within1008; 8px safe border; no stretching; preserve alpha"
+    }
+  ]
+}
