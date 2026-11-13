@@ -195,3 +195,17 @@ test('a short fast drag held still expires its flick velocity before release',()
   fireEvent.pointerDown(book,{pointerId:2,button:0,clientX:180,clientY:100});fireEvent.pointerMove(book,{pointerId:2,clientX:120,clientY:100});fireEvent.pointerUp(book,{pointerId:2,clientX:120,clientY:100});
   act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).toHaveBeenCalledOnce();
 });
+
+test('live guide pointer wiring selects the starting vertical corner and tracks Y without changing X',()=>{
+  installPointer();vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);const book=document.querySelector<HTMLElement>('.guide-book')!;
+  Object.defineProperties(book,{clientWidth:{value:360},clientHeight:{value:600}});
+  fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:300,clientY:40});fireEvent.pointerMove(book,{pointerId:1,clientX:220,clientY:90});
+  expect(document.querySelector('.page-turn-layer')?.getAttribute('data-turn-corner')).toBe('top');
+  const first=document.querySelector<HTMLElement>('.page-turn-old')!.style.clipPath;
+  fireEvent.pointerMove(book,{pointerId:1,clientX:220,clientY:140});expect(document.querySelector<HTMLElement>('.page-turn-old')!.style.clipPath).not.toBe(first);
+  fireEvent.pointerCancel(book,{pointerId:1,clientX:220,clientY:140});act(()=>vi.advanceTimersByTime(200));expect(book).toHaveAttribute('data-page-key','tutorial:0');expect(audio.turn).not.toHaveBeenCalled();
+  fireEvent.pointerDown(book,{pointerId:2,button:0,clientX:300,clientY:550});fireEvent.pointerMove(book,{pointerId:2,clientX:140,clientY:500});
+  expect(document.querySelector('.page-turn-layer')?.getAttribute('data-turn-corner')).toBe('bottom');
+  fireEvent.pointerUp(book,{pointerId:2,clientX:140,clientY:500});act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).toHaveBeenCalledOnce();
+});

@@ -7,7 +7,7 @@ import type {PrivateView} from '../api.js';
 import {rolePlayGuides,roleTypeGuidance,roleTypeNames,tutorialSteps} from '../guide-content.js';
 import {roleArt} from '../role-art.js';
 import {createBookAudio} from './book-audio.js';
-import {PageTurnController,shouldCompleteTurn,turnProgress,type TurnDirection,type TurnState} from './page-turn.js';
+import {dragTurnGrip,PageTurnController,shouldCompleteTurn,turnProgress,type TurnCorner,type TurnDirection,type TurnState} from './page-turn.js';
 import {PageTextureCache,preparePagePair} from './page-textures.js';
 import {PageTurnLayer} from './PageTurnLayer.js';
 import {useInteractionFeedback} from '../interaction-feedback.js';
@@ -36,7 +36,7 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMod
   const dialogRef=useRef<HTMLElement>(null),bookRef=useRef<HTMLDivElement>(null),surfaceRef=useRef<HTMLDivElement>(null),previewRef=useRef<HTMLDivElement>(null);
   const memory=useRef(new Map<string,Memory>()),bookmarks=useRef<Partial<Record<GuideMode,GuidePageState>>>({[mode]:initial}),origin=useRef({roleId:initialRoleId,category:initial.category,scroll:0});
   const audio=useRef<ReturnType<typeof createBookAudio>|null>(null),cache=useRef(new PageTextureCache()),directionRef=useRef<TurnDirection>(1),slow=useRef(false),queued=useRef<{target:GuidePageState;direction:TurnDirection}|undefined>(undefined),closing=useRef(false),texturesSuspended=useRef(false);
-  const swipe=useRef<{id:number;x:number;y:number;lastX:number;lastAt:number;velocity:number;axis:'pending'|'horizontal'|'vertical';direction?:TurnDirection;target?:GuidePageState|undefined;key:string}|undefined>(undefined),suppressClickUntil=useRef(0),scrollTimer=useRef(0);
+  const swipe=useRef<{id:number;x:number;y:number;lastX:number;lastAt:number;velocity:number;axis:'pending'|'horizontal'|'vertical';corner:TurnCorner;direction?:TurnDirection;target?:GuidePageState|undefined;key:string}|undefined>(undefined),suppressClickUntil=useRef(0),scrollTimer=useRef(0);
   const feedback=useInteractionFeedback();
   const pageKey=guidePageKey(page);
   const currentMemory=()=>memory.current.get(guidePageKey(pageRef.current))??{scroll:0,advice:false};
@@ -56,7 +56,7 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMod
     const pending=queued.current;queued.current=undefined;
     if(pending)queueMicrotask(()=>navigate(pending.target,pending.direction));
   };
-  function navigate(target:GuidePageState,direction:TurnDirection,interactive=false){
+  function navigate(target:GuidePageState,direction:TurnDirection,interactive=false,corner:TurnCorner='bottom'){
     if(guidePageKey(target)===guidePageKey(pageRef.current))return;
     if(controller.state){if(!interactive&&!controller.state.completing){swipe.current=undefined;queued.current=undefined;controller.cancel();}else{if(!interactive)queued.current={target,direction};return;}}
     remember();directionRef.current=direction;
@@ -65,7 +65,7 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMod
     if(!width&&!interactive){if(soundRef.current)audio.current?.turn();pageRef.current=target;setPage(target);bookmarks.current[target.mode]=target;cache.current.invalidate();setNeighbor(adjacentGuidePage(target,direction));return;}
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const renderer=reduced?'reduced':!slow.current&&pageRef.current.mode!=='mine'&&target.mode!=='mine'&&cache.current.get(captureKey(pageRef.current))&&cache.current.get(captureKey(target))?'canvas':'dom';
-    if(controller.begin(pageRef.current,target,direction,renderer)&&!interactive)controller.settle(true,true);
+    if(controller.begin(pageRef.current,target,direction,renderer,corner)&&!interactive)controller.settle(true,true);
   }
   function closeBook(){closing.current=true;queued.current=undefined;controller.cancel();cache.current.dispose();audio.current?.silence();feedback.close();closeRef.current();}
   function closeDetail(){const current=pageRef.current;if(current.mode!=='roles'||!current.roleId)return;memory.current.set(`roles:${origin.current.category}:grid`,{scroll:origin.current.scroll,advice:false});navigate({...current,category:origin.current.category,roleId:undefined},-1);}
@@ -119,16 +119,17 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMod
     if(texturesSuspended.current){texturesSuspended.current=false;setTextureEpoch(value=>value+1);}
     if(event.isPrimary===false){swipe.current=undefined;controller.cancel();return;}
     if(event.button!==0||controller.state||page.mode==='mine'||page.roleId&&page.mode==='roles'||(event.target instanceof Element&&event.target.closest('button:not([data-role-id]),a,input,summary')))return;
-    suppressClickUntil.current=0;swipe.current={id:event.pointerId,x:event.clientX,y:event.clientY,lastX:event.clientX,lastAt:performance.now(),velocity:0,axis:'pending',key:pageKey};
+    const rect=event.currentTarget.getBoundingClientRect();
+    suppressClickUntil.current=0;swipe.current={corner:event.clientY-rect.top<(rect.height||event.currentTarget.clientHeight)/2?'top':'bottom',id:event.pointerId,x:event.clientX,y:event.clientY,lastX:event.clientX,lastAt:performance.now(),velocity:0,axis:'pending',key:pageKey};
   }
   function moveSwipe(event:PointerEvent<HTMLDivElement>){
     const gesture=swipe.current;if(!gesture||gesture.id!==event.pointerId)return;
     const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y,now=performance.now();gesture.velocity=(event.clientX-gesture.lastX)/Math.max(1,now-gesture.lastAt);gesture.lastX=event.clientX;gesture.lastAt=now;
     if(gesture.axis==='pending'&&Math.max(Math.abs(dx),Math.abs(dy))>=10){
-      if(Math.abs(dx)>1.3*Math.abs(dy)){gesture.axis='horizontal';gesture.direction=dx<0?1:-1;gesture.target=adjacentGuidePage(pageRef.current,gesture.direction);if(gesture.target)navigate(gesture.target,gesture.direction,true);event.currentTarget.setPointerCapture?.(event.pointerId);if(soundRef.current)audio.current?.lift?.();}
+      if(Math.abs(dx)>1.3*Math.abs(dy)){gesture.axis='horizontal';gesture.direction=dx<0?1:-1;gesture.target=adjacentGuidePage(pageRef.current,gesture.direction);if(gesture.target)navigate(gesture.target,gesture.direction,true,gesture.corner);event.currentTarget.setPointerCapture?.(event.pointerId);}
       else if(Math.abs(dy)>1.3*Math.abs(dx))gesture.axis='vertical';
     }
-    if(gesture.axis==='horizontal'){event.preventDefault();if(gesture.target&&gesture.direction)controller.track(turnProgress(dx,event.currentTarget.clientWidth,gesture.direction));else event.currentTarget.style.setProperty('--edge-drag',`${Math.max(-6,Math.min(6,dx*.04))}px`);}
+    if(gesture.axis==='horizontal'){event.preventDefault();if(gesture.target&&gesture.direction)controller.track(turnProgress(dx,event.currentTarget.clientWidth,gesture.direction),dragTurnGrip(dx,dy,event.currentTarget.clientWidth,event.currentTarget.clientHeight,gesture.direction,gesture.corner));else event.currentTarget.style.setProperty('--edge-drag',`${Math.max(-6,Math.min(6,dx*.04))}px`);}
   }
   function endSwipe(event:PointerEvent<HTMLDivElement>,cancelled=false){
     const gesture=swipe.current;if(!gesture||gesture.id!==event.pointerId)return;swipe.current=undefined;
