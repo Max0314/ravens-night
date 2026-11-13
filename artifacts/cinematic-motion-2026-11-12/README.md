@@ -44,3 +44,8 @@
 跨入口音源所有权补充：App根层只调用一次`useOpeningMusic`，页面通过44px内联`OpeningMusicControl`移动控制，保证首页→创建/加入→房间不重建播放器。旧`LobbyMusic`/`OpeningMusic`wrapper仅保留兼容。`fadeOut`、`ducked`驱动包络，公开首晨时间及入口挂载由来源App集成；没有修改Home/App或恶魔素材/时钟。
 
 2026-11-13最新统一声音约束：前述独立书声许可/音乐开关方向已被本条取代。唯一正式偏好`ravens_effects_audio`统管音乐/公开音效/翻页，无值默认on、显式off尊重；旧book/lobby值不再门控，纸张prepare也不能越过总关闭。根音乐hook与active/fadeOut/ducked保留，但持续层不自带控件；页面/手册统一使用44px`GlobalAudioButton`音符，原音乐长胶囊与悬浮音效长按钮移除。Global开关同点击栈resume→正式事件→HTMLAudio.play；预览临时设置与线下私密静音规则保留。音轨/盾/恶魔四刀素材与时钟均不变，App/Home/Guide接入由来源与手册会话完成。
+
+
+2026-11-13 角色细节首组（本条记录本地组件交付；部署事实由统一部署记录维护）：EVIL_START改用v8八份真实独立信封层，破蜡600ms、翻盖850–1450ms、抽纸1450–2150ms并上提185；前袋持续遮住纸底，团队/伪装内容印在同一张纸上，仍只在既有1900/2400门禁后收到。调查员移除落章，改用独立证物台、空孔完整圈柄和淡玻璃弧光，650–1800ms自然扫查旋转；镜孔内重复采样实际底图并围绕当前镜心放大，未烘焙另一张纸像。运行镜心(300,205)，全透明安全半径82；实测外缘约101–104、孔归一半径85如实记录，不假称外圈精确100。v8全部11份600×500 RGBA层及源PNG、完整prompt、校准参数、SHA和重建脚本见sources/role-detail-v8与runtime role-detail-manifest.json；信封/镜新增解码量分别约9.6MB/3.6MB。
+占卜三层紫烟保持原体积、慢速轮转并在答案出现后保留，玻璃弧光独立变化；洗衣布改为共边连续三角网格，褶皱、头像与姓名一起变形，入水/搓洗/提起驱动水纹，湿墨1900–2250ms渐显、提稳后保持清晰。只使用收到的shown/imprint，不纠正醉毒内容，不引入真实角色、成功结果或被动触发提示；已认可枪/管家/毒瓶/四刀、公开结果和总时长不改。
+真实LayeredSceneArt离线黑/灰PNG已更新sealed-letter、investigator、fortune_teller和washerwoman；`node scripts/render-private-prop-review.mjs --frames-only <role>`可重建，旧GIF未更新。本组35项不同的定向动作/DOM/资源/媒体用例通过（复用未受后续改变影响的结果），镜孔alpha0与局部放大对照使用真实文件，前端类型检查和生产构建通过；独立只读review通过。共享接触时钟由cinematic-timing.ts维护，音轨由声音会话独立交付，未在本组件工作树重写音频引擎。没有浏览器、游戏/演示播放、试听或手机感官验收；后续角色组继续，不将首组交付写作全角色完成。
