@@ -6,7 +6,6 @@ import {playerLabel} from '@ravens/ui';
 import type {PlayerSelection} from './use-player-profile.js';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
 import { ApiError, hasPendingCommand, setRehearsalRole, retryPendingCommand, notifyStorageFailure, acknowledgeStartInfo, cancelNomination, castVote, completeTutorial, confirmRole, createRoom, readCreationIntent, finishCreationIntent, getAuthSession, getPrivateView as fetchPrivateView, getRoom as fetchRoom, resetAccountContext, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, setRoomReady, reorderRoomSeats, removeRoomPlayer, recoverRoom, resumeGame, finishDefense, type PrivateView, type RoomPlayMode, type RoomView } from "./api.js";
-import { GramophonePlayer } from "./components/GramophonePlayer.js";
 import { useOpeningMusic } from "./components/LobbyMusic.js";
 import {GlobalAudioButton} from "./components/GlobalAudioButton.js";
 import {useGameClock} from "./use-game-clock.js";
