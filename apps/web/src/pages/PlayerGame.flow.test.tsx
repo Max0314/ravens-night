@@ -45,3 +45,8 @@ test('simultaneous ballot details explain the preparation and shared cutoff with
  const view=fixture();view.game!.phase='VOTING';view.roleConfirmed=true;view.game!.nomination={mode:'SIMULTANEOUS',ballotId:'b',nominatorSeat:1,nomineeSeat:2,votesRaised:0,votesReceived:0,votersRequired:3,threshold:2,preparationEndsAt:21000,voteStartsAt:21000,voteEndsAt:29000};
  render(<PlayerGame {...handlers} view={view}/>);fireEvent.click(screen.getByRole('button',{name:'查看本轮表决规则'}));const sheet=screen.getByRole('dialog',{name:'本轮表决'});fireEvent.click(screen.getByText('统一截止与规则'));expect(sheet).toHaveTextContent('准备期最多20秒');expect(sheet).toHaveTextContent('最后8秒仍可修改');expect(sheet).not.toHaveTextContent('轮到本席');expect(sheet.querySelector('.vote-procession')).toBeNull();
 });
+
+test('the pre-game waiting scene can be uncovered after the page is hidden before any game snapshot exists',()=>{
+ const ui=render(<PlayerGame {...handlers}/>);expect(screen.getByText('等待所有玩家').closest('.player-wait-scene')).not.toBeNull();
+ fireEvent(window,new Event('ravens:cover-private'));expect(ui.container.querySelector('.player-private')).toHaveAttribute('hidden');expect(screen.getByLabelText('私密内容已遮住')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'显示私密内容'}));expect(screen.queryByLabelText('私密内容已遮住')).not.toBeInTheDocument();expect(screen.getByText('等待所有玩家')).toBeVisible();
+});
