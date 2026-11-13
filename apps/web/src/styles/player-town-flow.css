@@ -57,3 +57,8 @@ body:has(.guide-backdrop,[role="dialog"],[role="alertdialog"]) .player-session [
 /* The actual sheets/card paint the surrounding scene; portrait and covered art stay unchanged. */
 .player-session .town-role-confirm .room-sheet,.player-session .town-role-advice .room-sheet{background:linear-gradient(160deg,#141821bd,#020406ed),url('/art/rooms/courtyard-night.webp') center/cover,#070b11}
 .player-session .town-role-confirm .rn-role-card:not(.rn-role-card--covered){background:linear-gradient(160deg,#141821b8,#020406ec),url('/art/rooms/courtyard-night.webp') center/cover,#070b11}
+
+/* Emphasize only the existing task strip, without moving or darkening the town. */
+.game-page--town .town-night-prompt.is-idle{animation:town-task-idle 2.8s ease-in-out infinite}
+@keyframes town-task-idle{0%,100%{border-left-color:#bba166;color:#d2c39f;box-shadow:inset 0 0 0 1px #c5ad7510}50%{border-left-color:#d5bd85;color:#dfcea9;box-shadow:inset 0 0 0 1px #c5ad7530}}
+@media(prefers-reduced-motion:reduce){.game-page--town .town-night-prompt.is-idle{animation:none;border-left-color:#d5bd85;color:#dfcea9;box-shadow:inset 0 0 0 1px #c5ad7530}}

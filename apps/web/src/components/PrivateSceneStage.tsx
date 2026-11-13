@@ -4,7 +4,7 @@ import {beginnerRoles} from '@ravens/content';
 import type {PrivateSceneDescriptor,PresentationDisposition} from '@ravens/contracts';
 import {playerLabel,formatPlayerText} from '@ravens/ui';
 import {acknowledgePresentations,ApiError,type PrivateView} from '../api.js';
-import {PrivateSceneQueue,sceneDuration,startInfoScene,type QueuedScene} from '../presentations/private-scenes.js';
+import {PrivateSceneQueue,sceneDuration,startInfoScene,canAutoPlayPrivateScene,type QueuedScene} from '../presentations/private-scenes.js';
 import {scheduleRoleCue,cancelEventAudio,prepareRoleAudio} from './experience-audio.js';
 import {RoleSceneArt} from './RoleSceneArt.js';
 import {butlerBowTiming} from './ButlerBow.js';
@@ -22,7 +22,7 @@ const demonAvatarTiming=cinematicTiming.demon as typeof cinematicTiming.demon & 
 const roleName=(id:string)=>beginnerRoles.find(r=>r.id===id)?.name??'角色';
 const reduced=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function PrivateSceneStage({view,code,reading,covered,onActivityChange,onHandleTask,onConfirmStartInfo,onIdentityComplete,onAutoSceneChange,busy=false,error}:{onAutoSceneChange?:(kind:PrivateSceneDescriptor['kind']|undefined)=>void;onIdentityComplete?:(sceneId:string)=>void;onConfirmStartInfo?:(infoId:string)=>void;busy?:boolean;error?:string|undefined;view:PrivateView;code:string;reading:boolean;covered:boolean;onActivityChange:(value:boolean)=>void;onHandleTask:()=>void}){
+export function PrivateSceneStage({view,code,reading,covered,onActivityChange,onHandleTask,onConfirmStartInfo,onSceneComplete,busy=false,error}:{onSceneComplete?:(sceneId:string)=>void;onConfirmStartInfo?:(infoId:string)=>void;busy?:boolean;error?:string|undefined;view:PrivateView;code:string;reading:boolean;covered:boolean;onActivityChange:(value:boolean)=>void;onHandleTask:()=>void}){
  const queue=useRef(new PrivateSceneQueue()),[revision,redraw]=useState(0),[open,setOpen]=useState(false),[elapsed,setElapsed]=useState(0),[hidden,setHidden]=useState(document.hidden),[audioEpoch,setAudioEpoch]=useState(0),[keyboard,setKeyboard]=useState(()=>document.documentElement.dataset.keyboard==='open'),[replayFeedback,setReplayFeedback]=useState('');
  const playbackRun=useRef(0),clock=useRef(0),paused=useRef(false),frame=useRef(0),snapshot=useRef<PrivateView|undefined>(undefined),manualPause=useRef(false),outbox=useRef(new Map<number,PresentationDisposition>()),alive=useRef(true),sending=useRef(false),retry=useRef<ReturnType<typeof setTimeout>|undefined>(undefined),attempt=useRef(0),latest=useRef(view);latest.current=view;
  const [obscured,setObscured]=useState(()=>!!document.querySelector('.room-sheet-backdrop,.player-wheel-backdrop'));
@@ -45,12 +45,12 @@ export function PrivateSceneStage({view,code,reading,covered,onActivityChange,on
   catch(error){if(!alive.current)return;if(error instanceof ApiError&&[401,403,404,409].includes(error.status)){outbox.current.clear();return;}attempt.current++;}
   finally{sending.current=false;if(alive.current&&outbox.current.size){clearTimeout(retry.current);retry.current=setTimeout(()=>void flush(),[1000,3000,10000][Math.min(attempt.current,2)]!);}}
  }
- function finish(disposition:PresentationDisposition){const ended=queue.current.current;if(ended?.scene.kind==='IDENTITY'&&!ended.replay)onIdentityComplete?.(ended.scene.id);const ack=queue.current.finish(disposition);if(ack){outbox.current.set(ack.historySeq,ack.disposition);void flush();}setOpen(false);clock.current=0;setElapsed(0);manualPause.current=false;redraw(n=>n+1);}
+ function finish(disposition:PresentationDisposition){const ended=queue.current.current;if(ended&&!ended.replay)onSceneComplete?.(ended.scene.id);const ack=queue.current.finish(disposition);if(ack){outbox.current.set(ack.historySeq,ack.disposition);void flush();}setOpen(false);clock.current=0;setElapsed(0);manualPause.current=false;redraw(n=>n+1);}
  const suppressed=useRef(new Set<string>());
  useEffect(()=>{
   const entries=(view.presentations?.pending??[]).filter(entry=>{
    if(entry.scene.themeRoleId==='spy'&&entry.scene.shown.type==='GRIMOIRE'){if(!suppressed.current.has(entry.scene.id)){suppressed.current.add(entry.scene.id);outbox.current.set(entry.historySeq,'SKIP');}return false;}
-   return entry.scene.kind!=='IDENTITY'||view.roleConfirmed===true;
+   return canAutoPlayPrivateScene(entry.scene,view.roleConfirmed);
   });
   const start=startInfoScene(view);
   if(start&&view.roleConfirmed!==false&&!view.startInfo?.acknowledged&&!entries.some(row=>row.scene.shown.type==='EVIL_START'&&row.scene.shown.infoId===view.startInfo?.infoId)&&!(queue.current.current?.scene.shown.type==='EVIL_START'&&queue.current.current.scene.shown.infoId===view.startInfo?.infoId))entries.push(start);
@@ -64,11 +64,6 @@ export function PrivateSceneStage({view,code,reading,covered,onActivityChange,on
  useEffect(()=>{const sync=()=>setObscured(!!document.querySelector('.room-sheet-backdrop:not([hidden]),.player-wheel-backdrop:not([hidden])'));sync();const observer=new MutationObserver(sync);observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','aria-hidden']});return()=>observer.disconnect();},[]);
  useEffect(()=>{if(!open&&!reading&&!covered&&!hidden&&!keyboard&&!obscured&&!manualPause.current&&view.game?.phase!=='GAME_OVER'&&view.game?.phase!=='ABORTED'&&queue.current.count)launch();},[revision,open,reading,covered,hidden,keyboard,obscured,view.game?.phase]);
  useEffect(()=>{onActivityChange(open&&!!current);if(!open)window.dispatchEvent(new Event('ravens:resume-book-textures'));return()=>onActivityChange(false);},[open,current?.scene.id]);
- useEffect(()=>{
-  const sameContext=snapshot.current?.roomInstanceId===view.roomInstanceId&&snapshot.current?.game?.gameId===view.game?.gameId&&snapshot.current?.participant.id===view.participant.id;
-  onAutoSceneChange?.(open&&current&&!current.replay&&!covered&&!hidden&&!reading&&sameContext?current.scene.kind:undefined);
-  return()=>onAutoSceneChange?.(undefined);
- },[open,current?.scene.id,current?.replay,covered,hidden,reading,view.roomInstanceId,view.game?.gameId,view.participant.id,onAutoSceneChange]);
  useEffect(()=>{const visibility=()=>setHidden(document.hidden),online=()=>void flush(),audio=()=>setAudioEpoch(n=>n+1);document.addEventListener('visibilitychange',visibility);window.addEventListener('online',online);window.addEventListener('ravens-effects-unlocked',audio);window.addEventListener('ravens-effects-audio',audio);window.addEventListener('ravens:participation-audio',audio);return()=>{document.removeEventListener('visibilitychange',visibility);window.removeEventListener('online',online);window.removeEventListener('ravens-effects-unlocked',audio);window.removeEventListener('ravens-effects-audio',audio);window.removeEventListener('ravens:participation-audio',audio);};},[]);
  useEffect(()=>{const town=()=>{if(queue.current.current)suspend();};const keys=(event:Event)=>setKeyboard((event as CustomEvent<{open:boolean}>).detail.open);window.addEventListener('ravens:return-town',town);window.addEventListener('ravens:keyboard',keys);return()=>{window.removeEventListener('ravens:return-town',town);window.removeEventListener('ravens:keyboard',keys);};},[]);
  useEffect(()=>{const replay=(event:Event)=>{const seq=(event as CustomEvent<number>).detail,entry=latest.current.history.find(e=>e.seq===seq);if(!entry?.presentation||(entry.presentation.kind==='IDENTITY'&&latest.current.roleConfirmed!==true))return;queue.current.replay({historySeq:seq,scene:entry.presentation});if(!queue.current.current)launch();else{setReplayFeedback('已加入重播队列，当前段结束后可查看。');redraw(n=>n+1);}};window.addEventListener('ravens:replay-private-scene',replay);return()=>window.removeEventListener('ravens:replay-private-scene',replay);},[]);
