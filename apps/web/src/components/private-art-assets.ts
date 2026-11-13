@@ -1,6 +1,6 @@
 import type {PrivateSceneDescriptor} from '@ravens/contracts';
 const v4=new Set(['book-shell','book-paper','book-paper-back','coffin-base','coffin-lid-front','coffin-lid-back','washer-basin-back','washer-basin-front','washer-linen','chef-board-clean','chef-carrot','crystal-shell','crystal-mist','poison-glass','poison-stopper','poison-mist','drunk-glass','raven-body','raven-wing','investigator-stamp','scarlet-cloak']);
-const v8=new Set(['envelope-back','envelope-front','envelope-flap-front','envelope-flap-back','envelope-seal','envelope-paper','envelope-seal-broken-left','envelope-seal-broken-right','investigator-evidence','investigator-magnifier','investigator-lens-glint']);
+const v8=new Set(['envelope-back','envelope-front','envelope-flap-front','envelope-flap-back','envelope-seal','envelope-paper','envelope-seal-broken-left','envelope-seal-broken-right','investigator-evidence','investigator-magnifier','investigator-lens-glint','raven-perch','raven-body','raven-head-neck','raven-tail','raven-wing-left','raven-wing-right']);
 const v5=new Set(['mayor-scepter','poison-vapour']);
 export const privateAssetUrl=(name:string)=>v8.has(name)?`/art/effects/v8/${name}.webp`:name==='mayor'?'/art/effects/v5/mayor-base.webp':v5.has(name)?`/art/effects/v5/${name}.webp`:`/art/effects/${v4.has(name)?'v4':'v3'}/${name}.webp`;
 export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
@@ -18,7 +18,7 @@ export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
  else if(role==='poisoner')names=['poison-glass','poison-stopper','poison-mist','poison-vapour'];
  else if(role==='mayor')names=['mayor','mayor-scepter','book-paper'];
  else if(role==='drunk')names=['drunk-glass'];
- else if(role==='ravenkeeper')names=['raven-body','raven-wing'];
+ else if(role==='ravenkeeper')names=['raven-perch','raven-body','raven-head-neck','raven-tail','raven-wing-left','raven-wing-right'];
  else if(role==='scarlet_woman')names=['scarlet-cloak'];
  else if(role==='investigator')names=['investigator-evidence','investigator-magnifier','investigator-lens-glint'];
  else names=[role,...(role==='baron'||role==='saint'?['book-paper']:[])];
