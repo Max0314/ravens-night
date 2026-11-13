@@ -33,9 +33,9 @@ test('opening the latest grimoire pins that night while the next snapshot arrive
 });
 
 
-test('snapshot marks move off portraits into a separate clickable lane and keep the selected old night',()=>{
+test('snapshot marks stay outside portraits beside the matching seat and keep the selected old night',()=>{
  const first=entry(1,0),second=entry(2,1,'小恶魔');const ui=render(<SpyTownBoard entries={[first,second]} initialSeq={1} onReturn={vi.fn()}/>);
- const table=ui.container.querySelector('.round-table')!,rail=screen.getByLabelText('当夜魔典标记');expect(table).not.toContainElement(rail);expect(table.querySelector('.spy-town__markers')).toBeNull();
+ const table=ui.container.querySelector('.round-table')!;expect(table.querySelectorAll('.spy-town__near-mark')).toHaveLength(2);
  for(const portrait of ui.container.querySelectorAll('.spy-town__portrait'))expect(portrait.querySelector('.spy-town__number')).toBeNull();
- fireEvent.click(within(rail).getByRole('button',{name:'查看[乙]的当夜标记'}));expect(screen.getByRole('list',{name:'2号魔典标记'})).toHaveTextContent('红鲱鱼');expect(screen.getByText('当夜存活')).toBeVisible();expect(screen.queryByRole('button',{name:/魔典所示小恶魔/})).not.toBeInTheDocument();
+ fireEvent.click(within(table as HTMLElement).getByRole('button',{name:/^查看\[乙\]的当夜标记/}));expect(screen.getByRole('list',{name:'2号魔典标记'})).toHaveTextContent('红鲱鱼');expect(screen.getByText('当夜存活')).toBeVisible();expect(screen.queryByRole('button',{name:/魔典所示小恶魔/})).not.toBeInTheDocument();
 });

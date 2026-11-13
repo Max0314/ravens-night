@@ -1,8 +1,10 @@
 import {FeedbackButton} from './FeedbackButton.js';
 import {playerLabel} from './player-label.js';
-import type { CSSProperties } from "react";
+import {useMemo,type CSSProperties} from "react";
 import {roundTableLayout} from './round-table.js';
 import './styles/seat-ring.css';
+import {layoutSeatMarkers} from './seat-marker-layout.js';
+export {layoutSeatMarkers,markerOverlap} from './seat-marker-layout.js';
 
 export interface SeatView {
   avatar?: string | undefined;
@@ -33,6 +35,8 @@ interface SeatRingProps {
   activeSeat?: number;
   countedVotes?: Record<number, boolean>;
   raisedSeats?: number[];
+  privateMarks?: Record<number,string>;
+  onPrivateMark?:(seat:number)=>void;
   fluid?: boolean;
   diameter?: number;
   threatenedSeats?: number[];
@@ -43,11 +47,13 @@ interface SeatRingProps {
   selectableSeats?: number[];
 }
 
-export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, fluid=false, diameter=320, threatenedSeats, nightDeathSeats, nominatorSeat, executionCandidate, selectedSeats, selectableSeats }: SeatRingProps) {
+export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, privateMarks, onPrivateMark, fluid=false, diameter=320, threatenedSeats, nightDeathSeats, nominatorSeat, executionCandidate, selectedSeats, selectableSeats }: SeatRingProps) {
   const layout=roundTableLayout(seats.length,diameter);
+  const markerPositions=useMemo(()=>layoutSeatMarkers(layout,seats,privateMarks??{}),[diameter,seats.map(p=>p.seat).join(','),JSON.stringify(privateMarks)]);
   return <ol className={`rn-seat-ring${fluid?" rn-seat-ring--fluid":""}`} style={{ "--seat-count": seats.length } as CSSProperties}>
     {seats.map((seat, index) => {
       const state = !seat.alive ? "DEAD" : threatenedSeats?.includes(seat.seat) ? "THREATENED" : undefined;
+      const mark=markerPositions.find(m=>m.seat===seat.seat),point=layout.points[index]!;
       const selected = selectedSeats?.includes(seat.seat);
       const selectable = selectableSeats?.includes(seat.seat);
       const avatar = <span className="rn-seat__avatar" data-avatar-state={state}>
@@ -63,6 +69,7 @@ export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, r
         {onSelect ? <FeedbackButton type="button" onClick={event => onSelect(seat.seat, event.currentTarget)} aria-pressed={selected} aria-label={`${playerLabel(seat.seat,seat.nickname)} ${seat.alive ? "存活" : "已死亡"}${seat.seat === ownSeat ? "，你" : ""}${state === "THREATENED" ? "，候选席" : ""}`}>
           {portrait}<span className="rn-seat__name">{seat.nickname}</span>
         </FeedbackButton> : <>{portrait}<span className="rn-seat__name">{seat.nickname}</span></>}
+        {mark&&privateMarks?.[seat.seat]?<FeedbackButton type="button" className="rn-seat__private-mark rn-seat__private-mark--placed" feedbackScope="private" title={privateMarks[seat.seat]} aria-label={`我的线索：${privateMarks[seat.seat]}`} onClick={()=>onPrivateMark?.(seat.seat)} style={{left:mark.x-point.x+layout.seatSize/2,top:mark.y-point.y+layout.seatSize/2,width:mark.width,height:mark.height}}>{mark.lines.map((line,i)=><span key={i}>{line}</span>)}</FeedbackButton>:null}
         {countedVotes?.[seat.seat] !== undefined ? <small className="rn-seat__ballot" aria-label={`已锁票：${countedVotes[seat.seat]?"赞成":"未举手"}`}>✓</small> : null}
         {seat.seat===nominatorSeat?<span className="rn-seat__nomination" aria-label="提名人">☞</span>:null}
         {executionCandidate?.seat===seat.seat?<span className="rn-seat__execution" aria-label={`待处决候选，最高${executionCandidate.votes}票`}>⚖ {executionCandidate.votes}</span>:null}
