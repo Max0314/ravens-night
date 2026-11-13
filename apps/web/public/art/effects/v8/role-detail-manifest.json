@@ -2894,6 +2894,267 @@
           "499": null
         }
       }
+    },
+    {
+      "id": "virgin-document-base",
+      "group": "virgin",
+      "targetRect": [
+        80,
+        200,
+        460,
+        265
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/virgin-document-base.png",
+      "sourceSha256": "05751e53a305855eec1b7561c7660dbc54cccb831444eaa709a65d69090acab5",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRect": [
+        181,
+        368,
+        1290,
+        1017
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/virgin-document-base.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "promptSha256": "e50c3e0c2a07cd2d16ecd3fc49dd0e52fdf062b960618944b9a006e31b788871",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "virgin-document-base.webp",
+      "url": "/art/effects/v8/virgin-document-base.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 129706,
+      "sha256": "1c8c1a7351dee43032160bc026f472fe58bad771703f5c2671dcb54fdf7fedb5",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          80,
+          200,
+          540,
+          465
+        ],
+        "alphaAbove128Bounds": [
+          81,
+          201,
+          539,
+          464
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            338,
+            396
+          ],
+          "110": [
+            303,
+            396
+          ],
+          "135": [
+            252,
+            399
+          ],
+          "273": [
+            219,
+            424
+          ],
+          "300": [
+            219,
+            430
+          ],
+          "327": [
+            218,
+            432
+          ],
+          "465": [
+            236,
+            463
+          ],
+          "490": [
+            237,
+            394
+          ],
+          "499": [
+            240,
+            373
+          ]
+        }
+      }
+    },
+    {
+      "id": "virgin-lily",
+      "group": "virgin",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/virgin-lily.png",
+      "sourceSha256": "37cd41ad47563265854def2434b4f28b8a4f01512d061aebd958e568a669cc77",
+      "sourceSize": [
+        1959,
+        803
+      ],
+      "sourceRegion": null,
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/virgin-lily.txt",
+      "sourceAnchor": [
+        620,
+        480
+      ],
+      "worldAnchor": [
+        215,
+        205
+      ],
+      "uniformScale": 0.24,
+      "affineOutputToSource": [
+        4.166666666666667,
+        0,
+        -275.83333333333337,
+        0,
+        4.166666666666667,
+        -374.16666666666674
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "8332683dec77005cf386ef7829aaff4fc68e35f189958ff02f77f894cf7acfbf",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "virgin-lily.webp",
+      "url": "/art/effects/v8/virgin-lily.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 71230,
+      "sha256": "a9b08e8115c703a71445706d54fe1a90f029691272ac0528aad856298314c885",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          75,
+          92,
+          530,
+          280
+        ],
+        "alphaAbove128Bounds": [
+          75,
+          92,
+          530,
+          280
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            165,
+            254
+          ],
+          "110": [
+            158,
+            251
+          ],
+          "135": [
+            108,
+            255
+          ],
+          "273": [
+            108,
+            257
+          ],
+          "300": [
+            133,
+            244
+          ],
+          "327": [
+            134,
+            218
+          ],
+          "465": [
+            181,
+            188
+          ],
+          "490": [
+            186,
+            193
+          ],
+          "499": [
+            188,
+            196
+          ]
+        }
+      }
+    },
+    {
+      "id": "virgin-ribbon",
+      "group": "virgin",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/virgin-ribbon.png",
+      "sourceSha256": "1d1f26183edfdfb799626b56dd2878f3c09f85b83ae60d2795c0d980f04bf304",
+      "sourceSize": [
+        1774,
+        887
+      ],
+      "sourceRegion": null,
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/virgin-ribbon.txt",
+      "sourceAnchor": [
+        1300,
+        20
+      ],
+      "worldAnchor": [
+        435,
+        190
+      ],
+      "uniformScale": 0.25,
+      "affineOutputToSource": [
+        4.0,
+        0,
+        -440.0,
+        0,
+        4.0,
+        -740.0
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "70451849ad516f6ad10dee72b482e76b257a4d6994fe789b9c6aeaed4d387716",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "virgin-ribbon.webp",
+      "url": "/art/effects/v8/virgin-ribbon.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 64862,
+      "sha256": "33211b7f7a2567d9f67b62dde36f5e14c639a050af505100837456ba658ac624",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          113,
+          188,
+          550,
+          403
+        ],
+        "alphaAbove128Bounds": [
+          113,
+          188,
+          550,
+          403
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": [
+            327,
+            379
+          ],
+          "273": [
+            242,
+            270
+          ],
+          "300": [
+            231,
+            271
+          ],
+          "327": [
+            244,
+            270
+          ],
+          "465": [
+            196,
+            299
+          ],
+          "490": [
+            251,
+            376
+          ],
+          "499": [
+            256,
+            365
+          ]
+        }
+      }
     }
   ],
   "contracts": {
@@ -3704,6 +3965,103 @@
             220,
             310
           ]
+        }
+      ]
+    },
+    "virgin": {
+      "lilyCentre": [
+        215,
+        205
+      ],
+      "stemAnchor": [
+        378,
+        186
+      ],
+      "stemTip": [
+        529,
+        200
+      ],
+      "petalTips": [
+        [
+          150,
+          102
+        ],
+        [
+          243,
+          95
+        ],
+        [
+          297,
+          193
+        ],
+        [
+          213,
+          275
+        ],
+        [
+          149,
+          267
+        ],
+        [
+          81,
+          190
+        ]
+      ],
+      "ribbonLoopTop": [
+        435,
+        190
+      ],
+      "ribbonTailTips": [
+        [
+          112,
+          400
+        ],
+        [
+          550,
+          390
+        ]
+      ],
+      "documentFixed": true,
+      "defaultZ": [
+        "virgin-document-base",
+        "virgin-lily",
+        "virgin-ribbon"
+      ],
+      "parts": [
+        {
+          "id": "virgin-document-base",
+          "targetRect": [
+            80,
+            200,
+            460,
+            265
+          ]
+        },
+        {
+          "id": "virgin-lily",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            620,
+            480
+          ],
+          "worldAnchor": [
+            215,
+            205
+          ],
+          "uniformScale": 0.24
+        },
+        {
+          "id": "virgin-ribbon",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            1300,
+            20
+          ],
+          "worldAnchor": [
+            435,
+            190
+          ],
+          "uniformScale": 0.25
         }
       ]
     }
