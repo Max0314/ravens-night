@@ -3155,6 +3155,179 @@
           ]
         }
       }
+    },
+    {
+      "id": "empath-heart-base",
+      "group": "empath",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/empath-heart-base.png",
+      "sourceSha256": "63e85cc28f2907a78a12733be99f9ee179a7b9c1bd91bfd2ba89a54497150657",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRegion": null,
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/empath-heart-base.txt",
+      "sourceAnchor": [
+        0,
+        0
+      ],
+      "worldAnchor": [
+        45,
+        60
+      ],
+      "uniformScale": 0.33,
+      "affineOutputToSource": [
+        3.0303030303030303,
+        0,
+        -136.36363636363635,
+        0,
+        3.0303030303030303,
+        -181.8181818181818
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "f9c0a248ece67b6a1850ae9f327a0e4ffbac50bfef0ebe9fd539619f038aa6b2",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "empath-heart-base.webp",
+      "url": "/art/effects/v8/empath-heart-base.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 252572,
+      "sha256": "c7c9fcaaafb976d60bddc28c6b895005eaf895cd35f2941c831fe6a3d02cacf5",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          47,
+          64,
+          549,
+          396
+        ],
+        "alphaAbove128Bounds": [
+          48,
+          64,
+          549,
+          396
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            171,
+            336
+          ],
+          "110": [
+            144,
+            334
+          ],
+          "135": [
+            87,
+            375
+          ],
+          "273": [
+            104,
+            389
+          ],
+          "300": [
+            113,
+            392
+          ],
+          "327": [
+            123,
+            395
+          ],
+          "465": [
+            154,
+            366
+          ],
+          "490": [
+            165,
+            353
+          ],
+          "499": [
+            177,
+            351
+          ]
+        }
+      }
+    },
+    {
+      "id": "empath-chain",
+      "group": "empath",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/empath-chain.png",
+      "sourceSha256": "1f8e35eb79acb20ba5b78259c5a11c255976d97b8e84e0c6f37b432324272ccb",
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "sourceRegion": null,
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/empath-chain.txt",
+      "sourceAnchor": [
+        0,
+        0
+      ],
+      "worldAnchor": [
+        45,
+        60
+      ],
+      "uniformScale": 0.33,
+      "affineOutputToSource": [
+        3.0303030303030303,
+        0,
+        -136.36363636363635,
+        0,
+        3.0303030303030303,
+        -181.8181818181818
+      ],
+      "processing": "Whole independently painted part (or naturally separate source-board sprite in explicit region), uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of an assembled composite.",
+      "promptSha256": "20d7d3d5d013483cd3824660bbecfc1632be923ead1faeb305cbc30092717124",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "empath-chain.webp",
+      "url": "/art/effects/v8/empath-chain.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 32104,
+      "sha256": "32902a1c327f54339c2deb618894580344c3402c9660dd1c340ee601d6d76e92",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          162,
+          74,
+          504,
+          356
+        ],
+        "alphaAbove128Bounds": [
+          162,
+          74,
+          504,
+          355
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            86,
+            352
+          ],
+          "300": [
+            83,
+            354
+          ],
+          "327": [
+            76,
+            352
+          ],
+          "465": [
+            145,
+            297
+          ],
+          "490": [
+            190,
+            249
+          ],
+          "499": [
+            204,
+            235
+          ]
+        }
+      }
     }
   ],
   "contracts": {
@@ -4062,6 +4235,83 @@
             190
           ],
           "uniformScale": 0.25
+        }
+      ]
+    },
+    "empath": {
+      "gemCentres": [
+        [
+          261,
+          221
+        ],
+        [
+          380,
+          217
+        ]
+      ],
+      "gemInteriorRadii": [
+        [
+          20,
+          26
+        ],
+        [
+          20,
+          26
+        ]
+      ],
+      "hingeCentre": [
+        316,
+        222
+      ],
+      "chainBailCentre": [
+        395,
+        103
+      ],
+      "chainEndAnchors": [
+        [
+          388,
+          93
+        ],
+        [
+          406,
+          96
+        ]
+      ],
+      "chainForegroundControl": [
+        300,
+        348
+      ],
+      "baseFixed": true,
+      "defaultZ": [
+        "empath-heart-base",
+        "empath-chain"
+      ],
+      "parts": [
+        {
+          "id": "empath-heart-base",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            0,
+            0
+          ],
+          "worldAnchor": [
+            45,
+            60
+          ],
+          "uniformScale": 0.33
+        },
+        {
+          "id": "empath-chain",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            0,
+            0
+          ],
+          "worldAnchor": [
+            45,
+            60
+          ],
+          "uniformScale": 0.33
         }
       ]
     }
