@@ -51,6 +51,9 @@ function executeSeat(service: RoomService, code: string, players: JoinedPlayer[]
   service.nominate(code, nominator.token, nomineeSeat);
   if (service.publicView(code).game?.phase !== "VOTING") return;
   for (const player of players) if (service.privateView(code, player.token).canVote) service.vote(code, player.token, true);
+  const nominee=players.find(p=>p.participant.seat===nomineeSeat)!;
+  service.finishDefense(code,nominee.token);
+  service.advanceTime(service.publicView(code).game!.nomination!.voteEndsAt!);
   const aliveSeats = service.publicView(code).game!.seats.filter((seat) => seat.alive).map((seat) => seat.seat);
   for (const seat of aliveSeats) {
     const player = players.find((candidate) => candidate.participant.seat === seat)!;

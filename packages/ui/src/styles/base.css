@@ -124,7 +124,9 @@ button:disabled { cursor: not-allowed; }
 .rn-role-card__ability { border-left: 2px solid var(--rn-gold); padding-left: 15px; line-height: 1.78; color: #ded7c9; }
 .rn-role-card__tip { color: var(--rn-muted); font-size: .88rem; line-height: 1.65; }
 .rn-role-card .rn-button { width: 100%; margin-top: 8px; }
-.rn-role-card--covered { display: grid; place-items: center; align-content: center; gap: 1rem; text-align: center; }
+.rn-role-card--covered { display: grid; grid-template-rows:minmax(0,1fr) auto; text-align: center; }
+.rn-role-card__cover-art { min-height:0;display:grid;place-content:center;justify-items:center;gap:16px;background:radial-gradient(ellipse at 50% 44%,#54442b2b,transparent 65%); }
+.rn-role-card__cover-art p { color:var(--rn-muted);margin:0; }
 .rn-role-card__seal { width: 94px; height: 94px; display: grid; place-items: center; border: 1px solid var(--rn-gold); border-radius: 50%; color: var(--rn-gold-light); font-size: 2.6rem; box-shadow: inset 0 0 30px rgba(181,139,67,.06), 0 0 42px rgba(181,139,67,.14); }
 
 .rn-seat-ring { --rn-seat-radius: min(36vw, 280px); position: relative; width: min(72vw, 760px); aspect-ratio: 1; margin: 0 auto; padding: 0; list-style: none; }

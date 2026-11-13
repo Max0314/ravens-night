@@ -148,6 +148,7 @@ test("a complete nomination vote returns to nominations and can end the day", ()
   service.nominate(room.code, players[0]!.token, 2);
   expect(service.publicView(room.code).game?.phase).toBe("VOTING");
   players.forEach((player, index) => service.vote(room.code, player.token, index < 3));
+  completeBallot(service,room.code,players);
   expect(service.publicView(room.code).game?.phase).toBe("NOMINATION");
 
   for (const player of players) service.readyToEndDay(room.code, player.token);
@@ -169,7 +170,7 @@ test("withdrawing a nomination consumes both daily allowances", () => {
   expect(() => service.nominate(room.code, players[1]!.token, nomineeIndex + 1)).toThrow(/already nominated/i);
 });
 
-test("a voter may switch between raised and lowered until the final ballot arrives", () => {
+test("a voter may switch between raised and lowered before the common ballot deadline", () => {
   const { service, room, players } = runningRoom();
   reachFirstDay(service, room.code, players);
   const nomineeIndex = players.findIndex((player, index) => index > 0 && service.privateView(room.code, player.token).role?.roleId !== "virgin");
@@ -185,6 +186,7 @@ test("a voter may switch between raised and lowered until the final ballot arriv
   expect(() => service.cancelNomination(room.code, players[0]!.token)).toThrow(/after voting begins/i);
 
   for (const player of players.filter((player) => player !== voter)) service.vote(room.code, player.token, false);
+  completeBallot(service,room.code,players);
   expect(service.publicView(room.code).game?.phase).toBe("NOMINATION");
 });
 
@@ -245,6 +247,12 @@ test("the organizer can reset a table without making seated players rejoin", () 
   expect(secondSetup.gameNumber).toBe(firstSetup.gameNumber + 1);
   expect(secondSetup.assignments).not.toEqual(firstSetup.assignments);
 });
+
+function completeBallot(service:RoomService,code:string,players:Array<{token:string}>){
+  const ballot=service.publicView(code).game!.nomination!;
+  service.finishDefense(code,players[ballot.nomineeSeat-1]!.token);
+  service.advanceTime(service.publicView(code).game!.nomination!.voteEndsAt!);
+}
 
 function reachFirstDay(service: RoomService, code: string, players: Array<{ token: string }>) {
   for (const player of players) service.confirmRole(code, player.token);
