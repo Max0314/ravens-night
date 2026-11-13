@@ -56,3 +56,13 @@
 /* Alpha fades the actual painting into the page instead of adding a hard text plate. */
 .guide-sheet .role-detail__portrait{box-shadow:none;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 70%,#000c 81%,#0005 93%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 70%,#000c 81%,#0005 93%,transparent 100%)}
 .guide-sheet .role-detail__copy{position:relative;background:none;margin-top:-12px}
+
+/* Pre-game reading uses the same bounded book without covering the room menu. */
+.guide-backdrop.guide-backdrop--startup{position:relative;inset:auto;z-index:auto;display:block;width:100%;height:100%;max-height:100%;padding:0;backdrop-filter:none;background:transparent}
+.guide-backdrop--startup>.guide-sheet{height:100%;max-height:100%;border:0;border-radius:0;box-shadow:none}
+.guide-backdrop--startup-menu .guide-sheet__header{padding-right:calc(66px + env(safe-area-inset-right))}
+.guide-startup-footer{flex:none;display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px;padding:6px 18px max(8px,env(safe-area-inset-bottom));border-top:1px solid #b79c4933;color:#bda77a;font-size:12px}
+.guide-startup-footer p{margin:0;line-height:1.6}
+.guide-startup-footer button{min-height:44px;padding:6px 10px;background:transparent;border:1px solid #b79c4938;border-radius:8px;color:#d8c69e}
+.guide-startup-footer button:disabled{opacity:.45}
+.guide-startup-footer>.form-error{grid-column:1/-1;color:#d7a18c}
