@@ -4,6 +4,7 @@ import {cinematicTiming as contact} from './cinematic-timing.js';
 import {roleAudioV6 as detailLead} from './role-audio-v6.js';
 import {roleAudioV7 as ravenCoffinLead} from './role-audio-v7.js';
 import {roleAudioV8 as remainingLead} from './role-audio-v8.js';
+import {roleMusicCues} from './role-score.js';
 type Scope='public'|'private'|'ui'|'book'|'nomination'|'ballot';
 export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
@@ -30,6 +31,10 @@ export function globalAudioEnabled(){return enabled;}
 export function effectsAudioEnabled(){return previewAudio?.enabled??enabled;}
 export function effectsAudioStatus(){return status;}
 function report(value:string){status=value;window.dispatchEvent(new Event('ravens:audio-status'));}
+export const reportAudioStatus=report;
+export function effectsPreviewActive(){return !!previewAudio;}
+/** Poll by the isolated score owner. Loading/opening secret UI alone cannot duck anything. */
+export function scoreDuckingActive(){return !!(!previewAudio&&effectsAudioEnabled()&&ctx?.state==='running'&&!document.hidden&&[...sources.values()].some(s=>s.scope!=='ui'&&s.scope!=='book'&&s.at<=ctx!.currentTime&&s.end>ctx!.currentTime&&(s.scope!=='private'||privateAudioAllowed())));}
 export async function unlockEffectsAudio(){
  if(typeof window==='undefined')return;
  const Audio=window.AudioContext??(window as typeof window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
@@ -57,7 +62,7 @@ function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else ac
 function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
  const prefix=sample.match(/^(v[1345678]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[1345678]:/,'');
- const candidate=/^candidate:(L02|L03|L04|A03)$/.exec(sample)?.[1],url=candidate?'/audio-candidates/2026-11-12-v1/'+candidate+'.mp3':'/audio/effects/'+version+'/'+name+'.mp3';
+ const candidate=/^candidate:(L02|L03|L04|A03)$/.exec(sample)?.[1],score=/^score:(M03|M22)$/.exec(sample)?.[1],url=score?'/audio/music/v2/scene-'+score.toLowerCase()+'.mp3':candidate?'/audio-candidates/2026-11-12-v1/'+candidate+'.mp3':'/audio/effects/'+version+'/'+name+'.mp3';
  const pending=(async()=>{await takeLoadSlot();try{const response=await fetch(url);if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
 /** Invoke directly in the book's user gesture; no global/private sound preference changes. */
@@ -85,7 +90,7 @@ function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,ra
  if(!claim(id+':'+cue,at))return;
  void load(sample).then(buffer=>{
   if(ctx!==audio||epochs.get(id)!==epoch||!allowed(scope)||(audio.currentTime-at)*1000>lateWindow||offset>=buffer.duration)return;
-  const vocal=/^(v6:washer-whisper|hurt-|cough-|butler-voice)/.test(sample),group=(s:Playing)=>/^(v6:washer-whisper|hurt-|cough-|butler-voice)/.test(s.sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s)===vocal&&s.at<=at&&s.end>at);if(scope!=='nomination'&&own.length>=(scope==='ui'||scope==='book'||vocal?1:3))stop(own[0]![0],own[0]![1]);
+  const group=(sample:string)=>sample.startsWith('score:')?'music':/^(v6:washer-whisper|hurt-|cough-|butler-voice)/.test(sample)?'voice':'material',kind=group(sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s.sample)===kind&&s.at<=at&&s.end>at);if(scope!=='nomination'&&own.length>=(scope==='ui'||scope==='book'||kind!=='material'?1:3))stop(own[0]![0],own[0]![1]);
   if(!bell&&scope!=='ui'&&scope!=='book')for(const row of sources.values())if(row.bell){const duckAt=Math.max(at,audio.currentTime);row.gain.gain.setValueAtTime(row.gain.gain.value,duckAt);row.gain.gain.linearRampToValueAtTime(.035,duckAt+.04);row.gain.gain.linearRampToValueAtTime(.2,duckAt+.34);}
   const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));sources.set(source,{id,scope,at,sample,gain,bell,end:at+(buffer.duration-offset)/rate});source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};const when=Math.max(audio.currentTime,at);source.start(when,offset);onStarted?.(buffer,when,source);
  }).catch(()=>{/* Missing media never blocks interaction. */});
@@ -175,11 +180,11 @@ export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
 export async function prepareRoleAudio(scene:PrivateSceneDescriptor):Promise<void>{
  if(!effectsAudioEnabled()||!ctx||!previewPrivateAllowed())return;
  let timer:ReturnType<typeof setTimeout>|undefined;
- await Promise.race([Promise.allSettled(roleAudioCues(scene).map(([,sample])=>load(sample))),new Promise<void>(resolve=>{timer=setTimeout(()=>{report('声音加载较慢，本段先继续；可在记录中重播');resolve();},6000);})]);
+ await Promise.race([Promise.allSettled([...roleAudioCues(scene),...roleMusicCues(scene)].map(([,sample])=>load(sample))),new Promise<void>(resolve=>{timer=setTimeout(()=>{report('声音加载较慢，本段先继续；可在记录中重播');resolve();},6000);})]);
  clearTimeout(timer);
 }
 export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,options:AudioPlayback={}){
- const id='private:'+(options.playbackId??scene.id),rate=options.rate??1,cues=roleAudioCues(scene),mode=options.mode??(options.resume?'RESUME':'START'),epoch=epochs.get(id)??0;
+ const id='private:'+(options.playbackId??scene.id),rate=options.rate??1,cues=[...roleAudioCues(scene),...roleMusicCues(scene)],mode=options.mode??(options.resume?'RESUME':'START'),epoch=epochs.get(id)??0;
  for(const [at,sample,volume,continuity='continuous',contactAt=at]of cues){
   const late=elapsed>at;if(late&&(mode!=='RESUME'||continuity==='transient'&&elapsed>=contactAt))continue;
   const offset=late?(elapsed-at)/1000:0,key=(mode==='START'?'':mode.toLowerCase()+':'+epoch+':')+at+':'+sample;
