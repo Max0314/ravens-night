@@ -14,7 +14,7 @@ export const cinematicTiming = {
   mayor: { lift: 400, contact: 850, document: 1050, settle: 1650 },
   armor: { contact: 700, settle: 1350 },
   drunk: { lift: 400, lean: 900, return: 1900, settle: 2600 },
-  scarlet: { start: 650, open: 1750, settle: 2200 },
+  scarlet: { start: 650, wingStart: 900, open: 1750, settle: 2200 },
   flower: { outerStart: 500, innerStart: 850, open: 1750, ribbon: 950, settle: 2200 },
   chef: [650, 1000, 1350],
   shield: { cue: 418, contact: 700 },
