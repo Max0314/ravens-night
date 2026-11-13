@@ -17,3 +17,6 @@ export function mayorDocumentStrips(t:number,reduced=false){const p=reduced?1:sm
 
 const pulse=(t:number,at:number)=>smooth(t,at-25,at)*(1-smooth(t,at,at+180));
 export function empathDetailPose(t:number,reduced=false){const e=timing.empath,ring=(at:number)=>t<at?0:Math.sin((t-at)/70)*Math.exp(-(t-at)/300),settle=1-smooth(t,e.settle-100,e.settle);return{left:reduced?0:pulse(t,e.left)+pulse(t,e.left+e.echoDelay)*.55,right:reduced?0:pulse(t,e.right)+pulse(t,e.right+e.echoDelay)*.55,chain:reduced?0:(ring(e.left)+ring(e.right))*.9*settle};}
+
+export function lanternDetailPose(t:number,reduced=false){const l=timing.recluse,age=Math.max(0,t-l.swing),angle=reduced||t<l.swing?0:8*Math.sin(age/190)*Math.exp(-age/1700)*(1-smooth(t,l.settle-300,l.settle));return{angle,light:reduced?.75:.75+.06*Math.sin(t/180)+.035*Math.sin(t/83),mist:reduced?0:Math.sin(t/1100)*5};}
+export function candleDetailPose(t:number,index:number,reduced=false){const phase=index*2.1;return{angle:reduced?0:Math.sin(t/230+phase)*1.4,scaleX:reduced?1:1+Math.sin(t/170+phase)*.035,scaleY:reduced?1:.96+Math.sin(t/130+phase)*.07,opacity:reduced?.94:.91+Math.sin(t/180+phase)*.07,wax:reduced?1:smooth(t,timing.saint.wax+index*80,timing.saint.waxSet)};}
