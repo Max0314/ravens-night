@@ -4,6 +4,7 @@ import {bookProject,bookPlaneMatrix,quadTriangles,overlapTriangle,type Quad,flow
 import {privateAssetUrl} from './private-art-assets.js';
 import {cinematicTiming as timing,smooth,unit} from './cinematic-timing.js';
 import {materialMesh,cloakMaterialPoint,armorMaterialPoint,shieldMaterialPoint,chefDetailPose,wineDetailPose,mayorDocumentStrips} from './role-detail-motion.js';
+import {ravenBind,ravenDetailPose,ravenBodyPoint,ravenWingPoint,ravenHeadPoint} from './raven-motion.js';
 import './private-prop-motion.css';
 
 export type SceneMark={label:string;avatar?:string|undefined;name?:string|undefined;detail?:string};
@@ -66,7 +67,8 @@ export function LayeredSceneArt({role,kind,elapsedMs,imprint,readyAssets,resolve
    <g data-investigator-magnifier="true" transform={`translate(${p.x} ${p.y}) ${rotation(p.angle,magnifierGeometry.centre)}`}>{art('investigator-magnifier')}</g>
    <g data-investigator-reflection="true" clipPath={`url(#${id}-lens)`}><g transform={`translate(${p.x} ${p.y}) ${rotation(p.angle+(reducedMotion?0:Math.sin(t/1700)*2),magnifierGeometry.centre)}`}>{art('investigator-lens-glint')}</g></g></>:null}{label(300,435)}</>;
  }else if(role==='ravenkeeper'){
-  const flap=reducedMotion?0:Math.sin(unit((t-600)/900)*Math.PI*3)*18*(1-smooth(t,1600,1900));body=<>{art('raven-body',105,15,390,450)}<g transform={rotation(flap,{x:301.2,y:145.4})}><g transform="matrix(-.292 0 0 .292 330.4 101.6)">{art('raven-wing',0,0,1028,667)}</g></g>{!reducedMotion&&t>1500?<g transform={`translate(${(t-1500)/35} ${(t-1500)/9}) rotate(${(t-1500)/15} 350 140)`}><path d="M340 120Q365 138 345 175Q336 143 340 120" fill="#393342"/></g>:null}{label(310,440)}</>;
+  const p=ravenDetailPose(t,reducedMotion),tail=ravenBodyPoint(ravenBind.tail,t,reducedMotion),wing=(side:'left'|'right')=><MeshTexture name={`raven-wing-${side}`} pieces={materialMesh(side==='left'?[0,150,ravenBind.left.x,450,600]:[0,150,ravenBind.right.x,450,600],[0,214,500],q=>ravenWingPoint(q,side,t,reducedMotion))} id={`${id}-wing-${side}`} readyAssets={readyAssets} resolveAsset={resolveAsset}/>;
+  body=has('raven-perch','raven-body','raven-head-neck','raven-tail','raven-wing-left','raven-wing-right')?<g data-raven-articulated="true">{art('raven-perch')}{wing('right')}<g transform={`translate(${tail.x-ravenBind.tail.x} ${tail.y-ravenBind.tail.y}) ${rotation(p.tailAngle,ravenBind.tail)}`}>{art('raven-tail')}</g><MeshTexture name="raven-body" pieces={materialMesh([0,315,600],[0,214,300,335,500],q=>ravenBodyPoint(q,t,reducedMotion))} id={`${id}-raven-body`} readyAssets={readyAssets} resolveAsset={resolveAsset}/>{wing('left')}<MeshTexture name="raven-head-neck" pieces={materialMesh([0,330,600],[0,ravenBind.head.y,ravenBind.neck.y,500],q=>ravenHeadPoint(q,t,reducedMotion))} id={`${id}-raven-head`} readyAssets={readyAssets} resolveAsset={resolveAsset}/>{label(310,465)}</g>:null;
  }else if(role==='drunk'){
   const p=wineDetailPose(t,reducedMotion),glass=rotation(p.angle,{x:300,y:420}),points=p.liquid.map(q=>`${q.x},${q.y}`).join(' ');
   body=<>{art('drunk-glass',202,60,196,360,{transform:glass,opacity:.55})}<defs><clipPath id={`${id}-wine`}><path d="M214 90Q203 185 260 216Q300 238 340 216Q397 185 386 90Z" transform={glass}/></clipPath><linearGradient id={`${id}-wine-shade`} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#982b43"/><stop offset="1" stopColor="#46101f"/></linearGradient></defs>
