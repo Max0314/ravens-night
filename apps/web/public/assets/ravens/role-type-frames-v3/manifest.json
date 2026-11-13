@@ -1,0 +1,54 @@
+{
+  "collection": "role-type-frames-v3",
+  "createdAt": "2026-11-13",
+  "source": "artifacts/role-type-frames-v3-2026-11-13/source.mjs",
+  "method": "Hand-authored SVG paths; one scalable file per type; no raster embeds, text fonts, filters or external dependencies.",
+  "palette": {
+    "bronze": "#51452f",
+    "gold": "#786344"
+  },
+  "design": "Thin dark low-contrast rails, soft corners, no central badge, no side/lower ornament; only paired upper category motifs.",
+  "usage": "Role index previews only; full and thumbnail fields share the same SVG URL.",
+  "frames": [
+    {
+      "id": "townsfolk",
+      "type": "TOWNSFOLK",
+      "file": "townsfolk.svg",
+      "width": 240,
+      "height": 320,
+      "scalable": true,
+      "bytes": 1124,
+      "sha256": "221925dbaf638902f0b03ebc1bbe81232be8e790b1dfc669099703fc5978ce76"
+    },
+    {
+      "id": "outsider",
+      "type": "OUTSIDER",
+      "file": "outsider.svg",
+      "width": 240,
+      "height": 320,
+      "scalable": true,
+      "bytes": 1165,
+      "sha256": "b0fdb7196c594f62c1637daaaf91599b4d292fe60a072158e12c0f57552e13e7"
+    },
+    {
+      "id": "minion",
+      "type": "MINION",
+      "file": "minion.svg",
+      "width": 240,
+      "height": 320,
+      "scalable": true,
+      "bytes": 1183,
+      "sha256": "8da1bc985ab7826472db0ae48b9219ba7552a7390e8b0b8103cf765d77e40e95"
+    },
+    {
+      "id": "demon",
+      "type": "DEMON",
+      "file": "demon.svg",
+      "width": 240,
+      "height": 320,
+      "scalable": true,
+      "bytes": 1156,
+      "sha256": "d612da543801568ccb3c60aa4c1c025b1c1ebbb139dfab1047279d0b8b7993fe"
+    }
+  ]
+}

@@ -24,4 +24,4 @@
 @media(prefers-reduced-motion:reduce){.home-portrait__arch img{animation:none;}}
 .home-portrait__caption [data-public-role-type=MINION],.home-portrait__caption [data-public-role-type=DEMON]{color:#b76b58;}
 
-.home-current-room>span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.home-current-room>button{flex:none;}.home-current-room.is-empty{pointer-events:none;}
+.home-portrait__navigation{width:min(100%,440px);height:44px;justify-content:center;gap:8px;flex:none;}.home-portrait__navigation>button{flex:none;}.home-portrait__navigation>.home-current-room{height:44px;margin:0;flex:1;min-width:0;max-width:290px;gap:6px;}.home-current-room>span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}.home-current-room>span>small{display:block;font-size:10px;color:#978b73;}.home-current-room>button{flex:none;min-height:44px;padding:4px 3px;}

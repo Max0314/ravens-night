@@ -13,7 +13,7 @@ import {BloodSpray,ShotImpact,ExecutionGallows,PoisonArt,PoisonScreen,DemonScree
 import {privateAudioAllowed} from '../participation-audio.js';
 import '../styles/effects-v3.css';
 import {Avatar} from "./Avatar.js";
-import {FractureLayer,GlassRefraction,GuillotineScene,ResultBlood} from './SharpEffects.js';
+import {FractureLayer,GlassRefraction,GuillotineScene,ResultBlood,ExecutionBloodScreen} from './SharpEffects.js';
 import {ButlerBow,butlerBowTiming} from './ButlerBow.js';
 import {HuntingRifleScene} from './CinematicPublicArt.js';
 
@@ -151,6 +151,7 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
     {event?.kind==='SHOT'?<><FractureLayer seed={event.id} elapsedMs={elapsed} impactAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced}/><GlassRefraction seed={event.id} elapsedMs={elapsed} impactAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced}/></>:null}
     {event&&quiet?<aside className="phase-reading-notice" role="status"><span>{elapsed<0?event.kind==='DAWN'?'即将天亮':event.kind==='NIGHT_FALLS'?'即将入夜':'即将公布':title}</span><FeedbackButton type="button" onClick={skip}>知道了</FeedbackButton></aside>:null}
     {event&&!quiet ? <section key={event.id} data-timing-version={event.timingVersion??1} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${staticMotion ? " is-reduced" : ""}${frozen?" is-frozen":""}${emptyExecution?" is-empty-execution":""}${showResult&&event.outcome==="DEATH"?" has-death":""}`} role="dialog" aria-label="城镇公开演出" aria-modal={!preview} style={{ "--scene-delay": canSeek?"0ms":`${animationAnchor.current?.delay??0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
+      {event.kind==='EXECUTION'?<ExecutionBloodScreen elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} death={event.outcome==='DEATH'} empty={emptyExecution} resultVisible={showResult} reduced={reduced}/>:null}
       {event.kind==="GAME_OVER"&&showResult&&(event.outcome==="GOOD"||event.outcome==="EVIL")?<VictoryArt winner={event.outcome} elapsedMs={elapsed-experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced} cause={game?.winReason?.includes('圣徒')?'SAINT':game?.winReason?.includes('镇长')?'MAYOR':game?.winReason?.includes('恶魔')?'DEMON':'OTHER'}/>:null}
       {event.kind==='DAWN'||event.kind==='NIGHT_FALLS'?<AtmosphericSky phase={event.kind} elapsedMs={elapsed} durationMs={event.durationMs} reduced={reduced}/>:null}
       <div className="event-stage__grain" aria-hidden="true" /><div className="event-stage__halo" aria-hidden="true" />

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="320" viewBox="0 0 240 320">
+  <title>outsider minimal dark bronze portrait frame</title>
+  <defs><g id="corner" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M13 29C12 17 24 8 41 7C37 20 25 28 13 29ZM13 29L35 12M18 20H25M13 29V34"/>
+      <path d="M13 34C1 22 -1 40 13 34C26 22 27 41 13 34M13 34L8 44M13 34L21 43" stroke-width="2.1"/></g></defs>
+  <g fill="#151913" fill-opacity=".86">
+    <path d="M8 47V17Q8 8 17 8H53Q24 21 8 47Z"/>
+    <path d="M8 47V17Q8 8 17 8H53Q24 21 8 47Z" transform="translate(240 0) scale(-1 1)"/>
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M58 3H18Q3 3 3 18V302Q3 317 18 317H222Q237 317 237 302V18Q237 3 222 3H182" stroke="#51452f" stroke-width="1.2" opacity=".85"/>
+    <path d="M8 91C14 49 65 18 120 9C175 18 226 49 232 91V299Q232 312 219 312H21Q8 312 8 299Z" stroke="#786344" stroke-width="1.35" opacity=".78"/>
+  </g>
+  <g stroke="#786344" stroke-width="1.85" opacity=".86">
+    <use href="#corner" transform="translate(6 6)"/>
+    <use href="#corner" transform="translate(234 6) scale(-1 1)"/>
+  </g>
+</svg>
