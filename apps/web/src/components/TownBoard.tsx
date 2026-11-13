@@ -12,6 +12,7 @@ import {RoomSheet} from './RoomPage.js';
 import {RoomProfileEditor} from './RoomProfileEditor.js';
 import {RoundTable} from './RoundTable.js';
 import {SpyTownBoard} from './SpyTownBoard.js';
+import './town-markers.css';
 
 interface TownBoardProps {
   view:PrivateView;code?:string|undefined;busy:boolean;error?:string|undefined;
@@ -55,6 +56,7 @@ export function TownBoard({view,code,busy,onNominate,onShoot,onRefresh,error:com
   const names=(seat:number)=>playerLabel(seat,game.seats.find(p=>p.seat===seat)?.nickname);
   const master=game.seats.find(p=>p.seat===view.butler?.masterSeat);
   const hasGrimoire=clues.some(entry=>entry.grimoire);
+
   return <section data-private-feedback={night||spyOpen?'true':undefined} data-town-reading={spyOpen?"true":"false"} className="remote-town-board" aria-label={spyOpen?'我的魔典':'公开城镇'}><header>{clue||view.startInfo||master?<FeedbackButton feedbackScope="private" className="town-clue-entry" type="button" onClick={()=>{setSpyOpen(false);openClue();}}>我的线索</FeedbackButton>:null}
     {hasGrimoire?<nav className="town-view-switch" aria-label="城镇视图"><FeedbackButton type="button" aria-pressed={!spyOpen} onClick={()=>{setPicked(undefined);setSpyOpen(false);}}>公开城镇</FeedbackButton><FeedbackButton type="button" aria-pressed={spyOpen} onClick={()=>{setPicked(undefined);setSpySeq(clues.filter(e=>e.grimoire).at(-1)?.seq);setSpyOpen(true);}}>我的魔典</FeedbackButton></nav>:null}</header>
     {privateVisible&&spyOpen?<SpyTownBoard key={spySeq??"latest"} {...(spySeq===undefined?{}:{initialSeq:spySeq})} entries={view.history} onReturn={()=>setSpyOpen(false)}/>:<>
