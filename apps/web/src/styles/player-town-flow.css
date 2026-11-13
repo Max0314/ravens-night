@@ -51,5 +51,5 @@ body:has(.guide-backdrop,[role="dialog"],[role="alertdialog"]) .player-session [
 .player-session>.public-ballot.public-ballot--simultaneous .public-ballot__progress{display:grid!important;gap:2px}
 
 .town-ballot-center .public-ballot__progress>.ballot-countdown{font-size:12px;line-height:1.25}
-.role-confirm-page .rn-role-card.rn-role-card--covered{background:linear-gradient(180deg,#090c0db0,#070a0deb),url('/art/rooms/courtyard-night.webp') center/cover,#080a0b;align-content:stretch;justify-items:stretch;gap:0;}
-.role-confirm-page .rn-role-card--covered .rn-role-card__copy{align-content:end;}
+.town-role-confirm .rn-role-card.rn-role-card--covered{background:linear-gradient(180deg,#090c0db0,#070a0deb),url('/art/rooms/courtyard-night.webp') center/cover,#080a0b;align-content:stretch;justify-items:stretch;gap:0;}
+.town-role-confirm .rn-role-card--covered .rn-role-card__copy{align-content:end;}
