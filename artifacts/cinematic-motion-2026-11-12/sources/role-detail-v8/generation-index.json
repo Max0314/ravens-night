@@ -1,0 +1,114 @@
+{
+  "date": "2026-11-13",
+  "referencePathBase": "repository root; prompts and outputs relative to this directory",
+  "generations": [
+    {
+      "id": "envelope-back",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-back.png",
+      "outputSha256": "6af5508cddfe4046c236a05fdcc30ec224814ded3e05e3d555d3bfca414f7313",
+      "prompt": "prompts/envelope-back.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/sealed-letter.webp",
+          "sha256": "9c24c075b4353a5216d323acafd3afc2d0f674e65f26579ea7985362dd95425c"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-back.png",
+          "sha256": "7356e818431602ebecfe600bcbe85fe25f3799cb08abc5019a5f9f586f3db1af"
+        }
+      ]
+    },
+    {
+      "id": "envelope-front",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-front.png",
+      "outputSha256": "bd52e5463dae3a296d76f396542dca61ed9a3b98e409a42ffd09356f34b8c95c",
+      "prompt": "prompts/envelope-front.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-back.png",
+          "sha256": "6af5508cddfe4046c236a05fdcc30ec224814ded3e05e3d555d3bfca414f7313"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-front.png",
+          "sha256": "5a1c1713250209cb53d4a2e8087f0b838847b745db03147659f5a69d3b216824"
+        },
+        {
+          "file": "apps/web/public/art/effects/v3/sealed-letter.webp",
+          "sha256": "9c24c075b4353a5216d323acafd3afc2d0f674e65f26579ea7985362dd95425c"
+        }
+      ]
+    },
+    {
+      "id": "envelope-flap-front",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-flap-front.png",
+      "outputSha256": "de6967c73b13cd0bdfa314a2c7f153db7e0deffbe3d5842f63e78d10c889af42",
+      "prompt": "prompts/envelope-flap-front.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-front.png",
+          "sha256": "bd52e5463dae3a296d76f396542dca61ed9a3b98e409a42ffd09356f34b8c95c"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-flap-front.png",
+          "sha256": "dd5647b904b5e0d8123cdbdfe2e1bf71e3cc45361b5ba5aaabcd00fd34109d3f"
+        }
+      ]
+    },
+    {
+      "id": "envelope-flap-back",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-flap-back.png",
+      "outputSha256": "adb461134d66df771249fbe34608f016201c7d98e79b6bd4ffd5043583261db3",
+      "prompt": "prompts/envelope-flap-back.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-flap-front.png",
+          "sha256": "de6967c73b13cd0bdfa314a2c7f153db7e0deffbe3d5842f63e78d10c889af42"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-flap-back.png",
+          "sha256": "b208ce22083d73b7021435e89b5dcb98d51f8fb9607992069589da31e34fa29e"
+        }
+      ]
+    },
+    {
+      "id": "envelope-paper",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-paper.png",
+      "outputSha256": "5c796854ce65fdec8133541b55bbb9c1cd0561a3e8827f6766282add0e841636",
+      "prompt": "prompts/envelope-paper.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-back.png",
+          "sha256": "6af5508cddfe4046c236a05fdcc30ec224814ded3e05e3d555d3bfca414f7313"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/envelope-paper.png",
+          "sha256": "df44b2c2c516f5db9e10ac49a8f57e444e5b00cf1c8914a2f8f09b49d9491375"
+        }
+      ]
+    },
+    {
+      "id": "envelope-seal",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/envelope-seal.png",
+      "outputSha256": "0435ad3fc5419a233261eb8cd90842bc0a7d693dae2457de9300fac7d7466bff",
+      "prompt": "prompts/envelope-seal.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/sealed-letter.webp",
+          "sha256": "9c24c075b4353a5216d323acafd3afc2d0f674e65f26579ea7985362dd95425c"
+        }
+      ]
+    }
+  ]
+}
