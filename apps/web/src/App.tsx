@@ -1,6 +1,7 @@
 import {clearInvitationUrl,selectRoomUrl,readInvitedRoomCode,readSession,saveSession,clearSession,clearSessionFor,readStoredRoom,storedRoomSessions,type StoredSession} from './room-session.js';
 export {readSession,saveSession} from './room-session.js';
 import {getRoomSummary,clearPendingJoin,isDefiniteJoinFailure,readPendingRoomSwitch,finishPendingRoomSwitch,retryPendingRoomSwitch,requestRoomSwitchTicket,switchRoom,type RoomSwitchTicket,type JoinResult} from './api.js';
+import {GuidePriorityBoundary,useGuidePriority} from "./components/guide-priority.js";
 import {RoomSheet} from './components/RoomPage.js';
 import {playerLabel} from '@ravens/ui';
 import type {PlayerSelection} from './use-player-profile.js';
@@ -60,9 +61,10 @@ export function App() {
 
 /** The opening clock must not make the home carousel or the book repaint every tick. */
 function RoleSafeGuide({mode,role,room,onClose}:{mode:GuideMode;role:PrivateView['role'];room:RoomView|undefined;onClose:()=>void}){
+  const {suspended}=useGuidePriority();
   const now=useGameClock(room?.game,room),game=room?.game;
   const locked=game?.phase==='ROLE_REVEAL'&&now<(game.presentationUntil??0);
-  return useMemo(()=><GuideOverlay key={locked&&mode==='mine'?'opening-help':'guide'} mode={locked&&mode==='mine'?'tutorial':mode} {...(!locked&&role?{ownRole:role}:{})} onClose={onClose}/>,[locked,mode,role,onClose]);
+  return useMemo(()=><GuideOverlay key={locked&&mode==='mine'?'opening-help':'guide'} suspended={suspended} mode={locked&&mode==='mine'?'tutorial':mode} {...(!locked&&role?{ownRole:role}:{})} onClose={onClose}/>,[locked,mode,role,onClose,suspended]);
 }
 
 function RoomApp() {
@@ -101,6 +103,7 @@ function RoomApp() {
   const getRoom=(...args:Parameters<typeof fetchRoom>)=>guard(fetchRoom(...args));
   const getPrivateView=(...args:Parameters<typeof fetchPrivateView>)=>guard(fetchPrivateView(...args));
   const [guide, setGuide] = useState<GuideMode>();
+  useEffect(()=>{setGuide(undefined);},[room?.roomInstanceId,privateView?.game?.gameId,participantId]);
   const [connectionState, setConnectionState] = useState<ConnectionState>(() => navigator.onLine ? "ONLINE" : "OFFLINE");
   const [backNotice, setBackNotice] = useState(false);
   const guideRef = useRef<GuideMode | undefined>(undefined);
@@ -356,7 +359,7 @@ function RoomApp() {
 
   const withStatus = (page: ReactNode) => <><GameScoreOwner screen={screen} room={room}/>{page}{readPendingRoomSwitch()&&!busy?<p className="session-status" role="status">换房结果待确认<button type="button" onClick={()=>void retrySwitch()}>重试原换房操作</button></p>:null}{entryBlocked?<p className="session-status" role="alert">{error}<button type="button" onClick={()=>void initialize()}>重试房间核对</button></p>:null}{storageNotice?<p className="session-status" role="status">浏览器未保存恢复资料，请勿关闭或刷新此页面。</p>:null}{upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
   const roomTools=!guide&&room&&participantId&&room.game?.phase!=='ROLE_REVEAL'&&privateView?.game?.phase!=='ROLE_REVEAL'?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onHome={returnHome} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={setGuide}/>:null;
-  const withGuide = (page: ReactNode) => withStatus(<>{page}{screen!=='HOME'?roomTools:null}{guide ? <div className={`guide-host${screen==="GAME"&&privateView?.game?.phase==="VOTING"?" has-ballot-notice":screen==="GAME"&&hasPrivateTownTask(privateView)?" has-private-action-notice":""}`}><RoleSafeGuide mode={guide} role={privateView?.role} room={room} onClose={() => setGuide(undefined)}/></div> : null}</>);
+  const withGuide = (page: ReactNode) => withStatus(<GuidePriorityBoundary key={`${screen==='GAME'?'game':'entry'}:${room?.roomInstanceId}:${room?.game?.gameId}:${participantId}`} enabled={screen==='GAME'} mode={guide} game={privateView?.game??room?.game} room={room} onClose={()=>setGuide(undefined)}>{page}{screen!=='HOME'?roomTools:null}{guide ? <div className={`guide-host${screen==="GAME"&&privateView?.game?.phase==="VOTING"?" has-ballot-notice":screen==="GAME"&&hasPrivateTownTask(privateView)?" has-private-action-notice":""}`}><RoleSafeGuide mode={guide} role={privateView?.role} room={room} onClose={() => setGuide(undefined)}/></div> : null}</GuidePriorityBoundary>);
 
   if (screen === "LOADING") return withStatus(<main className="app-loading" aria-label="正在进入钟楼"><span>☾</span>{connectionState === "OFFLINE" ? <button type="button" onClick={() => void initialize()}>重新连接钟楼</button> : null}</main>);
   if (screen === "LOGIN") return withStatus(<Login onSubmit={submitLogin} busy={busy} {...(error ? { error } : {})} />);
