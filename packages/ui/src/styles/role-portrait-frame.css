@@ -3,6 +3,3 @@
 @supports(width:1cqw) and (height:1cqh) and (container-type:size){.rn-portrait-frame__canvas{width:min(100cqw,75cqh);height:min(100cqh,133.333333cqw)}}
 .rn-portrait-frame__canvas>.rn-portrait-frame__image{position:absolute;left:2%;top:2%;width:96%;height:96%;display:block;object-fit:cover;pointer-events:none}
 .rn-portrait-frame__canvas>.rn-portrait-frame__ornament{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:fill;pointer-events:none;user-select:none}
-.rn-role-card.rn-role-card--framed{border-color:transparent;box-shadow:var(--rn-shadow)}
-.rn-role-card--framed::after{display:none}
-.rn-role-card--framed .rn-role-card__fade{display:none}
