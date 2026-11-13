@@ -2,7 +2,7 @@ import {FeedbackButton} from '@ravens/ui';
 import {useEffect,useRef,useState,type CSSProperties} from 'react';
 import {beginnerRoles} from '@ravens/content';
 import type {PrivateSceneDescriptor,PresentationDisposition} from '@ravens/contracts';
-import {playerLabel} from '@ravens/ui';
+import {playerLabel,formatPlayerText} from '@ravens/ui';
 import {acknowledgePresentations,ApiError,type PrivateView} from '../api.js';
 import {PrivateSceneQueue,sceneDuration,type QueuedScene} from '../presentations/private-scenes.js';
 import {scheduleRoleCue,cancelEventAudio,prepareRoleAudio} from './experience-audio.js';
@@ -11,9 +11,12 @@ import {butlerBowTiming} from './ButlerBow.js';
 import {DemonSlashes,ClawDecal,preparePrivateArt} from './PremiumArt.js';
 import {Avatar} from './Avatar.js';
 import {roleArt} from '../role-art.js';
+import {cinematicTiming} from './cinematic-timing.js';
 import type {SceneImprint} from './LayeredSceneArt.js';
 import {privateAssetUrl} from './private-art-assets.js';
 import '../styles/private-scenes.css';
+// New contact fields are supplied by the shared choreography; old bundles omit avatar hits.
+const demonAvatarTiming=cinematicTiming.demon as typeof cinematicTiming.demon & Partial<Record<'avatarLeft'|'avatarRight',number>>;
 const roleName=(id:string)=>beginnerRoles.find(r=>r.id===id)?.name??'角色';
 const reduced=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -56,7 +59,7 @@ export function PrivateSceneContent({scene,view,elapsedMs,reducedMotion=false,re
  const shown=scene.shown,revealed=elapsedMs>=(shown.type==='DIVINATION'||shown.type==='GRIMOIRE'?2200:1900),submitted=shown.type==='TARGET_SUBMITTED',name=roleName(scene.themeRoleId),art=roleArt(scene.themeRoleId);
  const targets=submitted||revealed?('seats'in shown?shown.seats:shown.type==='SHOWN_ROLE'?[shown.seat]:[]):[];
  const person=(seat:number)=>view.game?.seats.find(p=>p.seat===seat);
- const persons=(seats:readonly number[])=>seats.map(seat=>{const p=person(seat);return <div className="private-scene-person" key={seat}><Avatar id={p?.id??String(seat)} name={p?.nickname??`${seat}号`} url={p?.avatar}/>{scene.kind==='ACTION_SUBMITTED'&&scene.themeRoleId==='imp'?(['left','right'] as const).map((side,i)=>elapsedMs>=1450+i*300&&(!readyAssets||readyAssets.has(privateAssetUrl('claw-avatar-'+side)))?<ClawDecal key={side} variant={`avatar-${side}`}/>:null):null}<span>{playerLabel(seat,p?.nickname)}</span></div>;});
+ const persons=(seats:readonly number[])=>seats.map(seat=>{const p=person(seat);return <div className="private-scene-person" key={seat}><Avatar id={p?.id??String(seat)} name={p?.nickname??`${seat}号`} url={p?.avatar}/>{scene.kind==='ACTION_SUBMITTED'&&scene.themeRoleId==='imp'?(['left','right'] as const).map(side=>elapsedMs>=(demonAvatarTiming[side==='left'?'avatarLeft':'avatarRight']??Infinity)&&(!readyAssets||readyAssets.has(privateAssetUrl('claw-avatar-'+side)))?<ClawDecal key={side} variant={`avatar-${side}`}/>:null):null}<span>{playerLabel(seat,p?.nickname)}</span></div>;});
  let result='';
  switch(shown.type){
   case'IDENTITY':result=shown.summary;break;
@@ -74,9 +77,9 @@ export function PrivateSceneContent({scene,view,elapsedMs,reducedMotion=false,re
  // No semantic information or candidate/avatar node exists before its reveal gate.
  const grimoire=revealed&&shown.type==='GRIMOIRE'?view.history.find(e=>e.seq===shown.historySeq)?.grimoire:undefined;
  const info=revealed&&shown.type==='EVIL_START'&&view.startInfo?.infoId===shown.infoId?view.startInfo:undefined;
- const imprint:SceneImprint|undefined=scene.kind!=='IDENTITY'&&(revealed||submitted)?{label:result,...(shown.type==='COUNT'?{value:String(shown.value)}:shown.type==='DIVINATION'?{value:shown.value}:{}),marks:grimoire?grimoire.entries.map(p=>({label:playerLabel(p.seat,p.nickname),avatar:p.avatar,detail:p.roleName})):info?info.team.map(p=>({label:playerLabel(p.seat,p.nickname),avatar:p.avatar,detail:p.kind==='DEMON'?'恶魔':'爪牙'})):targets.map(seat=>{const p=person(seat);return{label:playerLabel(seat,p?.nickname),avatar:p?.avatar,...(shown.type==='CANDIDATES'||shown.type==='SHOWN_ROLE'?{detail:roleName(shown.roleId)}:{})};}),...(info&&elapsedMs>=2400?{bluffs:info.bluffs.map(r=>r.name)}:{})}:undefined;
+ const imprint:SceneImprint|undefined=scene.kind!=='IDENTITY'&&(revealed||submitted)?{label:formatPlayerText(result),...(shown.type==='COUNT'?{value:String(shown.value)}:shown.type==='DIVINATION'?{value:shown.value}:{}),marks:grimoire?grimoire.entries.map(p=>({label:playerLabel(p.seat,p.nickname),avatar:p.avatar,detail:p.roleName})):info?info.team.map(p=>({label:playerLabel(p.seat,p.nickname),avatar:p.avatar,detail:p.kind==='DEMON'?'恶魔':'爪牙'})):targets.map(seat=>{const p=person(seat);return{label:playerLabel(seat,p?.nickname),avatar:p?.avatar,...(shown.type==='CANDIDATES'||shown.type==='SHOWN_ROLE'?{detail:roleName(shown.roleId)}:{})};}),...(info&&elapsedMs>=2400?{bluffs:info.bluffs.map(r=>r.name)}:{})}:undefined;
  const slashes=scene.kind==='ACTION_SUBMITTED'&&scene.themeRoleId==='imp'&&(!readyAssets||['claw-screen-left','claw-screen-right'].every(n=>readyAssets.has(privateAssetUrl(n))));
  return <div data-kind={scene.kind} className={`private-scene-content private-theme--${scene.themeRoleId}${reducedMotion?' is-reduced':''}`} style={{'--private-duration':`${sceneDuration(scene,butlerBowTiming.durationMs)}ms`,'--scene-duration':`${sceneDuration(scene,butlerBowTiming.durationMs)}ms`} as CSSProperties}>
  {slashes?<DemonSlashes elapsedMs={elapsedMs} reduced={reducedMotion}/>:null}{scene.themeRoleId!=='butler'?<img className="private-scene-portrait" src={art.portraitUrl} alt=""/>:null}<div className="private-scene-art" aria-hidden="true"><RoleSceneArt scene={scene} elapsedMs={elapsedMs} reducedMotion={reducedMotion} imprint={imprint} readyAssets={readyAssets}/></div><h2>{scene.kind==='OLD_DEMON_CONTINUATION'?'余焰未熄':scene.kind==='ROLE_CHANGE'?'身份更替':name}</h2>
- {revealed||submitted?<div className="private-scene-result"><div className="private-scene-targets">{persons(targets)}</div><p>{result}</p>{grimoire?<div className="private-grimoire" aria-label="当夜获得的魔典">{grimoire.entries.map(p=><div key={p.seat}><Avatar id={String(p.seat)} name={p.nickname} url={p.avatar}/><strong>{playerLabel(p.seat,p.nickname)}</strong><span>{p.roleName} · {p.alive?'存活':'死亡'}</span><small>{p.reminders.join(' · ')}</small></div>)}</div>:null}{info?<div className="private-start-cards">{info.team.map(p=><div key={p.seat}><Avatar id={String(p.seat)} name={p.nickname} url={p.avatar}/><span>{playerLabel(p.seat,p.nickname)} · {p.kind==='DEMON'?'恶魔':'爪牙'}</span></div>)}{elapsedMs>=2400&&info.bluffs.length?<p>可用伪装：{info.bluffs.map(r=>r.name).join('、')}</p>:null}</div>:null}</div>:<div className="private-scene-result private-scene-result--pending" aria-hidden="true"/>}</div>;
+ {revealed||submitted?<div className="private-scene-result"><div className="private-scene-targets">{persons(targets)}</div><p>{formatPlayerText(result)}</p>{grimoire?<div className="private-grimoire" aria-label="当夜获得的魔典">{grimoire.entries.map(p=><div key={p.seat}><Avatar id={String(p.seat)} name={p.nickname} url={p.avatar}/><strong>{playerLabel(p.seat,p.nickname)}</strong><span>{p.roleName} · {p.alive?'存活':'死亡'}</span><small>{formatPlayerText(p.reminders.join(' · '))}</small></div>)}</div>:null}{info?<div className="private-start-cards">{info.team.map(p=><div key={p.seat}><Avatar id={String(p.seat)} name={p.nickname} url={p.avatar}/><span>{playerLabel(p.seat,p.nickname)} · {p.kind==='DEMON'?'恶魔':'爪牙'}</span></div>)}{elapsedMs>=2400&&info.bluffs.length?<p>可用伪装：{info.bluffs.map(r=>r.name).join('、')}</p>:null}</div>:null}</div>:<div className="private-scene-result private-scene-result--pending" aria-hidden="true"/>}</div>;
 }

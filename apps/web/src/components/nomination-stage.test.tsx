@@ -16,7 +16,7 @@ function fixture():PrivateView{
 test('notice is explicit, public, and keeps counts and own hand visible when collapsed',()=>{
   const view=fixture(),vote=vi.fn(),details=vi.fn(),props={view,busy:false,onVote:vote,onDetails:details};
   const ui=render(<NominationNotice {...props} active={false}/>);expect(screen.queryByLabelText('提名提醒')).not.toBeInTheDocument();
-  ui.rerender(<NominationNotice {...props} active/>);const notice=screen.getByLabelText('提名提醒');expect(notice).toHaveTextContent('【玩家2-玩家2】');expect(notice).toHaveTextContent('【玩家3-玩家3】');expect(notice).toHaveTextContent('4/7');expect(notice).toHaveTextContent('你未举手');
+  ui.rerender(<NominationNotice {...props} active/>);const notice=screen.getByLabelText('提名提醒');expect(notice).toHaveTextContent('[玩家2]');expect(notice).toHaveTextContent('[玩家3]');expect(notice).toHaveTextContent('4/7');expect(notice).toHaveTextContent('你未举手');
   fireEvent.click(screen.getByRole('button',{name:/查看提名/}));expect(details).toHaveBeenCalledOnce();fireEvent.click(screen.getByRole('button',{name:'收起提名提醒'}));expect(notice).toHaveTextContent('4/7');expect(notice).toHaveTextContent('你未举手');expect(screen.queryByRole('button',{name:'举手'})).not.toBeInTheDocument();expect(document.documentElement.style.getPropertyValue('--nomination-notice-height')).toMatch(/px$/);
 });
 test('ghost vote is confirmed and confirmation cannot cross a ballot or hidden handbook',()=>{
@@ -32,9 +32,9 @@ test('authoritative voting denial and counted state disable controls without pri
   expect(screen.getByRole('button',{name:'举手'})).toBeDisabled();expect(screen.getByRole('status')).toHaveTextContent('已锁票：赞同');expect(screen.getByLabelText('提名提醒')).not.toHaveTextContent('管家');expect(screen.getByLabelText('提名提醒')).not.toHaveTextContent('主人');
 });
 test('gallows separates a current nomination from the execution candidate and never declares death',()=>{
-  const view=fixture(),game=view.game!,ui=render(<Gallows game={game} room={view.room}/>);const board=screen.getByLabelText('提名与处决席');expect(board).toHaveTextContent('当前提名 · 辩护中');expect(board).toHaveTextContent('【玩家3-玩家3】');expect(board).toHaveTextContent('4/7');expect(board).not.toHaveTextContent('死亡');expect(board).not.toHaveTextContent('当前处决候选');
-  ui.rerender(<Gallows game={{...game,onBlock:{seat:4,votes:5}}} room={view.room}/>);expect(board).toHaveTextContent('当前处决候选：【玩家4-玩家4】');
-  const next={...game,phase:'NOMINATION' as const,onBlock:{seat:4,votes:5}};delete next.nomination;ui.rerender(<Gallows game={next} room={view.room}/>);expect(board).toHaveTextContent('当前处决候选');expect(board).toHaveTextContent('【玩家4-玩家4】');expect(board).toHaveTextContent('5');
+  const view=fixture(),game=view.game!,ui=render(<Gallows game={game} room={view.room}/>);const board=screen.getByLabelText('提名与处决席');expect(board).toHaveTextContent('当前提名 · 辩护中');expect(board).toHaveTextContent('[玩家3]');expect(board).toHaveTextContent('4/7');expect(board).not.toHaveTextContent('死亡');expect(board).not.toHaveTextContent('当前处决候选');
+  ui.rerender(<Gallows game={{...game,onBlock:{seat:4,votes:5}}} room={view.room}/>);expect(board).toHaveTextContent('当前处决候选：[玩家4]');
+  const next={...game,phase:'NOMINATION' as const,onBlock:{seat:4,votes:5}};delete next.nomination;ui.rerender(<Gallows game={next} room={view.room}/>);expect(board).toHaveTextContent('当前处决候选');expect(board).toHaveTextContent('[玩家4]');expect(board).toHaveTextContent('5');
 });
 test('history shows only published results today and distinguishes tie from failure to reach threshold',()=>{
   const view=fixture(),game=view.game!;game.events=[{seq:1,id:'old',kind:'VOTE_RESULT',day:0,targetSeat:2,votes:1,threshold:3,message:'old',startsAt:0},{seq:2,id:'tied',kind:'VOTE_RESULT',day:1,targetSeat:3,votes:4,threshold:3,outcome:'TIED',message:'tie',startsAt:0},{seq:3,id:'low',kind:'VOTE_RESULT',day:1,targetSeat:4,votes:2,threshold:3,outcome:'NONE',message:'low',startsAt:0},{seq:4,id:'future',kind:'VOTE_RESULT',day:1,targetSeat:5,votes:7,threshold:3,outcome:'ON_BLOCK',message:'future',startsAt:999999}];
@@ -77,6 +77,6 @@ test('gallows uses a rope for a living candidate and only the public death flag 
 test('reading sheet exposes the public notice and its shot confirmation keeps and restores focus',()=>{
  const view=fixture();view.canClaimSlayer=true;view.dayAbilityTargets=[2,3];const shoot=vi.fn();render(<><RoomSheet title="阅读线索" onClose={()=>{}}><button>线索原位置</button></RoomSheet><NominationNotice active view={view} busy={false} onVote={vi.fn()} onDetails={vi.fn()} onShoot={shoot}/></>);
  const start=screen.getByRole('button',{name:'公开宣称枪击'});start.focus();fireEvent.keyDown(document,{key:'Tab',shiftKey:true});expect(document.activeElement?.closest('.nomination-notice')).not.toBeNull();fireEvent.click(start);
- const sheet=screen.getByRole('alertdialog',{name:'公开宣称枪击'});expect(sheet).toContainElement(document.activeElement as HTMLElement);fireEvent.click(screen.getByRole('button',{name:'【玩家3-玩家3】'}));fireEvent.click(screen.getByRole('button',{name:'取消'}));expect(start).toHaveFocus();expect(shoot).not.toHaveBeenCalled();expect(screen.getByRole('dialog',{name:'阅读线索'})).toBeVisible();
- fireEvent.click(start);fireEvent.click(screen.getByRole('button',{name:'【玩家2-玩家2】'}));fireEvent.click(screen.getByRole('button',{name:'确认向所选玩家开枪'}));expect(shoot).toHaveBeenCalledExactlyOnceWith(2);
+ const sheet=screen.getByRole('alertdialog',{name:'公开宣称枪击'});expect(sheet).toContainElement(document.activeElement as HTMLElement);fireEvent.click(screen.getByRole('button',{name:'[玩家3]'}));fireEvent.click(screen.getByRole('button',{name:'取消'}));expect(start).toHaveFocus();expect(shoot).not.toHaveBeenCalled();expect(screen.getByRole('dialog',{name:'阅读线索'})).toBeVisible();
+ fireEvent.click(start);fireEvent.click(screen.getByRole('button',{name:'[玩家2]'}));fireEvent.click(screen.getByRole('button',{name:'确认向所选玩家开枪'}));expect(shoot).toHaveBeenCalledExactlyOnceWith(2);
 });

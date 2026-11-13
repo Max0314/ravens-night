@@ -9,7 +9,7 @@ vi.mock('./api.js',async original=>({...await original<object>(),inviteWhisper:v
 afterEach(()=>{cleanup();vi.clearAllMocks();window.history.replaceState({},'','/');});
 const handlers={busy:false,canRestart:false,onBack:vi.fn(),onConfirmRole:vi.fn(),onConfirmStartInfo:vi.fn(),onSubmitAction:vi.fn(),onNominate:vi.fn(),onCancelNomination:vi.fn(),onVote:vi.fn(),onReady:vi.fn(),onUseAbility:vi.fn(),onRestart:vi.fn(),onOpenGuide:vi.fn()};
 function fixture(roleId='poisoner'):PrivateView{return {state:'RUNNING',roomInstanceId:'room',contextId:'night',participant:{id:'a',nickname:'甲',seat:1},role:{roleId,name:'我的角色',type:'MINION',alignment:'EVIL',summary:'能力',beginnerTip:'建议'},history:[],messages:[],social:{invitations:[],relations:[]},action:{kind:'SELECT_ONE',minTargets:1,maxTargets:1,legalSeats:[1,2,3],prompt:'选择今晚目标'},game:{phase:'OTHER_NIGHT',gameId:'g',contextId:'night',day:1,aliveCount:3,readyCount:0,events:[],seats:[{id:'a',seat:1,nickname:'甲',alive:true,connected:true,ghostVoteAvailable:true},{id:'b',seat:2,nickname:'乙',alive:true,connected:true,ghostVoteAvailable:true},{id:'c',seat:3,nickname:'丙',alive:false,connected:true,ghostVoteAvailable:true}]}};}
-function pick(seat:number,label:string){fireEvent.click(screen.getByRole('button',{name:new RegExp(`^【玩家${seat}-.*(存活|已死亡)`)}));fireEvent.click(screen.getByRole('button',{name:label}));}
+function pick(seat:number,label:string){fireEvent.click(document.querySelector<HTMLElement>(`[data-seat-number="${seat}"]>button`)!);fireEvent.click(screen.getByRole('button',{name:label}));}
 
 test.each([['poisoner','下毒',1],['imp','袭击',1],['monk','保护',2],['butler','选择主人',3],['ravenkeeper','查验',3]])('town wheel carries %s authorised targets without alive-state assumptions', (role,label,target)=>{
   const view=fixture(String(role));if(role==='butler'||role==='monk')view.action!.legalSeats=[2,3];if(role==='ravenkeeper')view.game!.seats[0]!.alive=false;
@@ -20,12 +20,12 @@ test.each([['poisoner','下毒',1],['imp','袭击',1],['monk','保护',2],['butl
 test('two-target choice is distinct, editable, rejects illegal self and resets on night context',()=>{
   const view=fixture('fortune_teller');view.action={kind:'SELECT_TWO',minTargets:2,maxTargets:2,legalSeats:[2,3],prompt:'选择两人'};
   const ui=render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);
-  fireEvent.click(screen.getByRole('button',{name:/^【玩家1-甲】/}));expect(screen.getByRole('button',{name:'占卜'})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'关闭玩家操作'}));
+  fireEvent.click(screen.getByRole('button',{name:/^\[甲\]/}));expect(screen.getByRole('button',{name:'占卜'})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'关闭玩家操作'}));
   pick(2,'占卜');expect(screen.getByRole('button',{name:'确认选择（1/2）'})).toBeDisabled();pick(2,'取消选择');expect(screen.getByRole('button',{name:'确认选择（0/2）'})).toBeDisabled();pick(2,'占卜');pick(3,'占卜');fireEvent.click(screen.getByRole('button',{name:'确认选择（2/2）'}));expect(handlers.onSubmitAction).toHaveBeenCalledExactlyOnceWith([2,3]);
   ui.rerender(<PlayerGame {...handlers} roomCode="ABCDEF" view={{...view,contextId:'new-night',game:{...view.game!,contextId:'new-night',day:2}}}/>);expect(screen.getByRole('button',{name:'确认选择（0/2）'})).toBeDisabled();
 });
 test('private cover removes a night wheel and clears target while preserving record selection',()=>{
- const view=fixture();render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);pick(2,'下毒');fireEvent.click(screen.getByRole('button',{name:/^【玩家3-丙】/}));expect(screen.getByRole('button',{name:'下毒'})).toBeVisible();fireEvent(window,new Event('ravens:cover-private'));expect(screen.queryByRole('dialog',{name:/操作/})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'显示私密内容'}));expect(screen.getByRole('button',{name:'确认选择（0/1）'})).toBeDisabled();
+ const view=fixture();render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);pick(2,'下毒');fireEvent.click(screen.getByRole('button',{name:/^\[丙\]/}));expect(screen.getByRole('button',{name:'下毒'})).toBeVisible();fireEvent(window,new Event('ravens:cover-private'));expect(screen.queryByRole('dialog',{name:/操作/})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'显示私密内容'}));expect(screen.getByRole('button',{name:'确认选择（0/1）'})).toBeDisabled();
  fireEvent.click(screen.getByRole('button',{name:'记录'}));fireEvent(window,new Event('ravens:cover-private'));fireEvent.click(screen.getByRole('button',{name:'显示私密内容'}));expect(screen.getByRole('button',{name:'记录'})).toHaveAttribute('aria-pressed','true');
 });
 test('acknowledged first-night info does not re-open over a returned action',()=>{
@@ -39,12 +39,12 @@ test('identity and unacknowledged evil information stay actionable inside town',
 });
 test('public wheel retains self nomination and self public slayer declaration without role gating',()=>{
  const view=fixture();view.game!.phase='DAY_DISCUSSION';view.canNominate=true;view.canClaimSlayer=true;view.nominationTargets=[1,2,3];view.dayAbilityTargets=[1,2,3];delete view.action;
- const ui=render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);pick(1,'提名');fireEvent.click(screen.getByRole('button',{name:'确认提名 1号'}));expect(handlers.onNominate).toHaveBeenCalledWith(1);
+ const ui=render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);pick(1,'提名');fireEvent.click(screen.getByRole('button',{name:'确认提名 [甲]'}));expect(handlers.onNominate).toHaveBeenCalledWith(1);
  ui.rerender(<PlayerGame {...handlers} roomCode="ABCDEF" view={{...view,contextId:'next',game:{...view.game!,contextId:'next'}}}/>);pick(1,'开枪');fireEvent.click(screen.getByRole('button',{name:'确认公开开枪'}));expect(handlers.onUseAbility).toHaveBeenCalledWith(1);
 });
 test('all-table relationships are read-only for outsiders; own invitation opens accept and reject',async()=>{
  const view=fixture();view.game!.phase='DAY_DISCUSSION';delete view.action;view.social={invitations:[],relations:[{fromSeat:2,toSeat:3,status:'ACTIVE'}]};
- const ui=render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);const relations=screen.getByLabelText('全桌私聊关系');expect(within(relations).getByText('私聊中')).toBeVisible();expect(within(relations).queryByRole('button')).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'【玩家2-乙】 存活'}));expect(screen.getByRole('button',{name:'私聊'})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'关闭玩家操作'}));
+ const ui=render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);const relations=screen.getByLabelText('全桌私聊关系');expect(within(relations).getByText('私聊中')).toBeVisible();expect(within(relations).queryByRole('button')).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'[乙] 存活'}));expect(screen.getByRole('button',{name:'私聊'})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'关闭玩家操作'}));
  const invited={...view,social:{relations:[{fromSeat:2,toSeat:1,status:'PENDING' as const}],invitations:[{id:'private-id',fromSeat:2,toSeat:1,status:'PENDING',createdAt:1}]}};ui.rerender(<PlayerGame {...handlers} roomCode="ABCDEF" view={invited}/>);fireEvent.click(within(screen.getByLabelText('全桌私聊关系')).getByRole('button'));fireEvent.click(screen.getByRole('button',{name:'接受邀请'}));await waitFor(()=>expect(respondWhisper).toHaveBeenCalledWith('ABCDEF','private-id',true));
 });
 test('handbook return is keyboard reachable and private notice vanishes with privacy cover',()=>{
@@ -54,9 +54,9 @@ test('handbook return is keyboard reachable and private notice vanishes with pri
 
 test('private grimoire lives in town, keeps historical death private and closes with privacy cover',()=>{
  const view=fixture('spy');delete view.action;view.game!.phase='DAY_DISCUSSION';view.history=[{seq:1,phase:'FIRST_NIGHT',day:0,kind:'INFORMATION',text:'旧文本魔典',grimoire:{entries:[{seat:2,nickname:'当夜乙',roleName:'小恶魔',alive:false,reminders:['死亡','中毒','红鲱鱼']}]}}];
- const ui=render(<PlayerGame {...handlers} view={view}/>);expect(screen.getByRole('button',{name:'【玩家2-乙】 存活'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'我的魔典'}));expect(screen.queryByRole('button',{name:'【玩家2-乙】 存活'})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:/【玩家2-当夜乙】，魔典所示小恶魔/}));expect(screen.getByText('当夜已死亡')).toBeVisible();
+ const ui=render(<PlayerGame {...handlers} view={view}/>);expect(screen.getByRole('button',{name:'[乙] 存活'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'我的魔典'}));expect(screen.queryByRole('button',{name:'[乙] 存活'})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:/\[当夜乙\]，魔典所示小恶魔/}));expect(screen.getByText('当夜已死亡')).toBeVisible();
  ui.rerender(<PlayerGame {...handlers} view={{...view,contextId:'changed',game:{...view.game!,contextId:'changed',phase:'NOMINATION'}}}/>);expect(screen.getByLabelText('我的魔典圆桌')).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:'公开城镇'}));expect(screen.getByRole('button',{name:'【玩家2-乙】 存活'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'我的魔典'}));fireEvent(window,new Event('ravens:cover-private'));expect(screen.queryByLabelText('我的魔典圆桌')).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'显示私密内容'}));expect(screen.getByRole('button',{name:'公开城镇'})).toHaveAttribute('aria-pressed','true');
+ fireEvent.click(screen.getByRole('button',{name:'公开城镇'}));expect(screen.getByRole('button',{name:'[乙] 存活'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'我的魔典'}));fireEvent(window,new Event('ravens:cover-private'));expect(screen.queryByLabelText('我的魔典圆桌')).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'显示私密内容'}));expect(screen.getByRole('button',{name:'公开城镇'})).toHaveAttribute('aria-pressed','true');
 });
 test('legacy text-only grimoire remains readable in town and has no fabricated map',()=>{
  const view=fixture('spy');delete view.action;view.history=[{seq:1,phase:'FIRST_NIGHT',day:0,kind:'INFORMATION',text:'旧魔典原始记录'}];render(<PlayerGame {...handlers} view={view}/>);fireEvent.click(screen.getByRole('button',{name:'我的线索'}));expect(screen.getByText('旧魔典原始记录')).toBeVisible();expect(screen.queryByRole('button',{name:'我的魔典'})).not.toBeInTheDocument();
@@ -67,7 +67,7 @@ test('handbook reserves a private notice only while a task is actually pending',
 
 test('opening an earlier clue selects that same night in the town grimoire',()=>{
  const view=fixture('spy');delete view.action;view.history=[{seq:1,phase:'FIRST_NIGHT',day:0,kind:'INFORMATION',text:'旧夜',grimoire:{entries:[{seat:2,nickname:'旧乙',roleName:'僧侣',alive:true,reminders:['存活']}]}},{seq:2,phase:'OTHER_NIGHT',day:1,kind:'INFORMATION',text:'新夜',grimoire:{entries:[{seat:2,nickname:'新乙',roleName:'小恶魔',alive:false,reminders:['死亡']}]}}];
- render(<PlayerGame {...handlers} view={view}/>);fireEvent.click(screen.getByRole('button',{name:'我的线索'}));fireEvent.click(screen.getByRole('button',{name:'上一条线索'}));fireEvent.click(screen.getByRole('button',{name:'查看魔典'}));expect(screen.getByText('首夜 · 魔典')).toBeVisible();expect(screen.getByRole('button',{name:/【玩家2-旧乙】，魔典所示僧侣/})).toBeVisible();expect(screen.queryByRole('button',{name:/新乙/})).not.toBeInTheDocument();
+ render(<PlayerGame {...handlers} view={view}/>);fireEvent.click(screen.getByRole('button',{name:'我的线索'}));fireEvent.click(screen.getByRole('button',{name:'上一条线索'}));fireEvent.click(screen.getByRole('button',{name:'查看魔典'}));expect(screen.getByText('首夜 · 魔典')).toBeVisible();expect(screen.getByRole('button',{name:/\[旧乙\]，魔典所示僧侣/})).toBeVisible();expect(screen.queryByRole('button',{name:/新乙/})).not.toBeInTheDocument();
 });
 
 
@@ -78,7 +78,7 @@ test('role advice is a local centered dialog and returns to identity confirmatio
 
 test('only received team identities and equal clue candidates are marked beside players',()=>{
  const view=fixture('imp');view.game!.phase='DAY_DISCUSSION';delete view.action;view.startInfo={infoId:'team',gameId:'g',team:[{seat:2,nickname:'乙',kind:'MINION'}],bluffs:[],acknowledged:true,canAcknowledge:false};view.history=[{seq:1,phase:'FIRST_NIGHT',day:0,kind:'INFORMATION',text:'甲和丙之一是镇民',targetSeats:[1,3]}];render(<PlayerGame {...handlers} view={view}/>);
- expect(screen.getByRole('button',{name:'我的线索：爪牙'})).toBeVisible();expect(screen.getAllByRole('button',{name:'我的线索：线索'})).toHaveLength(2);fireEvent.click(screen.getByRole('button',{name:'我的线索：爪牙'}));expect(screen.getByRole('dialog',{name:'我的圆桌线索'})).toBeVisible();expect(screen.getByText('【玩家2-乙】 · 爪牙')).toBeVisible();fireEvent(window,new Event('ravens:cover-private'));expect(screen.queryByRole('dialog',{name:'我的圆桌线索'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'我的线索：爪牙'})).not.toBeInTheDocument();
+ expect(screen.getByRole('button',{name:'我的线索：爪牙'})).toBeVisible();expect(screen.getAllByRole('button',{name:'我的线索：线索'})).toHaveLength(2);fireEvent.click(screen.getByRole('button',{name:'我的线索：爪牙'}));expect(screen.getByRole('dialog',{name:'我的圆桌线索'})).toBeVisible();expect(screen.getByText('[乙] · 爪牙')).toBeVisible();fireEvent(window,new Event('ravens:cover-private'));expect(screen.queryByRole('dialog',{name:'我的圆桌线索'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'我的线索：爪牙'})).not.toBeInTheDocument();
 });
 
 test('voting management remains available in a sheet and closes when its ballot context changes',()=>{
@@ -88,7 +88,7 @@ test('voting management remains available in a sheet and closes when its ballot 
 
 test('butler reading stays open across night and offers an explicit return to its new action',async()=>{
  const view=fixture('butler');delete view.action;view.game!.phase='DAY_DISCUSSION';view.butler={masterSeat:2,masterRaised:false};
- const ui=render(<PlayerGame {...handlers} view={view}/>);fireEvent.click(screen.getByRole('button',{name:'我的线索：主人'}));const detail=screen.getByRole('dialog',{name:'我的圆桌线索'});expect(within(detail).getByText('本轮主人')).toBeVisible();expect(within(detail).getByText('【玩家2-乙】')).toBeVisible();expect(within(detail).getByText(/本轮已被计入赞成票/)).toBeVisible();
+ const ui=render(<PlayerGame {...handlers} view={view}/>);fireEvent.click(screen.getByRole('button',{name:'我的线索：主人'}));const detail=screen.getByRole('dialog',{name:'我的圆桌线索'});expect(within(detail).getByText('本轮主人')).toBeVisible();expect(within(detail).getByText('[乙]')).toBeVisible();expect(within(detail).getByText(/本轮已被计入赞成票/)).toBeVisible();
  const night=fixture('butler');night.contextId='next-action';night.butler=view.butler;ui.rerender(<PlayerGame {...handlers} view={night}/>);expect(screen.getByRole('dialog',{name:'我的圆桌线索'})).toBeVisible();fireEvent.click(await screen.findByRole('button',{name:'返回城镇'}));expect(screen.queryByRole('dialog',{name:'我的圆桌线索'})).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'确认选择（0/1）'})).toBeVisible();
 });
 
@@ -98,12 +98,12 @@ test('private action records show only their received target portraits',()=>{
 
 test('candidate group uses the received possible role on both avatars and preserves the clue being read',()=>{
  const view=fixture('washerwoman');delete view.action;view.game!.phase='DAY_DISCUSSION';
- view.history=[{seq:1,phase:'FIRST_NIGHT',day:0,kind:'INFORMATION',text:'【玩家1-甲】与【玩家3-丙】中，有一位是镇长。',targetSeats:[1,3],candidateGroup:{kind:'ONE_OF',roleName:'镇长',seats:[1,3]}}];
+ view.history=[{seq:1,phase:'FIRST_NIGHT',day:0,kind:'INFORMATION',text:'[甲]与[丙]中，有一位是镇长。',targetSeats:[1,3],candidateGroup:{kind:'ONE_OF',roleName:'镇长',seats:[1,3]}}];
  const ui=render(<PlayerGame {...handlers} view={view}/>);
  const marks=screen.getAllByRole('button',{name:'我的线索：① 可能是镇长'});expect(marks).toHaveLength(2);fireEvent.click(marks[0]!);
  const sheet=screen.getByRole('dialog',{name:'我的圆桌线索'});
  ui.rerender(<PlayerGame {...handlers} view={{...view,history:[...view.history,{seq:2,phase:'OTHER_NIGHT',day:1,kind:'INFORMATION',text:'下一夜的新线索'}]}}/>);
- expect(within(sheet).getByText('【玩家1-甲】与【玩家3-丙】中，有一位是镇长。')).toBeVisible();expect(within(sheet).queryByText('下一夜的新线索')).not.toBeInTheDocument();
+ expect(within(sheet).getByText('[甲]与[丙]中，有一位是镇长。')).toBeVisible();expect(within(sheet).queryByText('下一夜的新线索')).not.toBeInTheDocument();
  fireEvent(window,new Event('ravens:cover-private'));expect(screen.queryByRole('button',{name:/可能是镇长/})).not.toBeInTheDocument();
 });
 

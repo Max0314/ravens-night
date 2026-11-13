@@ -10,3 +10,14 @@
 .town-ballot-center .public-ballot__controls>span{width:100%;font-size:10px}
 .town-ballot-center .public-ballot__controls>button{min-width:44px;min-height:44px;padding:3px;font-size:11px}
 .town-ballot-center>.town-center-task{min-height:28px;padding:3px;font-size:10px}
+
+.game-page--town .game-header__phase>span{display:flex;align-items:center;gap:6px;min-width:0}
+.game-page--town .game-header__phase>span b{font-weight:400}
+.game-page--town .game-header__phase>span small{font-size:inherit;white-space:nowrap}
+.game-page--town .game-header>.role-chip{min-width:0;max-width:74px;overflow:hidden;text-overflow:ellipsis}
+.game-page--town .spy-town__nickname{font-size:10px;line-height:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.game-page--town .spy-town__number{top:-3px;left:-3px;bottom:auto;border:0;border-radius:4px}
+
+.town-center .town-night-confirm>div>button{max-width:50%;min-width:44px}
+.town-center .town-night-confirm>div>button>span:not(.player-avatar){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.town-center .town-night-confirm>div>button>b{font-weight:400;flex:none}
