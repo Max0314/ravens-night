@@ -105,6 +105,10 @@ interface PrivateHistoryEntry {
 
 interface NominationRuntime {
   ballotId: string;
+  mode?: "SIMULTANEOUS";
+  defenseFinished?: boolean;
+  preparationEndsAt?: number;
+  countdownStarted?: boolean;
   butlerRemindedSeats?: number[];
   nominatorSeat: number;
   nomineeSeat: number;
@@ -120,6 +124,7 @@ interface NominationRuntime {
 
 const VOTE_SLOT_MS = 1500;
 const DEFENSE_MS = 20_000;
+const SIMULTANEOUS_VOTE_MS = 8_000;
 
 export interface GameRuntime {
   presentationVersion:1|2|3|4;
@@ -366,7 +371,8 @@ export class RoomService {
     if(room.timeline.mode!=='MANUAL'||room.botControl.mode!=='PAUSED'||humans(room).length!==1||!bots(room).length)throw new RoomError('REHEARSAL_UNAVAILABLE','请先冻结单人演练计时');
     const game=room.game;if(!game||game.phase==='ABORTED'||game.publicProjection?.revealComplete)return{status:'WAITING'};
     const now=this.gameNow(room),ballot=game.nomination;
-    const boundaries=[...(game.pendingPublications??[]).map(n=>n.at),game.presentationUntil,...(ballot?[ballot.defenseUntil,ballot.voteStartsAt,ballot.nextCountAt,ballot.voteEndsAt]:[]),...(!game.pauseReason?[game.phaseDeadlineAt]:[])].filter((value):value is number=>typeof value==='number'&&Number.isFinite(value)&&value>now);
+    const ballotBoundaries=ballot?.mode==='SIMULTANEOUS'?(ballot.countdownStarted?[ballot.voteEndsAt]:[ballot.preparationEndsAt,ballot.voteEndsAt]):ballot?[ballot.defenseUntil,ballot.voteStartsAt,ballot.nextCountAt,ballot.voteEndsAt]:[];
+    const boundaries=[...(game.pendingPublications??[]).map(n=>n.at),game.presentationUntil,...ballotBoundaries,...(!game.pauseReason?[game.phaseDeadlineAt]:[])].filter((value):value is number=>typeof value==='number'&&Number.isFinite(value)&&value>now);
     if(!boundaries.length)return{status:'WAITING'};
     room.timeline.manualNowMs=Math.min(...boundaries);room.botControl.version++;room.revision++;this.advanceTime(this.#now(),room.code);return{status:'ADVANCED'};
   }
@@ -1008,7 +1014,7 @@ export class RoomService {
     game.readySeats = [];
     game.phase = "VOTING";
     this.event(room, `${this.playerLabel(room, seat)} 提名了 ${this.playerLabel(room, nomineeSeat)}。`, "NOMINATION", { actorSeat: seat, targetSeat: nomineeSeat });
-    if (this.#presentation) this.prepareBallot(room);
+    this.prepareBallot(room);
     const nominee = this.assignment(room, nomineeSeat);
     const first = nominee.perceivedRoleId === "virgin" && !game.virginSpentSeats.includes(nomineeSeat);
     if (first) game.virginSpentSeats.push(nomineeSeat);
@@ -1047,6 +1053,16 @@ export class RoomService {
     if (game.phase !== "VOTING" || !nomination || nomination.defenseUntil === undefined || this.gameNow(room) >= nomination.defenseUntil) throw new Error("辩护窗口已经结束");
     if (nomination.nomineeSeat !== participant.seat) throw new Error("只有被提名者可以提前结束辩护");
     const now = this.gameNow(room);
+    if (nomination.mode === "SIMULTANEOUS") {
+      if(nomination.defenseFinished)throw new Error("辩护窗口已经结束");
+      nomination.defenseFinished = true;
+      nomination.defenseUntil = now;
+      this.startSimultaneousCountdown(room, now);
+      this.event(room, `${this.playerLabel(room, participant.seat!)} 结束了辩护。`);
+      this.deadline(room);
+      this.changed(room);
+      return;
+    }
     nomination.defenseUntil = now;
     nomination.voteStartsAt = now;
     nomination.nextCountAt = now + VOTE_SLOT_MS;
@@ -1075,6 +1091,7 @@ export class RoomService {
     }
     game.voteSubmissions[seat] = raised;
     delete game.pauseReason;
+    if(game.nomination?.mode === "SIMULTANEOUS")this.startSimultaneousCountdown(room,this.gameNow(room));
     if (!game.nomination?.voterOrder && this.eligibleVoters(game).every((candidate) => game.voteSubmissions[candidate] !== undefined)) this.settleVote(room);
     this.changed(room);
   }
@@ -1089,13 +1106,28 @@ export class RoomService {
     const eligible = new Set(this.eligibleVoters(game));
     const voterOrder = Array.from({ length: room.playerCount }, (_, index) => (nomination.nomineeSeat + index) % room.playerCount + 1).filter((seat) => eligible.has(seat));
     const voteStartsAt = Math.max(this.gameNow(room), game.presentationUntil) + DEFENSE_MS;
-    Object.assign(nomination, { defenseUntil: voteStartsAt, voteStartsAt, voteEndsAt: voteStartsAt + voterOrder.length * VOTE_SLOT_MS, nextCountAt: voteStartsAt + VOTE_SLOT_MS, voterOrder, countedSeats: [], countedVotes: {}, voteStarted: false });
+    Object.assign(nomination, { mode:"SIMULTANEOUS", defenseFinished:false, preparationEndsAt:voteStartsAt, countdownStarted:false, defenseUntil: voteStartsAt, voteStartsAt, voteEndsAt: voteStartsAt + SIMULTANEOUS_VOTE_MS, voterOrder });
+    (room.metadata ??= {}).ballotRulesVersion=2;
     attachBallotTiming(game);
+  }
+
+  /** Starting requires the nominee's consent and an explicit yes/no from every eligible seat. */
+  private startSimultaneousCountdown(room:RoomRecord, now:number):boolean {
+    const game=this.requireGame(room),nomination=game.nomination;
+    if(nomination?.mode!=="SIMULTANEOUS"||nomination.countdownStarted||now<game.presentationUntil)return false;
+    const expired=now>=nomination.preparationEndsAt!;
+    if(!expired&&(!nomination.defenseFinished||!this.eligibleVoters(game).every(seat=>Object.hasOwn(game.voteSubmissions,seat))))return false;
+    nomination.countdownStarted=true;
+    nomination.voteStartsAt=expired?nomination.preparationEndsAt!:now;
+    nomination.voteEndsAt=nomination.voteStartsAt+SIMULTANEOUS_VOTE_MS;
+    game.phaseDeadlineAt=nomination.voteEndsAt;
+    return true;
   }
 
   private voteIsLocked(room:RoomRecord, seat: number): boolean {
     const game=this.requireGame(room);
     const nomination = game.nomination;
+    if(nomination?.mode === "SIMULTANEOUS")return !this.eligibleVoters(game).includes(seat)||this.gameNow(room)>=nomination.voteEndsAt!;
     if (!nomination?.voterOrder) return false;
     const index = nomination.voterOrder.indexOf(seat);
     const counted = nomination.countedSeats!.length;
@@ -1126,13 +1158,23 @@ export class RoomService {
 
   private validVotes(room: RoomRecord): number[] {
     const game = this.requireGame(room);
-    if (game.nomination?.countedVotes) return Object.entries(game.nomination.countedVotes).filter(([, raised]) => raised).map(([seat]) => Number(seat));
+    if (game.nomination?.mode!=="SIMULTANEOUS" && game.nomination?.countedVotes) return Object.entries(game.nomination.countedVotes).filter(([, raised]) => raised).map(([seat]) => Number(seat));
     return this.eligibleVoters(game).filter((seat) => this.raisedVoteIsValid(room, seat));
   }
 
   private advanceBallot(room: RoomRecord, now: number): boolean {
     const game = this.requireGame(room);
     const nomination = game.nomination;
+    if(game.phase === "VOTING" && nomination?.mode === "SIMULTANEOUS"){
+      if(now<game.presentationUntil)return false;
+      const started=this.startSimultaneousCountdown(room,now);
+      if(now>=nomination.voteEndsAt!){
+        for(const seat of this.eligibleVoters(game))game.voteSubmissions[seat]??=false;
+        this.settleVote(room);
+        return true;
+      }
+      return started;
+    }
     if (game.phase !== "VOTING" || !nomination?.voterOrder || now < nomination.voteStartsAt! || now < game.presentationUntil) return false;
     let changed = false;
     if (!nomination.voteStarted) { nomination.voteStarted = true; changed = true; }
@@ -1156,6 +1198,13 @@ export class RoomService {
     const nomination = game.nomination;
     if (!nomination?.voterOrder) return;
     const delay = Math.max(0, game.presentationUntil - now);
+    if(nomination.mode === "SIMULTANEOUS"){
+      if(!nomination.countdownStarted)nomination.preparationEndsAt!+=delay;
+      if(now<nomination.defenseUntil!)nomination.defenseUntil!+=delay;
+      nomination.voteStartsAt!+=delay;
+      nomination.voteEndsAt!+=delay;
+      return;
+    }
     if (now < nomination.defenseUntil!) {
       nomination.defenseUntil! += delay;
       nomination.voteStartsAt! += delay;
@@ -1168,8 +1217,8 @@ export class RoomService {
     const game = this.requireGame(room);
     if (!game.nomination) return;
     const validRaisedSeats = this.validVotes(room);
-    if (!game.nomination.countedVotes) for (const seat of validRaisedSeats) this.remindButler(room, seat);
-    if (!game.nomination.countedVotes) for (const seat of validRaisedSeats) if (!game.aliveSeats.includes(seat)) game.ghostVoteSeats = game.ghostVoteSeats.filter((candidate) => candidate !== seat);
+    if (game.nomination.mode==="SIMULTANEOUS" || !game.nomination.countedVotes) for (const seat of validRaisedSeats) this.remindButler(room, seat);
+    if (game.nomination.mode==="SIMULTANEOUS" || !game.nomination.countedVotes) for (const seat of validRaisedSeats) if (!game.aliveSeats.includes(seat)) game.ghostVoteSeats = game.ghostVoteSeats.filter((candidate) => candidate !== seat);
     const votes = validRaisedSeats.length;
     const threshold = Math.ceil(game.aliveSeats.length / 2);
     const nomineeSeat = game.nomination.nomineeSeat;
@@ -1292,7 +1341,7 @@ export class RoomService {
       canNominate: available && alive && daytime && !game!.nominatedBySeats.includes(seat),
       nominationTargets: game && available ? room.assignments.map((candidate) => candidate.seat).filter((candidate) => !game.nominatedSeats.includes(candidate)) : [],
       canVote: available && game?.phase === "VOTING" && this.eligibleVoters(game).includes(seat) && !this.voteIsLocked(room, seat),
-      canFinishDefense: available && game?.phase === "VOTING" && game.nomination?.nomineeSeat === seat && this.gameNow(room) < (game.nomination?.defenseUntil ?? 0),
+      canFinishDefense: available && game?.phase === "VOTING" && game.nomination?.nomineeSeat === seat && !game.nomination.defenseFinished && this.gameNow(room) < (game.nomination?.defenseUntil ?? 0),
       canCancelNomination: available && game?.phase === "VOTING" && game.nomination?.nominatorSeat === seat && !Object.keys(game.voteSubmissions).length && (game.nomination.voteStartsAt === undefined || this.gameNow(room) < game.nomination.voteStartsAt),
       canEndDay: available && alive && daytime,
       dayReady: visible?.readySeats.includes(seat) ?? false,
@@ -1300,6 +1349,7 @@ export class RoomService {
       ...(revealActualRole && game ? { storytellerDecisions: game.decisions } : {}),
       messages: history.map(entry => entry.text),
       history,
+      ...(visible?.phase === "VOTING" && visible.nomination?.mode==="SIMULTANEOUS" ? {voteSubmitted:Object.hasOwn(visible.voteSubmissions,seat)} : {}),
       ...(visible?.phase === "VOTING" && visible.voteSubmissions[participant.seat!] !== undefined ? { voteRaised: visible.voteSubmissions[participant.seat!] } : {}),
       ...(room.game ? { game: this.publicGame(room), roleConfirmed: room.game.confirmedRoleSeats.includes(participant.seat!), ...(this.privateAction(room, participant.seat!) ? { action: this.privateAction(room, participant.seat!) } : {}) } : {}),
       ...(assignment && visibleRole && ["RUNNING", "GAME_OVER", "ABORTED"].includes(room.state)
@@ -1503,12 +1553,13 @@ export class RoomService {
       readyCount: game.readySeats.length,
       aliveCount: visibleAlive.length,
       ...(game.nomination ? { nomination: { ballotId: game.nomination.ballotId, nominatorSeat: game.nomination.nominatorSeat, nomineeSeat: game.nomination.nomineeSeat,
+        ...(game.nomination.mode==="SIMULTANEOUS"?{mode:game.nomination.mode,defenseFinished:game.nomination.defenseFinished,preparationEndsAt:game.nomination.preparationEndsAt,countdownStarted:game.nomination.countdownStarted}:{}),
         defenseUntil: game.nomination.defenseUntil, voteStartsAt: game.nomination.voteStartsAt, voteEndsAt: game.nomination.voteEndsAt,
         nextCountAt: game.nomination.nextCountAt, countedSeats: game.nomination.countedSeats, countedVotes: game.nomination.countedVotes, voterOrder: game.nomination.voterOrder,
         votesReceived: Object.keys(game.voteSubmissions).length, votersRequired: game.nomination.voterOrder?.length ?? this.eligibleVoters(game).length,
-        ...(game.nomination.voterOrder && this.gameNow(room) >= game.nomination.voteStartsAt! && this.gameNow(room) >= game.presentationUntil && game.nomination.countedSeats!.length < game.nomination.voterOrder.length ? { currentVoterSeat: game.nomination.voterOrder[game.nomination.countedSeats!.length] } : {}),
+        ...(game.nomination.mode!=="SIMULTANEOUS" && game.nomination.voterOrder && this.gameNow(room) >= game.nomination.voteStartsAt! && this.gameNow(room) >= game.presentationUntil && game.nomination.countedSeats!.length < game.nomination.voterOrder.length ? { currentVoterSeat: game.nomination.voterOrder[game.nomination.countedSeats!.length] } : {}),
         raisedSeats: Object.entries(game.voteSubmissions).filter(([, raised]) => raised).map(([seat]) => Number(seat)),
-        votesRaised: game.nomination.countedVotes ? Object.values(game.nomination.countedVotes).filter(Boolean).length : this.eligibleVoters(game).filter(seat => game.voteSubmissions[seat]).length, threshold: Math.ceil(game.aliveSeats.length / 2) } } : {}),
+        votesRaised: game.nomination.mode!=="SIMULTANEOUS"&&game.nomination.countedVotes ? Object.values(game.nomination.countedVotes).filter(Boolean).length : this.eligibleVoters(game).filter(seat => game.voteSubmissions[seat]).length, threshold: Math.ceil(game.aliveSeats.length / 2) } } : {}),
       ...(game.onBlock ? { onBlock: game.onBlock } : {}),
       executionTied: game.executionTied,
       ...(game.winner ? { winner: game.winner, winReason: game.winReason } : {}),
@@ -1524,7 +1575,7 @@ export class RoomService {
       const requirement = this.nightRequirement(room, seat);
       if (requirement) return { kind: requirement.count === 2 ? "SELECT_TWO" : "SELECT_ONE", legalSeats: requirement.legalSeats, minTargets: requirement.count, maxTargets: requirement.count, prompt: requirement.prompt };
     }
-    if (game.phase === "VOTING" && this.eligibleVoters(game).includes(seat) && !this.voteIsLocked(room, seat)) return { kind: "VOTE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: "提前举手或放下；顺时针数到本席时锁票，未举手不消耗鬼票" };
+    if (game.phase === "VOTING" && this.eligibleVoters(game).includes(seat) && !this.voteIsLocked(room, seat)) return { kind: "VOTE", legalSeats: [], minTargets: 0, maxTargets: 0, prompt: game.nomination?.mode==="SIMULTANEOUS"?"选择举手或不举手；最后8秒结束时统一计票，截止前可以修改，未举手不消耗鬼票":"提前举手或放下；顺时针数到本席时锁票，未举手不消耗鬼票" };
     if ((game.phase === "DAY_DISCUSSION" || game.phase === "NOMINATION") && game.aliveSeats.includes(seat)) {
       if (this.visibleAssignment(room, seat)?.perceivedRoleId === "slayer" && !game.usedAbilitySeats.includes(seat)) return { kind: "SLAYER", legalSeats: room.assignments.map((assignment) => assignment.seat), minTargets: 1, maxTargets: 1, prompt: "你可以公开选择任意玩家发动猎魔人能力（整局一次）" };
       return { kind: "DAY", legalSeats: room.assignments.map((assignment) => assignment.seat), minTargets: 0, maxTargets: 1, prompt: "讨论、提名，或确认结束今天" };

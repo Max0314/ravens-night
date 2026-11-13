@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { RoomService, type RoomRecord } from "./service.js";
 import { buildApp } from "../app.js";
@@ -60,15 +60,15 @@ class MemoryRepository implements RoomRepository {
   async close() {}
 }
 const apps: ReturnType<typeof buildApp>[] = [];
-afterEach(async () => { await Promise.all(apps.splice(0).map(app => app.close())); });
-async function httpTable() {
+afterEach(async () => { await Promise.all(apps.splice(0).map(app => app.close())); vi.useRealTimers(); });
+async function httpTable(timers=false) {
   const t = table(); t.start();
   const snapshot = t.service.snapshot(t.code);
   snapshot.game!.presentationVersion=1;snapshot.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};snapshot.game!.phase = "DAY_DISCUSSION"; snapshot.game!.day = 1;
   snapshot.game!.aliveSeats = [1, 2, 3, 4, 5];
   snapshot.assignments = ["chef", "empath", "soldier", "saint", "baron", "imp"].map((id, index) => ({ seat: index + 1, roleId: id, perceivedRoleId: id, roleType: roleById(id).type, alignment: index >= 4 ? "EVIL" : "GOOD" }));
   const repository = new MemoryRepository([snapshot]);
-  const app = buildApp({ repository, now: t.now, presentation: false, timers: false, resolveAccount: async () => null });
+  const app = buildApp({ repository, now: t.now, presentation: false, timers, resolveAccount: async () => null });
   apps.push(app); await app.ready();
   async function body(seat: number) {
     const view = (await app.inject({ url: `/api/rooms/${t.code}/me?token=${t.players[seat - 1]!.token}`,headers:{"x-ravens-protocol":"7"} })).json();
@@ -79,12 +79,15 @@ async function httpTable() {
 }
 
 test("first-arriving old ballot cannot affect the next ballot or spend a ghost; retry returns current view", async () => {
-  const t = await httpTable();
+  vi.useFakeTimers({toFake:["setInterval","clearInterval"]});
+  const t = await httpTable(true);
   expect((await t.send("nominate", { ...await t.body(1), nomineeSeat: 2 })).statusCode).toBe(200);
   const late = { ...await t.body(6), raised: true };
   const id = randomUUID(), accepted = { ...await t.body(1), raised: false };
   expect((await t.send("vote", accepted, id)).statusCode).toBe(200);
   for (let seat = 2; seat <= 6; seat++) expect((await t.send("vote", { ...await t.body(seat), raised: false })).statusCode).toBe(200);
+  expect((await t.send("nomination/defense/complete",await t.body(2))).statusCode).toBe(200);
+  t.advance(8000);await vi.advanceTimersByTimeAsync(500);
   expect((await t.send("nominate", { ...await t.body(2), nomineeSeat: 3 })).statusCode).toBe(200);
   const next = await t.body(6);
   const rejected = await t.send("vote", { ...late, expectedCommandVersion: next.expectedCommandVersion });
@@ -135,6 +138,7 @@ test("all public snapshots for equal hands are identical for ordinary, healthy a
       // Independently generated opaque round ids carry no role information.
       frames.push(JSON.stringify(frame).replace(/"contextId":"[^"]+"/g, '"contextId":"opaque"').replace(/"ballotId":"[^"]+"/g, '"ballotId":"opaque"'));
     }
+    service.finishDefense(t.code,t.players[5]!.token);service.advanceTime(service.publicView(t.code).game!.nomination!.voteEndsAt!);
     expect(service.publicView(t.code).game!.events.at(-1)!.votes).toBe(1);
     if (kind !== "chef") expect(service.privateView(t.code, t.players[0]!.token).history.at(-1)!.text).toContain("主人未举手");
     return frames;

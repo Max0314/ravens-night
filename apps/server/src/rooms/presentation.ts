@@ -93,6 +93,13 @@ export function attachBallotTiming(game: GameRuntime, eventId?: string): void {
   if (!game.nomination) return;
   const node = game.pendingPublications?.find(node => node.eventId === (eventId ?? game.events.at(-1)?.id) && node.id.endsWith(":start"));
   if (node) node.patch.nomination = structuredClone(game.nomination);
+  if(node && game.nomination.mode==='SIMULTANEOUS' && game.events.find(event=>event.id===node.eventId)?.kind==='SHOT'){
+    // Freeze the public clock in the same commit as the shot. Only timing is
+    // published here: deaths, roles and a possible winner retain their result gates.
+    game.publicProjection!.nomination=structuredClone(game.nomination);
+    game.publicProjection!.presentationUntil=game.presentationUntil;
+    game.publicProjection!.phaseDeadlineAt=game.nomination.voteEndsAt!;
+  }
 }
 
 /** Called only inside the staged, committed mutation path, never by a GET serializer. */

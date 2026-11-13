@@ -1,0 +1,90 @@
+[
+  {
+    "id": "townsfolk",
+    "renderSize": [
+      120,
+      160
+    ],
+    "background": "#12140f",
+    "v2": {
+      "alphaWeightedArea": 3878.156862745094,
+      "alphaWeightedMeanLuminance": 82.03764891428133,
+      "maxCompositeLuminance": 179.74934431372552,
+      "brightPixelsAbove110": 724
+    },
+    "v3": {
+      "alphaWeightedArea": 888.839215686265,
+      "alphaWeightedMeanLuminance": 69.54977639574236,
+      "maxCompositeLuminance": 90.94679999999998,
+      "brightPixelsAbove110": 0
+    },
+    "faceApertureAlpha": 0,
+    "centralTopAlpha": 0
+  },
+  {
+    "id": "outsider",
+    "renderSize": [
+      120,
+      160
+    ],
+    "background": "#12140f",
+    "v2": {
+      "alphaWeightedArea": 3820.117647058854,
+      "alphaWeightedMeanLuminance": 94.84341636085497,
+      "maxCompositeLuminance": 201.37499058823528,
+      "brightPixelsAbove110": 1147
+    },
+    "v3": {
+      "alphaWeightedArea": 902.5176470588135,
+      "alphaWeightedMeanLuminance": 69.60343922448138,
+      "maxCompositeLuminance": 89.38825647058822,
+      "brightPixelsAbove110": 0
+    },
+    "faceApertureAlpha": 0,
+    "centralTopAlpha": 0
+  },
+  {
+    "id": "minion",
+    "renderSize": [
+      120,
+      160
+    ],
+    "background": "#12140f",
+    "v2": {
+      "alphaWeightedArea": 3635.937254902012,
+      "alphaWeightedMeanLuminance": 77.2848275008514,
+      "maxCompositeLuminance": 212.38654274509807,
+      "brightPixelsAbove110": 666
+    },
+    "v3": {
+      "alphaWeightedArea": 888.674509803912,
+      "alphaWeightedMeanLuminance": 69.08460306338846,
+      "maxCompositeLuminance": 93.57297176470588,
+      "brightPixelsAbove110": 0
+    },
+    "faceApertureAlpha": 0,
+    "centralTopAlpha": 0
+  },
+  {
+    "id": "demon",
+    "renderSize": [
+      120,
+      160
+    ],
+    "background": "#12140f",
+    "v2": {
+      "alphaWeightedArea": 3888.5921568627896,
+      "alphaWeightedMeanLuminance": 85.61502379731073,
+      "maxCompositeLuminance": 183.455248627451,
+      "brightPixelsAbove110": 1033
+    },
+    "v3": {
+      "alphaWeightedArea": 997.4862745097944,
+      "alphaWeightedMeanLuminance": 66.3454175193354,
+      "maxCompositeLuminance": 89.38825647058822,
+      "brightPixelsAbove110": 0
+    },
+    "faceApertureAlpha": 0,
+    "centralTopAlpha": 0
+  }
+]

@@ -18,13 +18,24 @@ function timedTable(roleIds = ["chef", "empath", "soldier", "saint", "baron", "i
   mutate((state) => { state.game!.presentationVersion=1;state.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};state.game!.phase = "DAY_DISCUSSION"; state.game!.day = 1; });
   const game = () => service.publicView(room.code).game!;
   const advance = (milliseconds: number, tick = true) => { now += milliseconds; if (tick) service.advanceTime(now); };
-  const nominate = (actor: number, nominee: number) => { service.nominate(room.code, players[actor - 1]!.token, nominee); advance(2500); };
+  const nominate = (actor: number, nominee: number) => {
+    service.nominate(room.code, players[actor - 1]!.token, nominee);
+    const saved=service.snapshot(room.code),runtime=saved.game!,sim=runtime.nomination!;
+    // A persisted pre-protocol-7 ballot has its own immutable clockwise clock.
+    const legacy={ballotId:sim.ballotId,nominatorSeat:sim.nominatorSeat,nomineeSeat:sim.nomineeSeat,defenseUntil:sim.voteStartsAt!,voteStartsAt:sim.voteStartsAt!,voteEndsAt:sim.voteStartsAt!+sim.voterOrder!.length*1500,nextCountAt:sim.voteStartsAt!+1500,voteStarted:false,voterOrder:[...sim.voterOrder!],countedSeats:[] as number[],countedVotes:{} as Record<number,boolean>};
+    runtime.nomination=legacy;runtime.phaseDeadlineAt=legacy.voteEndsAt;
+    if(runtime.publicProjection?.nomination?.ballotId===legacy.ballotId){runtime.publicProjection.nomination=structuredClone(legacy);runtime.publicProjection.phaseDeadlineAt=legacy.voteEndsAt;}
+    for(const node of runtime.pendingPublications??[])if(node.patch.nomination?.ballotId===legacy.ballotId)node.patch.nomination=structuredClone(legacy);
+    if(saved.metadata)delete saved.metadata.ballotRulesVersion;
+    service.restore([saved]);
+    advance(2500);
+  };
   const vote = (seat: number, raised: boolean) => service.vote(room.code, players[seat - 1]!.token, raised);
   const finish = () => { advance(game().nomination!.voteEndsAt! - now); advance(1500); };
   return { service, room, players, mutate, game, advance, nominate, vote, finish, now: () => now };
 }
 
-test("production defense lasts twenty seconds and all submitted ballots still count clockwise at 1.5 seconds per seat", () => {
+test("persisted legacy defense lasts twenty seconds and submitted ballots retain clockwise 1.5 second seat clocks", () => {
   const t = timedTable(); t.nominate(1, 3);
   const nomination = t.game().nomination!;
   expect(nomination.voterOrder).toEqual([4, 5, 6, 1, 2, 3]);

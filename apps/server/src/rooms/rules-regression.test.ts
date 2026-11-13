@@ -24,6 +24,12 @@ function controlledSixPlayerRoom(roleIds: string[], perceivedRoles: Record<numbe
   return { service, room, players };
 }
 
+function completeBallot(service:RoomService,code:string,players:Array<{token:string}>){
+  const ballot=service.publicView(code).game!.nomination!;
+  service.finishDefense(code,players[ballot.nomineeSeat-1]!.token);
+  service.advanceTime(service.publicView(code).game!.nomination!.voteEndsAt!);
+}
+
 function reachFirstDay(service: RoomService, code: string, players: Array<{ token: string }>) {
   for (const player of players) service.confirmRole(code, player.token);
   for (const player of players) {
@@ -148,8 +154,10 @@ test("equal top vote totals produce no execution", () => {
   reachFirstDay(service, room.code, players);
   service.nominate(room.code, players[0]!.token, 2);
   players.forEach((player, index) => service.vote(room.code, player.token, index < 3));
+  completeBallot(service,room.code,players);
   service.nominate(room.code, players[2]!.token, 4);
   players.forEach((player, index) => service.vote(room.code, player.token, index >= 3));
+  completeBallot(service,room.code,players);
   expect(service.publicView(room.code).game?.executionTied).toBe(true);
   for (const player of players) service.readyToEndDay(room.code, player.token);
   expect(service.publicView(room.code).game?.aliveCount).toBe(6);

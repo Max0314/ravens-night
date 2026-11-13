@@ -25,3 +25,7 @@
 
 .guillotine-scene__canvas{position:absolute;left:50%;top:50%;width:min(78vw,28vh);height:min(78vw,28vh);transform:translate(-50%,-50%);isolation:isolate}
 @supports(width:1cqw){.guillotine-scene__canvas{width:min(100cqw,100cqh);height:min(100cqw,100cqh)}}
+
+.execution-blood-screen{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:hidden}
+.event-stage--execution>header,.event-stage--execution>footer,.event-stage--execution>.event-stage__body{position:relative;z-index:2}
+.event-stage--execution :is(h1,.event-stage__result,header,footer){text-shadow:0 2px 4px #030504,0 0 12px #030504}

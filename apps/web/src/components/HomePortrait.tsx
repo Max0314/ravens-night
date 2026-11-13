@@ -1,5 +1,5 @@
 import { beginnerRoles } from '@ravens/content';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { roleArt } from '../role-art.js';
 import { roleTypeNames } from '../guide-content.js';
 
@@ -8,7 +8,7 @@ const wrap = (value: number) => (value + count) % count;
 const relative = (value: number, center: number) => (value - center + count + Math.floor(count / 2)) % count - Math.floor(count / 2);
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const duration = 300;
-export function HomePortrait() {
+export function HomePortrait({navigationContent}:{navigationContent?:ReactNode}) {
   const [index, setIndex] = useState(() => beginnerRoles.findIndex(role => role.id === 'fortune_teller'));
   const [settling, setSettling] = useState(false);
   const stage = useRef<HTMLDivElement>(null), cards = useRef<Array<HTMLDivElement | null>>([]), captions = useRef<Array<HTMLDivElement | null>>([]);
@@ -109,6 +109,6 @@ export function HomePortrait() {
       })}</div>
     </div>
     <div className="home-portrait__caption" aria-live="polite" aria-atomic="true">{beginnerRoles.map((role,item)=><div ref={node=>{captions.current[item]=node;}} className="home-portrait__caption-body" key={role.id} aria-hidden={item!==index}><span data-public-role-type={role.type}>{roleTypeNames[role.type]}</span><h2>{role.name}</h2><p>{role.summary}</p></div>)}</div>
-    <div className="home-portrait__navigation"><button type="button" aria-label="上一位角色" disabled={settling} onClick={()=>settle(-1)}>‹</button><span>{String(index+1).padStart(2,'0')} <i/> {count}</span><button type="button" aria-label="下一位角色" disabled={settling} onClick={()=>settle(1)}>›</button></div>
+    <div className="home-portrait__navigation"><button type="button" aria-label="上一位角色" disabled={settling} onClick={()=>settle(-1)}>‹</button>{navigationContent??<span>{String(index+1).padStart(2,'0')} <i/> {count}</span>}<button type="button" aria-label="下一位角色" disabled={settling} onClick={()=>settle(1)}>›</button></div>
   </section>;
 }

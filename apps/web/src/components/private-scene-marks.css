@@ -1,4 +1,7 @@
 .private-scene-avatar{position:relative;display:block;width:64px;height:64px;isolation:isolate;flex:none}
 .private-scene-person>.private-scene-avatar>.player-avatar{width:100%;height:100%;display:grid;place-items:center}
-.private-scene-avatar>.private-avatar-claw{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:hidden}
+.private-scene-avatar>.private-avatar-claw{position:absolute;left:-110%;top:-110%;width:320%;height:320%;z-index:2;pointer-events:none;overflow:visible}
 @media(max-height:580px){.private-scene-avatar{width:42px;height:42px}}
+
+.private-theme--imp[data-kind="ACTION_SUBMITTED"]>.private-scene-result{overflow:visible}
+.private-theme--imp[data-kind="ACTION_SUBMITTED"] .private-scene-person>span:not(.private-scene-avatar){position:relative;z-index:3;text-shadow:0 1px 3px #080b09,0 0 8px #080b09}
