@@ -1,13 +1,15 @@
 import {useId} from 'react';
 import {smooth} from './cinematic-timing.js';
+import {DawnSkyArt} from './DawnSkyArt.js';
 import './cinematic-public.css';
 import './night-arrival.css';
+import './dawn-arrival.css';
 
 const nightWindows=[{x:127,y:329,width:4,height:9},{x:174,y:350,width:6,height:8},{x:212,y:327,width:6,height:10},{x:294,y:334,width:5,height:10},{x:486,y:368,width:7,height:11},{x:575,y:389,width:5,height:10},{x:624,y:251,width:4,height:8}] as const;
 
-/** Dawn keeps its independent sun; night lights track the existing plate's cover crop. */
+/** Both phases keep their existing town plates; arrival is sampled from the public clock. */
 export function AtmosphericSky({phase,elapsedMs,durationMs,reduced=false}:{phase:'NIGHT_FALLS'|'DAWN';elapsedMs:number;durationMs:number;reduced?:boolean}){
- const p=reduced?1:smooth(elapsedMs,0,Math.max(1,durationMs*.85)),id=useId().replace(/:/g,'');
+ const id=useId().replace(/:/g,'');
  if(phase==='NIGHT_FALLS'){
   const dusk=reduced?1:smooth(elapsedMs,0,durationMs*.72),mist=reduced?1:smooth(elapsedMs,durationMs*.24,durationMs*.9);
   return <div className="atmospheric-sky atmospheric-sky--night_falls night-arrival" aria-hidden="true" data-dusk={dusk}>
@@ -19,10 +21,5 @@ export function AtmosphericSky({phase,elapsedMs,durationMs,reduced=false}:{phase
    <div className="night-arrival__mist" style={{opacity:.2*mist,transform:`translateX(${reduced?0:-2+4*mist}%)`}}/>
   </div>;
  }
- return <div className={`atmospheric-sky atmospheric-sky--${phase.toLowerCase()}`} aria-hidden="true" data-rise={p}>
-  <svg className="atmospheric-sky__disc" viewBox="0 0 100 100" style={{top:`${62-37*p}%`,opacity:.35+.65*p}}>
-   <defs><radialGradient id={`${id}-sun`}><stop stopColor="#fff7ce"/><stop offset=".7" stopColor="#ffdc80"/><stop offset="1" stopColor="#e4a348"/></radialGradient><radialGradient id={`${id}-glow`}><stop stopColor="#f7c56b" stopOpacity=".24"/><stop offset="1" stopColor="#ccd7db" stopOpacity="0"/></radialGradient></defs>
-   <circle cx="50" cy="50" r="49" fill={`url(#${id}-glow)`}/><circle cx="50" cy="50" r="24" fill={`url(#${id}-sun)`}/>
-  </svg>
- </div>;
+ return <div className="atmospheric-sky atmospheric-sky--dawn dawn-arrival" aria-hidden="true"><DawnSkyArt elapsedMs={elapsedMs} durationMs={durationMs} reduced={reduced}/></div>;
 }

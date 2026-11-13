@@ -1,0 +1,5 @@
+/* Dawn only. World-space lights share the original town's center/top cover crop. */
+.event-stage.event-stage--dawn>.dawn-arrival{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.dawn-arrival>.dawn-arrival__art{display:block;position:absolute;inset:0;width:100%;height:100%;overflow:hidden;filter:none}
+.dawn-arrival,.dawn-arrival *{animation:none!important;transition:none!important}
+.event-stage.event-stage--dawn>.event-stage__halo,.event-stage.event-stage--dawn .dawn-windows{display:none}
