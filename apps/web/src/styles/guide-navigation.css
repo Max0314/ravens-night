@@ -22,10 +22,10 @@
 .guide-page-content .guide-tutorial__actions{flex:none;margin-top:18px;gap:12px}
 .guide-page-content .guide-tutorial__actions button{flex:1;min-height:46px}
 .page-turn-layer{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none;perspective:1200px;background:#12100b;contain:strict}
-.page-turn-layer canvas{display:block;width:100%;height:100%}
+.page-turn-layer canvas{display:block;position:absolute;inset:0;z-index:4;width:100%;height:100%}
 .page-turn-old,.page-turn-next{position:absolute;inset:0;overflow:hidden;background:linear-gradient(140deg,#16130e,#090908 70%);backface-visibility:visible}
-.page-turn-old{z-index:2;will-change:transform;box-shadow:10px 0 28px #0006}
-.page-turn-paper-back{position:absolute;inset:0;background:linear-gradient(90deg,#8b7755,#d0ba8c 80%,#a78c62);opacity:clamp(0,calc((var(--page-progress) - .55)*4),1);box-shadow:inset -10px 0 22px #0004}
+.page-turn-old{z-index:2;will-change:clip-path}
+.page-turn-curl{position:absolute;inset:0;z-index:3;width:100%;height:100%;overflow:visible;filter:drop-shadow(2px 5px 5px #0007)}
 .page-turn-layer--reduced .page-turn-old{box-shadow:none}
 .guide-capture-host{border:0!important;border-radius:0!important;max-width:none!important;max-height:none!important;animation:none!important;padding:0!important}
 .guide-capture-host *{animation:none!important;transition:none!important}
