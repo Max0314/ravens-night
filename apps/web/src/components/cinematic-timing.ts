@@ -9,6 +9,7 @@ export const cinematicTiming = {
   washer: { dipStart: 600, immersed: 1100, scrubStart: 1100, liftStart: 1650, raised: 2100, dripStart: 1700, dripEnd: 2900, inkStart: 1900, inkSet: 2250 },
   book: { start: 650, middle: 1150, end: 1850 },
   coffin: { start: 600, open: 1600, reveal: 1900 },
+  raven: { attention: 350, flapStart: 650, spread: 1225, flapEnd: 1800, settle: 2400 },
   chef: [650, 1000, 1350],
   shield: { cue: 418, contact: 700 },
   reveal: { standard: 1900, oracle: 2200, bluffs: 2400 },
