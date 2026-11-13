@@ -1,0 +1,41 @@
+{
+  "version": 5,
+  "rebuild": "python scripts/build-contact-audio.py",
+  "purpose": "Four action-submission contact transients; no death, result, vocal or hidden-success cue",
+  "files": [
+    {
+      "id": "slash-left",
+      "file": "slash-left.mp3",
+      "source": "../v3/slash-left.mp3",
+      "sourceSha256": "f846ce760c8db3c0d22cdd1611d23cac93ff4c540ae7dba784189d0e2e1c5266",
+      "sha256": "84bf48195c744da6f3a84500428cfe3b7a6131e4795a8034bacc46dccacd97fa",
+      "bytes": 9970,
+      "durationMs": 420.0,
+      "peakOffsetMs": 105.941,
+      "onsetOffsetMs": 4.898,
+      "contactOffsetMs": 85,
+      "contactMeasurement": "center of strongest decoded 10ms RMS window",
+      "peakDb": -4.65,
+      "rmsDb": -19.05,
+      "processing": "atrim=start=0.08:duration=0.42,asetpts=PTS-STARTPTS,highpass=f=120,equalizer=f=2200:t=q:w=1:g=2,acompressor=threshold=0.1:ratio=4:attack=2:release=65:makeup=2.5,alimiter=limit=0.85:level=false,afade=t=in:d=0.004,afade=t=out:st=0.34:d=0.08",
+      "license": "Original project composition plus previously attributed Kenney CC0 foley; v1/SOURCES.md"
+    },
+    {
+      "id": "slash-right",
+      "file": "slash-right.mp3",
+      "source": "../v3/slash-right.mp3",
+      "sourceSha256": "8e387ff4c295cfd54e53a8d19c1fe269e903d245c80a674d0642970fef0456fb",
+      "sha256": "b3a346722696b938641f73d15702c7dee9169ba4efe737a5bda6f7a8c7507a15",
+      "bytes": 9970,
+      "durationMs": 420.0,
+      "peakOffsetMs": 231.837,
+      "onsetOffsetMs": 3.651,
+      "contactOffsetMs": 85,
+      "contactMeasurement": "center of strongest decoded 10ms RMS window",
+      "peakDb": -5.58,
+      "rmsDb": -18.38,
+      "processing": "atrim=start=0.08:duration=0.42,asetpts=PTS-STARTPTS,highpass=f=120,equalizer=f=2200:t=q:w=1:g=2,acompressor=threshold=0.1:ratio=4:attack=2:release=65:makeup=2.5,alimiter=limit=0.85:level=false,afade=t=in:d=0.004,afade=t=out:st=0.34:d=0.08",
+      "license": "Original project composition plus previously attributed Kenney CC0 foley; v1/SOURCES.md"
+    }
+  ]
+}

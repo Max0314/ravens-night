@@ -38,7 +38,7 @@ function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve()
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
 function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
- const prefix=sample.match(/^(v[134]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[134]:/,'');
+ const prefix=sample.match(/^(v[1345]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[1345]:/,'');
  const pending=(async()=>{await takeLoadSlot();try{const response=await fetch('/audio/effects/'+version+'/'+name+'.mp3');if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
 function claim(key:string,at:number){if(played.has(key))return false;played.set(key,at);if(played.size>1200)played.delete(played.keys().next().value!);return true;}
@@ -66,6 +66,8 @@ function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,ra
 const hash=(id:string)=>[...id].reduce((v,c)=>(Math.imul(v,31)+c.charCodeAt(0))>>>0,0);
 let previousPrivateUi='';
 export function playSemantic(cue:SemanticCue,options:{variant?:number;scope?:'ui'|'book'|'private'}={}){
+ // Generic acceptance sounds must not add a chime before a material scene.
+ if(cue==='press'||cue==='select'||cue==='success')return;
  const scope=options.scope??(cue.startsWith('paper-')?'book':'ui');if(!allowed(scope))return;if(scope==='private'){if(previousPrivateUi)cancelEventAudio(previousPrivateUi);}else cancelSemantic(scope);const variant=options.variant??semanticSeq;
  const sample=cue==='paper-turn'?'paper-turn-'+(1+variant%4):cue==='paper-lift'?'paper-lift-'+(1+variant%2):'ui-'+cue;
  const id=scope+':ui:'+(++semanticSeq);if(scope==='private')previousPrivateUi=id;sampleAt(id,cue,sample,0,scope,1,scope==='book'?.23:.16,0,200);
@@ -110,8 +112,9 @@ export function schedulePrivateCue(id:string,kind:string,elapsed:number,options:
 }
 /** The optional contact marks a transient inside a clip's lead-in (v1 shield). */
 export type RoleAudioCue=[at:number,sample:string,volume:number,continuity?:'continuous'|'transient',contactAt?:number];
-// Measured output MP3 peaks/onsets, recorded by the immutable v4 manifest.
-const materialLead={cork:9.75,pour:24.6,chop:[10.63,10.09,10.86],coffinOpen:5.35,coffinSettle:11.45} as const;
+// Measured decoded contacts/onsets, recorded by the v4 and v5 manifests.
+const demonContact=contact.demon as typeof contact.demon&{avatarLeft?:number;avatarRight?:number};
+const materialLead={slash:85,cork:9.75,pour:24.6,chop:[10.63,10.09,10.86],coffinOpen:5.35,coffinSettle:11.45} as const;
 export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
  const role=scene.themeRoleId,variant=1+hash(scene.id)%4;
  // Scene kind takes priority over the role that received the envelope.
@@ -121,7 +124,7 @@ export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
  if(role==='butler')return[[500,'role-butler',.3],[contact.butler.voice,'butler-voice',.74]];
  if(role==='poisoner')return[[contact.poison.uncork-materialLead.cork,'v4:poison-cork',.56,'transient',contact.poison.uncork],[contact.poison.pour-materialLead.pour,'v4:poison-pour',.48],[contact.poison.bubbles,'poison-bubbles',.4],...(scene.kind==='ACTION_SUBMITTED'?[[contact.poison.cough,'cough-'+(1+hash(scene.id)%3),.42] as RoleAudioCue]:[])];
  if(role==='monk'&&scene.kind==='ACTION_SUBMITTED')return[[contact.shield.cue,'v1:shield',.74,'transient',contact.shield.contact]];
- if(role==='imp'&&scene.kind==='ACTION_SUBMITTED')return[[contact.demon.flap,'wing-flap',.43,'transient'],[contact.demon.air,'wing-air',.22],[contact.demon.open,'wing-root',.32,'transient'],[contact.demon.left,'v3:slash-left',.78,'transient'],[contact.demon.right,'v3:slash-right',.78,'transient']];
+ if(role==='imp'&&scene.kind==='ACTION_SUBMITTED')return[[contact.demon.flap,'wing-flap',.43,'transient'],[contact.demon.air,'wing-air',.22],[contact.demon.open,'wing-root',.32,'transient'],...[contact.demon.left,contact.demon.right,demonContact.avatarLeft??2050,demonContact.avatarRight??2350].map((at,i)=>[at-materialLead.slash,'v5:slash-'+(i%2?'right':'left'),.92,'transient',at] as RoleAudioCue)];
  if(role==='chef')return contact.chef.map((at,i)=>[at-materialLead.chop[i]!,'v4:chef-chop-'+(i+1),.5,'transient',at]);
  if(role==='undertaker')return[[contact.coffin.start-materialLead.coffinOpen,'v4:coffin-open',.42],[contact.coffin.open-materialLead.coffinSettle,'v4:coffin-settle',.36,'transient',contact.coffin.open]];
  if(role==='librarian'||role==='spy')return[[contact.book.middle,'paper-turn-'+variant,.4]];
@@ -142,4 +145,4 @@ export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,opti
   sampleAt(id,key,sample,Math.max(0,(at-elapsed)/rate),'private',rate,volume,offset,150);
  }
 }
-export async function auditionSample(sample:string){if(!/^(?:v[134]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
+export async function auditionSample(sample:string){if(!/^(?:v[1345]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
