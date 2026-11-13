@@ -127,6 +127,8 @@ const DEFENSE_MS = 20_000;
 const SIMULTANEOUS_VOTE_MS = 8_000;
 
 export interface GameRuntime {
+  /** Absent on persisted games that still enter night after role confirmation. */
+  openingNightVersion?: 1;
   presentationVersion:1|2|3|4;
   presentationSeen:Record<string,Record<number,PresentationDisposition>>;
   roleNotifications:Array<{changeId:string;seat:number;previousAssignment:RoleAssignment;roleHistorySeq:number;notifyOn:'NIGHT';released:boolean;notifyEventId?:string;cancelled?:boolean;acquiredPhase?:RuntimePhase;acquiredDay?:number}>;
@@ -597,6 +599,7 @@ export class RoomService {
       const code = normalizeRoomCode(snapshot.code);
       if (![undefined, 1, 2, 3, 4,5].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) throw new Error(`Room ${code}: invalid roster snapshot`);
+      if(snapshot.game?.openingNightVersion!==undefined&&snapshot.game.openingNightVersion!==1||snapshot.metadata?.openingNightRulesVersion!==undefined&&snapshot.metadata.openingNightRulesVersion!==1)throw new Error(`Room ${code}: unsupported opening night version`);
       if(![2,3,4,5].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
       if(snapshot.game&&snapshot.game.presentationVersion!==undefined&&![1,2,3,4].includes(snapshot.game.presentationVersion))throw new Error("Unsupported presentation version");
       const game = snapshot.game ? this.restoreGame(snapshot.game, `legacy-game-${snapshot.gameNumber ?? 0}:${randomUUID()}`, snapshot.timeline ? gameNow(snapshot,this.#now()) : this.#now()) : undefined;
@@ -803,13 +806,15 @@ export class RoomService {
     const { room, participant } = this.authorizedPlayer(codeInput, playerToken);
     const game = this.requireGame(room);
     if (game.phase !== "ROLE_REVEAL") return;
+    if(game.openingNightVersion===1)this.assertPresentationComplete(room);
     if (!game.confirmedRoleSeats.includes(participant.seat!)) game.confirmedRoleSeats.push(participant.seat!);
     delete game.pauseReason;
     if (this.gameNow(room) >= game.phaseDeadlineAt) this.deadline(room);
     if (game.confirmedRoleSeats.length === room.playerCount) {
       game.phase = "FIRST_NIGHT";
       game.contextId = randomUUID();
-      this.event(room, "所有身份已确认。村庄进入首夜。", "NIGHT_FALLS");
+      if(game.openingNightVersion===1)this.event(room, "所有身份已确认，开始首夜行动。");
+      else this.event(room, "所有身份已确认。村庄进入首夜。", "NIGHT_FALLS");
       if(game.startInfo.mode==='LEGACY'){this.initializeNight(room);this.settleNightIfReady(room);}
       else {publishDue(game,this.gameNow(room));this.releaseStartInfoIfDue(room);}
     }
@@ -1372,7 +1377,7 @@ export class RoomService {
     const redHerringSeat = goodSeats[Math.floor(randomAt(`${room.id}:red-herring`, 0) * goodSeats.length)];
     const seed=randomUUID();
     const game: GameRuntime = {
-      presentationVersion:4,presentationSeen:{},roleNotifications:[],startInfo:createStartInfo(room,seed),
+      openingNightVersion:1,presentationVersion:4,presentationSeen:{},roleNotifications:[],startInfo:createStartInfo(room,seed),
       hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL"||!!room.rehearsalRole,
       contextId: randomUUID(),
       gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: seed, presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
@@ -1389,7 +1394,8 @@ export class RoomService {
     room.game=game;room.botControl.memory={};
     initializePresentation(game,this.gameNow(room));
     game.decisions.push({ id: `${game.gameId}:decision-1`, day: 0, ability: "setup", seat: 0, choice: "暗流涌动基础信息与主动能力组合", reason: "角色数量遵循人数配置与男爵修正；镇民足够时兼顾首夜信息和主动能力，身份随机分配。" });
-    this.event(room, "身份已私密发放，请每位玩家确认。");
+    (room.metadata??={}).openingNightRulesVersion=1;
+    this.event(room, "夜幕降临，身份确认即将开始。", "NIGHT_FALLS");
     for (const assignment of room.assignments) {
       const role = roleById(assignment.perceivedRoleId);
       messages[assignment.seat] = [];
@@ -1403,6 +1409,11 @@ export class RoomService {
       if (demon) this.privateMessage(game, demon.seat, smallGameNotice, "NOTICE");
       for (const minion of minions) this.privateMessage(game, minion.seat, smallGameNotice, "NOTICE");
     }
+    this.deadline(room);
+    // Include the delivery lead in the initial lock, before the first animation
+    // publication. Skipping a local movie must not expose or confirm a role early.
+    game.publicProjection!.presentationUntil=game.presentationUntil;
+    game.publicProjection!.phaseDeadlineAt=game.phaseDeadlineAt;
     return game;
   }
 

@@ -19,7 +19,7 @@ function shootingTable(successor = false) {
   snapshot.assignments = ["slayer", "chef", "empath", "saint", successor ? "scarlet_woman" : "baron", "imp"].map((roleId, i) => ({
     seat: i + 1, roleId, perceivedRoleId: roleId, roleType: roleById(roleId).type, alignment: i >= 4 ? "EVIL" : "GOOD",
   }));
-  snapshot.game!.presentationVersion=1;snapshot.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};snapshot.game!.phase = "DAY_DISCUSSION"; snapshot.game!.day = 1;
+  snapshot.game!.presentationVersion=1;snapshot.game!.startInfo={mode:"LEGACY",stage:"COMPLETE",entries:{}};snapshot.game!.phase = "DAY_DISCUSSION"; snapshot.game!.day = 1;snapshot.game!.presentationUntil=0;
   delete snapshot.game!.publicProjection; delete snapshot.game!.pendingPublications;
   initializePresentation(snapshot.game!); service.restore([snapshot]);
   return { service, room, players, now: () => now, advance(ms: number, tick = true) { now += ms; if (tick) service.advanceTime(now); } };
@@ -157,7 +157,7 @@ test("normal result is captured at reveal, survives reset/abort, and migrated co
   const result=t.service.snapshot(t.room.code).lastResult!;expect(result.participants).toHaveLength(6);expect(result.winner).toBe("GOOD");
   const old=t.service.snapshot(t.room.code);delete old.lastResult;delete old.game!.publicProjection;delete old.game!.pendingPublications;delete (old as Partial<RoomRecord>).schemaVersion;
   const restored=new RoomService({now:t.now});restored.restore([old]);restored.reset(t.room.code,t.players[0]!.token);expect(restored.snapshot(t.room.code).lastResult?.gameId).toBe(result.gameId);
-  t.service.reset(t.room.code,t.players[0]!.token);for(const p of t.players){t.service.pulse(t.room.code,p.token,t.now());t.service.setReady(t.room.code,p.token,true);}t.service.startTutorial(t.room.code,t.players[0]!.token,"SKIP");t.service.abort(t.room.code,t.players[0]!.token);expect(t.service.snapshot(t.room.code).lastResult).toEqual(result);
+  t.service.reset(t.room.code,t.players[0]!.token);for(const p of t.players){t.service.pulse(t.room.code,p.token,t.now());t.service.setReady(t.room.code,p.token,true);}t.service.startTutorial(t.room.code,t.players[0]!.token,"SKIP");t.advance(t.service.find(t.room.code).game!.presentationUntil-t.now());t.service.abort(t.room.code,t.players[0]!.token);expect(t.service.snapshot(t.room.code).lastResult).toEqual(result);
 });
 
 test("result API excludes anonymous callers and revokes removed members after reset",async()=>{
