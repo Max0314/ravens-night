@@ -65,3 +65,5 @@
 已确认配乐独立交付：GameScoreOwner唯一根slot替代旧OpeningMusicOwner（App由Root接）。M19原轨/0.8不变至第一DAWN；首日M15、第二夜M18、第二日M15，第三夜(day2入夜)起M19粘定；公开胜负结果门槛后GOOD→M01并连续到全员身份页，EVIL→M19已在则不重启。全轨HTMLAudio流式、普通2秒交叠/前景duck分开包络；静音/后台/暂停/预览停止、重连同曲不重启。私密M03从原件3秒/M22从0秒派生各4秒单声道，role-score helper与物件拟音分层、共用private门控，实际允许声音开始才duck，IN_PERSON秘密UI无声不影响背景。music/v2含固定源SHA、加工、产物SHA/媒体数值、完整作品标题作者许可署名页，build-game-score.py可离线重建；Root接菜单来源链接和部署，不包含后组v7/v8新动作依赖，未作手机试听。
 
 角色细节声音末组：新增v9九轨，按共享237a314对齐隐士350提灯细链/低火、圣徒350已燃烛焰细响（无点火/翻书）、男爵350轮轻滚/800停稳/900门铰/1450与1650封蜡/1550与1750厚纸展卷。新原件为真实细链MP3与轮滚FLAC，A04火、v6纸、v7门铰/木原位复用；sources/role-audio-v9完整许可/SHA与build-role-audio-v9.py离线重建齐全，实测索引生成到role-audio-v9.ts。ROLE_CHANGE仅另按669b119的wingStart+demon三接点追加既有翼三轨，无四刀或原身份声；同样private/master门控，瞬态不补/连续尾可续。此前四批拟音及现有认可枪/盾/厨子/书/管家/毒/四刀已逐项审查，旧非对应主题不再用于本组；不改实际角色/能力触发/门禁/总时长，手机真实视听仍待人工验收，Root负责动作配套集成/发布。
+
+配乐iOS局部修复：game-score每个流式HTMLAudio接共享已解锁AudioContext的MediaElementSource→GainNode，2秒交叠与240ms duck通过真实gain实现，不再依赖iOS不可写的元素volume；未整曲decode、未改音轨/Root owner/App/菜单/v9。图未准备好不直放全响，context恢复后确认可播，退出断节点不关共享引擎。volume只读目标mock与受影响播放测试通过，无浏览器或手机实际试听。
