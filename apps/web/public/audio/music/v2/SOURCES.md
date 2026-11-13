@@ -25,3 +25,5 @@
 两个私密短段解码估计合计1411200字节（约1.35MiB），M22/M03原曲约106/236秒均不整段解码；整首背景音乐只走HTMLAudio流式播放，不进入WebAudio缓存。仅目标代码/DOM/媒体数值核对，无浏览器、本地游戏/演示页面或实际试听；手机可听性和观感由正式环境人工验收。
 
 2026-11-13 iOS播放层补充：按Apple官方[Volume Control in JavaScript](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/Using_HTML5_Audio_Video/Device-SpecificConsiderations/Device-SpecificConsiderations.html)记录的元素音量限制，改用上述真实Gain路由。初次、共享context已挂起的恢复及重试手势均同栈先发起共享解锁再媒体play，不另建引擎、不解码整曲。共享context未running时不将媒体ready误作已可听，statechange就绪后才开始包络；图路由未建成保持静音/暂停并给重试状态，不回退全响双曲。暂停先将Gain清零并清除旧ready，防迟到native play短暂出声且确保同曲失败重试恢复增益；每个元素只建一条route，换曲复用，dispose断开节点不关闭共享context。目标mock在volume只读且写入抛错时仍验证两秒交叠、duck/恢复和原playhead；这些测试不代表iPhone/微信真实可听验收。Root已处理的owner手势解锁及App菜单不在本补丁改动中。
+
+2026-11-13 自然循环接头柔化：保留同一HTMLAudio原生loop，不改音轨字节、不写currentTime。使用实际currentTime/duration独立计算余弦S形loop包络：尾段最长1.4秒淡出，检测到尾→头回绕后在曲首最长1.4秒淡入；首轮起播仍由既有跨曲包络处理。最终Gain为曲目交叠权重×duck增益×loop包络，不重开2秒crossfade或240ms duck，不增加同时播放曲数。单一内部40ms计时器在流式媒体实际运行时采样，暂停/后台/隐藏/preview等既有停用路径清掉计时器并将Gain置零；恢复保留实际播放位置及当前loop相位，不用墙钟推进曲首淡入。duration无效/未知/无限时loop系数回到1并清无效相位，避免加载中被永久静音。目标测试覆盖尾→头、duck与跨曲叠加、尾/首暂停恢复、未知元数据，未做浏览器或真实试听；原曲与来源不变。
