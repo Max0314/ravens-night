@@ -16,6 +16,11 @@ export class PublicTransitionQueue {
    if(latest?.kind===row.event.kind&&latest.gameId===row.event.gameId&&latest.startsAt!==undefined&&latest.durationMs!==undefined)row.event=latest as ExperienceEvent;
    if(!valid(row.event)){this.discarded.add(row.event.id);return false;}return !seen.has(row.event.id);
   });
+  // A delayed atmospheric scene must not swallow a newly public execution or finale.
+  if(live&&(live.kind==='EXECUTION'||live.kind==='GAME_OVER')){
+   for(const row of this.pending){this.discarded.add(row.event.id);completed.push(row.event.id);}
+   this.pending=[];
+  }
   const withinOpening=live&&(!earlyDawn(live)||now<live.startsAt+experienceTiming(live.kind,live.timingVersion??1).resultOffset);
   if(live&&transition(live)&&valid(live)&&withinOpening&&!completed.includes(live.id)&&blocked&&!reading&&!this.pending.some(row=>row.event.id===live.id))this.pending.push({event:live});
   let row=this.pending[0];

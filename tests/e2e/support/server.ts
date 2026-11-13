@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { buildApp } from "../../../apps/server/src/app.js";
 import { RoomService, type RoomRecord } from "../../../apps/server/src/rooms/service.js";
 import { setupGameRoles } from "../../../packages/game-engine/src/roles/setup-roles.js";
@@ -14,6 +14,8 @@ async function main() {
   await writeFile("outputs/e2e/fixture.json", JSON.stringify({ poisonRoomCode: room.code }));
   // Real production durations remain enabled even though request logging is muted.
   const app = buildApp({ repository, accessPassword: process.env.E2E_ACCESS_PASSWORD ?? "e2e-only-password", presentation: true });
+  app.get('/__e2e/perf',async(_request,reply)=>reply.type('text/html').send((await readFile('apps/web/dist/index.html','utf8')).replace('</body>','<script src="/__e2e/performance.js"></script></body>')));
+  app.get('/__e2e/performance.js',async(_request,reply)=>reply.type('application/javascript').send(await readFile('tests/e2e/support/performance.js','utf8')));
   await app.listen({ host: "127.0.0.1", port: 4173 });
 }
 void main();

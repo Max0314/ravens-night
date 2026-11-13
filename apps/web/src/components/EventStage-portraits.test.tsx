@@ -28,7 +28,7 @@ test.each(['NOMINATION','SHOT'] as const)('%s identifies both the actor and targ
 
 test('dawn waits for the public result before displaying the deceased and never adds a protection explanation',()=>{
  clock();const before=event('DAWN');const ui=render(<EventStage game={game([before])}/>);expect(ui.container.querySelector('.dawn-memorial')).toBeNull();act(()=>vi.advanceTimersByTime(2800));expect(ui.container.querySelector('.dawn-memorial')).toBeNull();
- ui.rerender(<EventStage game={{...game([{...before,outcome:'DEATH',seats:[2],message:'昨夜玩家2死亡。'}]),serverNow:epoch+2800}}/>);expect(ui.container.querySelector('.dawn-memorial .scene-person img')).toHaveAttribute('src','/avatars/2.webp');expect(ui.container.querySelectorAll('.dawn-memorial .scene-person img')).toHaveLength(1);
+ ui.rerender(<EventStage game={{...game([{...before,outcome:'DEATH',seats:[2],message:'昨夜玩家2死亡。'}]),serverNow:epoch+2800}}/>);expect(ui.container.querySelector('.dawn-memorial .player-avatar img')).toHaveAttribute('src','/avatars/2.webp');expect(ui.container.querySelectorAll('.dawn-memorial .player-avatar img')).toHaveLength(1);
  ui.rerender(<EventStage game={{...game([{...before,outcome:'NO_DEATH',seats:[],message:'昨夜无人死亡。'}]),serverNow:epoch+2800}}/>);expect(ui.container.querySelector('.dawn-memorial img')).toBeNull();expect(ui.container.textContent).not.toMatch(/保护|士兵|袭击|下毒/);expect(screen.getByRole('heading',{name:'今夜，无人死亡'})).toBeVisible();
 });
 

@@ -1,4 +1,5 @@
 import {runBotCommand} from './rooms/bot-commands.js';
+import {responseCacheControl} from './http-cache.js';
 import cookie from "@fastify/cookie";
 import websocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
@@ -97,7 +98,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     if (!accessPassword || !request.url.startsWith("/api/") || request.url.startsWith("/api/auth/")) return;
     if (signedCookie(request, "ravens_access") !== "authorized") return reply.code(401).send({ error: "请重新输入访问口令" });
   });
-  app.addHook("onSend", async (_request, reply) => { reply.header("X-Content-Type-Options", "nosniff").header("Referrer-Policy", "same-origin").header("Cache-Control", "no-store"); });
+  app.addHook("onSend", async (request, reply) => { reply.header("X-Content-Type-Options", "nosniff").header("Referrer-Policy", "same-origin").header("Cache-Control", responseCacheControl(request.method,request.url,reply.statusCode,reply.getHeader('content-type'))); });
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof RoomError) return reply.code(error.status).send({ errorCode: error.errorCode, error: error.message, refreshRequired: error.refreshRequired, ...error.details });
     if (error instanceof PersistenceUnavailableError) return reply.code(503).send({ errorCode: "SAVE_UNAVAILABLE", error: error.message });

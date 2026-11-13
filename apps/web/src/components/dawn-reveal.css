@@ -1,0 +1,20 @@
+.dawn-memorial.dawn-reveal{position:absolute;inset:0;display:grid;place-items:center;gap:0;padding:12px 8px;background:none;animation:dawn-reveal-in .48s ease-out both}
+.dawn-memorial.dawn-reveal>.dawn-reveal__people{display:flex;align-items:start;justify-content:center;gap:clamp(18px,4vw,44px);width:100%;max-width:none}
+.dawn-reveal .dawn-reveal__person{display:grid;justify-items:center;gap:10px;min-width:0;max-width:180px}
+.dawn-reveal__portrait{position:relative;width:clamp(112px,20vmin,156px);aspect-ratio:1;border:1px solid #b29c6859;border-radius:50%;padding:5px;background:#0b141dc9;box-shadow:0 0 0 5px #c6b17b0b}
+.dawn-reveal .dawn-reveal__portrait>.player-avatar{width:100%;height:100%;border:0;filter:grayscale(1);opacity:.9}
+.dawn-reveal__portrait>.premium-claw{position:absolute;inset:-8%;width:116%;height:116%;pointer-events:none}
+.dawn-reveal__seat{position:absolute;left:-5px;top:-5px;min-width:24px;height:24px;display:grid;place-items:center;border:1px solid #9f916c77;border-radius:50%;background:#10181e;color:#c9bd9d;font:12px var(--rn-mono)}
+.dawn-reveal .dawn-reveal__person>strong{font:400 clamp(18px,3.5vw,25px)/1.35 var(--rn-serif);color:#e6ddc8;text-align:center;overflow-wrap:anywhere}
+.dawn-reveal .dawn-reveal__person>small,.dawn-reveal .dawn-reveal__safe>small{font-size:12px;letter-spacing:.15em;color:#a9ada7}
+.dawn-reveal--multiple .dawn-reveal__portrait{width:clamp(70px,15vmin,118px)}
+.dawn-reveal .dawn-reveal__safe{display:grid;justify-items:center;gap:13px}
+.dawn-reveal__window{display:grid;place-items:center;width:108px;height:120px;border-radius:60px 60px 12px 12px;background:radial-gradient(ellipse,#cfb47618,transparent 70%)}
+.dawn-reveal__window>svg{width:60px;height:80px;stroke:#c8b481;stroke-width:1.2}
+.dawn-reveal .dawn-reveal__safe>strong{font:400 24px/1.4 var(--rn-serif);color:#e1d2af;letter-spacing:.15em}
+.event-stage--dawn .event-stage__result{max-width:28em;line-height:1.6;color:#b5bbb8}
+.event-stage__virgin-trigger{display:flex;align-items:center;justify-content:center;gap:8px;color:#d6c390;letter-spacing:.04em}
+.event-stage__virgin-trigger>.player-avatar{width:30px;height:30px;flex:none}
+@keyframes dawn-reveal-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-height:540px){.dawn-reveal__portrait{width:86px}.dawn-reveal .dawn-reveal__person{gap:6px}.dawn-reveal__window{height:90px;width:82px}.dawn-reveal__window>svg{height:64px}.dawn-reveal .dawn-reveal__safe{gap:6px}}
+@media(prefers-reduced-motion:reduce){.dawn-memorial.dawn-reveal{animation:none}}

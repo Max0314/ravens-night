@@ -183,5 +183,5 @@ test('a real first-night dawn queues before the public day patch and refreshes i
  const published={...neutral,outcome:'DEATH' as const,seats:[3],message:'三号玩家没有醒来。'};
  ui.rerender(<EventStage game={{...game([published],epoch+1800),phase:'DAY_DISCUSSION',day:1}}/>);
  expect(ui.container.querySelector('.dawn-memorial')).toBeNull();expect(screen.queryByText('三号玩家没有醒来。')).toBeNull();const progress=Number(ui.container.querySelector<HTMLElement>('.event-stage__progress')!.style.transform.slice(7,-1));expect(progress).toBeCloseTo(1-800/6600,5);
- act(()=>vi.advanceTimersByTime(960));expect(ui.container.querySelector('.dawn-memorial')).toBeNull();act(()=>vi.advanceTimersByTime(80));expect(ui.container.querySelector('.dawn-memorial')).toHaveTextContent('3号玩家');expect(screen.getByText('三号玩家没有醒来。')).toBeVisible();
+ act(()=>vi.advanceTimersByTime(960));expect(ui.container.querySelector('.dawn-memorial')).toBeNull();act(()=>vi.advanceTimersByTime(80));expect(ui.container.querySelector('.dawn-memorial')).toHaveTextContent('3号玩家');expect(screen.getByText('请继续白天讨论。')).toBeVisible();
 });

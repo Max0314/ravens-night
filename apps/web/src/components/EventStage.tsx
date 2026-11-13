@@ -1,4 +1,6 @@
 import {PublicTransitionQueue} from '../presentations/public-transitions.js';
+import {DawnReveal} from './DawnReveal.js';
+import {victoryCause,victoryCaption} from './victory-cause.js';
 import {AtmosphericSky} from './AtmosphericSky.js';
 import {ArtImage} from './PremiumArt.js';
 import {FeedbackButton} from '@ravens/ui';
@@ -83,11 +85,12 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   const selected=transitions.current.select(game,live,now,blocked,reading,excluded);
   const active=selected.active;
   const elapsed=selected.elapsed;
+  const critical=active?.kind==='EXECUTION'||active?.kind==='GAME_OVER';
+  const quiet=!!active&&!critical&&(reading||quietEvents.current.has(active.id));
   useEffect(()=>{for(const id of selected.completed)remember(id);},[selected.completed.join(',')]);
   // Re-sample the authoritative clock per painted frame; do not invent a CSS clock.
   const [,renderMotion]=useState(0);
-  useEffect(()=>{if(!active||frozen||hidden||playback)return;let frame=0;const tick=()=>{renderMotion(n=>n+1);frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);},[active?.id,frozen,hidden,!!playback]);
-  const quiet=!!active&&(reading||quietEvents.current.has(active.id));
+  useEffect(()=>{if(!active||frozen||hidden||playback||quiet||reduced)return;let frame=0;const tick=()=>{renderMotion(n=>n+1);frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);},[active?.id,frozen,hidden,!!playback,quiet,reduced]);
   if(quiet&&active)quietEvents.current.add(active.id);
   const notice=(game?.events??[]).filter(isCinematic).find(event=>noticeEvent(event)&&!dismissed.includes(event.id)&&now>=event.startsAt&&now<event.startsAt+event.durationMs);
   useLayoutEffect(()=>{onActivityChange?.(!!active&&!quiet);return()=>onActivityChange?.(false);},[active?.id,quiet,onActivityChange]);
@@ -143,8 +146,10 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
     return () => { document.removeEventListener("keydown", keyboard); if (previous?.isConnected) previous.focus(); };
   }, [active?.id,quiet]);
   function remember(id: string) {
+    const first=!seen.current.has(id);
     seen.current.add(id);
     try { sessionStorage.setItem(`ravens_events_${gameKey}`, JSON.stringify([...seen.current].slice(-150))); } catch { /* Deduplication still works in this tab. */ }
+    if(first)window.dispatchEvent(new CustomEvent('ravens:public-event-seen',{detail:{gameId:gameKey,eventId:id}}));
   }
   function skip() { if (active) { cancelEventAudio(active.id); remember(active.id); setDismissed((all) => [...all, active.id]); } if(privateScene)cancelEventAudio('private:'+privateScene.id);setPrivateScene(undefined); }
   const event = active;
@@ -154,6 +159,8 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   const deaths = event?.seats ?? [];
   const dawnNames=deaths.map(seat=>playerLabel(seat,game?.seats.find(player=>player.seat===seat)?.nickname)).join('、');
   const emptyExecution=event?.kind==="EXECUTION"&&event.targetSeat===undefined;
+  const virginNomination=showResult&&event?.kind==='EXECUTION'&&event.message.startsWith('处女的能力触发：')?game?.events.find(previous=>previous.seq===event.seq-1&&previous.kind==='NOMINATION'&&previous.actorSeat===event.targetSeat):undefined;
+  const virgin=game?.seats.find(player=>player.seat===virginNomination?.targetSeat);
   const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${playerLabel(event.actorSeat,actor?.nickname)} 举起了枪`, EXECUTION: showResult ? emptyExecution ? "今天无人被处决" : event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? `${dawnNames}未能等到黎明` : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !showResult ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
   return <>
     {notice?<aside className="event-notice" role="status"><span className="event-notice__seal" aria-hidden="true">{notice.kind==='NOMINATION'?'⚖':'✓'}</span>{notice.kind==='NOMINATION'?<><ScenePerson game={game} seat={notice.actorSeat}/><span>提名</span><ScenePerson game={game} seat={notice.targetSeat}/></>:<span>{formatPlayerText(notice.message)}</span>}<FeedbackButton type="button" aria-label="收起事件提示" onClick={()=>setDismissed(all=>[...all,notice.id])}>×</FeedbackButton></aside>:null}
@@ -161,22 +168,22 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
     {event&&quiet?<aside className="phase-reading-notice" role="status" aria-label="阶段变化"><span>{elapsed<0?event.kind==='DAWN'?'即将天亮':event.kind==='NIGHT_FALLS'?'即将入夜':'即将公布':title}</span></aside>:null}
     {event&&!quiet ? <section key={event.id} data-timing-version={event.timingVersion??1} ref={stageRef} tabIndex={-1} className={`event-stage event-stage--${event.kind.toLowerCase()}${showResult ? " is-result" : ""}${staticMotion ? " is-reduced" : ""}${frozen?" is-frozen":""}${emptyExecution?" is-empty-execution":""}${showResult&&event.outcome==="DEATH"?" has-death":""}`} role="dialog" aria-label="城镇公开演出" aria-modal={!preview} style={{ "--scene-delay": canSeek?"0ms":`${animationAnchor.current?.delay??0}ms`, "--scene-duration": `${event.durationMs}ms` } as CSSProperties}>
       {event.kind==='EXECUTION'?<ExecutionBloodScreen elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} death={event.outcome==='DEATH'} empty={emptyExecution} resultVisible={showResult} reduced={reduced}/>:null}
-      {event.kind==="GAME_OVER"&&showResult&&(event.outcome==="GOOD"||event.outcome==="EVIL")?<VictoryArt winner={event.outcome} elapsedMs={elapsed-experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced} cause={game?.winReason?.includes('圣徒')?'SAINT':game?.winReason?.includes('镇长')?'MAYOR':game?.winReason?.includes('恶魔')?'DEMON':'OTHER'}/>:null}
+      {event.kind==="GAME_OVER"&&showResult&&(event.outcome==="GOOD"||event.outcome==="EVIL")?<VictoryArt winner={event.outcome} elapsedMs={elapsed-experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced} cause={victoryCause(game?.winReason)}/>:null}
       {event.kind==='DAWN'||event.kind==='NIGHT_FALLS'?<AtmosphericSky phase={event.kind} elapsedMs={elapsed} durationMs={event.durationMs} reduced={reduced}/>:null}
       <div className="event-stage__grain" aria-hidden="true" /><div className="event-stage__halo" aria-hidden="true" />
       <header><span>RAVENS AT MIDNIGHT</span><span>{preview ? "演出预览" : "全员公开事件"}</span></header>
       <div className="event-stage__body">
-        <p className="event-stage__eyebrow">{event.kind === "DAWN" ? `第 ${event.day ?? game?.day ?? 1} 天 · 黎明` : event.kind === "SHOT" ? "猎魔人 · 公开宣称" : event.kind === "EXECUTION" ? "城镇公决" : "钟声回响"}</p>
+        <p className="event-stage__eyebrow">{virgin?<span className="event-stage__virgin-trigger"><Avatar id={String(virgin.seat)} name={virgin.nickname} url={virgin.avatar} loading="eager"/>{playerLabel(virgin.seat,virgin.nickname)} · 处女能力触发</span>:event.kind === "DAWN" ? `第 ${event.day ?? game?.day ?? 1} 天 · 黎明` : event.kind === "SHOT" ? "猎魔人 · 公开宣称" : event.kind === "EXECUTION" ? "城镇公决" : "钟声回响"}</p>
         <h1>{elapsed<0?"即将开始":title}</h1>
         <div className="event-stage__theatre" aria-hidden="true">
           {event.kind === "SHOT" ? <><HuntingRifleScene elapsedMs={elapsed} fireAt={experienceTiming(event.kind,event.timingVersion??1).cues.find(([,cue])=>cue==='shot')?.[0]??experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced}/><ScenePerson game={game} seat={event.actorSeat} label="开枪者" className="shot-actor"/><div className={`event-token${showResult && event.outcome === "DEATH" ? " event-token--fallen" : ""}`}><ScenePerson game={game} seat={event.targetSeat} label="射击目标"/>{showResult&&event.outcome==='DEATH'?<ResultBlood reduced={reduced} variant="right" elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/>:null}</div></> : null}
           {event.kind === "EXECUTION" ? <GuillotineScene reduced={reduced} elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} empty={emptyExecution} resultVisible={showResult} death={showResult&&event.outcome==='DEATH'} blood={showResult&&event.outcome==='DEATH'?<ResultBlood reduced={reduced} elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/>:undefined}>{!emptyExecution?<div className="event-token"><ScenePerson game={game} seat={event.targetSeat} label="被处决者"/></div>:null}</GuillotineScene> : null}
-          {event.kind === "DAWN" ? <div className="dawn-tableau"><div className="dawn-windows"><i /><i /><i /></div>{showResult ? <div className="dawn-memorial">{deaths.length ? deaths.map((seat) => <div key={seat}><div className="dawn-person-impact"><ScenePerson game={game} seat={seat} label="已死亡" className="dawn-person"/><Claw/><ResultBlood reduced={reduced} variant="stain" elapsedMs={elapsed} resultAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset}/></div><span className="memorial-candle" /></div>) : <div><span className="memorial-candle is-lit" /><strong>所有灯火，仍然亮着</strong></div>}</div> : null}</div> : null}
+          {event.kind === "DAWN"&&showResult ? <DawnReveal players={game?.seats??[]} seats={deaths}/> : null}
           {event.kind==="NOMINATION"?<div className="nomination-tableau"><div className="nomination-orbit"/><ScenePerson game={game} seat={event.actorSeat} label="提名" className="nomination-actor"/><div className="nomination-summons"><ArtImage name="sealed-letter"/><span>→</span></div><ScenePerson game={game} seat={event.targetSeat} label="被提名" className="nomination-target"/></div>:null}
           {event.kind==="VOTE_RESULT"?<ScenePerson game={game} seat={event.targetSeat} label="本轮被提名" className="vote-result-person"/>:null}
           {!['SHOT', 'EXECUTION', 'DAWN', 'NOMINATION', 'NIGHT_FALLS'].includes(event.kind) ? <div className={`ceremony-seal ceremony-seal--${event.kind.toLowerCase()}`}><span>{event.kind === "VOTE_RESULT" ? `${event.votes ?? "—"}` : event.kind === "NIGHT_FALLS" ? "☾" : "⚜"}</span><small>{event.kind === "VOTE_RESULT" ? "票" : "RAVENS"}</small></div> : null}
         </div>
-        <p className="event-stage__result" aria-live="polite">{showResult || !["SHOT", "EXECUTION", "DAWN", "GAME_OVER"].includes(event.kind) ? formatPlayerText(event.message) : event.kind === "SHOT" ? `枪口指向 ${playerLabel(event.targetSeat,target?.nickname)}` : event.kind === "EXECUTION" ? emptyExecution ? "晚风穿过刑架，等待判决公布。" : `${playerLabel(event.targetSeat,target?.nickname)} 走向钟楼` : event.kind === "GAME_OVER" ? "结局即将揭晓。" : "每个人都屏住呼吸，等待今夜的消息。"}</p>
+        <p className="event-stage__result" aria-live="polite">{showResult?virgin?'提名者立即被处决，今日提名结束。':event.kind==='DAWN'?'请继续白天讨论。':event.kind==='GAME_OVER'?victoryCaption(game?.winReason,formatPlayerText(event.message)):formatPlayerText(event.message):!["SHOT", "EXECUTION", "DAWN", "GAME_OVER"].includes(event.kind)?formatPlayerText(event.message):event.kind === "SHOT" ? `枪口指向 ${playerLabel(event.targetSeat,target?.nickname)}` : event.kind === "EXECUTION" ? emptyExecution ? "晚风穿过刑架，等待判决公布。" : `${playerLabel(event.targetSeat,target?.nickname)} 走向钟楼` : event.kind === "GAME_OVER" ? "结局即将揭晓。" : "等待黎明的消息。"}</p>
         {showResult && deaths.length > 0 && ["DAWN", "SHOT", "EXECUTION"].includes(event.kind) && event.outcome !== "NO_DEATH" ? <small className="event-stage__aftercare">死亡不等于离场。你仍可讨论，并保留一枚幽灵票。身份继续保密。</small> : null}
       </div>
       <footer><span>{reduced ? "已尊重减少动态效果偏好" : "所有屏幕共享同一段钟声"}</span><FeedbackButton type="button" onClick={skip}>跳过演出</FeedbackButton></footer>
