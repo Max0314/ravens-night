@@ -3,6 +3,7 @@ import {privateAudioAllowed} from '../participation-audio.js';
 import {cinematicTiming as contact} from './cinematic-timing.js';
 import {roleAudioV6 as detailLead} from './role-audio-v6.js';
 import {roleAudioV7 as ravenCoffinLead} from './role-audio-v7.js';
+import {roleAudioV8 as remainingLead} from './role-audio-v8.js';
 type Scope='public'|'private'|'ui'|'book'|'nomination'|'ballot';
 export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
@@ -55,7 +56,7 @@ function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve()
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
 function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
- const prefix=sample.match(/^(v[134567]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[134567]:/,'');
+ const prefix=sample.match(/^(v[1345678]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[1345678]:/,'');
  const candidate=/^candidate:(L02|L03|L04|A03)$/.exec(sample)?.[1],url=candidate?'/audio-candidates/2026-11-12-v1/'+candidate+'.mp3':'/audio/effects/'+version+'/'+name+'.mp3';
  const pending=(async()=>{await takeLoadSlot();try{const response=await fetch(url);if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
@@ -143,12 +144,14 @@ const demonContact=contact.demon as typeof contact.demon&{avatarLeft?:number;ava
 const materialLead={slash:85,cork:9.75,pour:24.6,chop:[10.63,10.09,10.86]} as const;
 function detailCue(at:number,name:keyof typeof detailLead,volume:number,transient=false):RoleAudioCue{return[at-detailLead[name][transient?'peak':'onset'],'v6:'+name,volume,transient?'transient':'continuous',at];}
 function ravenCoffinCue(at:number,name:keyof typeof ravenCoffinLead,volume:number,transient=false):RoleAudioCue{return[at-ravenCoffinLead[name][transient?'peak':'onset'],'v7:'+name,volume,transient?'transient':'continuous',at];}
+function remainingCue(at:number,name:keyof typeof remainingLead,volume:number,transient=false):RoleAudioCue{return[at-remainingLead[name][transient?'peak':'onset'],'v8:'+name,volume,transient?'transient':'continuous',at];}
+const cloakCues=()=>[remainingCue(contact.scarlet.start,'cloak-unfold',.58),remainingCue(contact.scarlet.open,'cloak-hem',.5)];
 export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
  const role=scene.themeRoleId,variant=1+hash(scene.id)%4;
  // Scene kind takes priority over the role that received the envelope.
  if(scene.kind==='EVIL_START')return[detailCue(contact.envelope.seal,'envelope-seal',.38,true),detailCue(contact.envelope.flapStart,'envelope-flap',.5),detailCue(contact.envelope.paperStart,'envelope-draw',.5)];
  if(scene.kind==='OLD_DEMON_CONTINUATION')return[[600,'wing-air',.17]];
- if(scene.kind==='ROLE_CHANGE')return[[500,'role-scarlet_woman',.5]];
+ if(scene.kind==='ROLE_CHANGE')return cloakCues();
  if(role==='washerwoman')return[detailCue(contact.washer.dipStart,'washer-dip',.44),detailCue(contact.washer.scrubStart,'washer-scrub',.48),detailCue(contact.washer.dripStart,'washer-drops',.46),detailCue(contact.washer.dipStart,'washer-whisper',.7)];
  if(role==='fortune_teller')return[detailCue(contact.crystal.start,'crystal-resonance',.6),detailCue(contact.crystal.answer,'crystal-shiver',.48)];
  if(role==='investigator')return[detailCue(contact.investigator.scanStart,'investigator-lens',.52),detailCue(contact.investigator.turn,'investigator-evidence',.52)];
@@ -159,6 +162,12 @@ export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
  if(role==='chef')return contact.chef.map((at,i)=>[at-materialLead.chop[i]!,'v4:chef-chop-'+(i+1),.5,'transient',at]);
  if(role==='ravenkeeper')return[ravenCoffinCue(contact.raven.attention,'raven-short-call',.42),ravenCoffinCue(contact.raven.flapStart,'raven-wing-open',.54),ravenCoffinCue(contact.raven.flapStart,'raven-feathers',.4),ravenCoffinCue(contact.raven.spread,'raven-wing-fold',.5)];
  if(role==='undertaker')return[ravenCoffinCue(contact.coffin.start,'coffin-hinge',.5),ravenCoffinCue(contact.coffin.open,'coffin-settle',.4,true)];
+ if(role==='empath')return[contact.empath.left,contact.empath.left+contact.empath.echoDelay,contact.empath.right,contact.empath.right+contact.empath.echoDelay].map((at,i)=>remainingCue(at,'empath-pulse',i%2?.4:.6,true));
+ if(role==='soldier')return[remainingCue(contact.armor.contact,'soldier-shield',.58,true)];
+ if(role==='mayor')return[remainingCue(contact.mayor.contact,'scepter-contact',.58,true),remainingCue(contact.mayor.document,'mayor-document',.5)];
+ if(role==='drunk')return[remainingCue(contact.drunk.lean,'cup-sway-left',.5),remainingCue(contact.drunk.return,'cup-sway-right',.5)];
+ if(role==='scarlet_woman')return cloakCues();
+ if(role==='virgin')return[remainingCue(contact.flower.ribbon,'flower-ribbon',.5)];
  if(role==='librarian'||role==='spy')return[[contact.book.middle,'paper-turn-'+variant,.4]];
  return[[500,'role-'+role,.5]];
 }
@@ -177,7 +186,7 @@ export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,opti
   sampleAt(id,key,sample,Math.max(0,(at-elapsed)/rate),'private',rate,volume,offset,150);
  }
 }
-export async function auditionSample(sample:string){if(!/^(?:v[134567]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
+export async function auditionSample(sample:string){if(!/^(?:v[1345678]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
 
 
 export type NominationSoundEvent={id?:string;kind?:string;startsAt?:number;durationMs?:number;outcome?:string};
