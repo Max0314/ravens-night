@@ -9,7 +9,7 @@ export interface StartInfo {
   entries: Record<number, { infoId: string; team: Array<{seat:number;nickname:string;avatar?:string;kind:'DEMON'|'MINION'}>; bluffRoleIds:string[];acknowledged:boolean }>;
 }
 export function createStartInfo(room: RoomRecord, seed: string): StartInfo {
-  if (room.playerCount < 7) return { mode:'NONE',stage:'WAIT_NIGHTFALL',entries:{} };
+  if (room.playerCount < 7&&!(room.playerCount===6&&room.metadata?.sixPlayerEvilCooperation===true)) return { mode:'NONE',stage:'WAIT_NIGHTFALL',entries:{} };
   const demon = room.assignments.find(p => p.roleType === 'DEMON')!;
   const minions = room.assignments.filter(p => p.roleType === 'MINION');
   const excluded = [...new Set(room.assignments.flatMap(p => [p.roleId,p.perceivedRoleId]))];
@@ -25,16 +25,17 @@ export function validateStartInfo(room:RoomRecord) {
   const g=room.game;if(!g)return;
   const fail=():never=>{throw new Error(`Room ${room.code}: invalid start information`);};
   const s=g.startInfo;
+  const cooperation=room.playerCount===6&&g.sixPlayerEvilCooperation===true;
   if(![1,2,3,4].includes(g.presentationVersion)||!s||!['REQUIRED','NONE','LEGACY'].includes(s.mode)||!['WAIT_NIGHTFALL','WAIT_ACK','COMPLETE','CANCELLED'].includes(s.stage)||!s.entries||Array.isArray(s.entries))fail();
   if(s.stage==='CANCELLED'&&g.phase!=='ABORTED'||s.stage==='WAIT_ACK'&&g.phase!=='FIRST_NIGHT'||s.stage==='WAIT_NIGHTFALL'&&!['ROLE_REVEAL','FIRST_NIGHT'].includes(g.phase))fail();
   if(s.releasedAt!==undefined&&!Number.isSafeInteger(s.releasedAt)||s.stage==='WAIT_NIGHTFALL'&&s.releasedAt!==undefined||s.stage==='WAIT_ACK'&&s.releasedAt===undefined)fail();
   if(s.mode!=='REQUIRED') {
-    if(Object.keys(s.entries).length||s.initial||s.mode==='LEGACY'&&!['COMPLETE','CANCELLED'].includes(s.stage)||s.mode==='NONE'&&(room.playerCount>=7||s.stage==='WAIT_ACK'))fail();
+    if(cooperation||Object.keys(s.entries).length||s.initial||s.mode==='LEGACY'&&!['COMPLETE','CANCELLED'].includes(s.stage)||s.mode==='NONE'&&(room.playerCount>=7||s.stage==='WAIT_ACK'))fail();
     return;
   }
   const i=s.initial;
   const seat=(v:number)=>Number.isInteger(v)&&v>=1&&v<=room.playerCount;
-  if(room.playerCount<7||!i||!seat(i.demonSeat)||!Array.isArray(i.minionSeats)||i.minionSeats.length!==(room.playerCount<10?1:2)||i.minionSeats.some(v=>!seat(v)||v===i.demonSeat)||new Set(i.minionSeats).size!==i.minionSeats.length||!Array.isArray(i.excludedBluffRoleIds)||i.excludedBluffRoleIds.some(id=>!ROLE_CATALOG.some(r=>r.id===id)))fail();
+  if(room.playerCount<7&&!cooperation||!i||!seat(i.demonSeat)||!Array.isArray(i.minionSeats)||i.minionSeats.length!==(room.playerCount<10?1:2)||i.minionSeats.some(v=>!seat(v)||v===i.demonSeat)||new Set(i.minionSeats).size!==i.minionSeats.length||!Array.isArray(i.excludedBluffRoleIds)||i.excludedBluffRoleIds.some(id=>!ROLE_CATALOG.some(r=>r.id===id)))fail();
   const all=[i!.demonSeat,...i!.minionSeats], ids=new Set<string>();
   if(Object.keys(s.entries).length!==all.length)fail();
   for(const own of all){
