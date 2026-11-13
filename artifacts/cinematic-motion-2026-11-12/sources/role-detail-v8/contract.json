@@ -1,0 +1,145 @@
+{
+  "world": [
+    600,
+    500
+  ],
+  "runtimeRoot": "/art/effects/v8/",
+  "lighting": "Warm upper-left key light; natural muted parchment/wax/brass/wood, transparent surround.",
+  "groups": {
+    "envelope": {
+      "hinge": [
+        [
+          100,
+          220
+        ],
+        [
+          500,
+          220
+        ]
+      ],
+      "closedFlapTip": [
+        300,
+        345
+      ],
+      "paperInitialRect": [
+        135,
+        230,
+        330,
+        200
+      ],
+      "paperTravelY": -185,
+      "sealCentre": [
+        300,
+        325
+      ],
+      "sealDiameter": 54,
+      "defaultZ": [
+        "envelope-back",
+        "envelope-paper",
+        "envelope-front",
+        "envelope-flap-front",
+        "envelope-seal"
+      ],
+      "parts": [
+        {
+          "id": "envelope-back",
+          "targetRect": [
+            100,
+            220,
+            400,
+            210
+          ]
+        },
+        {
+          "id": "envelope-front",
+          "targetRect": [
+            100,
+            220,
+            400,
+            210
+          ]
+        },
+        {
+          "id": "envelope-flap-front",
+          "targetRect": [
+            100,
+            220,
+            400,
+            125
+          ]
+        },
+        {
+          "id": "envelope-flap-back",
+          "targetRect": [
+            100,
+            220,
+            400,
+            125
+          ]
+        },
+        {
+          "id": "envelope-seal",
+          "targetRect": [
+            273,
+            298,
+            54,
+            54
+          ]
+        },
+        {
+          "id": "envelope-paper",
+          "targetRect": [
+            135,
+            230,
+            330,
+            200
+          ]
+        }
+      ]
+    },
+    "lens": {
+      "centre": [
+        300,
+        205
+      ],
+      "requestedOuterRadius": 100,
+      "measuredHoleNormalizeRadius": 85,
+      "guaranteedClearRadius": 82,
+      "requestedHandleEnd": [
+        450,
+        415
+      ],
+      "evidenceTextureFocus": [
+        165,
+        245
+      ],
+      "defaultZ": [
+        "investigator-evidence",
+        "runtime-reprojected-same-evidence",
+        "investigator-lens-glint",
+        "investigator-magnifier"
+      ],
+      "parts": [
+        {
+          "id": "investigator-evidence",
+          "targetRect": [
+            55,
+            75,
+            490,
+            390
+          ]
+        },
+        {
+          "id": "investigator-magnifier",
+          "processingMode": "calibrate-transparent-hole"
+        },
+        {
+          "id": "investigator-lens-glint",
+          "processingMode": "whole-canvas-glint",
+        "glassLocalScale": 0.9,
+          "opacity": 0.22
+        }
+      ]
+    }
+  }
+}

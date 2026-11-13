@@ -1,0 +1,904 @@
+{
+  "version": 8,
+  "world": [
+    600,
+    500
+  ],
+  "generator": "built-in image_gen",
+  "files": [
+    {
+      "id": "envelope-back",
+      "group": "envelope",
+      "targetRect": [
+        100,
+        220,
+        400,
+        210
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-back.png",
+      "sourceSha256": "6af5508cddfe4046c236a05fdcc30ec224814ded3e05e3d555d3bfca414f7313",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        223,
+        492,
+        1151,
+        976
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-back.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-back.webp",
+      "url": "/art/effects/v8/envelope-back.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 120546,
+      "sha256": "51cad2e4d6d64be3b259fd5812c5871de1d17695f2c6541ac861b93e10513b59",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          100,
+          220,
+          500,
+          429
+        ],
+        "alphaAbove128Bounds": [
+          101,
+          221,
+          499,
+          429
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            222,
+            427
+          ],
+          "135": [
+            222,
+            427
+          ],
+          "273": [
+            222,
+            427
+          ],
+          "300": [
+            222,
+            427
+          ],
+          "327": [
+            222,
+            427
+          ],
+          "465": [
+            222,
+            427
+          ],
+          "490": [
+            222,
+            427
+          ],
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-front",
+      "group": "envelope",
+      "targetRect": [
+        100,
+        220,
+        400,
+        210
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-front.png",
+      "sourceSha256": "bd52e5463dae3a296d76f396542dca61ed9a3b98e409a42ffd09356f34b8c95c",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        214,
+        495,
+        1159,
+        1004
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-front.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-front.webp",
+      "url": "/art/effects/v8/envelope-front.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 95886,
+      "sha256": "66b166b5fe86ed34d6b73408c06fab8b9e6d9e1428380df8e6005fb356503b0b",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          101,
+          220,
+          499,
+          430
+        ],
+        "alphaAbove128Bounds": [
+          102,
+          221,
+          499,
+          429
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            224,
+            428
+          ],
+          "135": [
+            241,
+            427
+          ],
+          "273": [
+            329,
+            427
+          ],
+          "300": [
+            346,
+            427
+          ],
+          "327": [
+            328,
+            427
+          ],
+          "465": [
+            240,
+            427
+          ],
+          "490": [
+            223,
+            427
+          ],
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-flap-front",
+      "group": "envelope",
+      "targetRect": [
+        100,
+        220,
+        400,
+        125
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-flap-front.png",
+      "sourceSha256": "de6967c73b13cd0bdfa314a2c7f153db7e0deffbe3d5842f63e78d10c889af42",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        223,
+        486,
+        1147,
+        851
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-flap-front.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-flap-front.webp",
+      "url": "/art/effects/v8/envelope-flap-front.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 47876,
+      "sha256": "36dd417345aec61302278482b3096c0dac8d9d9cdbee52bee0436b82ad23c5c4",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          100,
+          220,
+          500,
+          345
+        ],
+        "alphaAbove128Bounds": [
+          101,
+          221,
+          499,
+          344
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            221,
+            229
+          ],
+          "135": [
+            221,
+            246
+          ],
+          "273": [
+            221,
+            329
+          ],
+          "300": [
+            221,
+            343
+          ],
+          "327": [
+            221,
+            327
+          ],
+          "465": [
+            221,
+            245
+          ],
+          "490": [
+            221,
+            229
+          ],
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-flap-back",
+      "group": "envelope",
+      "targetRect": [
+        100,
+        220,
+        400,
+        125
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-flap-back.png",
+      "sourceSha256": "adb461134d66df771249fbe34608f016201c7d98e79b6bd4ffd5043583261db3",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        227,
+        489,
+        1146,
+        827
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-flap-back.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-flap-back.webp",
+      "url": "/art/effects/v8/envelope-flap-back.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 46222,
+      "sha256": "dd69496b83bda9c5c57dc50bef437e53b29f006eb8e55127a51c453091c99236",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          100,
+          220,
+          500,
+          345
+        ],
+        "alphaAbove128Bounds": [
+          101,
+          221,
+          499,
+          344
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": [
+            221,
+            229
+          ],
+          "135": [
+            221,
+            244
+          ],
+          "273": [
+            221,
+            328
+          ],
+          "300": [
+            221,
+            343
+          ],
+          "327": [
+            221,
+            327
+          ],
+          "465": [
+            221,
+            244
+          ],
+          "490": [
+            221,
+            228
+          ],
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-seal",
+      "group": "envelope",
+      "targetRect": [
+        273,
+        298,
+        54,
+        54
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-seal.png",
+      "sourceSha256": "0435ad3fc5419a233261eb8cd90842bc0a7d693dae2457de9300fac7d7466bff",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceRect": [
+        154,
+        115,
+        1098,
+        1106
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-seal.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-seal.webp",
+      "url": "/art/effects/v8/envelope-seal.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 5924,
+      "sha256": "a976de4d37ba3ed3e8ac38412caeef71efc94ebfecb76a5272ca6382d77c3249",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          273,
+          298,
+          327,
+          352
+        ],
+        "alphaAbove128Bounds": [
+          273,
+          298,
+          327,
+          352
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            319,
+            322
+          ],
+          "300": [
+            298,
+            351
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-paper",
+      "group": "envelope",
+      "targetRect": [
+        135,
+        230,
+        330,
+        200
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/envelope-paper.png",
+      "sourceSha256": "5c796854ce65fdec8133541b55bbb9c1cd0561a3e8827f6766282add0e841636",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        251,
+        531,
+        1122,
+        1041
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/envelope-paper.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "envelope-paper.webp",
+      "url": "/art/effects/v8/envelope-paper.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 76004,
+      "sha256": "7083bac6990a5c292727d41070d06577d66dc15051e6d1b63e39cb19d131dc27",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          135,
+          230,
+          465,
+          430
+        ],
+        "alphaAbove128Bounds": [
+          136,
+          231,
+          464,
+          429
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            233,
+            427
+          ],
+          "300": [
+            232,
+            426
+          ],
+          "327": [
+            232,
+            428
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-seal-broken-left",
+      "group": "envelope",
+      "derivedFrom": "envelope-seal",
+      "fractureWorldOffsets": [
+        0,
+        -1.5,
+        1,
+        -2,
+        1.5,
+        -0.7,
+        2.2,
+        0.3,
+        -2.5,
+        0.8,
+        1.8,
+        -0.5,
+        0
+      ],
+      "processing": "Complementary irregular fracture of the same painted wax material, requested by motion owner; no new flat wax shapes. Two unmoved pieces reconstruct the intact alpha exactly.",
+      "file": "envelope-seal-broken-left.webp",
+      "url": "/art/effects/v8/envelope-seal-broken-left.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 3324,
+      "sha256": "fd8abaec5b5db8276ae5f413956f8d8c5e1c69d61e73b185c7058da26fc40e8b",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          273,
+          298,
+          303,
+          352
+        ],
+        "alphaAbove128Bounds": [
+          273,
+          298,
+          303,
+          352
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            319,
+            322
+          ],
+          "300": [
+            298,
+            351
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "envelope-seal-broken-right",
+      "group": "envelope",
+      "derivedFrom": "envelope-seal",
+      "fractureWorldOffsets": [
+        0,
+        -1.5,
+        1,
+        -2,
+        1.5,
+        -0.7,
+        2.2,
+        0.3,
+        -2.5,
+        0.8,
+        1.8,
+        -0.5,
+        0
+      ],
+      "processing": "Complementary irregular fracture of the same painted wax material, requested by motion owner; no new flat wax shapes. Two unmoved pieces reconstruct the intact alpha exactly.",
+      "file": "envelope-seal-broken-right.webp",
+      "url": "/art/effects/v8/envelope-seal-broken-right.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 3006,
+      "sha256": "00481243e56eee4c93e50a9e381a70350e5c817315468f13335ecf95466fc536",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          299,
+          298,
+          327,
+          352
+        ],
+        "alphaAbove128Bounds": [
+          299,
+          298,
+          327,
+          352
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": [
+            300,
+            336
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "investigator-evidence",
+      "group": "lens",
+      "targetRect": [
+        55,
+        75,
+        490,
+        390
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-evidence.png",
+      "sourceSha256": "6a3bbde4b8c1cb5ecc3d9b0f7af3c65acccc65e5dc40588b52376f0712768111",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        114,
+        166,
+        1259,
+        1096
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-evidence.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "investigator-evidence.webp",
+      "url": "/art/effects/v8/investigator-evidence.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 239168,
+      "sha256": "e50c9e015b043adc8eb173bff6e397819b156ae39bdacdad2737ce6b29db33e2",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          55,
+          76,
+          545,
+          465
+        ],
+        "alphaAbove128Bounds": [
+          56,
+          77,
+          544,
+          464
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            77,
+            442
+          ],
+          "110": [
+            77,
+            445
+          ],
+          "135": [
+            77,
+            437
+          ],
+          "273": [
+            77,
+            443
+          ],
+          "300": [
+            77,
+            453
+          ],
+          "327": [
+            77,
+            443
+          ],
+          "465": [
+            77,
+            437
+          ],
+          "490": [
+            77,
+            445
+          ],
+          "499": [
+            77,
+            440
+          ]
+        }
+      }
+    },
+    {
+      "id": "investigator-magnifier",
+      "group": "lens",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-magnifier.png",
+      "sourceSha256": "f69f93ca360e8348255aa9b7e81659507455c97ccf3e68c46393a2cb03decf71",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-magnifier.txt",
+      "sourceHoleBoundsAlphaAtMost8": [
+        483,
+        269,
+        857,
+        649
+      ],
+      "affineOutputToSource": [
+        2.2,
+        0,
+        10.0,
+        0,
+        2.235294117647059,
+        0.7647058823529278
+      ],
+      "lensCentre": [
+        300,
+        205
+      ],
+      "nominalHoleRadius": 85,
+      "clearRadius82MaxAlpha": 0,
+      "measuredOuterCardinalRadiiAbove128": {
+        "left": 104,
+        "right": 104,
+        "top": 103,
+        "bottom": 101
+      },
+      "processing": "One affine calibrated from actual enclosed source hole. Normalize clear-hole bbox to radius85 so entire R82 is naturally alpha0; no alpha clearing/cut or baked lens contents. Original painted metal retained.",
+      "file": "investigator-magnifier.webp",
+      "url": "/art/effects/v8/investigator-magnifier.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 49756,
+      "sha256": "2a42ff472b23ec5da505d33f9658ba49107918529f5ae242ff5de3a925cc1b57",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          195,
+          101,
+          467,
+          416
+        ],
+        "alphaAbove128Bounds": [
+          196,
+          102,
+          466,
+          415
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            106,
+            303
+          ],
+          "300": [
+            102,
+            306
+          ],
+          "327": [
+            105,
+            302
+          ],
+          "465": [
+            394,
+            402
+          ],
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "investigator-lens-glint",
+      "group": "lens",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-lens-glint.png",
+      "sourceSha256": "6d20370f578f986539e443a9b3da6c72cb924169e6828be2df6d2e745ff9e2b9",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-lens-glint.txt",
+      "glassLocalScale": 0.9,
+      "maxAlpha": 55,
+      "centralRadius60MaxAlpha": 0,
+      "processing": "Resample whole generated canvas then scale0.9 around calibrated glass centre, apply declared0.22 opacity and clip to calibrated aperture only; no metal or filled glass disk.",
+      "file": "investigator-lens-glint.webp",
+      "url": "/art/effects/v8/investigator-lens-glint.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 1698,
+      "sha256": "5dc3023f5fdb80cd78b93e705a3ace3b2a7a4a0597c3d72ae544a5797fbb82bf",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          221,
+          125,
+          357,
+          258
+        ],
+        "alphaAbove128Bounds": null,
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    }
+  ],
+  "contracts": {
+    "envelope": {
+      "hinge": [
+        [
+          100,
+          220
+        ],
+        [
+          500,
+          220
+        ]
+      ],
+      "closedFlapTip": [
+        300,
+        345
+      ],
+      "paperInitialRect": [
+        135,
+        230,
+        330,
+        200
+      ],
+      "paperTravelY": -185,
+      "sealCentre": [
+        300,
+        325
+      ],
+      "sealDiameter": 54,
+      "defaultZ": [
+        "envelope-back",
+        "envelope-paper",
+        "envelope-front",
+        "envelope-flap-front",
+        "envelope-seal"
+      ],
+      "parts": [
+        {
+          "id": "envelope-back",
+          "targetRect": [
+            100,
+            220,
+            400,
+            210
+          ]
+        },
+        {
+          "id": "envelope-front",
+          "targetRect": [
+            100,
+            220,
+            400,
+            210
+          ]
+        },
+        {
+          "id": "envelope-flap-front",
+          "targetRect": [
+            100,
+            220,
+            400,
+            125
+          ]
+        },
+        {
+          "id": "envelope-flap-back",
+          "targetRect": [
+            100,
+            220,
+            400,
+            125
+          ]
+        },
+        {
+          "id": "envelope-seal",
+          "targetRect": [
+            273,
+            298,
+            54,
+            54
+          ]
+        },
+        {
+          "id": "envelope-paper",
+          "targetRect": [
+            135,
+            230,
+            330,
+            200
+          ]
+        }
+      ]
+    },
+    "lens": {
+      "centre": [
+        300,
+        205
+      ],
+      "requestedOuterRadius": 100,
+      "measuredHoleNormalizeRadius": 85,
+      "guaranteedClearRadius": 82,
+      "requestedHandleEnd": [
+        450,
+        415
+      ],
+      "evidenceTextureFocus": [
+        165,
+        245
+      ],
+      "defaultZ": [
+        "investigator-evidence",
+        "runtime-reprojected-same-evidence",
+        "investigator-lens-glint",
+        "investigator-magnifier"
+      ],
+      "parts": [
+        {
+          "id": "investigator-evidence",
+          "targetRect": [
+            55,
+            75,
+            490,
+            390
+          ]
+        },
+        {
+          "id": "investigator-magnifier",
+          "processingMode": "calibrate-transparent-hole"
+        },
+        {
+          "id": "investigator-lens-glint",
+          "processingMode": "whole-canvas-glint",
+          "glassLocalScale": 0.9,
+          "opacity": 0.22
+        }
+      ]
+    }
+  }
+}

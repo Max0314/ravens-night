@@ -23,7 +23,7 @@ test.each([5,6,12])('one human plus bots completes a genuine %i-seat game and re
   if(v.game?.phase==='GAME_OVER'&&v.game.revealComplete){finished=true;break;}
   t.tick();
  }
- expect(finished,`stuck in ${s.publicView(t.code).game?.phase}`).toBe(true);expect(s.snapshot(t.code).lastResult?.hadBots).toBe(true);
+ const last=s.snapshot(t.code);expect(finished,`stuck in ${last.game?.phase}, day ${last.game?.day}, living ${JSON.stringify(last.assignments.filter(p=>last.game?.aliveSeats.includes(p.seat)).map(p=>({seat:p.seat,role:p.roleId})))}`).toBe(true);expect(s.snapshot(t.code).lastResult?.hadBots).toBe(true);
  s.reset(t.code,t.host.token);const next=s.snapshot(t.code);expect(next.state).toBe('LOBBY');expect(bots(next)).toHaveLength(count-1);expect(next.botControl.memory).toEqual({});expect(next.botControl.pending).toEqual([]);expect(next.game).toBeUndefined();
 },20000);
 
@@ -40,10 +40,11 @@ test('withdrawn invitation and ended conversation drop pending bot work without 
  inviteWhisper(s.find(t.code),t.host.token,2);t.tick();t.tick(1500);expect(socialView(s.find(t.code),t.host.token).social.activeWhisper).toBeDefined();const active=socialView(s.find(t.code),t.host.token).social.activeWhisper!;sendWhisper(s.find(t.code),t.host.token,active.id,'测试');runBots(s);expect(s.find(t.code).botControl.pending.some(task=>task.kind==='WHISPER_REPLY')).toBe(true);leaveWhisper(s.find(t.code),t.host.token);t.tick(1500);expect(s.find(t.code).botControl.attentionRequired).toBe(false);
 });
 
-test('manual shooting pauses ballot in game time and each advance counts at most one new seat',()=>{
+test('manual shooting pauses simultaneous ballot until its common game-time cutoff',()=>{
  const t=fixture(),s=t.service;for(let i=0;i<16;i++)t.tick();s.setReady(t.code,t.host.token,true);s.startTutorial(t.code,t.host.token,'SKIP');t.day();s.changeRehearsalClock(t.code,t.host.token,'MANUAL');s.nominate(t.code,t.host.token,2);while((s.find(t.code).game!.presentationUntil??0)>s.gameNow(s.find(t.code)))s.advanceRehearsal(t.code,t.host.token);
- t.tick(60000);const before=s.find(t.code).game!.nomination!.voteEndsAt!;s.useDayAbility(t.code,t.host.token,3);expect(s.find(t.code).game!.nomination!.voteEndsAt).toBeGreaterThan(before);
- for(let i=0;i<15&&s.find(t.code).game!.nomination;i++){const count=s.find(t.code).game!.nomination?.countedSeats?.length??0;s.advanceRehearsal(t.code,t.host.token);if(s.find(t.code).game!.nomination)expect((s.find(t.code).game!.nomination!.countedSeats?.length??0)-count).toBeLessThanOrEqual(1);}
+ t.tick(60000);const before=s.find(t.code).game!.nomination!.voteEndsAt!;s.useDayAbility(t.code,t.host.token,1); // Self-target keeps this clock fixture nonlethal for every randomized role.
+expect(s.find(t.code).game!.nomination!.voteEndsAt).toBeGreaterThan(before);
+ const end=s.find(t.code).game!.nomination!.voteEndsAt!;for(let i=0;i<15&&s.find(t.code).game!.nomination;i++){s.advanceRehearsal(t.code,t.host.token);if(s.find(t.code).game!.nomination){expect(s.gameNow(s.find(t.code))).toBeLessThan(end);expect(s.publicView(t.code).game!.nomination!.currentVoterSeat).toBeUndefined();}}expect(s.find(t.code).game!.nomination).toBeUndefined();expect(s.gameNow(s.find(t.code))).toBe(end);
 });
 
 test('WAITING step receipts survive a failed bot command rollback and replay once',async()=>{

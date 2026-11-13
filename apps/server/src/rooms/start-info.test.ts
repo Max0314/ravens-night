@@ -5,14 +5,14 @@ function table(count=7,presentation=true){
   let now=1800000000000;const service=new RoomService({now:()=>now,presentation});
   const {room}=service.create(count,'房主');const players=Array.from({length:count},(_,i)=>service.join(room.code,`玩家${i+1}`,'PLAYER'));
   players.forEach(p=>service.setReady(room.code,p.token,true));service.startTutorial(room.code,players[0]!.token,'SKIP');
-  return{service,room,players,advance(ms:number){now+=ms;service.advanceTime(now);},confirm(){players.forEach(p=>service.confirmRole(room.code,p.token));}};
+  return{service,room,players,advance(ms:number){now+=ms;service.advanceTime(now);},confirm(){now=Math.max(now,service.find(room.code).game!.presentationUntil);service.advanceTime(now);players.forEach(p=>service.confirmRole(room.code,p.token));}};
 }
 test.each([7,8,10,12])('%i players receive private start information only after nightfall and cannot bypass acknowledgements',count=>{
   const t=table(count);t.advance(1000);
   expect(t.service.find(t.room.code).game!.startInfo.stage).toBe('WAIT_NIGHTFALL');
   t.players.forEach(p=>expect(t.service.privateView(t.room.code,p.token).startInfo).toBeUndefined());
-  t.confirm();t.advance(6449);
-  expect(t.service.find(t.room.code).game!.startInfo.stage).toBe('WAIT_NIGHTFALL');t.advance(1);
+  t.advance(5449);expect(()=>t.service.confirmRole(t.room.code,t.players[0]!.token)).toThrow(/公开演出/);
+  expect(t.service.find(t.room.code).game!.startInfo.stage).toBe('WAIT_NIGHTFALL');t.advance(1);t.confirm();
   const game=t.service.find(t.room.code).game!,entries=Object.entries(game.startInfo.entries);
   expect(entries).toHaveLength(count<10?2:3);expect(game.nightOrder).toBeUndefined();
   for(const p of t.players){

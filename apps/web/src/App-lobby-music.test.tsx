@@ -19,6 +19,13 @@ function fixture(phase:'ROLE_REVEAL'|'FIRST_NIGHT'|'DAY_DISCUSSION',confirmed:bo
 }
 beforeEach(()=>{resetAccountContext();tracks.length=0;feed.receive=undefined;localStorage.clear();sessionStorage.clear();Object.defineProperty(document,'hidden',{configurable:true,value:false});vi.stubGlobal('Audio',Track);vi.mocked(getAuthSession).mockResolvedValue({authorized:true});vi.mocked(getAccount).mockResolvedValue({signedIn:false,guestClaimAvailable:false,rooms:[]});vi.mocked(getRoomSummary).mockResolvedValue({roomInstanceId:'music-room',state:'RUNNING',canJoin:false,willReplaceBot:false,botCount:0,activeHumanCount:1,occupiedAvatars:[]});});
 afterEach(()=>{cleanup();vi.restoreAllMocks();vi.unstubAllGlobals();localStorage.clear();sessionStorage.clear();resetAccountContext();window.history.replaceState({},'','/');});
+test('an already open private handbook cannot reveal a role through the opening-night gate',async()=>{
+ const initial=fixture('DAY_DISCUSSION',true,1);vi.mocked(getRoom).mockResolvedValue(initial.room);vi.mocked(getPrivateView).mockResolvedValue(initial.privateView);saveSession({roomCode:'ABCDEF',mode:'PLAYER',participantId:'me'});window.history.replaceState({},'','/?room=ABCDEF');render(<App/>);
+ fireEvent.click(await screen.findByRole('button',{name:'记录'}));fireEvent.click(screen.getByRole('button',{name:'我的角色'}));expect(document.querySelector('.own-role-guide h1')).toHaveTextContent('士兵');
+ const locked=fixture('ROLE_REVEAL',false,2),end=Date.now()+20000;locked.room.game!.serverNow=Date.now();locked.room.game!.presentationUntil=end;vi.mocked(getRoom).mockResolvedValue(locked.room);vi.mocked(getPrivateView).mockResolvedValue(locked.privateView);await act(async()=>feed.receive?.(locked));
+ expect(document.querySelector('.own-role-guide')).toBeNull();expect(screen.queryByRole('button',{name:'确认身份'})).toBeNull();expect(screen.queryByRole('img',{name:'士兵角色立绘'})).toBeNull();expect(screen.getByRole('heading',{name:'阵营与胜负'})).toBeVisible();
+ const ready=fixture('ROLE_REVEAL',false,3);ready.room.game!.serverNow=end;ready.room.game!.presentationUntil=end;await act(async()=>feed.receive?.(ready));expect(document.querySelector('.own-role-guide h1')).toHaveTextContent('士兵');
+});
 test('M19 survives role confirmation and first night, then fades at the published first dawn',async()=>{
  const initial=fixture('ROLE_REVEAL',false,1);vi.mocked(getRoom).mockResolvedValue(initial.room);vi.mocked(getPrivateView).mockResolvedValue(initial.privateView);
  saveSession({roomCode:'ABCDEF',mode:'PLAYER',participantId:'me'});window.history.replaceState({},'','/?room=ABCDEF');render(<App/>);

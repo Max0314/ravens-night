@@ -45,10 +45,10 @@ test('reduced rifle and defeated demon keep one fixed key pose across elapsed ti
  const ui=render(<DemonLayers elapsedMs={0} defeated reduced/>),before=ui.container.innerHTML;ui.rerender(<DemonLayers elapsedMs={5000} defeated reduced/>);expect(ui.container.innerHTML).toBe(before);
 });
 
-test('celestial rise is independent of town crops and reduced mode stays fixed',()=>{
- const ui=render(<AtmosphericSky phase="NIGHT_FALLS" elapsedMs={0} durationMs={5000}/>),disc=()=>ui.container.querySelector<SVGSVGElement>('.atmospheric-sky__disc')!;
- const initial=parseFloat(disc().style.top);ui.rerender(<AtmosphericSky phase="NIGHT_FALLS" elapsedMs={4250} durationMs={5000}/>);
- expect(parseFloat(disc().style.top)).toBeLessThan(initial);expect(ui.container.querySelector('image')?.getAttribute('href')).toMatch(/v5\/moon/);
+test('dawn sun still rises independently of town crops and reduced mode stays fixed',()=>{
+ const ui=render(<AtmosphericSky phase="DAWN" elapsedMs={0} durationMs={5000}/>),disc=()=>ui.container.querySelector<SVGSVGElement>('.atmospheric-sky__disc')!;
+ const initial=parseFloat(disc().style.top);ui.rerender(<AtmosphericSky phase="DAWN" elapsedMs={4250} durationMs={5000}/>);
+ expect(parseFloat(disc().style.top)).toBeLessThan(initial);expect(ui.container.querySelector('image')).toBeNull();
  ui.rerender(<AtmosphericSky phase="DAWN" elapsedMs={0} durationMs={5000} reduced/>);const fixed=disc().style.top;
  ui.rerender(<AtmosphericSky phase="DAWN" elapsedMs={5000} durationMs={5000} reduced/>);expect(disc().style.top).toBe(fixed);expect(ui.container.querySelector('image')).toBeNull();
 });
