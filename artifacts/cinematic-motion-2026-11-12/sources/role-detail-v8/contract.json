@@ -136,9 +136,136 @@
         {
           "id": "investigator-lens-glint",
           "processingMode": "whole-canvas-glint",
-        "glassLocalScale": 0.9,
+          "glassLocalScale": 0.9,
           "opacity": 0.22
         }
+      ]
+    },
+    "raven": {
+      "footContact": [
+        315,
+        340
+      ],
+      "hip": [
+        330,
+        310
+      ],
+      "nearWingShoulder": [
+        303,
+        214
+      ],
+      "farWingShoulder": [
+        350,
+        214
+      ],
+      "neckRoot": [
+        330,
+        218
+      ],
+      "headPivot": [
+        356,
+        124
+      ],
+      "tailRoot": [
+        300,
+        290
+      ],
+      "orientation": "three-quarter facing right; wings spread; left is near wing",
+      "defaultZ": [
+        "raven-perch",
+        "raven-wing-right",
+        "raven-tail",
+        "raven-body",
+        "raven-wing-left",
+        "raven-head-neck"
+      ],
+      "parts": [
+        {
+          "id": "raven-perch",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            750,
+            737
+          ],
+          "worldAnchor": [
+            315,
+            340
+          ],
+          "uniformScale": 0.3
+        },
+        {
+          "id": "raven-body",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            667,
+            956
+          ],
+          "worldAnchor": [
+            315,
+            350
+          ],
+          "uniformScale": 0.26
+        },
+        {
+          "id": "raven-head-neck",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            650,
+            850
+          ],
+          "worldAnchor": [
+            330,
+            218
+          ],
+          "uniformScale": 0.17
+        },
+        {
+          "id": "raven-tail",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            980,
+            140
+          ],
+          "worldAnchor": [
+            300,
+            290
+          ],
+          "uniformScale": 0.125
+        },
+        {
+          "id": "raven-wing-left",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            1230,
+            450
+          ],
+          "worldAnchor": [
+            303,
+            214
+          ],
+          "uniformScale": 0.19
+        },
+        {
+          "id": "raven-wing-right",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            180,
+            550
+          ],
+          "worldAnchor": [
+            350,
+            214
+          ],
+          "uniformScale": 0.165
+        }
+      ],
+      "branchContactSurface": [
+        315,
+        340
+      ],
+      "footTip": [
+        315,
+        350
       ]
     }
   }
