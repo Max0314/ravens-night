@@ -3,8 +3,10 @@
   "method": "renderToStaticMarkup + embedded PNG material + sharp; current contact sheets only (no browser)",
   "times": [
     0,
-    800,
+    500,
+    850,
     1200,
-    1800
+    1750,
+    2200
   ]
 }
