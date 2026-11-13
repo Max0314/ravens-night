@@ -5,10 +5,10 @@ export function transformPoint(x:number,y:number,pivot:{x:number;y:number},angle
  return{x:pivot.x+(x-pivot.x)*c-(y-pivot.y)*s+dx,y:pivot.y+(x-pivot.x)*s+(y-pivot.y)*c+dy};
 }
 // Tight source ratios and measured alpha anchors; never stretch image layers.
-export const rifleGeometry={canvas:{width:600,height:500},image:{x:30,y:185,width:470,height:470*217/1040},pivot:{x:135,y:248},muzzle:{x:30+470*.988,y:185+470*217/1040*.295}} as const;
+export const rifleGeometry={canvas:{width:600,height:500},image:{x:35,y:170,width:510,height:510*382/1024},pivot:{x:145,y:300},muzzle:{x:35+510*.985,y:170+510*382/1024*.29}} as const;
 const bodyWidth=350*419/729,bodyX=(600-bodyWidth)/2,shoulderLeft=bodyX+bodyWidth*.25,shoulderRight=600-shoulderLeft,shoulderY=185.5;
 export const demonGeometry={body:{x:bodyX,y:105,width:bodyWidth,height:350},left:{x:shoulderLeft-250*.98,y:shoulderY-250*646/739*.34,width:250,height:250*646/739},right:{x:shoulderRight-250*.02,y:shoulderY-250*646/729*.34,width:250,height:250*646/729},hinges:{left:{x:shoulderLeft,y:shoulderY},right:{x:shoulderRight,y:shoulderY}}} as const;
-export const guillotineGeometry={frame:{x:40.61538461538461,y:0,width:218.76923076923077,height:480},blade:{x:106.11681728014106,y:62.307692307692314,width:85.92021159356403,height:91.09896407317612,travel:246.52898391007278},neck:{x:149.30769230769232,y:381.69230769230774,diameter:36}} as const;
+export const guillotineGeometry={canvas:{width:340,height:480},frame:{x:0,y:3.5,width:340,height:473},blade:{x:98,y:58,width:144,height:144*390/368,travel:196},neck:{x:170,y:364,diameter:44}} as const;
 export function riflePose(elapsedMs:number,fireAt:number,reduced=false){
  const t=reduced?0:elapsedMs-fireAt,enter=reduced?1:smooth(elapsedMs,0,Math.max(1,fireAt-180));
  const kick=reduced||t<0?0:t<28?t/28:t<65?1:1-smooth(t,65,230);

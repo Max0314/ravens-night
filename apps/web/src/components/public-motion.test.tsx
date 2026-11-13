@@ -13,7 +13,7 @@ test('rifle flash stays attached to the recoiling muzzle, and a seek is determin
  expect(recoil.muzzle).toEqual(transformPoint(base.muzzle.x,base.muzzle.y,base.pivot,recoil.angle,recoil.x,recoil.y));expect(recoil.muzzle.x).toBeLessThan(base.muzzle.x);
  expect(riflePose(1100,850).smokeOrigin).toEqual(riflePose(1600,850).smokeOrigin);
  const ui=render(<HuntingRifleScene elapsedMs={878} fireAt={850}/>),flash=ui.container.querySelector('[data-testid="muzzle-flash"]')!;
- expect(flash.parentElement?.querySelector('image')?.getAttribute('href')).toMatch(/hunting-rifle/);expect(flash.parentElement?.getAttribute('transform')).toContain('rotate(');
+ expect(flash.parentElement?.querySelector('image')?.getAttribute('href')).toMatch(/short-shotgun/);expect(flash.parentElement?.getAttribute('transform')).toContain('rotate(');
  expect(renderToStaticMarkup(<HuntingRifleScene elapsedMs={900} fireAt={850}/>)).toBe(renderToStaticMarkup(<HuntingRifleScene elapsedMs={900} fireAt={850}/>));
  ui.rerender(<HuntingRifleScene elapsedMs={849} fireAt={850}/>);expect(ui.container.querySelector('[data-testid="muzzle-flash"]')).toBeNull();
 });

@@ -4,9 +4,25 @@ export type Point={x:number;y:number};
 export const propGeometry={book:{spine:{x:300,y:100},width:250,height:310},coffin:{x:110,y:240,width:380,height:120},bottle:{pivot:{x:300,y:210},mouth:{x:300,y:128.1},landing:{x:475,y:405}},water:{x:300,y:318,rx:167,ry:53}} as const;
 export function rotatePoint(p:Point,pivot:Point,degrees:number):Point{const a=degrees*Math.PI/180,c=Math.cos(a),s=Math.sin(a);return{x:pivot.x+(p.x-pivot.x)*c-(p.y-pivot.y)*s,y:pivot.y+(p.x-pivot.x)*s+(p.y-pivot.y)*c};}
 export const rotation=(degrees:number,pivot:Point)=>`rotate(${degrees} ${pivot.x} ${pivot.y})`;
-/** Shared continuous surface: the root never leaves the spine, including the back face. */
-export function bookStrips(elapsed:number){const p=smooth(elapsed,timing.book.start,timing.book.end),yaw=p*Math.PI,curve=Math.sin(p*Math.PI)*.52,w=250/16;let x=300,z=0;return Array.from({length:16},(_,i)=>{const a=yaw+curve*Math.sin((i+.5)/16*Math.PI),nx=x+Math.cos(a)*w,nz=z+Math.sin(a)*w;const project=(xx:number,zz:number)=>({x:300+(xx-300)*600/(600+zz),top:255-155*600/(600+zz),height:310*600/(600+zz),depth:zz}),left=project(x,z),right=project(nx,nz);x=nx;z=nz;return{index:i,sourceX:i*(220/16),sourceWidth:220/16,back:Math.cos(a)<0,left,right,shade:.75+.25*Math.abs(Math.cos(a))};});}
-export function coffinPose(t:number){const angle=105*smooth(t,timing.coffin.start,timing.coffin.open),scaleY=Math.cos(angle*Math.PI/180);return{angle,scaleY,quad:[{x:110,y:240},{x:490,y:240},{x:490+16*scaleY,y:240+119*scaleY},{x:110-17*scaleY,y:240+119*scaleY}] as [Point,Point,Point,Point],back:angle>90,matrix:`matrix(1 0 0 ${scaleY} 110 240)`};}
+/** The shell, page hinge and material all share the same oblique book plane.
+ * A lifted leaf has independent height above that plane, rather than rotating
+ * a front-facing rectangle over a flat illustration. */
+export const bookPlaneMatrix='matrix(.8 -.11 .16 .55 20 150)';
+export function bookProject(x:number,y:number,z=0):Point{return{x:20+.8*x+.16*y+.07*z,y:150-.11*x+.55*y-.45*z};}
+export function bookStrips(elapsed:number){
+ const p=smooth(elapsed,timing.book.start,timing.book.end),yaw=p*Math.PI,curve=Math.sin(p*Math.PI)*.38,w=250/16;
+ let x=300,z=0;
+ return Array.from({length:16},(_,i)=>{
+  const a=yaw+curve*Math.sin((i+.5)/16*Math.PI),nx=x+Math.cos(a)*w,nz=z+Math.sin(a)*w;
+  const leftTop=bookProject(x,100,z),leftBottom=bookProject(x,410,z),rightTop=bookProject(nx,100,nz),rightBottom=bookProject(nx,410,nz);
+  const left={x:leftTop.x,top:leftTop.y,height:leftBottom.y-leftTop.y,depth:z,bottomX:leftBottom.x},right={x:rightTop.x,top:rightTop.y,height:rightBottom.y-rightTop.y,depth:nz,bottomX:rightBottom.x};
+  x=nx;z=nz;
+  return{index:i,sourceX:i*(220/16),sourceWidth:220/16,back:Math.cos(a)<0,left,right,quad:[leftTop,rightTop,rightBottom,leftBottom] as Quad,shade:.72+.28*Math.abs(Math.cos(a))};
+ });
+}
+/** Project the lid's real upward lift as well as its receding depth.
+ * A 90-degree lid is vertical and fully visible, not a collapsed line. */
+export function coffinPose(t:number){const angle=105*smooth(t,timing.coffin.start,timing.coffin.open),a=angle*Math.PI/180,depth=Math.cos(a),dy=119*depth-135*Math.sin(a),scaleY=dy/119;return{angle,scaleY,quad:[{x:110,y:240},{x:490,y:240},{x:490+16*depth,y:240+dy},{x:110-17*depth,y:240+dy}] as Quad,back:dy<0,matrix:`matrix(1 0 0 ${scaleY} 110 240)`};}
 export const cavity:Point[]=[{x:279.1,y:137.9},{x:320.9,y:137.9},{x:320.9,y:209.6},{x:340,y:224.5},{x:376,y:269.4},{x:380,y:305},{x:365,y:345},{x:340,y:371},{x:260,y:371},{x:235,y:345},{x:220,y:305},{x:224,y:269.4},{x:260,y:224.5},{x:279.1,y:209.6}];
 export function polygonArea(points:readonly Point[]):number{return Math.abs(points.reduce((a,p,i)=>{const n=points[(i+1)%points.length]!;return a+p.x*n.y-n.x*p.y;},0))/2;}
 export function belowWater(points:readonly Point[],level:number):Point[]{const out:Point[]=[];for(let i=0;i<points.length;i++){const a=points[i]!,b=points[(i+1)%points.length]!,inside=a.y>=level,next=b.y>=level;if(inside)out.push(a);if(inside!==next){const p=(level-a.y)/(b.y-a.y);out.push({x:a.x+(b.x-a.x)*p,y:level});}}return out;}
