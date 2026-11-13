@@ -1,0 +1,49 @@
+{
+  "method": "Local PNG/WebP alpha geometry and sharp static compositing; no browser",
+  "avatarFixtures": "Synthetic faces, no player data",
+  "tiles": [
+    {
+      "avatar": 64,
+      "asset": 256
+    },
+    {
+      "avatar": 64,
+      "asset": 128
+    },
+    {
+      "avatar": 42,
+      "asset": 256
+    },
+    {
+      "avatar": 42,
+      "asset": 128
+    }
+  ],
+  "zoom": 2,
+  "checks": [
+    {
+      "file": "nomination-cage.png",
+      "avatarAreaMetalFraction": 0.14554110639709236,
+      "avatarAreaClearFraction": 0.8459356559472644,
+      "transparentCorners": true
+    },
+    {
+      "file": "nomination-cage.webp",
+      "avatarAreaMetalFraction": 0.14826887865505187,
+      "avatarAreaClearFraction": 0.8404677356710869,
+      "transparentCorners": true
+    },
+    {
+      "file": "nomination-cage-small.webp",
+      "avatarAreaMetalFraction": 0.14886095836606442,
+      "avatarAreaClearFraction": 0.8257771293906407,
+      "transparentCorners": true
+    },
+    {
+      "file": "nomination-cage-tiny.webp",
+      "avatarAreaMetalFraction": 0.13772048846675713,
+      "avatarAreaClearFraction": 0.7829036635006784,
+      "transparentCorners": true
+    }
+  ]
+}

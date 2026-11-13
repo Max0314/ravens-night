@@ -1,0 +1,140 @@
+{
+  "generator": "built-in image_gen; scripts/build-nomination-cage.mjs",
+  "sourceSha256": "b409507d57037b909cfca1a743332f95267df305b8bb15333d583f306f6df742",
+  "source": "artifacts/cinematic-motion-2026-11-12/sources/nov13-cage/nomination-cage.png",
+  "prompt": "Use case: stylized-concept. A single exquisite TRANSPARENT UI overlay prop for a premium gothic social game: an unmistakable SQUARE PRISON CAGE/GATE that will cover a small player avatar. Main FRONT FACE is exactly square and seen straight on. Four robust dark forged BLACK IRON perimeter rails, three thin straight vertical iron bars, discreet crossbar top and bottom. Restrained WARM GOLD reflections along iron edges and rivets for readability at 42px. Small amount of 3D depth only toward the upper-right: visible narrow top cage roof ribs and right side ribs, no solid panels. Keep the entire central interior genuinely TRANSPARENT, with only the narrow metal bars crossing it, avatar face must remain highly visible. About 80 percent of square opening should be empty transparent space. Clearly a prison cage, NOT a decorative portrait frame, NOT a crown/classification frame, no floral gold ornament, no emblems or gem. Finely painted realistic iron with tactile rivets, premium game prop polish, crisp alpha edges. One object only. No background, no floor, no ground shadow, no person or face, no text, no rope or noose, no gallows, no other objects. Centered whole cage with generous transparent safety margin on all four sides; true alpha transparency; square image.",
+  "processing": "Full source canvas retained; uniform scale only; preserve alpha; no crop or object stretching",
+  "frontFaceRect": {
+    "x": 182,
+    "y": 244,
+    "width": 836,
+    "height": 836
+  },
+  "sourceAvatarAnchor": {
+    "cx": 600,
+    "cy": 660,
+    "diameter": 660
+  },
+  "avatarSafeSquare": {
+    "x": 270,
+    "y": 330,
+    "width": 660,
+    "height": 660
+  },
+  "clearWindows": [
+    {
+      "x": 270,
+      "y": 330,
+      "width": 125,
+      "height": 650
+    },
+    {
+      "x": 450,
+      "y": 330,
+      "width": 126,
+      "height": 650
+    },
+    {
+      "x": 630,
+      "y": 330,
+      "width": 125,
+      "height": 650
+    },
+    {
+      "x": 810,
+      "y": 330,
+      "width": 115,
+      "height": 650
+    }
+  ],
+  "placement": {
+    "imageWidthPercentOfAvatar": 190,
+    "imageLeftPercentOfAvatar": -40.90909090909091,
+    "imageTopPercentOfAvatar": -50,
+    "note": "Use the front opening anchor, not the full-image centre. Overlay must be outside the circular avatar clipping; preserve square image ratio."
+  },
+  "files": [
+    {
+      "file": "nomination-cage.png",
+      "url": "/art/effects/v7/nomination-cage.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 810617,
+      "decodedBytes": 4194304,
+      "sha256": "acfee919160ae3af15c11067878e21daa34e82384915563e4edf6da6659fe1a8",
+      "avatarAnchor": {
+        "cx": 489.95215311004785,
+        "cy": 538.9473684210526,
+        "diameter": 538.9473684210526
+      }
+    },
+    {
+      "file": "nomination-cage.webp",
+      "url": "/art/effects/v7/nomination-cage.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 57550,
+      "decodedBytes": 1048576,
+      "sha256": "249776531c49d7a196a423e871762ca009c5492586a48272f2d5f1e15748abd9",
+      "avatarAnchor": {
+        "cx": 244.97607655502392,
+        "cy": 269.4736842105263,
+        "diameter": 269.4736842105263
+      }
+    },
+    {
+      "file": "nomination-cage-small.webp",
+      "url": "/art/effects/v7/nomination-cage-small.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 19362,
+      "decodedBytes": 262144,
+      "sha256": "7f8e9da34cf3d8d7656774c55a0ddfd8ba5658e9625749ef32d65c48c0df169e",
+      "avatarAnchor": {
+        "cx": 122.48803827751196,
+        "cy": 134.73684210526315,
+        "diameter": 134.73684210526315
+      }
+    },
+    {
+      "file": "nomination-cage-tiny.webp",
+      "url": "/art/effects/v7/nomination-cage-tiny.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 7136,
+      "decodedBytes": 65536,
+      "sha256": "ad75333377c8d1f06af3d75e331949d98a6bd9fb1ee6c7ced66fa9449f0d8f1d",
+      "avatarAnchor": {
+        "cx": 61.24401913875598,
+        "cy": 67.36842105263158,
+        "diameter": 67.36842105263158
+      }
+    }
+  ],
+  "checks": [
+    {
+      "file": "nomination-cage.png",
+      "avatarAreaMetalFraction": 0.14554110639709236,
+      "avatarAreaClearFraction": 0.8459356559472644,
+      "transparentCorners": true
+    },
+    {
+      "file": "nomination-cage.webp",
+      "avatarAreaMetalFraction": 0.14826887865505187,
+      "avatarAreaClearFraction": 0.8404677356710869,
+      "transparentCorners": true
+    },
+    {
+      "file": "nomination-cage-small.webp",
+      "avatarAreaMetalFraction": 0.14886095836606442,
+      "avatarAreaClearFraction": 0.8257771293906407,
+      "transparentCorners": true
+    },
+    {
+      "file": "nomination-cage-tiny.webp",
+      "avatarAreaMetalFraction": 0.13772048846675713,
+      "avatarAreaClearFraction": 0.7829036635006784,
+      "transparentCorners": true
+    }
+  ]
+}
