@@ -5,7 +5,7 @@ import type {RoomRepository} from './game/live-runtime.js';
 import type {RoomRecord} from './rooms/service.js';
 import {botToken} from './rooms/bot-types.js';
 const apps:ReturnType<typeof buildApp>[]=[];afterEach(async()=>{await Promise.all(apps.splice(0).map(app=>app.close()));});
-const protocol={'x-ravens-protocol':'6'};
+const protocol={'x-ravens-protocol':'7'};
 function appFixture(repository?:RoomRepository){const app=buildApp({timers:false,presentation:true,...(repository?{repository}:{})});apps.push(app);return app;}
 function cookies(response:{headers:Record<string,unknown>}){const raw=response.headers['set-cookie'];return(Array.isArray(raw)?raw:[String(raw)]).map((value:string)=>value.split(';')[0]).join('; ');}
 async function create(app:ReturnType<typeof buildApp>){const ticket=await app.inject({url:'/api/room-create-ticket',headers:protocol}),cookie=cookies(ticket),id=randomUUID(),payload={playerCount:5,organizerName:'Host',createTicket:ticket.json().createTicket};const response=await app.inject({method:'POST',url:'/api/rooms',headers:{...protocol,cookie,'x-command-id':id},payload});expect(response.statusCode).toBe(201);return{code:response.json().code as string,payload,cookie,id};}

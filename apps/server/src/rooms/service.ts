@@ -644,7 +644,7 @@ export class RoomService {
     return {
       code: room.code,
       timeline:{mode:room.timeline.mode,epoch:room.timeline.epoch},botControl:this.botControlView(room),activeHumanCount:humans(room).length,botCount:bots(room).length,
-      protocolVersion: 6 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
+      protocolVersion: 7 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
       revision: room.revision, serverNow: this.#now(),
       rulesSummary: room.playerCount < 7 ? "5–6 人采用官方 Teensyville：恶魔与爪牙互不认识，恶魔没有三个伪装。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。" : "暗流涌动标准规则。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。",
       state: room.game && room.state !== "ABORTED" ? room.game.publicProjection?.phase === "GAME_OVER" ? "GAME_OVER" : "RUNNING" : room.state,
@@ -1270,7 +1270,7 @@ export class RoomService {
     const alive = !!game?.publicProjection?.aliveSeats.includes(seat);
     const daytime = !!game && ["DAY_DISCUSSION", "NOMINATION"].includes(game.phase);
     return {
-      protocolVersion: 6 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
+      protocolVersion: 7 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId, revision: room.revision, serverNow: this.#now(),
       presentations:{version:1 as const,pending:pending.slice(0,32),hasMore:pending.length>32},
       self: { participantId: participant.id, mode: participant.mode, commandVersion: participant.commandVersion },
       ...(game ? { contextId: game.publicProjection?.contextId ?? game.contextId } : {}),

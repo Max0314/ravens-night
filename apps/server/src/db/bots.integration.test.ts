@@ -7,7 +7,7 @@ import {LiveRoomRuntime} from '../game/live-runtime.js';
 import {RoomService} from '../rooms/service.js';
 import {runBots,stepBot} from '../rooms/bot-scheduler.js';
 import {bots} from '../rooms/bot-types.js';
-const protocol={'x-ravens-protocol':'6'};
+const protocol={'x-ravens-protocol':'7'};
 const cookie=(r:{cookies:Array<{name:string;value:string}>})=>r.cookies.map(c=>`${c.name}=${c.value}`).join('; ');
 
 test.skipIf(!process.env.RAVENS_BOT_DATABASE_URL)('PG creation receipt/empty lobby survive restart; bot planning, step and clock roll back atomically',async()=>{

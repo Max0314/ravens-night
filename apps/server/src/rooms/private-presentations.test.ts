@@ -152,13 +152,13 @@ test('ACK API uses current trusted seat, independent of gameplay context, and re
  const seq=t.view().presentations.pending[0]!.historySeq,payload={token:t.players[0]!.token,roomInstanceId:saved.roomInstanceId,gameId:saved.game!.gameId,entries:[{historySeq:seq,disposition:'COMPLETE'}]},url=`/api/rooms/${t.code}/presentations/ack`;
  try{
   expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'5'},payload})).statusCode).toBe(426);
-  expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'6'},payload})).statusCode).toBe(403);
+  expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'7'},payload})).statusCode).toBe(403);
   account={sub:'trusted',name:'账号'};
-  expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'6',origin:'https://evil.test'},payload})).statusCode).toBe(403);
-  expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'6'},payload:{...payload,token:display.token}})).statusCode).toBe(403);
-  expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'6'},payload:{...payload,expectedCommandVersion:0}})).statusCode).toBe(400);
-  const result=await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'6'},payload});expect(result.statusCode).toBe(200);expect(result.json().acked).toEqual(payload.entries);
-  const repeat=await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'6'},payload});expect(repeat.json()).toEqual(result.json());
+  expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'7',origin:'https://evil.test'},payload})).statusCode).toBe(403);
+  expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'7'},payload:{...payload,token:display.token}})).statusCode).toBe(403);
+  expect((await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'7'},payload:{...payload,expectedCommandVersion:0}})).statusCode).toBe(400);
+  const result=await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'7'},payload});expect(result.statusCode).toBe(200);expect(result.json().acked).toEqual(payload.entries);
+  const repeat=await app.inject({method:'POST',url,headers:{'x-ravens-protocol':'7'},payload});expect(repeat.json()).toEqual(result.json());
  }finally{await app.close();}
 });
 
