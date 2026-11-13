@@ -137,3 +137,5 @@ Dawn scoped CSS隐藏旧三个大装饰拱窗与halo，未改死亡/纪念节点
 
 2026-11-14 第十三批性能候选：Dawn运行改用v9离线真窗atlas与半尺寸静雾，v5源照片与手机center/top构图、冷暖/灯光/雾退时序保持；原3filter/2mask/15clipPath/1turbulence均撤下。窗口重复采样源像素10,567,680→172,800，新两层decoded合801792字节；这是结构证据，不是浏览器FPS。重建node scripts/build-dawn-layers.mjs，新旧12帧实际SVG比较见public/dawn-performance.json与portrait/phone-landscape PNG，平均RGB最大差.1634/255。
 素材准备改为已授权pending前2段（含portrait）提前热图，≤48项/32MiB持有像素/4准备并发；onload有真实尺寸即可用，不被decode拒绝误杀。图片渐进ready，与音频各自非阻塞，取消旧6秒整组等待和空白幕，保留原portrait/语义后备、1900/2200/2400信息门禁与业务确认。公共Stage按已公开kind和阶段有限预热，所有outcome使用相同URL集合，不等加载完成再推进时钟。来源43个不同目标/类型/构建与独立review有效，Root本地390×844实际查看Dawn头像与抓痕已加载，公布前后门禁仍按原时点；真实微信流畅度待手机验收。
+
+电视横景素材：sources/display-v1保存两张imagegen原件、exact prompts、参考SHA和build-assets.mjs；运行public/art/display/v1/manifest.json记录1600×900与2560×1440两规格/各昼夜及编码SHA。源native1672×941，2560标记为upscaled派生；不烘焙UI暗化，无人物/文字/纹理，不改变手机背景或公共预热清单。上述浏览器三张JPG是本地实际组件画面证据，不是正式微信/电视验收。
