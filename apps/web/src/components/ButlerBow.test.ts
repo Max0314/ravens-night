@@ -1,3 +1,6 @@
+import {createElement} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {ButlerBow} from './ButlerBow.js';
 import {readFileSync} from 'node:fs';
 import {expect,test} from 'vitest';
 import sharp from 'sharp';
@@ -45,4 +48,17 @@ test('runtime atlas stays under the declared 20MB decoded budget',async()=>{
   const data=readFileSync(art('butler-bow.webp')),meta=await sharp(data).metadata();
   expect([meta.width,meta.height,meta.hasAlpha]).toEqual([1920,1792,true]);
   expect(meta.width!*meta.height!*4).toBeLessThan(20*1024*1024);
+});
+
+// Rasterize the complete runtime SVG at mismatched container ratios.
+test('runtime viewport clips exactly one person in wide and tall containers',async()=>{
+ const atlas=readFileSync(art('butler-bow.webp')).toString('base64');
+ for(const elapsedMs of [0,1100,1800,2600])for(const [width,height] of [[800,240],[240,600]]){
+  const markup=renderToStaticMarkup(createElement(ButlerBow,{elapsedMs})).replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" width="'+width+'" height="'+height+'" ').replace('/art/effects/v4/butler-bow.webp','data:image/webp;base64,'+atlas);
+  const {data,info}=await sharp(Buffer.from(markup)).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  const scale=Math.min(width!/320,height!/448),left=(width!-320*scale)/2,right=left+320*scale,top=(height!-448*scale)/2,bottom=top+448*scale;
+  let outside=0;
+  for(let y=0;y<info.height;y++)for(let x=0;x<info.width;x++)if(x<Math.floor(left)||x>=Math.ceil(right)||y<Math.floor(top)||y>=Math.ceil(bottom))outside+=data[(y*info.width+x)*4+3]!;
+  expect(outside).toBe(0);
+ }
 });
