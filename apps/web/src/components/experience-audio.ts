@@ -7,6 +7,7 @@ import {roleAudioV8 as remainingLead} from './role-audio-v8.js';
 import {roleAudioV9 as finalLead} from './role-audio-v9.js';
 import {roleMusicCues} from './role-score.js';
 import {dawnAudio} from './dawn-audio.js';
+import {audioPreferences,audioPreferencesEvent} from './audio-preferences.js';
 type Scope='public'|'private'|'ui'|'book'|'nomination'|'ballot';
 export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
@@ -16,13 +17,13 @@ let enabled=readPreference(),status='',semanticSeq=0;
 let previewAudio:{enabled:boolean;volume:number}|undefined;
 const bookOwners=new Set<object>(),nominationOwners=new Set<object>();
 function previewPrivateAllowed(){return !!previewAudio||privateAudioAllowed();}
-export function effectsAudioVolume(){return previewAudio?.volume??.72;}
+export function effectsAudioVolume(){return previewAudio?.volume??audioPreferences().effects.volume;}
 export function setEffectsPreviewVolume(value:number){if(!previewAudio||!Number.isFinite(value))return;previewAudio.volume=Math.max(0,Math.min(1,value));if(output)output.gain.value=previewAudio.volume;}
 /** The lab auditions private cues without changing the room's participation mode or master preference. */
 export function beginEffectsPreview(){
  silenceEffects();previewAudio={enabled:false,volume:.72};if(output)output.gain.value=.72;
  window.dispatchEvent(new Event('ravens-effects-audio'));
- return()=>{silenceEffects();previewAudio=undefined;if(output)output.gain.value=.72;window.dispatchEvent(new Event('ravens-effects-audio'));};
+ return()=>{silenceEffects();previewAudio=undefined;if(output)output.gain.value=effectsAudioVolume();window.dispatchEvent(new Event('ravens-effects-audio'));};
 }
 const buffers=new Map<string,Promise<AudioBuffer>>(),sizes=new Map<string,number>(),played=new Map<string,number>(),epochs=new Map<string,number>();
 const sources=new Map<AudioBufferSourceNode,Playing>();
@@ -30,7 +31,9 @@ function readPreference(){try{return localStorage.getItem('ravens_effects_audio'
 function destination(audio:AudioContext){if(!output){output=audio.createGain();output.gain.value=effectsAudioVolume();if(typeof audio.createDynamicsCompressor==='function'){const limit=audio.createDynamicsCompressor();limit.threshold.value=-1;limit.knee.value=0;limit.ratio.value=20;limit.attack.value=.002;limit.release.value=.1;output.connect(limit);limit.connect(audio.destination);}else output.connect(audio.destination);}return output;}
 export const globalAudioEvent='ravens:global-audio';
 export function globalAudioEnabled(){return enabled;}
-export function effectsAudioEnabled(){return previewAudio?.enabled??enabled;}
+export function audioControlEnabled(){return previewAudio?.enabled??enabled;}
+export function audioChannelsSilent(){if(previewAudio)return previewAudio.volume===0;const p=audioPreferences();return(!p.music.enabled||p.music.volume===0)&&(!p.effects.enabled||p.effects.volume===0);}
+export function effectsAudioEnabled(){return previewAudio?.enabled??(enabled&&audioPreferences().effects.enabled);}
 export function effectsAudioStatus(){return status;}
 function report(value:string){status=value;window.dispatchEvent(new Event('ravens:audio-status'));}
 export const reportAudioStatus=report;
@@ -38,7 +41,7 @@ export const reportAudioStatus=report;
 export function getEffectsAudioContext(){return ctx;}
 export function effectsPreviewActive(){return !!previewAudio;}
 /** Poll by the isolated score owner. Loading/opening secret UI alone cannot duck anything. */
-export function scoreDuckingActive(){return !!(!previewAudio&&effectsAudioEnabled()&&ctx?.state==='running'&&!document.hidden&&[...sources.values()].some(s=>s.scope!=='ui'&&s.scope!=='book'&&s.at<=ctx!.currentTime&&s.end>ctx!.currentTime&&(s.scope!=='private'||privateAudioAllowed())));}
+export function scoreDuckingActive(){return !!(!previewAudio&&effectsAudioEnabled()&&effectsAudioVolume()>0&&ctx?.state==='running'&&!document.hidden&&[...sources.values()].some(s=>s.scope!=='ui'&&s.scope!=='book'&&s.at<=ctx!.currentTime&&s.end>ctx!.currentTime&&(s.scope!=='private'||privateAudioAllowed())));}
 export async function unlockEffectsAudio(){
  if(typeof window==='undefined')return;
  const Audio=window.AudioContext??(window as typeof window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
@@ -84,6 +87,8 @@ export function completeEventAudio(id:string){for(const [source,row]of sources)i
 export function silenceEffects(scope?:Scope){const ids=new Set<string>();for(const [source,row]of sources)if(!scope||row.scope===scope){ids.add(row.id);stop(source,row);}for(const id of epochs.keys())if(!scope||id.startsWith(scope+':'))ids.add(id);for(const id of ids)cancelEventAudio(id);}
 export function cancelSemantic(scope:'ui'|'book'){silenceEffects(scope);}
 if(typeof window!=='undefined'){
+ let previousEffects=audioPreferences().effects;
+ window.addEventListener(audioPreferencesEvent,()=>{const next=audioPreferences().effects,changed=previousEffects.enabled!==next.enabled,volumeChanged=previousEffects.volume!==next.volume;previousEffects=next;if(previewAudio||!changed&&!volumeChanged)return;if(output)output.gain.value=next.volume;if(changed&&!next.enabled)silenceEffects();if(changed)window.dispatchEvent(new Event('ravens-effects-audio'));});
  window.addEventListener('ravens:participation-audio',()=>{if(!previewPrivateAllowed())silenceEffects('private');});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)silenceEffects();});
  window.addEventListener('ravens:ui-feedback',event=>{const detail=(event as CustomEvent<SemanticCue|{cue:SemanticCue;scope:'ui'|'private'}>).detail,cue=typeof detail==='string'?detail:detail.cue;if(['press','select','open','close','success','error'].includes(cue))playSemantic(cue,{scope:typeof detail==='string'?'ui':detail.scope});});
