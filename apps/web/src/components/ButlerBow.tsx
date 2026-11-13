@@ -20,6 +20,8 @@ export function butlerBowFrame(elapsedMs: number): number {
 export function ButlerBow({ elapsedMs, reducedMotion = false }: { elapsedMs: number; reducedMotion?: boolean }) {
   const frame = reducedMotion ? 0 : butlerBowFrame(elapsedMs);
   return <svg className="butler-bow" role="img" aria-label="西装管家向主人完整鞠躬" data-frame={frame} viewBox="0 0 320 448" preserveAspectRatio="xMidYMid meet" overflow="hidden">
+    <svg x="0" y="0" width="320" height="448" viewBox="0 0 320 448" overflow="hidden" data-frame-viewport="true">
     <image href="/art/effects/v4/butler-bow.webp" x={-(frame%6)*320} y={-Math.floor(frame/6)*448} width="1920" height="1792"/>
+    </svg>
   </svg>;
 }
