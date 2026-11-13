@@ -21,3 +21,5 @@
 
 2026-11-13 第三批修订：公开入夜/黎明使用独立缓升月亮/太阳（AtmosphericSky），背景v5/night-town与dawn-town已去预烘焙天体。胜利使用全屏town/atmosphere和独立meet主体；邪恶胜利恢复无恶魔烘焙的燃烧城镇，独立翅膀、透明火焰纹理、烟和32余烬。镇长使用无权杖底图加独立完整权杖，消除移动时底图空洞。透明绿雾原图保存在sources/nov13；构建将RGB约束深绿(.19G,.64G,.075G)，保留原alpha，黑/灰底PNG已核查无白边。PoisonVapour增加30枚由底部升至58%高度气泡，900ms开始显现；非compact为独立fixed全屏层。PrivateSceneStage的挂载由来源会话负责，条件为poisoner的IDENTITY/ACTION_SUBMITTED，并使用/art/effects/v5/poison-vapour.webp冻结readyKey；不表示能力成功。屏幕刀痕也独立fixed，中央道具保持原等比画布。
 本批所有生成素材使用built-in image_gen，生成prompt简述与尺寸/hash见sources/nov13/spec.json及v5/manifest.json；工程内路径均已落库，不依赖生成缓存。未执行浏览器、手机观感或听感验收。
+
+2026-11-13手机无声反馈追加：手册纸张声由书内开关授予局部许可，不再被默认关闭的演出总开关误拦截。`createBookAudio().prepare(feedback?: boolean): Promise<boolean>` 必须直接在声音开启/翻页手势内调用，先同步解锁并预热既有纸轨，再异步准备纹理；`silence`/`dispose`撤销该书许可与晚到反馈。不会开启私密动作音效或修改线上/线下/预览偏好；纸张仍用原轨，book范围增益从0.23调为0.65。共享解锁允许后续手势重新resume，不复用卡住的自动请求。此为代码与离线数值修复，不能替代手机可听验收。
