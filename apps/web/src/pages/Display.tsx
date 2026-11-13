@@ -7,6 +7,7 @@ import {RoundTable} from '../components/RoundTable.js';
 import {publicNightDeathSeats} from '../components/public-night-deaths.js';
 import {playerLabel,formatPlayerText} from '@ravens/ui';
 import '../styles/display-town.css';
+import '../styles/six-player-rules.css';
 import {SeatOrderGrid} from '../components/SeatOrderGrid.js';
 import {Avatar} from '../components/Avatar.js';
 import {useGameClock} from "../use-game-clock.js";
@@ -88,7 +89,7 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
     <GameScoreOwner screen={game?'GAME':'LOBBY'} room={room}/>
     {upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}
     {game ? <section className="display__performance" aria-label="公共演出容器"><PublicNominationAudio game={game} room={room}/><EventStage game={game} room={room} /></section> : null}
-    <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button><AudioSettings display/><GlobalAudioButton/></div></header>
+    <header className="display__header"><span>鸦钟夜话 · {code}{room?.playerCount===6&&room.sixPlayerEvilCooperation?<small className="six-player-public-mode">自定义增强 · 6人局邪恶协作</small>:null}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button><AudioSettings display/><GlobalAudioButton/></div></header>
     <section className="display__town"><div className="display__canvas"><RoundTable count={seats.length} variant="display" maxDiameter={Number.POSITIVE_INFINITY} className="display__table">{layout=><><SeatRing fluid layout={layout} diameter={layout.diameter} seats={seats} nightDeathSeats={game?publicNightDeathSeats(game):[]} nominatorSeat={publicDay?game?.nomination?.nominatorSeat:undefined} executionCandidate={publicDay&&!game?.executionTied?game?.onBlock:undefined} threatenedSeats={publicDay&&game?.nomination?[game.nomination.nomineeSeat]:[]} {...(!simultaneous&&game?.nomination?.currentVoterSeat ? { activeSeat: game.nomination.currentVoterSeat } : {})} {...(!simultaneous&&game?.nomination?.countedVotes ? { countedVotes: game.nomination.countedVotes } : {})} {...(game?.nomination?.raisedSeats ? { raisedSeats: game.nomination.raisedSeats } : {})} /><div className="display__center">{!game ? <div className="display__join">
       {qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}
       <p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1>
