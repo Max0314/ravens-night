@@ -16,7 +16,7 @@ export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
  else if(role==='chef')names=['chef-board-clean','chef-carrot','chef-cleaver'];
  else if(role==='fortune_teller')names=['crystal-shell','crystal-mist'];
  else if(role==='poisoner')names=['poison-glass','poison-stopper','poison-mist','poison-vapour'];
- else if(role==='mayor')names=['mayor','mayor-scepter'];
+ else if(role==='mayor')names=['mayor','mayor-scepter','book-paper'];
  else if(role==='drunk')names=['drunk-glass'];
  else if(role==='ravenkeeper')names=['raven-body','raven-wing'];
  else if(role==='scarlet_woman')names=['scarlet-cloak'];

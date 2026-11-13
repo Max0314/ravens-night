@@ -20,7 +20,7 @@ test('book and coffin texture triangles map all four physical corners, including
 test('completed book projections remain clipped to the page and are not duplicated',()=>{
  const markup=renderToStaticMarkup(<LayeredSceneArt role="spy" kind="INFORMATION" elapsedMs={2300} imprint={{label:'极长线索'.repeat(8),marks:[{label:'长昵称'.repeat(8)}]}}/>);
  expect(markup.match(/data-projection="authorized"/g)).toHaveLength(1);
- expect(markup).toMatch(/<g clip-path="url\(#[^"]+-pages\)" data-projection="authorized">/);
+ expect(markup).toMatch(/data-book-ink="moving-leaf"[^>]+clip-path="url\(#[^"]+-leaf-ink\)"/);
 });
 
 test('new cloth vertices are shared and its candidate ink settles after lifting',()=>{
