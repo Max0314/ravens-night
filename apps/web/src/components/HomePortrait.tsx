@@ -108,7 +108,7 @@ export function HomePortrait() {
         </div></div>;
       })}</div>
     </div>
-    <div className="home-portrait__caption" aria-live="polite" aria-atomic="true">{beginnerRoles.map((role,item)=><div ref={node=>{captions.current[item]=node;}} className="home-portrait__caption-body" key={role.id} aria-hidden={item!==index}><span>{roleTypeNames[role.type]}</span><h2>{role.name}</h2><p>{role.summary}</p></div>)}</div>
+    <div className="home-portrait__caption" aria-live="polite" aria-atomic="true">{beginnerRoles.map((role,item)=><div ref={node=>{captions.current[item]=node;}} className="home-portrait__caption-body" key={role.id} aria-hidden={item!==index}><span data-public-role-type={role.type}>{roleTypeNames[role.type]}</span><h2>{role.name}</h2><p>{role.summary}</p></div>)}</div>
     <div className="home-portrait__navigation"><button type="button" aria-label="上一位角色" disabled={settling} onClick={()=>settle(-1)}>‹</button><span>{String(index+1).padStart(2,'0')} <i/> {count}</span><button type="button" aria-label="下一位角色" disabled={settling} onClick={()=>settle(1)}>›</button></div>
   </section>;
 }
