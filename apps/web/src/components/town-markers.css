@@ -1,0 +1,17 @@
+/* Private knowledge has a separate lane; it never overlays portrait or seat number. */
+.remote-town-board>header>.town-private-mark-strip{display:flex;align-items:center;gap:4px;flex:1;min-width:0;max-height:44px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x;scrollbar-width:thin}
+.town-private-mark-strip>.rn-seat__private-mark{position:static;inset:auto;transform:none;display:flex;align-items:center;gap:4px;flex:none;max-width:none;min-width:28px;min-height:28px;padding:2px 5px;border:1px solid #c5a66a80;border-radius:8px;background:#33291cee;color:#e7cd95;font-size:9px;line-height:11px;white-space:nowrap;pointer-events:auto;text-align:left}
+.town-private-mark__seat{display:grid;place-items:center;flex:none;min-width:15px;height:15px;border-radius:4px;background:#0b100fee;color:#e6d2a0;font:10px/1 var(--rn-mono)}
+.remote-town-board>header>.town-view-switch{flex:none}
+.spy-town .spy-town__portrait-anchor{position:relative;display:block;flex:none;width:var(--round-portrait,42px);height:var(--round-portrait,42px);overflow:visible}
+.spy-town .spy-town__portrait-anchor>.spy-town__portrait{width:100%;height:100%}
+.spy-town .spy-town__player .spy-town__portrait-anchor>.spy-town__number{left:auto;top:auto;right:calc(100% - 3px);bottom:calc(100% - 3px);border:0;border-radius:4px;z-index:5}
+.spy-town .spy-town__mark-strip.spy-town__legend{display:flex;align-items:center;justify-content:flex-start;gap:4px;flex-wrap:nowrap;flex:none;min-height:24px;max-height:28px;padding:2px 4px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x;scrollbar-width:thin}
+.spy-town__mark-strip>.spy-town__mark-entry{display:flex;align-items:center;gap:4px;flex:none;min-height:22px;padding:2px 4px;border:1px solid #b39a4c33;border-radius:6px;background:#16150f;color:#d7c9a9}
+.spy-town .spy-town__mark-strip .spy-town__markers{position:static;inset:auto;display:flex;flex-direction:row;align-items:center;gap:2px}
+/* The fixed square may show the external number in its existing edge gutter. */
+.round-table-preview:has(.spy-town__portrait-anchor){overflow:visible}
+
+.game-content--town .town-private-mark-strip>.rn-seat__private-mark{font-size:8px}
+.remote-town-board>header>.town-clue-entry{flex:none}
+

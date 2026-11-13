@@ -7,7 +7,7 @@
 .rn-seat-ring .rn-seat__initial{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#1c2527;color:#d9cda9}
 .rn-seat-ring .rn-seat__avatar[data-avatar-state=THREATENED]>img,.rn-seat-ring .rn-seat__avatar[data-avatar-state=THREATENED]>.rn-seat__initial{filter:none;opacity:1}
 .rn-seat-ring .rn-seat__avatar[data-avatar-state=DEAD]>img:not(.rn-night-scratch),.rn-seat-ring .rn-seat__avatar[data-avatar-state=DEAD]>.rn-seat__initial{filter:grayscale(1);opacity:.55}
-.rn-seat-ring .rn-seat__number{position:absolute!important;left:-3px;top:-3px;bottom:auto;z-index:5;display:grid;place-items:center;min-width:15px;height:15px;padding:0 2px;border:0;border-radius:4px;background:#0b100fee;color:#e6d2a0;font:10px/1 var(--rn-mono);pointer-events:none}
+.rn-seat-ring .rn-seat .rn-seat__portrait-anchor>.rn-seat__number{position:absolute!important;left:auto;top:auto;right:calc(100% - 3px);bottom:calc(100% - 3px);z-index:5;display:grid;place-items:center;min-width:15px;height:15px;padding:0 2px;border:0;border-radius:4px;background:#0b100fee;color:#e6d2a0;font:10px/1 var(--rn-mono);pointer-events:none}
 .rn-seat-ring .rn-seat--mine .rn-seat__number{background:#d3b977;color:#141710}
 .rn-seat-ring .rn-seat__name{display:block;max-width:100%;line-height:12px}
 .rn-seat-ring>.rn-seat .rn-seat__ballot{position:absolute;bottom:9px;right:-3px;z-index:6;border:1px solid #9dba98;border-radius:50%;background:#142319;color:#cce5bf;width:13px;height:13px;font-size:10px;line-height:12px;overflow:hidden}
@@ -23,3 +23,9 @@
 .rn-seat-ring--fluid>.rn-seat>button:not(.rn-seat__private-mark){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:100%;height:100%;min-height:44px;min-width:44px;padding:0;border:0;background:none;color:inherit}
 
 .rn-seat-ring .rn-seat .rn-seat__number::after{content:none}
+
+.rn-seat-ring .rn-seat__portrait-anchor{position:relative;display:block;flex:none;width:var(--round-portrait,42px);height:var(--round-portrait,42px);overflow:visible}
+
+.round-table-preview:has(.rn-seat__portrait-anchor){overflow:visible}
+
+.display .display__town:has(.rn-seat__portrait-anchor){overflow:visible}

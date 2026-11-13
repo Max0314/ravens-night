@@ -6,6 +6,7 @@ import type {PrivateHistoryEntry} from '../api.js';
 import {RoundTable} from './RoundTable.js';
 import {Avatar} from './Avatar.js';
 import '../styles/spy-town.css';
+import './town-markers.css';
 
 type SnapshotEntry=PrivateHistoryEntry & {grimoire:NonNullable<PrivateHistoryEntry['grimoire']>};
 function nightName(entry:PrivateHistoryEntry){return entry.phase==='FIRST_NIGHT'?'首夜':`第 ${Math.max(2,entry.day+1)} 夜`;}
@@ -28,6 +29,7 @@ export function SpyTownBoard({entries,onReturn,initialSeq}:{entries:PrivateHisto
   const index=snapshots.indexOf(entry),players=entry.grimoire.entries;
   const picked=selection?.seq===entry.seq?players.find(player=>player.seat===selection.seat):undefined;
   const move=(offset:number)=>{const next=snapshots[index+offset];if(next){setSeq(next.seq);setSelection(undefined);}};
+  const markStrip=<div className="spy-town__legend spy-town__mark-strip" aria-label="当夜魔典标记">{players.filter(p=>p.reminders.some(text=>text!=='存活'&&text!=='死亡')).map(p=><FeedbackButton type="button" key={p.seat} className="spy-town__mark-entry" aria-label={`查看${playerLabel(p.seat,p.nickname)}的当夜标记`} title={formatPlayerText(p.reminders.filter(text=>text!=='存活'&&text!=='死亡').join(' · '))} onClick={()=>setSelection({seq:entry.seq,seat:p.seat})}><span className="town-private-mark__seat">{p.seat}</span><span className="spy-town__markers">{p.reminders.filter(text=>text!=='存活'&&text!=='死亡').map((text,n)=><small key={n} data-marker={marker(text).kind} title={formatPlayerText(text)} aria-hidden="true">{marker(text).label}</small>)}</span></FeedbackButton>)}</div>;
   return <section className="spy-town" aria-label="我的魔典圆桌">
     <header className="spy-town__heading"><FeedbackButton type="button" aria-label="上一夜魔典" disabled={index===0} onClick={()=>move(-1)}>‹</FeedbackButton><div><strong>{nightName(entry)} · 魔典</strong><small>仅你可见 · 当夜快照{index===snapshots.length-1?' · 最新':''}</small></div><FeedbackButton type="button" aria-label="下一夜魔典" disabled={index===snapshots.length-1} onClick={()=>move(1)}>›</FeedbackButton></header>
     <RoundTable stable key={entry.seq} count={players.length} className="spy-town__table">{layout=><>
@@ -36,13 +38,12 @@ export function SpyTownBoard({entries,onReturn,initialSeq}:{entries:PrivateHisto
         const point=layout.points[i]!,reminders=player.reminders.filter(text=>text!=='存活'&&text!=='死亡');
         return <li key={player.seat} style={{left:point.x,top:point.y}}>
           <FeedbackButton type="button" className={`spy-town__player${picked?.seat===player.seat?' is-selected':''}${player.alive?'':' is-dead'}`} aria-pressed={picked?.seat===player.seat} aria-label={`${playerLabel(player.seat,player.nickname)}，魔典所示${player.roleName}，${player.alive?'存活':'已死亡'}${reminders.length?'，'+formatPlayerText(reminders.join('、')):''}`} onClick={()=>setSelection({seq:entry.seq,seat:player.seat})}>
-            <span className="spy-town__portrait"><Avatar id={`spy-${entry.seq}-${player.seat}`} name={player.nickname} url={player.avatar}/>{!player.alive?<SeatAvatarDecoration state="DEAD"/>:null}<span className="spy-town__number">{player.seat}</span>
-              <span className="spy-town__markers">{reminders.slice(0,3).map((text,n)=><small key={n} data-marker={marker(text).kind} title={formatPlayerText(text)} aria-hidden="true">{marker(text).label}</small>)}{reminders.length>3?<small aria-hidden="true">+{reminders.length-3}</small>:null}</span>
+            <span className="spy-town__portrait-anchor"><span className="spy-town__portrait"><Avatar id={`spy-${entry.seq}-${player.seat}`} name={player.nickname} url={player.avatar}/>{!player.alive?<SeatAvatarDecoration state="DEAD"/>:null}</span><span className="spy-town__number">{player.seat}</span>
             </span><span className="spy-town__nickname">{player.nickname}</span><span className="spy-town__role">{player.roleName}</span>
           </FeedbackButton>
         </li>;
       })}</ol>
     </>}</RoundTable>
-    <div className="spy-town__legend" aria-label="魔典标记说明"><span data-marker="poison">毒 · 中毒</span><span data-marker="red-herring">饵 · 红鲱鱼</span><span data-marker="protected">护 · 保护</span><span data-marker="drunk">醉 · 酒鬼</span></div>
+    {markStrip}
   </section>;
 }

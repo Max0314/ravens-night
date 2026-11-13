@@ -33,8 +33,6 @@ interface SeatRingProps {
   activeSeat?: number;
   countedVotes?: Record<number, boolean>;
   raisedSeats?: number[];
-  privateMarks?: Record<number, string>;
-  onPrivateMark?: (seat:number)=>void;
   fluid?: boolean;
   diameter?: number;
   threatenedSeats?: number[];
@@ -45,7 +43,7 @@ interface SeatRingProps {
   selectableSeats?: number[];
 }
 
-export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, privateMarks, onPrivateMark, fluid=false, diameter=320, threatenedSeats, nightDeathSeats, nominatorSeat, executionCandidate, selectedSeats, selectableSeats }: SeatRingProps) {
+export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, fluid=false, diameter=320, threatenedSeats, nightDeathSeats, nominatorSeat, executionCandidate, selectedSeats, selectableSeats }: SeatRingProps) {
   const layout=roundTableLayout(seats.length,diameter);
   return <ol className={`rn-seat-ring${fluid?" rn-seat-ring--fluid":""}`} style={{ "--seat-count": seats.length } as CSSProperties}>
     {seats.map((seat, index) => {
@@ -56,16 +54,15 @@ export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, r
         {seat.avatar ? <img key={seat.avatar} src={seat.avatar} alt="" draggable={false} onError={event => { event.currentTarget.hidden = true; }} /> : null}
         <span className="rn-seat__initial" aria-hidden="true">{[...seat.nickname][0] ?? "客"}</span>
         {state&&!(state==='DEAD'&&nightDeathSeats?.includes(seat.seat)) ? <SeatAvatarDecoration state={state} /> : null}
-        <span className="rn-seat__number">{seat.seat}</span>
         {state==='DEAD'&&nightDeathSeats?.includes(seat.seat)?<img className="rn-night-scratch" src="/art/effects/v3/claw-town.webp" alt="" draggable={false}/>:null}
       </span>;
+      const portrait=<span className="rn-seat__portrait-anchor">{avatar}<span className="rn-seat__number">{seat.seat}</span></span>;
       return <li key={seat.seat} data-seat-number={seat.seat}
         className={`rn-seat ${state === "DEAD" ? "rn-seat--dead" : state === "THREATENED" ? "rn-seat--threatened" : ""} ${seat.connected ? "" : "rn-seat--offline"} ${seat.seat === ownSeat ? "rn-seat--mine" : ""} ${seat.seat === activeSeat ? "rn-seat--counting" : ""} ${countedVotes?.[seat.seat] !== undefined ? "rn-seat--locked" : ""} ${selected ? "rn-seat--selected" : ""} ${selectable ? "rn-seat--selectable" : ""}`}
         style={{ "--seat-index": index,...(fluid?{left:layout.points[index]!.x,top:layout.points[index]!.y}:{}) } as CSSProperties}>
         {onSelect ? <FeedbackButton type="button" onClick={event => onSelect(seat.seat, event.currentTarget)} aria-pressed={selected} aria-label={`${playerLabel(seat.seat,seat.nickname)} ${seat.alive ? "存活" : "已死亡"}${seat.seat === ownSeat ? "，你" : ""}${state === "THREATENED" ? "，候选席" : ""}`}>
-          {avatar}<span className="rn-seat__name">{seat.nickname}</span>
-        </FeedbackButton> : <>{avatar}<span className="rn-seat__name">{seat.nickname}</span></>}
-        {privateMarks?.[seat.seat] ? onPrivateMark?<FeedbackButton type="button" className="rn-seat__private-mark" title={privateMarks[seat.seat]} aria-label={`我的线索：${privateMarks[seat.seat]}`} onClick={()=>onPrivateMark?.(seat.seat)}>{privateMarks[seat.seat]}</FeedbackButton>:<span className="rn-seat__private-mark" title={privateMarks[seat.seat]} aria-label={`我的线索：${privateMarks[seat.seat]}`}>{privateMarks[seat.seat]}</span> : null}
+          {portrait}<span className="rn-seat__name">{seat.nickname}</span>
+        </FeedbackButton> : <>{portrait}<span className="rn-seat__name">{seat.nickname}</span></>}
         {countedVotes?.[seat.seat] !== undefined ? <small className="rn-seat__ballot" aria-label={`已锁票：${countedVotes[seat.seat]?"赞成":"未举手"}`}>✓</small> : null}
         {seat.seat===nominatorSeat?<span className="rn-seat__nomination" aria-label="提名人">☞</span>:null}
         {executionCandidate?.seat===seat.seat?<span className="rn-seat__execution" aria-label={`待处决候选，最高${executionCandidate.votes}票`}>⚖ {executionCandidate.votes}</span>:null}
