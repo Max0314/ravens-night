@@ -27,6 +27,8 @@ pnpm build
 
 局内分阶段配乐入口为`GameScoreOwner`，选曲规则在`game-score.ts`；`python scripts/build-game-score.py`从仓库已保存候选原件重建`apps/web/public/audio/music/v2`。来源、许可、裁切起点与产物哈希见该目录`SOURCES.md`及`manifest.json`，运行菜单提供署名页。完整背景乐流式播放，私密情报配乐只解码短片段；是否已上线以统一部署记录为准。
 
+[精细道具分层源](artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/README.md)包含44个运行层、38份生成原件及完整提示词、锚点合同和重建参数；`build-assets.py --group`可分别重建10组，需Pillow，斜棺另需NumPy。22角色的动作对照与实际组件离线关键帧见演出记录；运行图、音轨及所有编辑原件均随Git保存。
+
 ## 线上查看
 
 - 游戏：<https://clocktower.fribench.cn>
