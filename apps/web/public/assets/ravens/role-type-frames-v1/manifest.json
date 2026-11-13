@@ -1,0 +1,133 @@
+{
+  "collection": "role-type-frames-v1",
+  "createdAt": "2026-11-13",
+  "base": "artifacts/independent-frames-2026-11-13/originals/fleur-rounded.png",
+  "baseSha256": "be3a4822848854a095da32771cc8fc27976d4bd3d8d204c09d71159944079057",
+  "composition": "Same base, dimensions, gold and rail thickness; four imagegen crests at top and small repeats on side rails. No hue-based taxonomy.",
+  "frames": [
+    {
+      "id": "townsfolk",
+      "type": "TOWNSFOLK",
+      "crest": "crests/townsfolk.png",
+      "crestSha256": "a10f4f75776c0eef31af80dd33421675a43c61a471f0e977bc88b70f1fccc8e0",
+      "source": "originals/townsfolk.png",
+      "sourceSha256": "583c618095b31a22481ba0020466d099b87bbb823cd4032be47016204fc59cf3",
+      "variants": [
+        {
+          "file": "townsfolk.png",
+          "width": 960,
+          "height": 1280,
+          "bytes": 738602,
+          "sha256": "07b95bbc16637267fd602f025d9d406d0d6a26209f1f3b5515a5642bf1bf448f"
+        },
+        {
+          "file": "townsfolk.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 512296,
+          "sha256": "2ab5cd34e9a16cab571532ef67c66a84a5c456fc0350ac0811fc143a72a9adac"
+        },
+        {
+          "file": "townsfolk-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 38146,
+          "sha256": "711384c242568b77384d86ee00fbc249337b0d60b9282317918f4568941a05f3"
+        }
+      ]
+    },
+    {
+      "id": "outsider",
+      "type": "OUTSIDER",
+      "crest": "crests/outsider.png",
+      "crestSha256": "9af869fc6b98072a3226c61e23cd7573c8c6d878955f0ebe351794c533985e42",
+      "source": "originals/outsider.png",
+      "sourceSha256": "ab3c5fec89f924291ff1a2545723997d2499eb52840a4dfb0515dee9e9ea49f1",
+      "variants": [
+        {
+          "file": "outsider.png",
+          "width": 960,
+          "height": 1280,
+          "bytes": 729063,
+          "sha256": "e99058b60aa9c583907f95745395361093ceeec02ef39873b70b3b473ef52c73"
+        },
+        {
+          "file": "outsider.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 509806,
+          "sha256": "32d6a466753e6f753ae9b2277f99023dcd2a77163cc5f28afa77632232c0d2ff"
+        },
+        {
+          "file": "outsider-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 37858,
+          "sha256": "78110e821776247cd23777bb8490355e4104cad7c12873fc4fe482f9a6dcf36d"
+        }
+      ]
+    },
+    {
+      "id": "minion",
+      "type": "MINION",
+      "crest": "crests/minion.png",
+      "crestSha256": "fbfccf9585dda93b3104da7f735a725773f0f813802e9d39755d3c5921d02517",
+      "source": "originals/minion.png",
+      "sourceSha256": "2a02c9c1b92d1ee5a2c216a6da2e748a0b82198107ab18cef6f3ff5e771d9d4e",
+      "variants": [
+        {
+          "file": "minion.png",
+          "width": 960,
+          "height": 1280,
+          "bytes": 705350,
+          "sha256": "58b25db6b545bbd7f5411286944bd0d047eef3f7cb50cc95b0420cf6d9d23367"
+        },
+        {
+          "file": "minion.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 490984,
+          "sha256": "c6d18046c69619467df3470b1addf7fdedf316f0d4088c917a3c5b2725805670"
+        },
+        {
+          "file": "minion-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 42478,
+          "sha256": "90d114231766b12bbc5635aab5cf6a70028f838f552031ee7e8eb1ae9fa909e2"
+        }
+      ]
+    },
+    {
+      "id": "demon",
+      "type": "DEMON",
+      "crest": "crests/demon.png",
+      "crestSha256": "cc3cbae236e73ec0625d97683ecf160a0c51db3f3d936f704b93884621c68471",
+      "source": "originals/demon.png",
+      "sourceSha256": "de8f739e8e3e9a62319d6f51d376611adead69ffbf544f97be26db7f3e2f3605",
+      "variants": [
+        {
+          "file": "demon.png",
+          "width": 960,
+          "height": 1280,
+          "bytes": 721284,
+          "sha256": "dbe9783dfb074a12b72f01151bc25d7315ba01e13230ca98f75dba27b9d7299a"
+        },
+        {
+          "file": "demon.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 502128,
+          "sha256": "75d09986de2495f5857308f48e6782bea3dcfc1c49d830c017db502ed0376f06"
+        },
+        {
+          "file": "demon-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 43672,
+          "sha256": "953aa83f8539d067372659cac9a0cb9f04ab11b85061ac72bb02c94418cef181"
+        }
+      ]
+    }
+  ]
+}
