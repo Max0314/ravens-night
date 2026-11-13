@@ -48,3 +48,5 @@
 2026-11-13提名/投票声音追加交付：`PublicNominationAudio`单一稳定owner同时负责L03发起16秒、L04待处决20秒、L02未达标/平票15秒及A03最终8秒；直接复用完整候选MP3，新增来源/许可/源SHA/ffprobe记录在`apps/web/public/audio/nomination/v1/`。短提示收起、换合法提名不剪尾；旧尾只轻压低，历史重击不补播，静音/后台/离页仍取消。SIM投票用公开绝对起止/ballotId，暂停和epoch按offset对齐、截止停，旧逐席票不套新8秒。本地预览相应三式时轴16/20/15秒，业务时序不改；EventStage页脚音符已移除，预览顶部音控保留。此为组件/声音交付，业务挂载与发布由来源统筹，未作手机试听验收。
 
 角色细节声音第一组：新增v6共11轨，洗衣妇入水/摩洗/滴水/固定模糊耳语，占卜连续低共鸣/玻璃细颤（YES/NO同声），调查镜缘/证物摩擦替换旧撞章，EVIL_START拆封/翻盖/抽信分别接触。只读取独立动作共享contact（65e05a8），最终MP3实测onset/peak索引由构建器自动生成；源原件8份及许可/SHA在sources/role-audio-v6，脚本build-role-audio-v6.py可离线重建。已认可翻页/M19/盾/slash/投毒/My lord原字节和公共nom稿未改；预览加入新单轨入口。该条为音频组交付，后续乌鸦/斜棺与其余角色仍待分组；手机听感未验收。
+
+角色细节声音第二组：新增v7共6轨，真实鸟翼不同片段起翼/收翼、轻羽毛细擦、固定短鸦鸣，斜棺真实开门铰摩擦/厚木落定余震。只读共享raven合同14cad8a（attention350/flapStart650/spread1225）与既有coffin（start600/open1600），不改revealed1900和总时长；固定鸣声无结果数据入口。两份新FLAC与原始木WAV在sources/role-audio-v7，既有A05鸦鸣OGG按原位路径引用，来源/许可/SHA及加工参数齐全；build-role-audio-v7.py可离线重建。旧认可声音及公共nom稿字节不改，预览添加新单轨入口，手机听感未验收。

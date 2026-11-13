@@ -1,0 +1,179 @@
+{
+  "version": 7,
+  "group": "raven-coffin-detail",
+  "rebuild": "python scripts/build-role-audio-v7.py",
+  "sourceIndex": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v7/sources.json",
+  "license": "CC0-1.0 recordings; original project material arrangement",
+  "files": [
+    {
+      "id": "raven-wing-open",
+      "file": "raven-wing-open.mp3",
+      "sha256": "d854047ddf5a1e56d58ef9e2cb9b6fe8067ca2410c93bce8267d7b83c62279ba",
+      "bytes": 7984,
+      "durationMs": 420.0,
+      "decodedBytes": 74088,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 12.2,
+      "peakOffsetMs": 300.408,
+      "peakDbFS": -12.59,
+      "rmsDbFS": -24.46,
+      "sources": [
+        "bird-wings"
+      ],
+      "layers": [
+        "Actual pigeon takeoff excerpt 75..320ms, stretched to 420ms for stylized raven opening stroke; no claim of a raven field recording"
+      ],
+      "processing": "highpass=f=110,lowpass=f=6200 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -24,
+        "peakCap": 0.63,
+        "appliedGain": 1.541441,
+        "attackMs": 12.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "raven-wing-fold",
+      "file": "raven-wing-fold.mp3",
+      "sha256": "67b5250a3eb3a120986b458c83c1d654e9942b4a6cbd6f4da7ecc6d0c586f731",
+      "bytes": 8820,
+      "durationMs": 480.0,
+      "decodedBytes": 84672,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 6.077,
+      "peakOffsetMs": 102.381,
+      "peakDbFS": -13.2,
+      "rmsDbFS": -27.41,
+      "sources": [
+        "bird-wings"
+      ],
+      "layers": [
+        "Different natural wing excerpt 320..630ms, stretched to 480ms for smaller closing stroke"
+      ],
+      "processing": "highpass=f=160,lowpass=f=6500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -27,
+        "peakCap": 0.63,
+        "appliedGain": 1.35577,
+        "attackMs": 12.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "raven-feathers",
+      "file": "raven-feathers.mp3",
+      "sha256": "bef0d05fe5169fc8cca71eccdb2123276be3f7129c01a3c8fb42fe44318e3bf8",
+      "bytes": 19687,
+      "durationMs": 1150.454,
+      "decodedBytes": 202940,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 9.297,
+      "peakOffsetMs": 148.503,
+      "peakDbFS": -18.47,
+      "rmsDbFS": -32.44,
+      "sources": [
+        "bird-wings"
+      ],
+      "layers": [
+        "Recorded bird feather/air texture excerpt 180..720ms, extended under articulated movement; gradual fade, no extra impact"
+      ],
+      "processing": "highpass=f=650,lowpass=f=7500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -32,
+        "peakCap": 0.63,
+        "appliedGain": 1.018808,
+        "attackMs": 65.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "raven-short-call",
+      "file": "raven-short-call.mp3",
+      "sha256": "042e9da272ed9ca9b4bbb5fee57f9832b3e863f74186ec0ecdce44f7f8a0bea3",
+      "bytes": 10492,
+      "durationMs": 600.0,
+      "decodedBytes": 105840,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 9.456,
+      "peakOffsetMs": 159.887,
+      "peakDbFS": -16.15,
+      "rmsDbFS": -27.45,
+      "sources": [
+        "crow-call"
+      ],
+      "layers": [
+        "Fixed 1580..2180ms crop of archived A05 crows recording; identical for every scene/result, not selected from revealed/death data"
+      ],
+      "processing": "highpass=f=260,lowpass=f=5400 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -27,
+        "peakCap": 0.63,
+        "appliedGain": 1.287016,
+        "attackMs": 40.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "coffin-hinge",
+      "file": "coffin-hinge.mp3",
+      "sha256": "54a37fc0ea50045aaf68db12aaf8e720595b3ddf7a6c98adf8f9ba2417c12e1a",
+      "bytes": 18015,
+      "durationMs": 1060.0,
+      "decodedBytes": 186984,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 18.73,
+      "peakOffsetMs": 284.626,
+      "peakDbFS": -14.07,
+      "rmsDbFS": -24.45,
+      "sources": [
+        "door-creak"
+      ],
+      "layers": [
+        "Recorded opening-door hinge friction 140..1500ms, resampled to 1060ms and darkened as heavy wood lid foley; not repeated synthesized impacts"
+      ],
+      "processing": "highpass=f=70,lowpass=f=3500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -24,
+        "peakCap": 0.63,
+        "appliedGain": 1.610383,
+        "attackMs": 25.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "coffin-settle",
+      "file": "coffin-settle.mp3",
+      "sha256": "04580f56c3ae2606463820baf5ae4bbfb4bd7fa2eda4d1ce652697287a9bb5c0",
+      "bytes": 10492,
+      "durationMs": 600.0,
+      "decodedBytes": 105840,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 26.168,
+      "peakOffsetMs": 33.084,
+      "peakDbFS": -8.42,
+      "rmsDbFS": -24.43,
+      "sources": [
+        "wood-small"
+      ],
+      "layers": [
+        "Recorded small wood contact, lowered by resampling; two strongly damped low-pass reflections at 140/280ms, fully faded by 600ms; follows lid settling, no result meaning"
+      ],
+      "processing": "highpass=f=45,lowpass=f=1800 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -24,
+        "peakCap": 0.63,
+        "appliedGain": 4.827236,
+        "attackMs": 4.0,
+        "releaseMs": 70
+      }
+    }
+  ],
+  "totalBytes": 75490,
+  "totalDecodedBytes": 760364
+}
