@@ -14,7 +14,7 @@ test('rifle flash stays attached to the recoiling muzzle, and a seek is determin
  expect(recoil.muzzle).toEqual(transformPoint(base.muzzle.x,base.muzzle.y,base.pivot,recoil.angle,recoil.x,recoil.y));expect(recoil.muzzle.x).toBeLessThan(base.muzzle.x);
  expect(riflePose(1100,850).smokeOrigin).toEqual(riflePose(1600,850).smokeOrigin);
  const ui=render(<HuntingRifleScene elapsedMs={878} fireAt={850}/>),flash=ui.container.querySelector('[data-testid="muzzle-flash"]')!;
- expect(flash.parentElement?.querySelector('image')?.getAttribute('href')).toMatch(/short-shotgun/);expect(flash.parentElement?.getAttribute('transform')).toContain('rotate(');
+ expect(flash.parentElement?.querySelector('image')?.getAttribute('href')).toMatch(/birdhead-shotgun/);expect(flash.parentElement?.getAttribute('transform')).toContain('rotate(');
  expect(renderToStaticMarkup(<HuntingRifleScene elapsedMs={900} fireAt={850}/>)).toBe(renderToStaticMarkup(<HuntingRifleScene elapsedMs={900} fireAt={850}/>));
  ui.rerender(<HuntingRifleScene elapsedMs={849} fireAt={850}/>);expect(ui.container.querySelector('[data-testid="muzzle-flash"]')).toBeNull();
 });
@@ -61,3 +61,10 @@ test('victory separates viewport atmosphere from the undistorted central subject
  expect(ui.container.querySelectorAll('[data-wing]')).toHaveLength(2);
 });
 
+
+test('execution portrait and mechanism share one fitted square canvas',()=>{
+ const ui=render(<GuillotineScene elapsedMs={1200} resultAt={1200} empty={false} death={false}><span data-person="true">portrait</span></GuillotineScene>);
+ const canvas=ui.container.querySelector('.guillotine-scene__canvas')!;
+ expect(canvas.querySelector('.guillotine-mechanism')?.getAttribute('viewBox')).toBe('0 0 480 480');
+ expect(canvas.querySelector('.guillotine-scene__person [data-person]')).not.toBeNull();
+});

@@ -1,0 +1,51 @@
+{
+  "generator": "built-in image_gen; scripts/build-cinematics-v6.mjs",
+  "files": [
+    {
+      "id": "birdhead-shotgun",
+      "file": "birdhead-shotgun.png",
+      "prompt": "Original ornamental nonfunctional antique double-barrel stage prop for gothic game. Side profile; short downward-curved walnut birds-head pistol handle, no shoulder stock; short thick barrels, engraved silver receiver, clear oval guard, detailed painted realistic walnut and steel. Transparent background, no people, scene, smoke or letters.",
+      "trim": true,
+      "references": [
+        "https://www.denix.es/en/catalogue/western-and-american-civil-war-1861-1899/pistols/1114/",
+        "https://www.wilson55.com/auction/lot/lot-38---deactivated-double-barrel-sawn-off-shotgun/?lot=146888&sd=1",
+        "https://repliquemangacine.fr/en/denix/coach-gun-1868-double-barrel-cut-off-shotgun/"
+      ],
+      "referenceUse": "External silhouette/grip reference only; original painted game art; no product photograph copied into runtime asset.",
+      "width": 1024,
+      "height": 406,
+      "sha256": "5105b7b52ddfddbf9065da31ae9a91429e1d1f4de355a2dce54d43c31acada56",
+      "sourceSha256": "a89b62e7cad9a346e790affbaacbfb7361621e2b8739f5c2d44342feeb56bf98",
+      "processing": "Uniform fit within1008; 8px transparent safe border; preserve alpha; no stretch"
+    },
+    {
+      "id": "guillotine-frame",
+      "file": "guillotine-frame.png",
+      "prompt": "Broad near-square detailed gothic empty frame, 95% width/height, thick posts, wide transparent rail channel; lower stock opening enlarged25% around same center; no blade, victim, rope, blood or scenery; transparent background.",
+      "trim": false,
+      "alphaFloor": 80,
+      "clearCircle": {
+        "cx": 638,
+        "cy": 900,
+        "r": 110
+      },
+      "processingNote": "ImageGen produced pale semi-transparent pixels in the intended empty hole. Explicit circular alpha cut and low-alpha noise cleanup restore the transparent opening without changing the frame RGB or stretching it.",
+      "width": 1024,
+      "height": 986,
+      "sha256": "07a6b341b96afe4254d5e0f91632a08d2ec4b31080a9e77e9af6ab8fc2f65d95",
+      "sourceSha256": "9b9bd7401ede99ffc1d8150432f6e84886c33e5354ba3bdaffecbe219f8b4fc3",
+      "processing": "Uniform fit within1008; 8px transparent safe border; preserve alpha; no stretch"
+    },
+    {
+      "id": "guillotine-blade",
+      "file": "guillotine-blade.png",
+      "prompt": "Broad shallow decorative steel guillotine blade under ornate dark oak carriage crossbar, two rings, wide steel plate, lower edge slopes down left. Realistic painted dark fantasy material, no people, blood, frame, rope or scenery. Transparent layer.",
+      "trim": true,
+      "width": 1024,
+      "height": 371,
+      "sha256": "f64d868575f46d1c3d9eea3e401f7be32f7b597ea5c0ff16f18d38e69692272f",
+      "sourceSha256": "93cf8ac3f2b144d3136ecc1d5d858897587df2db4d0ffe95c0fb19bb83e0e6ff",
+      "processing": "Uniform fit within1008; 8px transparent safe border; preserve alpha; no stretch"
+    }
+  ]
+}
