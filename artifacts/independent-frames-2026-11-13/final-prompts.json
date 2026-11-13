@@ -1,0 +1,56 @@
+{
+  "mode": "built-in image_gen",
+  "transparentBackground": true,
+  "date": "2026-11-13",
+  "frames": [
+    {
+      "id": "lancet-square",
+      "name": "双尖窗角板直底框",
+      "reference": "librarian",
+      "roles": [
+        "washerwoman",
+        "librarian",
+        "fortune_teller",
+        "undertaker",
+        "virgin",
+        "recluse",
+        "scarlet_woman"
+      ],
+      "prompt": "Use case: precise-object-edit / background-extraction. Asset: ONE standalone historical A-style gothic portrait FRAME, complete finely painted raster UI asset on TRUE transparent alpha. Reference image is ONLY the antique frame's design and texture, not the woman or any scene. Repaint the frame alone and complete any parts hidden by the person. Entire portrait, books, interior, window, lamp and all background must be removed to transparency. Preserve the reference's specific TYPE A: slim aged bronze/gold rectangular outer rails, long slender twin pointed gothic lancet-window tracery panels in BOTH upper corner spandrels, small trefoil inset, narrow column-like vertical side rails, STRAIGHT horizontal bottom rail with square bottom corners, no large curved bottom-corner plates. Continuous thin inner pointed arch with completed small apex at top center; only arch spandrels are dark patinated metal, not an opaque scene. No random filigree additions. Surface: elaborate convincing worn engraved bronze, subtle gold edge highlights, blackened recesses, dark classical hand-painted material, luxurious but restrained. EXACT 3:4 upright canvas. Whole outer rectangle and all its corner ornaments fully visible inside 2% transparent outer margin, outer bounds x2-98% y2-98%. Pointed arch peak at x50 y4%, inner arch opening joins verticals around x6/94 y30%; bottom interior y95%. Large central opening COMPLETELY TRANSPARENT with no person, scenery, texture, grey fill, checker pattern or shadow. Outside frame transparent. Orthographic front-on, symmetrical architecture, no perspective. Do not draw a checkerboard. No words, no labels, logo, UI, collage or sheet. One complete frame only, no characters.",
+      "structure": "Upper twin pointed-window/trefoil panels; column-like side rails; square bottom corners and straight bottom rail."
+    },
+    {
+      "id": "fleur-rounded",
+      "name": "百合长矛圆底框",
+      "reference": "baron",
+      "roles": [
+        "chef",
+        "monk",
+        "mayor",
+        "ravenkeeper",
+        "baron"
+      ],
+      "prompt": "Use case: precise-object-edit / background-extraction. ONE standalone antique gothic portrait FRAME on genuine transparent alpha, an elaborate painterly raster game UI asset. Reference image is ONLY the historical A-style frame design, never man/room/objects. Remove all portrait and room to transparency. Fully repaint all frame parts hidden by the man. Preserve this specific TYPE B structure: rectangular thin blackened bronze outer rails; BOTH upper corner triangular spandrels have a long GOLD FLEUR-DE-LIS SPEAR FINIAL with three curving petals, paired with a slender diagonal gold leaf sprig over blackened metal. Thin continuous pointed inner arch; large concave quarter-circle LOWER CORNER plates (bottom-left and bottom-right) with gold fleur-de-lis/curving leaf relief, curved inner lower corners connected to a continuous straight bottom rail. The open aperture therefore has a pointed gothic arch at top and rounded inner bottom corners. Distinguish from twin-window type: NO paired lancet-window panels, no pillar caps. Rich fine weathered engraving, dark patina, restrained aged golden edge highlights; match reference old black and brass materials, no bright plastic gold. EXACT 3:4 canvas, front view orthographic symmetrical. Outer frame FULLY inside 2% transparent margin on all sides x2-98 y2-98, not cut off; completed arch peak centered x50 y4%, arch spring x6/94 y30%, inside bottom y95%. Large CENTRAL OPENING FULLY TRANSPARENT, outside transparent. Upper triangular blackened metal plates and lower corner plates belong to frame, other background is absent. No character, scene, painting, flat fill, checkerboard, drop shadow across opening, text, labels, UI, sheet or logo. One frame only, transparent PNG.",
+      "structure": "Upper fleur-de-lis spear with diagonal sprig; lower concave quarter-circle corner plates with fleur-de-lis relief."
+    },
+    {
+      "id": "leaf-rounded",
+      "name": "镂空叶枪圆底框",
+      "reference": "investigator",
+      "roles": [
+        "investigator",
+        "empath",
+        "slayer",
+        "butler",
+        "drunk",
+        "saint",
+        "poisoner",
+        "spy",
+        "imp",
+        "soldier"
+      ],
+      "prompt": "Use case: precise-object-edit / background-extraction. ONE finely painted standalone antique gothic portrait FRAME asset on true transparent alpha. Reference image ONLY defines historical A-style TYPE C frame. Repaint frame alone, remove man and entire room to transparency and reconstruct anything obscured. TYPE C: thin rectangular blackened bronze outer rail; delicate OPENWORK LEAF-SPEAR TRACERY at both upper corners, tall three-leaf spear/trefoil stems attached to top and side rails with little open gaps, sparse narrow Gothic leaf branches. This is NOT the large lily/fleur-de-lis finial and NOT the twin pointed-window spandrel. Upper spandrels have blackened engraved metal, thin gold outline follows pointed arch inside. Complete connected pointed arch apex top center. Lower left/right corners are large concave quarter-circle inner curves with elaborate thin GOLD SCROLL VINES and small three-lobed flowers in dark triangular corner plates; bottom rail runs uninterrupted across. The frame opening has rounded lower corners. Match reference precise worn dark brass highlights, engraved blackened recesses, fine oil-painted realistic texture, subtle aged bronze gold, restrained luxury. EXACT 3:4 upright canvas, whole rectangle and ornaments inside 2% transparent margin, x2-98% y2-98%. Arch apex x50 y4%, joins side around x6/94 y30%, bottom inner rail y95%. Orthographic front-facing symmetrical complete structure, no perspective. Central aperture COMPLETELY TRANSPARENT, no leftover person, clothing, room, colour fill or texture; outside transparent too. Do not draw checkerboard, cast shadow through opening, text, logo, labels, collage, UI or additional props. One frame only.",
+      "structure": "Upper openwork trefoil/leaf-spear tracery; lower concave quarter-circle plates with scroll vines and three-lobed flowers."
+    }
+  ]
+}
