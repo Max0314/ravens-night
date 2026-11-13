@@ -1,0 +1,31 @@
+{
+  "sources": [
+    {
+      "id": "wood-door",
+      "file": "wood-door-opening.flac",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/dawn-audio-v1/wood-door-opening.flac",
+      "sourcePage": "https://bigsoundbank.com/apartment-door-opening-2-s1703.html",
+      "downloadUrl": "https://bigsoundbank.com/UPLOAD/flac/1703.flac",
+      "author": "Joseph SARDIN",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "65a7d313f4875e8b024c0d47f6d23186b5bf696136d6929c114bc5ba4ce683dd",
+      "bytes": 373326,
+      "description": "Actual wooden apartment door opening; adapted as offscreen morning tavern-door environment, not claimed as a tavern field recording"
+    },
+    {
+      "id": "wood-light",
+      "file": "wood-light.ogg",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/dawn-audio-v1/wood-light.ogg",
+      "sourcePage": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "archivePath": "artifacts/cinematic-motion-2026-11-12/sources/kenney.zip",
+      "archiveSha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8",
+      "archiveMember": "Audio/impactWood_light_001.ogg",
+      "sha256": "4b76bf3ccc8e60d19188f3165b778a7817786faa6887c55d9049bcbeef3b425f",
+      "bytes": 6373
+    }
+  ]
+}
