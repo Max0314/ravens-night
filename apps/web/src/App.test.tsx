@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { App } from "./App.js";
 import { Home } from "./pages/Home.js";
@@ -61,6 +61,16 @@ test("the home screen exposes an interactive tutorial and the complete role comp
   fireEvent.click(screen.getByText("游玩建议与示例"));
   expect(screen.getByRole("heading", { name: "冒充与反制" })).toBeVisible();
   expect(screen.getByText(/邪恶冒充洗衣妇/)).toBeVisible();
+  const detail=screen.getByRole('article',{name:'洗衣妇详情'}),scroll=detail.closest('.guide-scroll')??detail;
+  scroll.scrollTop=120;
+  const originalHidden=Object.getOwnPropertyDescriptor(document,'hidden');
+  try{
+    Object.defineProperty(document,'hidden',{configurable:true,value:true});act(()=>document.dispatchEvent(new Event('visibilitychange')));
+    Object.defineProperty(document,'hidden',{configurable:true,value:false});act(()=>document.dispatchEvent(new Event('visibilitychange')));
+    expect(screen.getByRole('article',{name:'洗衣妇详情'})).toBe(detail);expect(scroll.scrollTop).toBe(120);
+    expect(screen.getByRole('heading',{name:'冒充与反制'})).toBeVisible();
+  }finally{if(originalHidden)Object.defineProperty(document,'hidden',originalHidden);else delete (document as {hidden?:boolean}).hidden;}
+
 });
 
 test("every role has a detailed play guide", () => {
