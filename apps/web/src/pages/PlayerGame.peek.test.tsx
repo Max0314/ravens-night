@@ -7,7 +7,7 @@ import {enableEffectsAudio} from '../components/experience-audio.js';
 import {roleArt} from '../role-art.js';
 import type {PrivateView} from '../api.js';
 vi.mock('../components/PrivateSceneStage.js',()=>({PrivateSceneStage:()=>null}));
-vi.mock('../components/experience-audio.js',async original=>({...await original<typeof import('../components/experience-audio.js')>(),effectsAudioEnabled:()=>false,effectsAudioStatus:()=>'',enableEffectsAudio:vi.fn(async()=>{})}));
+vi.mock('../components/experience-audio.js',async original=>({...await original<typeof import('../components/experience-audio.js')>(),effectsAudioEnabled:()=>false,audioControlEnabled:()=>false,audioChannelsSilent:()=>false,effectsAudioStatus:()=>'',enableEffectsAudio:vi.fn(async()=>{})}));
 const handlers={busy:false,canRestart:false,onBack:vi.fn(),onConfirmRole:vi.fn(),onSubmitAction:vi.fn(),onNominate:vi.fn(),onCancelNomination:vi.fn(),onVote:vi.fn(),onReady:vi.fn(),onUseAbility:vi.fn(),onRestart:vi.fn(),onOpenGuide:vi.fn()};
 function fixture():PrivateView{return {state:'RUNNING',roomInstanceId:'room',participant:{id:'me',nickname:'甲',seat:1},role:{roleId:'chef',name:'厨师',type:'TOWNSFOLK',alignment:'GOOD',summary:'能力',beginnerTip:'建议',perceivedAs:'不应读取此字段的图'},roleConfirmed:true,history:[],messages:[],game:{phase:'DAY_DISCUSSION',gameId:'g',day:1,aliveCount:3,readyCount:0,events:[],seats:[1,2,3].map(seat=>({id:String(seat),seat,nickname:'名字'+seat,alive:true,connected:true,ghostVoteAvailable:true}))}};}
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'查看我的角色立绘'}));

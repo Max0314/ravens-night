@@ -20,15 +20,17 @@ export function gameScoreTrack(game:GameView|undefined,now:number):ScoreTrack{
  return game.phase==='OTHER_NIGHT'?'M18':'M15';
 }
 type Entry={audio:HTMLAudioElement;route?:{context:AudioContext;source:MediaElementAudioSourceNode;gain:GainNode};loopHead:boolean;lastTime:number|undefined;pending:boolean;generation:number;timer:ReturnType<typeof setTimeout>|undefined;cleanup:()=>void};
-export interface ScorePlayback {track:ScoreTrack;active:boolean;ducked:boolean;context:string}
+export interface ScorePlayback {track:ScoreTrack;active:boolean;ducked:boolean;context:string;volume?:number}
 /** One owner, one cached HTML player per track; full music never enters WebAudio's decoded cache. */
 export function createGameScorePlayer(report:(message:string)=>void=()=>{}){
  const entries=new Map<ScoreTrack,Entry>();let state:ScorePlayback={track:'M19',active:false,ducked:false,context:''},disposed=false,ready:ScoreTrack|undefined;
- let ramp:ReturnType<typeof setInterval>|undefined,transition:{to:ScoreTrack;at:number;from:Map<ScoreTrack,number>}|undefined,duckRamp:{at:number;from:number;to:number}|undefined,duckGain=.8;
+ let ramp:ReturnType<typeof setInterval>|undefined,transition:{to:ScoreTrack;at:number;from:Map<ScoreTrack,number>}|undefined,duckRamp:{at:number;from:number;to:number}|undefined,duckGain=1;
+ let suspended:{at:number;track:ScoreTrack;context:string;ducked:boolean;ready:ScoreTrack|undefined;tracks:ScoreTrack[]}|undefined;
  const weights=new Map<ScoreTrack,number>();
  const clearRamp=()=>{clearInterval(ramp);ramp=undefined;};
  const pause=(entry:Entry)=>{entry.generation++;entry.pending=false;clearTimeout(entry.timer);entry.timer=undefined;if(ready&&entries.get(ready)===entry)ready=undefined;if(entry.route)entry.route.gain.gain.value=0;entry.audio.pause();};
- const stop=()=>{clearRamp();transition=undefined;duckRamp=undefined;ready=undefined;for(const entry of entries.values())pause(entry);};
+ const stop=()=>{clearRamp();transition=undefined;duckRamp=undefined;suspended=undefined;ready=undefined;for(const entry of entries.values())pause(entry);};
+ const suspend=(previous:ScorePlayback)=>{clearRamp();suspended={at:Date.now(),track:previous.track,context:previous.context,ducked:previous.ducked,ready,tracks:[...entries].filter(([id,e])=>!e.audio.paused&&(weights.get(id)??0)>0).map(([id])=>id)};for(const e of entries.values())pause(e);};
  const loopGain=(e:Entry)=>{
   const {duration,currentTime}=e.audio;
   if(!Number.isFinite(duration)||duration<=0||!Number.isFinite(currentTime)||currentTime<0){e.loopHead=false;e.lastTime=undefined;return 1;}
@@ -44,15 +46,16 @@ export function createGameScorePlayer(report:(message:string)=>void=()=>{}){
   if(transition){const p=Math.min(1,(Date.now()-transition.at)/2000);for(const [id,e]of entries){const from=transition.from.get(id)??0;weights.set(id,from+((id===transition.to?1:0)-from)*p);if(p===1&&id!==transition.to)pause(e);}if(p===1)transition=undefined;}
   if(duckRamp){const p=Math.min(1,(Date.now()-duckRamp.at)/240);duckGain=duckRamp.from+(duckRamp.to-duckRamp.from)*p;if(p===1)duckRamp=undefined;}
   let playing=false;
-  for(const [id,e]of entries)if(e.route){const live=state.active&&!e.audio.paused&&!e.audio.muted&&e.route.context.state==='running';playing||=live;e.route.gain.gain.value=live?Math.max(0,Math.min(1,(weights.get(id)??0)*duckGain*loopGain(e))):0;}
+  for(const [id,e]of entries)if(e.route){const live=state.active&&!e.audio.paused&&!e.audio.muted&&e.route.context.state==='running';playing||=live;e.route.gain.gain.value=live?Math.max(0,Math.min(1,(state.volume??.8)*(weights.get(id)??0)*duckGain*loopGain(e))):0;}
   if(!transition&&!duckRamp&&!playing)clearRamp();
  };
  const animate=()=>{if(!ramp)ramp=setInterval(tick,40);tick();};
  const fade=()=>{transition={to:state.track,at:Date.now(),from:new Map(weights)};animate();};
- const duck=()=>{duckRamp={at:Date.now(),from:duckGain,to:state.ducked?.26:.8};animate();};
+ const duck=()=>{duckRamp={at:Date.now(),from:duckGain,to:state.ducked?.325:1};animate();};
  const accept=(id:ScoreTrack,e:Entry)=>{
-  if(disposed||!state.active){e.audio.pause();return;}if(id!==state.track){if(!(weights.get(id)??0))e.audio.pause();return;}
+  if(disposed||!state.active){e.audio.pause();return;}if(id!==state.track&&!(weights.get(id)??0)){e.audio.pause();return;}
   if(e.audio.paused||e.audio.muted||e.audio.readyState<2||e.route?.context.state!=='running')return;
+  if(id!==state.track){clearTimeout(e.timer);e.timer=undefined;e.pending=false;animate();return;}
   clearTimeout(e.timer);e.timer=undefined;e.pending=false;const changed=ready!==id;ready=id;report('');if(changed)fade();else animate();
  };
  function entry(id:ScoreTrack){
@@ -74,24 +77,28 @@ export function createGameScorePlayer(report:(message:string)=>void=()=>{}){
    e.cleanup=()=>{cleanup();context.removeEventListener('statechange',resumed);source.disconnect();gain.disconnect();};e.audio.muted=false;return true;
   }catch{e.audio.pause();report('当前浏览器无法控制音乐音量，请重试；可继续游戏');return false;}
  }
- function watch(id:ScoreTrack,e:Entry,generation:number){clearTimeout(e.timer);e.timer=setTimeout(()=>{if(disposed||id!==state.track||generation!==e.generation||!e.pending)return;pause(e);report('音乐尚未开始，请轻点音符重试；可继续游戏');},8000);}
- function attempt(gesture=false){
+ function watch(id:ScoreTrack,e:Entry,generation:number){clearTimeout(e.timer);e.timer=setTimeout(()=>{if(disposed||generation!==e.generation||!e.pending)return;pause(e);if(id===state.track)report('音乐尚未开始，请轻点音符重试；可继续游戏');},8000);}
+ function attempt(gesture=false,id=state.track){
   if(disposed||!state.active)return false;
   // Creation/resume starts before play in this same stack, including a fresh retry gesture.
   if(gesture||getEffectsAudioContext()?.state!=='running')void unlockEffectsAudio();
-  const id=state.track,e=entry(id);if(!route(id,e))return false;
-  if(!e.audio.paused&&!e.pending){if(ready!==id)accept(id,e);return false;}if(e.pending&&!gesture)return false;
+  const e=entry(id);if(!route(id,e))return false;
+  if(!e.audio.paused&&!e.pending){accept(id,e);return false;}if(e.pending&&!gesture)return false;
   const generation=++e.generation;e.pending=true;if(e.audio.error)e.audio.load();watch(id,e,generation);
-  try{void e.audio.play().then(()=>{if(disposed||!state.active){e.audio.pause();return;}if(id!==state.track){if(!(weights.get(id)??0))e.audio.pause();return;}if(generation===e.generation)accept(id,e);}).catch(()=>{if(disposed||generation!==e.generation||id!==state.track)return;e.pending=false;clearTimeout(e.timer);report('浏览器尚未开启音乐，请轻点音符重试；可继续游戏');});}
-  catch{e.pending=false;clearTimeout(e.timer);report('音乐无法加载，请轻点音符重试；可继续游戏');}return true;
+  try{void e.audio.play().then(()=>{if(disposed||!state.active){e.audio.pause();return;}if(generation===e.generation)accept(id,e);}).catch(()=>{if(disposed||generation!==e.generation)return;e.pending=false;clearTimeout(e.timer);if(id===state.track)report('浏览器尚未开启音乐，请轻点音符重试；可继续游戏');});}
+  catch{e.pending=false;clearTimeout(e.timer);if(id===state.track)report('音乐无法加载，请轻点音符重试；可继续游戏');}return true;
  }
  return{
   update(next:ScorePlayback){if(disposed)return false;const previous=state;state=next;
-   if(!state.active){if(previous.active)stop();duckGain=state.ducked?.26:.8;return false;}
+   if(!state.active){if(previous.active)suspend(previous);else if(!suspended)duckGain=state.ducked?.325:1;return false;}
+   if(!previous.active&&suspended){const saved=suspended;suspended=undefined;
+    if(saved.track===state.track&&saved.context===state.context){const delay=Date.now()-saved.at;if(transition)transition.at+=delay;if(duckRamp)duckRamp.at+=delay;ready=saved.ready;if(saved.ducked!==state.ducked)duck();for(const id of saved.tracks)if(id!==state.track&&(weights.get(id)??0)>0)attempt(false,id);return attempt();}
+    transition=undefined;duckRamp=undefined;ready=undefined;duckGain=state.ducked?.325:1;for(const [id,e]of entries)if(id!==state.track){pause(e);weights.set(id,0);}return attempt();
+   }
    if(previous.ducked!==next.ducked)duck();
    if(previous.context!==next.context){for(const [id,e]of entries)if(id!==next.track){pause(e);weights.set(id,0);}transition=undefined;}
    if(previous.track!==next.track){for(const [id,e]of entries)if(id!==next.track&&e.pending)pause(e);return attempt();}
-   else if(!previous.active)return attempt();else if(previous.context!==next.context&&ready===next.track)fade();return false;
+   else if(!previous.active)return attempt();else if(previous.context!==next.context&&ready===next.track)fade();else if(previous.volume!==next.volume)tick();return false;
   },
   gesture:()=>attempt(true),
   dispose(){disposed=true;stop();for(const e of entries.values())e.cleanup();entries.clear();},

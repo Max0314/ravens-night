@@ -4,7 +4,7 @@
 
 公开序列：M19既有`/audio/music/v1/lobby-m19.mp3`原字节与0.8基准音量保留，首页/创建/加入/教学/房间/身份/首夜不中断；第一DAWN公开startsAt起M15；第二夜NIGHT_FALLS(day1)起M18，第二DAWN起M15；第三夜NIGHT_FALLS(day2，首次入夜day0计1)起固定M19，后续昼夜不换。公开GAME_OVER事件到startsAt+该timingVersion结果偏移才依据GOOD淡入M01并连续到全员身份结算；EVIL用M19，已经M19则不重启；早于第三夜的EVIL此时才切M19。GAME_OVER phase或未知/预测winner不触发。历史记录/公开day/phase支持重连恢复，不读取本机role.alignment。
 
-全曲使用每轨至多一个HTMLAudio，并接入已解锁共享AudioContext的MediaElementSource→独立GainNode→destination，音量包络只写GainNode，不依赖iOS不可写的HTMLAudio.volume；稳定owner缓存4个曲播放器，普通交叠2000ms、实际前景期间0.8→0.26于240ms调整，两个包络独立，重复playing/Promise确认不重开淡化。总静音、后台、MANUAL时间暂停、预览停正式播放；恢复同曲保留playhead；换房/下一把取消旧曲和过期请求。新曲未实际准备好前保留旧曲，拒绝播放/8秒未起播由全局音符状态提供重试；用户手势同栈play，晚到请求不恢复被取消的曲。DISPLAY/LOADING/LOGIN沿旧owner禁用，不自行新增投屏音乐。
+全曲使用每轨至多一个HTMLAudio，并接入已解锁共享AudioContext的MediaElementSource→独立GainNode→destination，音量包络只写GainNode，不依赖iOS不可写的HTMLAudio.volume；稳定owner缓存4个曲播放器，普通交叠2000ms、实际前景期间按0.325比例于240ms压低（默认音乐0.8→0.26），两个包络独立，重复playing/Promise确认不重开淡化。总静音、后台、MANUAL时间暂停、预览停正式播放；恢复同曲保留playhead；换房/下一把取消旧曲和过期请求。新曲未实际准备好前保留旧曲，拒绝播放/8秒未起播由全局音符状态提供重试；用户手势同栈play，晚到请求不恢复被取消的曲。DISPLAY/LOADING/LOGIN沿旧owner禁用，不自行新增投屏音乐。
 
 私密配乐由独立`role-score.ts`附加，不重写物体roleAudioCues：7善良信息角色washerwoman/chef/investigator/librarian/empath/undertaker/ravenkeeper的IDENTITY或INFORMATION用M03原曲3秒处起4秒；fortune_teller同两类演出以及其合法ACTION_SUBMITTED/TARGET_SUBMITTED.action=DIVINE晶球提交演出用M22原曲0秒处4秒；其他主动提交及EVIL_START/ROLE_CHANGE不增加配乐。YES/NO、情报数字、候选/真假/席位不改变选曲。片段单声道、80ms淡入/末300ms淡出，不延长私密4秒轴。全部同master/private参与方式门控；独立music限额1，不挤掉洗衣水布/滴水或窃语。暂停offset续、跳过取消、离页/后台/线下静音全停。
 
@@ -27,3 +27,14 @@
 2026-11-13 iOS播放层补充：按Apple官方[Volume Control in JavaScript](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/Using_HTML5_Audio_Video/Device-SpecificConsiderations/Device-SpecificConsiderations.html)记录的元素音量限制，改用上述真实Gain路由。初次、共享context已挂起的恢复及重试手势均同栈先发起共享解锁再媒体play，不另建引擎、不解码整曲。共享context未running时不将媒体ready误作已可听，statechange就绪后才开始包络；图路由未建成保持静音/暂停并给重试状态，不回退全响双曲。暂停先将Gain清零并清除旧ready，防迟到native play短暂出声且确保同曲失败重试恢复增益；每个元素只建一条route，换曲复用，dispose断开节点不关闭共享context。目标mock在volume只读且写入抛错时仍验证两秒交叠、duck/恢复和原playhead；这些测试不代表iPhone/微信真实可听验收。Root已处理的owner手势解锁及App菜单不在本补丁改动中。
 
 2026-11-13 自然循环接头柔化：保留同一HTMLAudio原生loop，不改音轨字节、不写currentTime。使用实际currentTime/duration独立计算余弦S形loop包络：尾段最长1.4秒淡出，检测到尾→头回绕后在曲首最长1.4秒淡入；首轮起播仍由既有跨曲包络处理。最终Gain为曲目交叠权重×duck增益×loop包络，不重开2秒crossfade或240ms duck，不增加同时播放曲数。单一内部40ms计时器在流式媒体实际运行时采样，暂停/后台/隐藏/preview等既有停用路径清掉计时器并将Gain置零；恢复保留实际播放位置及当前loop相位，不用墙钟推进曲首淡入。duration无效/未知/无限时loop系数回到1并清无效相位，避免加载中被永久静音。目标测试覆盖尾→头、duck与跨曲叠加、尾/首暂停恢复、未知元数据，未做浏览器或真实试听；原曲与来源不变。
+
+
+2026-11-13 本设备分通道设置：RoomTools的独立“声音设置”入口提供背景音乐、音效各自开关与0–100%响度。默认音乐Gain=0.8、FX总线Gain=0.72，均只应用一次，不改任何媒体字节。旧`ravens_effects_audio`继续作为总静音（默认开启声音，显式off关闭）；新增`ravens_audio_channels_v1`保存`{version:1,music:{enabled,volume},effects:{enabled,volume}}`，volume为0..1线性Gain。非法版本/JSON使用默认，各非法字段独立回退，保留其它合法字段；存储不可写时仍能在本页应用。设置按设备保存，不上传房间或账号。
+
+总静音不改通道开关/音量，解除后恢复用户选择。菜单明确显示总静音并可解除；总开关开但两个通道关闭或0音量时，菜单与音符可访问名称明确提示两通道静音，需自行开启通道/提高音量，不暗中复位。现有音符按master显示，不因仅FX关闭而误称总关闭；参与方式说明同样按master判断。音乐为HTML流式背景；音效包括演出（含其四秒短配乐）、钟声/纸/提示/语音/提名投票等WebAudio范围。
+
+音乐Gain=用户volume×mix权重×duck比例×loop包络。只调音量立即更新此乘积，不重新play/seek、重建播放器或重开2秒crossfade/240ms duck/原生loop包络。停音乐只暂停HTML元素，保留正在交叠的两曲playhead与包络时间相位；恢复同一房间/曲目标时继续剩余相位，若公开目标在停用期间已变化则只恢复新合法目标。音乐关闭不停止任何FX/提名尾音；FX关闭只取消该总线来源、不关闭共享context或背景Music节点，并按实际source恢复music duck。FX音量仅改已有真实输出Gain、不发重调度事件；FX为0时不压背景。单独通道开关与主开关在实际用户手势栈先解锁共享context，设置控件不被document手势重复play。
+
+IN_PERSON私密音效仍始终静音，通道/主开关均不能越过；演出预览有自己临时声音与音量，正式通道禁用也不妨碍预览，预览不写正式偏好。预览中的设置框不提供正式通道控件。声音设置以portal挂在document.body，避免父菜单backdrop-filter/overflow裁切，沿用RoomSheet焦点/返回层及固定标题/关闭、44px触达，range以touch-action:none阻止拖动滑条引发页面滑动，关闭后保留音乐位置与设备选择。
+
+本组只做偏好/播放/设置组件及菜单入口，正式共享阶段文档和发布事实由Root同步；验证为针对性偏好解析/持久化、Gain包络、双通道互不误停、master恢复、私密与预览隔离、真实菜单入口/手势控件的代码/DOM用例及类型检查，不代表手机真实视听验收。
