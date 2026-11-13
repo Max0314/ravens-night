@@ -3,6 +3,7 @@ export * from './FeedbackButton.js';
 export * from "./Countdown.js";
 export * from "./Panel.js";
 export * from "./RoleCard.js";
+export * from './RolePortraitFrame.js';
 export * from "./SeatRing.js";
 export * from "./round-table.js";
 export * from "./player-label.js";

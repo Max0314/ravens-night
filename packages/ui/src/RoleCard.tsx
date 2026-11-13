@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "./Button.js";
+import {RolePortraitFrame} from './RolePortraitFrame.js';
 
 export interface RoleCardProps {
   name: string;
@@ -8,10 +9,12 @@ export interface RoleCardProps {
   portraitUrl: string;
   portraitSrcSet?: string;
   portraitPosition?: string;
+  frameUrl?: string;
+  frameSrcSet?: string;
   beginnerTip?: string;
 }
 
-export function RoleCard({ name, alignment, ability, portraitUrl, portraitSrcSet, portraitPosition = "50% 50%", beginnerTip }: RoleCardProps) {
+export function RoleCard({ name, alignment, ability, portraitUrl, portraitSrcSet, portraitPosition = "50% 50%", frameUrl, frameSrcSet, beginnerTip }: RoleCardProps) {
   const [covered, setCovered] = useState(false);
   if (covered) {
     return (
@@ -23,9 +26,9 @@ export function RoleCard({ name, alignment, ability, portraitUrl, portraitSrcSet
     );
   }
   return (
-    <article className="rn-role-card">
+    <article className={`rn-role-card${frameUrl?' rn-role-card--framed':''}`}>
       <div className="rn-role-card__portrait-wrap">
-        <RolePortrait className="rn-role-card__portrait" label={`${name}角色立绘`} url={portraitUrl} {...(portraitSrcSet ? { srcSet: portraitSrcSet } : {})} sizes="(max-width: 420px) 90vw, 390px" position={portraitPosition} />
+        {frameUrl?<RolePortraitFrame className="rn-role-card__portrait" label={`${name}角色立绘`} url={portraitUrl} srcSet={portraitSrcSet} frameUrl={frameUrl} frameSrcSet={frameSrcSet} sizes="(max-width: 420px) 90vw, 390px" position={portraitPosition}/>:<RolePortrait className="rn-role-card__portrait" label={`${name}角色立绘`} url={portraitUrl} {...(portraitSrcSet ? { srcSet: portraitSrcSet } : {})} sizes="(max-width: 420px) 90vw, 390px" position={portraitPosition} />}
         <div className="rn-role-card__fade" />
       </div>
       <div className="rn-role-card__copy">
