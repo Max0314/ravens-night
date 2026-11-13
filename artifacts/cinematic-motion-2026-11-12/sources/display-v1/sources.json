@@ -1,0 +1,50 @@
+{
+  "generator": "built-in image_gen; no CLI/API fallback",
+  "prompts": "artifacts/cinematic-motion-2026-11-12/sources/display-v1/prompts.json",
+  "sources": [
+    {
+      "id": "day",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/display-v1/town-day-source.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2014292,
+      "sha256": "e96e656b8a56f42d633ae157a956378cc11c766e7d7e10bf3ee5bead69b79b7b",
+      "generator": "built-in image_gen",
+      "promptFile": "artifacts/cinematic-motion-2026-11-12/sources/display-v1/prompts.json",
+      "promptKey": "day",
+      "mode": "reference-guided landscape generation",
+      "alpha": false
+    },
+    {
+      "id": "night",
+      "path": "artifacts/cinematic-motion-2026-11-12/sources/display-v1/town-night-source.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 1966336,
+      "sha256": "d86cf24ba339a01f473763cb4d5cda0907b7a7290cc7fcd6d941eec1427dcfe0",
+      "generator": "built-in image_gen",
+      "promptFile": "artifacts/cinematic-motion-2026-11-12/sources/display-v1/prompts.json",
+      "promptKey": "night",
+      "mode": "lighting-weather edit of day original",
+      "alpha": false
+    }
+  ],
+  "references": [
+    {
+      "role": "approved existing style/architecture reference",
+      "path": "apps/web/public/art/effects/v5/dawn-town.webp",
+      "sha256": "0c301dde1cb9682ab58080f8824a57bf36c1a695a212dba418246bbb40a42ce7"
+    },
+    {
+      "role": "approved existing style/architecture reference",
+      "path": "apps/web/public/art/effects/v5/night-town.webp",
+      "sha256": "db1494ae450a26fa1156399e1a49769a11ed571de8f2949a17c369df19b379d0"
+    }
+  ],
+  "opsPolicy": {
+    "sha": "964c0ba2357810506ba4d9e883d217f377ea0615",
+    "checkedAt": "2026-11-13T13:33:02.772280+00:00",
+    "state": "github-main-fetched after one network retry"
+  },
+  "runtimeManifest": "apps/web/public/art/display/v1/manifest.json"
+}

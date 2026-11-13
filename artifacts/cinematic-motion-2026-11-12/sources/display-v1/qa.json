@@ -1,0 +1,81 @@
+{
+  "scope": "Image assets only, no browser or UI readability claim",
+  "checks": [
+    {
+      "url": "/art/display/v1/town-day.webp",
+      "size": [
+        1600,
+        900
+      ],
+      "bytes": 131318,
+      "sha256": "c1d9daa35923f7b5f290e1eddc55cbd51d16e2d40e1a02927d7bb7a8f5d22c4b",
+      "decoded": true,
+      "exact16by9": true,
+      "quietCenterMeanRGB": [
+        62.26,
+        68.7,
+        70.1
+      ]
+    },
+    {
+      "url": "/art/display/v1/town-day-2560.webp",
+      "size": [
+        2560,
+        1440
+      ],
+      "bytes": 301378,
+      "sha256": "bc2fa96af8156c9bb913a050f57f2fd0665878b0994ae87249dd3fa730c1de6c",
+      "decoded": true,
+      "exact16by9": true,
+      "quietCenterMeanRGB": [
+        62.26,
+        68.71,
+        70.11
+      ]
+    },
+    {
+      "url": "/art/display/v1/town-night.webp",
+      "size": [
+        1600,
+        900
+      ],
+      "bytes": 120248,
+      "sha256": "13d33048bddb133a4f68e54810ea59c56c57373eee8f80b3fbe5e834c5485096",
+      "decoded": true,
+      "exact16by9": true,
+      "quietCenterMeanRGB": [
+        31.13,
+        43.85,
+        51.98
+      ]
+    },
+    {
+      "url": "/art/display/v1/town-night-2560.webp",
+      "size": [
+        2560,
+        1440
+      ],
+      "bytes": 266504,
+      "sha256": "fd88753f1a9835c8bd0091cd6a29a98a9aa626d0c27fcf1df4d5f4d0aad4d988",
+      "decoded": true,
+      "exact16by9": true,
+      "quietCenterMeanRGB": [
+        31.1,
+        43.9,
+        51.98
+      ]
+    }
+  ],
+  "visualReview": "Primary agent inspected both generated originals and both 2560 runtime WebP outputs. Independent read-only reviewer inspected both 2560 runtime WebP images and manifest/prompts/sources/build records: passed, no explicit visual/path/spec/provenance defect. Same left clocktower / right palace / bridges and calm mist valley, no visible people/text/UI/logo/sun/moon/border or obvious compression artifacts.",
+  "nativeResolution": [
+    1672,
+    941
+  ],
+  "highResolutionDerivative": "2560x1440 is an explicitly labelled upscale; no native 4K claim",
+  "testDecision": "Real image full decode, source/runtime SHA and aspect/size checks replace code compilation/unit tests because no application code changed.",
+  "independentReview": {
+    "status": "passed",
+    "scope": "offline visual pair and asset path/size/source/prompt/manifest consistency",
+    "browserOrTVTest": false
+  }
+}
