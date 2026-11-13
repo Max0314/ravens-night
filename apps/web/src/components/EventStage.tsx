@@ -146,7 +146,7 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
     seen.current.add(id);
     try { sessionStorage.setItem(`ravens_events_${gameKey}`, JSON.stringify([...seen.current].slice(-150))); } catch { /* Deduplication still works in this tab. */ }
   }
-  function skip() { silenceEffects(); if (active) { remember(active.id); setDismissed((all) => [...all, active.id]); } setPrivateScene(undefined); }
+  function skip() { if (active) { cancelEventAudio(active.id); remember(active.id); setDismissed((all) => [...all, active.id]); } if(privateScene)cancelEventAudio('private:'+privateScene.id);setPrivateScene(undefined); }
   const event = active;
   const showResult = Boolean(event?.outcome) && elapsed >= (event?experienceTiming(event.kind,event.timingVersion??1).resultOffset:0);
   const target = game?.seats.find((seat) => seat.seat === event?.targetSeat);
