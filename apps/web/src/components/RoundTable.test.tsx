@@ -53,3 +53,12 @@ test('a wide display measures a square beyond the phone cap and remains bounded 
  const ui=render(<RoundTable count={12} maxDiameter={820} className="display__table">{()=>null}</RoundTable>);
  expect(ui.container.querySelector('.round-table')).toHaveStyle({width:'680px',height:'680px'});
 });
+
+
+test('public display opt-in shares its uncapped square and large portrait geometry while defaults stay unchanged',()=>{
+ vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockReturnValue({width:2500,height:1732,x:0,y:0,top:0,left:0,right:2500,bottom:1732,toJSON:()=>({})});
+ const tv=render(<RoundTable variant="display" count={12} maxDiameter={Number.POSITIVE_INFINITY} className="display__table">{layout=><span data-testid="portrait">{layout.portrait}</span>}</RoundTable>);
+ expect(tv.container.querySelector('.round-table')).toHaveStyle({width:'1732px',height:'1732px'});expect(Number(screen.getByTestId('portrait').textContent)).toBeGreaterThan(200);tv.unmount();
+ const phone=render(<RoundTable count={12} className="town-stage">{layout=><span data-testid="portrait">{layout.portrait}</span>}</RoundTable>);
+ expect(phone.container.querySelector('.round-table')).toHaveStyle({width:'460px',height:'460px'});expect(screen.getByTestId('portrait')).toHaveTextContent('42');
+});
