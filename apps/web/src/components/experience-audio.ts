@@ -32,6 +32,8 @@ export function effectsAudioEnabled(){return previewAudio?.enabled??enabled;}
 export function effectsAudioStatus(){return status;}
 function report(value:string){status=value;window.dispatchEvent(new Event('ravens:audio-status'));}
 export const reportAudioStatus=report;
+/** Shared, gesture-unlocked context; streaming score never creates another audio engine. */
+export function getEffectsAudioContext(){return ctx;}
 export function effectsPreviewActive(){return !!previewAudio;}
 /** Poll by the isolated score owner. Loading/opening secret UI alone cannot duck anything. */
 export function scoreDuckingActive(){return !!(!previewAudio&&effectsAudioEnabled()&&ctx?.state==='running'&&!document.hidden&&[...sources.values()].some(s=>s.scope!=='ui'&&s.scope!=='book'&&s.at<=ctx!.currentTime&&s.end>ctx!.currentTime&&(s.scope!=='private'||privateAudioAllowed())));}
