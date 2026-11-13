@@ -25,3 +25,9 @@ test('prewarming waits for the current page before queuing a neighbor behind an 
   expect(capture.run).toHaveBeenCalledOnce();finish(document.createElement('canvas'));await old;await warm;
   expect(capture.run).toHaveBeenCalledTimes(3);expect(cache.get('current')).toBe(current);expect(cache.get('neighbor')).toBe(neighbor);expect(cache.get('old')).toBeUndefined();cache.dispose();
 });
+
+
+test('filtered paintings keep their original lighting and skip unsupported raster capture',async()=>{
+  const cache=new PageTextureCache(),element=document.createElement('div'),image=document.createElement('img');image.style.filter='brightness(0.77) saturate(0.7)';element.append(image);document.body.append(element);
+  expect(await cache.prepare('filtered',element,300,600)).toBeUndefined();expect(capture.run).not.toHaveBeenCalled();expect(image.style.filter).toBe('brightness(0.77) saturate(0.7)');expect(document.querySelector('.guide-capture-host')).toBeNull();cache.dispose();
+});
