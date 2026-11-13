@@ -1,5 +1,6 @@
 import type { PrivateView, RoomView } from "./api.js";
 import { observeRoomView } from "./api.js";
+import {roomAudioFeedLive,roomAudioFeedClosed,roomAudioFeedStopped} from './room-audio-delivery.js';
 export interface RoomPacket { type: "view"; room: RoomView; privateView?: PrivateView; serverNow: number }
 
 /** Cookie-authenticated updates, with bounded reconnect and an HTTP polling fallback. */
@@ -12,10 +13,10 @@ export function connectRoomFeed(code: string, mode: "PLAYER" | "DISPLAY", receiv
     try{socket = new WebSocket(`${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/api/rooms/${encodeURIComponent(code)}/live?protocol=7&mode=${mode}`);}
     catch{reconnect();return;}
     socket.onopen = () => { if(stopped)return;backoff = 1_000; heartbeat = window.setInterval(() => { if (socket?.readyState === WebSocket.OPEN) socket.send("ping"); }, 15_000); };
-    socket.onmessage = (event) => { if (stopped) return; try { const packet = JSON.parse(String(event.data)) as RoomPacket; if (packet.type === "view" && packet.room) { observeRoomView(code, packet.room, mode); if (packet.privateView) observeRoomView(code, packet.privateView, mode); receive(packet); } } catch { /* Polling will repair an invalid packet. */ } };
-    socket.onclose = (event) => { if (heartbeat !== undefined) window.clearInterval(heartbeat); if (event.code !== 1008) reconnect(); };
+    socket.onmessage = (event) => { if (stopped) return; try { const packet = JSON.parse(String(event.data)) as RoomPacket; if (packet.type === "view" && packet.room) { roomAudioFeedLive(code,mode);observeRoomView(code, packet.room, mode); if (packet.privateView) observeRoomView(code, packet.privateView, mode); receive(packet); } } catch { /* Polling will repair an invalid packet. */ } };
+    socket.onclose = (event) => { if(stopped)return;roomAudioFeedClosed(code,mode);if (heartbeat !== undefined) window.clearInterval(heartbeat); if (event.code !== 1008) reconnect(); };
     socket.onerror = () => { /* The close callback owns retries; avoid concurrent sockets. */ };
   };
   connect();
-  return () => { stopped = true; if (retry !== undefined) window.clearTimeout(retry); if (heartbeat !== undefined) window.clearInterval(heartbeat); socket?.close(); };
+  return () => { stopped = true;roomAudioFeedStopped(code,mode); if (retry !== undefined) window.clearTimeout(retry); if (heartbeat !== undefined) window.clearInterval(heartbeat); socket?.close(); };
 }
