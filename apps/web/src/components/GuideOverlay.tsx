@@ -31,10 +31,11 @@ export function adjacentGuidePage(page:GuidePageState,direction:TurnDirection,tu
 }
 export interface StartupTutorialOptions {onDone:()=>void;busy?:boolean;error?:string;completeCount?:number;total?:number;hideBack?:boolean}
 type Memory={scroll:number;advice:boolean};
-export function GuideOverlay({mode,ownRole,initialRoleId,onClose,startup}:{startup?:StartupTutorialOptions;mode:GuideMode;ownRole?:PrivateView['role'];initialRoleId?:string;onClose:()=>void}){
+export function GuideOverlay({mode,ownRole,initialRoleId,onClose,startup,suspended=false}:{suspended?:boolean;startup?:StartupTutorialOptions;mode:GuideMode;ownRole?:PrivateView['role'];initialRoleId?:string;onClose:()=>void}){
   const initial={mode:startup?'tutorial':mode,step:0,category:beginnerRoles.find(role=>role.id===initialRoleId)?.type??'TOWNSFOLK',roleId:startup?undefined:initialRoleId} as GuidePageState;
   const[page,setPage]=useState<GuidePageState>(initial),[transition,setTransition]=useState<TurnState<GuidePageState>>(),[neighbor,setNeighbor]=useState(()=>adjacentGuidePage(initial,1,!!startup));
   const[textureEpoch,setTextureEpoch]=useState(0);
+  const lastSuspended=useRef(suspended),suspendedRef=useRef(suspended);suspendedRef.current=suspended;
   const pageRef=useRef(page);pageRef.current=page;const closeRef=useRef(onClose);closeRef.current=onClose;
   const dialogRef=useRef<HTMLElement>(null),bookRef=useRef<HTMLDivElement>(null),surfaceRef=useRef<HTMLDivElement>(null),previewRef=useRef<HTMLDivElement>(null);
   const memory=useRef(new Map<string,Memory>()),bookmarks=useRef<Partial<Record<GuideMode,GuidePageState>>>({[mode]:initial}),origin=useRef({roleId:initialRoleId,category:initial.category,scroll:0});
@@ -62,7 +63,7 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose,startup}:{start
     if(pending)queueMicrotask(()=>navigate(pending.target,pending.direction));
   };
   function navigate(target:GuidePageState,direction:TurnDirection,interactive=false,corner:TurnCorner='bottom'){
-    if(startup&&(startup.busy||target.mode!=='tutorial'))return;
+    if(suspendedRef.current||startup&&(startup.busy||target.mode!=='tutorial'))return;
     if(guidePageKey(target)===guidePageKey(pageRef.current))return;
     if(controller.state){if(!interactive&&!controller.state.completing){swipe.current=undefined;queued.current=undefined;controller.cancel();}else{if(!interactive)queued.current={target,direction};return;}}
     remember();directionRef.current=direction;
@@ -74,14 +75,14 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose,startup}:{start
     if(controller.begin(pageRef.current,target,direction,renderer,corner)&&!interactive)controller.settle(true,true);
   }
   // Unlock on the original activation stack, before navigation or texture promises.
-  function prepareSound(){if(effectsAudioEnabled())void audio.current?.prepare();}
+  function prepareSound(){if(!suspendedRef.current&&effectsAudioEnabled())void audio.current?.prepare();}
   function finishStartup(){if(!startup||startup.busy)return;swipe.current=undefined;queued.current=undefined;controller.cancel();startup.onDone();}
   function closeBook(){closing.current=true;queued.current=undefined;controller.cancel();cache.current.dispose();audio.current?.silence();feedback.close();closeRef.current();}
   function closeDetail(){const current=pageRef.current;if(current.mode!=='roles'||!current.roleId)return;memory.current.set(`roles:${origin.current.category}:grid`,{scroll:origin.current.scroll,advice:false});navigate({...current,category:origin.current.category,roleId:undefined},-1);}
   const detailCloseRef=useRef(closeDetail);detailCloseRef.current=closeDetail;
   const bookCloseRef=useRef(closeBook);bookCloseRef.current=closeBook;
-  useBackLayer(!startup,()=>bookCloseRef.current());
-  useBackLayer(page.mode==='roles'&&!!page.roleId,()=>detailCloseRef.current());
+  useBackLayer(!startup&&!suspended,()=>bookCloseRef.current());
+  useBackLayer(!suspended&&page.mode==='roles'&&!!page.roleId,()=>detailCloseRef.current());
   function selectRole(roleId:string){remember();origin.current={roleId,category:pageRef.current.category,scroll:currentMemory().scroll};navigate({...pageRef.current,roleId},1);}
   function categoryTo(category:RoleType,direction?:TurnDirection){if(category!==pageRef.current.category)navigate({...pageRef.current,category,roleId:undefined},direction??(roleTypes.indexOf(category)>roleTypes.indexOf(pageRef.current.category)?1:-1));}
   function modeTo(next:GuideMode){const current=pageRef.current;if(next===current.mode)return;const order:GuideMode[]=ownRole?['mine','tutorial','roles']:['tutorial','roles'];const target=bookmarks.current[next]??{...current,mode:next,roleId:undefined};navigate(target,order.indexOf(next)>order.indexOf(current.mode)?1:-1);}
@@ -89,16 +90,16 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose,startup}:{start
   function detailTo(direction:TurnDirection){const current=pageRef.current,roles=beginnerRoles.filter(role=>role.type===current.category),role=roles[roles.findIndex(role=>role.id===current.roleId)+direction];if(role)navigate({...current,roleId:role.id},direction);}
   const onSlow=useCallback(()=>{slow.current=true;},[]);
   useEffect(()=>{closing.current=false;cache.current=new PageTextureCache();audio.current=createBookAudio();const syncSound=()=>{if(!effectsAudioEnabled())audio.current?.silence();};window.addEventListener('ravens-effects-audio',syncSound);return()=>{closing.current=true;window.removeEventListener('ravens-effects-audio',syncSound);controller.dispose();cache.current.dispose();audio.current?.dispose();window.clearTimeout(scrollTimer.current);};},[controller]);
-  useLayoutEffect(()=>{const saved=memory.current.get(pageKey),scroller=scrollElement();if(scroller)scroller.scrollTop=saved?.scroll??0;const advice=surfaceRef.current?.querySelector<HTMLDetailsElement>('details');if(advice)advice.open=saved?.advice??false;const detail=surfaceRef.current?.querySelector<HTMLElement>('.role-detail');if(detail)detail.focus({preventScroll:true});else if(origin.current.roleId&&page.mode==='roles')surfaceRef.current?.querySelector<HTMLButtonElement>(`[data-role-id="${origin.current.roleId}"]`)?.focus({preventScroll:true});},[pageKey]);
+  useLayoutEffect(()=>{if(suspended)return;const saved=memory.current.get(pageKey),scroller=scrollElement();if(scroller)scroller.scrollTop=saved?.scroll??0;const advice=surfaceRef.current?.querySelector<HTMLDetailsElement>('details');if(advice)advice.open=saved?.advice??false;const detail=surfaceRef.current?.querySelector<HTMLElement>('.role-detail');if(detail)detail.focus({preventScroll:true});else if(origin.current.roleId&&page.mode==='roles')surfaceRef.current?.querySelector<HTMLButtonElement>(`[data-role-id="${origin.current.roleId}"]`)?.focus({preventScroll:true});},[pageKey,suspended]);
   useEffect(()=>{
-    if(transition||texturesSuspended.current||page.mode==='mine')return;const surface=surfaceRef.current,host=bookRef.current;if(!surface||!host||!host.clientWidth||!host.clientHeight)return;
+    if(suspended||transition||texturesSuspended.current||page.mode==='mine')return;const surface=surfaceRef.current,host=bookRef.current;if(!surface||!host||!host.clientWidth||!host.clientHeight)return;
     const key=captureKey(page),instance=cache.current;instance.retain([key]);
     // Only the outgoing bend consumes a texture. The neighbor is warmed on its real DOM nodes.
     void instance.prepare(key,surface,host.clientWidth,host.clientHeight);
-  },[pageKey,transition,textureEpoch]);
+  },[pageKey,transition,textureEpoch,suspended]);
   useEffect(()=>{
     const release=()=>{texturesSuspended.current=true;swipe.current=undefined;queued.current=undefined;controller.cancel();cache.current.invalidate();};
-    const resume=()=>{if(!texturesSuspended.current)return;texturesSuspended.current=false;setTextureEpoch(value=>value+1);};
+    const resume=()=>{if(suspendedRef.current||!texturesSuspended.current)return;texturesSuspended.current=false;setTextureEpoch(value=>value+1);};
     window.addEventListener('ravens:release-book-textures',release);window.addEventListener('ravens:resume-book-textures',resume);
     return()=>{window.removeEventListener('ravens:release-book-textures',release);window.removeEventListener('ravens:resume-book-textures',resume);};
   },[controller]);
@@ -111,6 +112,13 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose,startup}:{start
     return()=>{window.removeEventListener('resize',cancel);window.removeEventListener('orientationchange',cancel);window.removeEventListener('blur',cancel);window.visualViewport?.removeEventListener('resize',cancel);document.removeEventListener('visibilitychange',hidden);window.removeEventListener('ravens:keyboard',keyboard);};
   },[controller]);
   useEffect(()=>{
+    const resumed=lastSuspended.current&&!suspended;lastSuspended.current=suspended;
+    texturesSuspended.current=suspended;
+    if(suspended){swipe.current=undefined;queued.current=undefined;audio.current?.silence();cache.current.invalidate();window.clearTimeout(scrollTimer.current);queueMicrotask(()=>{if(suspendedRef.current&&!closing.current)controller.cancel();});}
+    else if(resumed)setTextureEpoch(value=>value+1);
+  },[suspended,controller]);
+  useEffect(()=>{
+    if(suspended)return;
     const previousFocus=document.activeElement instanceof HTMLElement?document.activeElement:undefined;dialogRef.current?.focus();
     const key=(event:KeyboardEvent)=>{
       if(startup||document.activeElement instanceof Element&&document.activeElement.closest('.room-sheet'))return;
@@ -121,11 +129,11 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose,startup}:{start
       const first=focusable[0],last=focusable.at(-1);if(!first||!last){event.preventDefault();return;}
       if(event.shiftKey&&(document.activeElement===first||document.activeElement===dialogRef.current)){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
     };
-    window.addEventListener('keydown',key);return()=>{window.removeEventListener('keydown',key);previousFocus?.focus({preventScroll:true});};
-  },[]);
+    window.addEventListener('keydown',key);return()=>{window.removeEventListener('keydown',key);if(!suspendedRef.current)previousFocus?.focus({preventScroll:true});};
+  },[suspended]);
   function startSwipe(event:PointerEvent<HTMLDivElement>){
     if(event.isPrimary===false){swipe.current=undefined;controller.cancel();return;}
-    if(startup?.busy||event.button!==0||controller.state||page.mode==='mine'||page.roleId&&page.mode==='roles'||(event.target instanceof Element&&event.target.closest('button:not([data-role-id]),a,input,summary')))return;
+    if(suspendedRef.current||startup?.busy||event.button!==0||controller.state||page.mode==='mine'||page.roleId&&page.mode==='roles'||(event.target instanceof Element&&event.target.closest('button:not([data-role-id]),a,input,summary')))return;
     const rect=event.currentTarget.getBoundingClientRect();
     suppressClickUntil.current=0;swipe.current={corner:event.clientY-rect.top<(rect.height||event.currentTarget.clientHeight)/2?'top':'bottom',id:event.pointerId,x:event.clientX,y:event.clientY,lastX:event.clientX,lastAt:performance.now(),velocity:0,axis:'pending',key:pageKey};
   }
@@ -145,10 +153,10 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose,startup}:{start
     const dx=event.clientX-gesture.x,direction=gesture.direction!,velocity=performance.now()-gesture.lastAt>100?0:gesture.velocity;
     const complete=!cancelled&&!startup?.busy&&gesture.key===guidePageKey(pageRef.current)&&shouldCompleteTurn(controller.state.progress,dx,velocity,direction);if(event.currentTarget.clientWidth)controller.settle(complete);else controller.finishImmediately(complete);
   }
-  function onScroll(){if(transition)return;remember();window.clearTimeout(scrollTimer.current);scrollTimer.current=window.setTimeout(()=>{cache.current.invalidate();setTextureEpoch(value=>value+1);},100);}
+  function onScroll(){if(suspendedRef.current||transition)return;remember();window.clearTimeout(scrollTimer.current);scrollTimer.current=window.setTimeout(()=>{cache.current.invalidate();setTextureEpoch(value=>value+1);},100);}
   const detail=page.mode==='roles'?beginnerRoles.find(role=>role.id===page.roleId):undefined,previewPage=transition?.to??neighbor;
-  const pageProps={ownRole,startup,onStep:stepTo,onSelect:selectRole,onDetail:detailTo,onBlank:closeDetail,onScroll,onAdvice:()=>{remember();cache.current.invalidate();setTextureEpoch(value=>value+1);}};
-  return <div className={`guide-backdrop${startup?` guide-backdrop--startup${startup.hideBack?' guide-backdrop--startup-menu':''}`:''}`} role="presentation" onMouseDown={event=>{if(!startup&&event.target===event.currentTarget){if(detail)closeDetail();else closeBook();}}}>
+  const pageProps={ownRole,startup,onStep:stepTo,onSelect:selectRole,onDetail:detailTo,onBlank:closeDetail,onScroll,onAdvice:()=>{if(suspendedRef.current)return;remember();cache.current.invalidate();setTextureEpoch(value=>value+1);}};
+  return <div hidden={suspended} inert={suspended} aria-hidden={suspended||undefined} className={`${suspended?'guide-suspended':'guide-backdrop'}${startup?` guide-backdrop--startup${startup.hideBack?' guide-backdrop--startup-menu':''}`:''}`} role="presentation" onMouseDown={event=>{if(!startup&&event.target===event.currentTarget){if(detail)closeDetail();else closeBook();}}}>
     <section ref={dialogRef} className="guide-sheet" onPointerDownCapture={prepareSound} onClickCapture={prepareSound} onKeyDownCapture={event=>{if(['Enter',' ','ArrowLeft','ArrowRight','Home','End'].includes(event.key))prepareSound();}} role={startup?'main':'dialog'} aria-modal={startup?undefined:true} aria-label={startup?'开局教学':'游戏帮助'} tabIndex={-1}>
       <header className="guide-sheet__header"><div><span className="guide-sheet__mark">☾</span><strong>{startup?'开局教学':'钟楼手册'}</strong></div><div className="guide-header-actions"><GlobalAudioButton onEnable={()=>{void audio.current?.prepare(true);}}/>{startup?(startup.hideBack?null:<button type="button" onClick={closeBook} aria-label="返回首页">← 返回</button>):<button type="button" onClick={closeBook} aria-label="关闭游戏帮助">关闭手册 ×</button>}</div></header>
       {!startup?<nav className="guide-tabs" aria-label="手册页面">{([...(ownRole?[{id:'mine' as const,label:'我的角色'}]:[]),{id:'tutorial' as const,label:'新手教程'},{id:'roles' as const,label:'角色表'}]).map(tab=><button type="button" key={tab.id} className={page.mode===tab.id?'is-active':''} onClick={()=>modeTo(tab.id)}>{tab.label}</button>)}</nav>:null}

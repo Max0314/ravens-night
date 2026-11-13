@@ -298,3 +298,22 @@ test('only the current bend gets a raster capture while the neighbor keeps its r
   render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);await act(async()=>{});
   expect(prepare).toHaveBeenCalledOnce();expect(prepare.mock.calls[0]?.[1]).toBe(document.querySelector('.guide-page-surface'));expect(document.querySelector('.guide-page-preload .rn-portrait-frame__ornament')).not.toBeNull();cleanup();prepare.mockRestore();width.mockRestore();height.mockRestore();
 });
+
+
+test('suspending a book keeps detail nodes and scroll, releases keyboard/focus and restores the original category',async()=>{
+ const close=vi.fn(),ui=render(<GuideOverlay mode="roles" onClose={close}/>);
+ fireEvent.click(screen.getByRole('tab',{name:/外来者/}));
+ const grid=document.querySelector<HTMLElement>('.guide-page-surface [data-page-scroll]')!;grid.scrollTop=147;fireEvent.scroll(grid);
+ fireEvent.click(screen.getByRole('button',{name:'查看管家详情'}));
+ const dialog=screen.getByRole('dialog'),detail=screen.getByRole('article',{name:'管家详情'}),scroller=detail.closest<HTMLElement>('[data-page-scroll]')!,advice=detail.querySelector('details')!;
+ scroller.scrollTop=263;fireEvent.scroll(scroller);advice.open=true;fireEvent(advice,new Event('toggle'));
+ const stage=document.createElement('button');stage.textContent='公演控制';document.body.append(stage);stage.focus();
+ ui.rerender(<GuideOverlay mode="roles" onClose={close} suspended/>);await act(async()=>{});
+ expect(dialog).not.toBeVisible();expect(document.querySelector('.guide-backdrop')).toBeNull();expect(stage).toHaveFocus();
+ fireEvent.keyDown(window,{key:'Escape'});fireEvent.keyDown(window,{key:'Tab'});expect(close).not.toHaveBeenCalled();expect(stage).toHaveFocus();
+ // A hidden-layout scroll event must not replace the saved reading position.
+ scroller.scrollTop=0;fireEvent.scroll(scroller);
+ ui.rerender(<GuideOverlay mode="roles" onClose={close}/>);
+ expect(screen.getByRole('dialog')).toBe(dialog);expect(screen.getByRole('article',{name:'管家详情'})).toBe(detail);expect(scroller.scrollTop).toBe(263);expect(advice.open).toBe(true);
+ fireEvent.click(screen.getByRole('button',{name:'返回外来者角色表'}));expect(screen.getByRole('tab',{name:/外来者/})).toHaveAttribute('aria-selected','true');expect(document.querySelector<HTMLElement>('.guide-page-surface [data-page-scroll]')!.scrollTop).toBe(147);stage.remove();
+});
