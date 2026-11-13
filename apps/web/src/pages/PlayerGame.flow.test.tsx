@@ -40,3 +40,8 @@ test('private cover keeps the role area hidden and inert while its public waitin
  const scene=screen.getByLabelText('私密内容已遮住');expect(scene).toHaveClass('player-wait-scene');expect(scene).not.toHaveTextContent('厨师');expect(ui.container.querySelector('.player-private')).toHaveAttribute('hidden');expect(ui.container.querySelector('.player-private')).toHaveAttribute('inert');
  expect(screen.getByRole('button',{name:'显示私密内容'})).toBeVisible();
 });
+
+test('simultaneous ballot details explain the preparation and shared cutoff without a voter procession',()=>{
+ const view=fixture();view.game!.phase='VOTING';view.roleConfirmed=true;view.game!.nomination={mode:'SIMULTANEOUS',ballotId:'b',nominatorSeat:1,nomineeSeat:2,votesRaised:0,votesReceived:0,votersRequired:3,threshold:2,preparationEndsAt:21000,voteStartsAt:21000,voteEndsAt:29000};
+ render(<PlayerGame {...handlers} view={view}/>);fireEvent.click(screen.getByRole('button',{name:'查看本轮表决规则'}));const sheet=screen.getByRole('dialog',{name:'本轮表决'});fireEvent.click(screen.getByText('统一截止与规则'));expect(sheet).toHaveTextContent('准备期最多20秒');expect(sheet).toHaveTextContent('最后8秒仍可修改');expect(sheet).not.toHaveTextContent('轮到本席');expect(sheet.querySelector('.vote-procession')).toBeNull();
+});
