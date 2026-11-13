@@ -1,6 +1,7 @@
 import {experienceTiming,type ExperienceKind,type PresentationVersion,type PrivateSceneDescriptor} from '@ravens/contracts';
 import {privateAudioAllowed} from '../participation-audio.js';
 import {cinematicTiming as contact} from './cinematic-timing.js';
+import {roleAudioV6 as detailLead} from './role-audio-v6.js';
 type Scope='public'|'private'|'ui'|'book'|'nomination'|'ballot';
 export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
@@ -53,7 +54,7 @@ function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve()
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
 function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
- const prefix=sample.match(/^(v[1345]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[1345]:/,'');
+ const prefix=sample.match(/^(v[13456]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[13456]:/,'');
  const candidate=/^candidate:(L02|L03|L04|A03)$/.exec(sample)?.[1],url=candidate?'/audio-candidates/2026-11-12-v1/'+candidate+'.mp3':'/audio/effects/'+version+'/'+name+'.mp3';
  const pending=(async()=>{await takeLoadSlot();try{const response=await fetch(url);if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
@@ -82,7 +83,7 @@ function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,ra
  if(!claim(id+':'+cue,at))return;
  void load(sample).then(buffer=>{
   if(ctx!==audio||epochs.get(id)!==epoch||!allowed(scope)||(audio.currentTime-at)*1000>lateWindow||offset>=buffer.duration)return;
-  const vocal=/^(hurt-|cough-|butler-voice)/.test(sample),group=(s:Playing)=>/^(hurt-|cough-|butler-voice)/.test(s.sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s)===vocal&&s.at<=at&&s.end>at);if(scope!=='nomination'&&own.length>=(scope==='ui'||scope==='book'||vocal?1:3))stop(own[0]![0],own[0]![1]);
+  const vocal=/^(v6:washer-whisper|hurt-|cough-|butler-voice)/.test(sample),group=(s:Playing)=>/^(v6:washer-whisper|hurt-|cough-|butler-voice)/.test(s.sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s)===vocal&&s.at<=at&&s.end>at);if(scope!=='nomination'&&own.length>=(scope==='ui'||scope==='book'||vocal?1:3))stop(own[0]![0],own[0]![1]);
   if(!bell&&scope!=='ui'&&scope!=='book')for(const row of sources.values())if(row.bell){const duckAt=Math.max(at,audio.currentTime);row.gain.gain.setValueAtTime(row.gain.gain.value,duckAt);row.gain.gain.linearRampToValueAtTime(.035,duckAt+.04);row.gain.gain.linearRampToValueAtTime(.2,duckAt+.34);}
   const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));sources.set(source,{id,scope,at,sample,gain,bell,end:at+(buffer.duration-offset)/rate});source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};const when=Math.max(audio.currentTime,at);source.start(when,offset);onStarted?.(buffer,when,source);
  }).catch(()=>{/* Missing media never blocks interaction. */});
@@ -139,12 +140,16 @@ export type RoleAudioCue=[at:number,sample:string,volume:number,continuity?:'con
 // Measured decoded contacts/onsets, recorded by the v4 and v5 manifests.
 const demonContact=contact.demon as typeof contact.demon&{avatarLeft?:number;avatarRight?:number};
 const materialLead={slash:85,cork:9.75,pour:24.6,chop:[10.63,10.09,10.86],coffinOpen:5.35,coffinSettle:11.45} as const;
+function detailCue(at:number,name:keyof typeof detailLead,volume:number,transient=false):RoleAudioCue{return[at-detailLead[name][transient?'peak':'onset'],'v6:'+name,volume,transient?'transient':'continuous',at];}
 export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
  const role=scene.themeRoleId,variant=1+hash(scene.id)%4;
  // Scene kind takes priority over the role that received the envelope.
- if(scene.kind==='EVIL_START')return[[600,'paper-lift-1',.25],[1100,'paper-turn-'+variant,.38]];
+ if(scene.kind==='EVIL_START')return[detailCue(contact.envelope.seal,'envelope-seal',.38,true),detailCue(contact.envelope.flapStart,'envelope-flap',.5),detailCue(contact.envelope.paperStart,'envelope-draw',.5)];
  if(scene.kind==='OLD_DEMON_CONTINUATION')return[[600,'wing-air',.17]];
  if(scene.kind==='ROLE_CHANGE')return[[500,'role-scarlet_woman',.5]];
+ if(role==='washerwoman')return[detailCue(contact.washer.dipStart,'washer-dip',.44),detailCue(contact.washer.scrubStart,'washer-scrub',.48),detailCue(contact.washer.dripStart,'washer-drops',.46),detailCue(contact.washer.dipStart,'washer-whisper',.7)];
+ if(role==='fortune_teller')return[detailCue(contact.crystal.start,'crystal-resonance',.6),detailCue(contact.crystal.answer,'crystal-shiver',.48)];
+ if(role==='investigator')return[detailCue(contact.investigator.scanStart,'investigator-lens',.52),detailCue(contact.investigator.turn,'investigator-evidence',.52)];
  if(role==='butler')return[[500,'role-butler',.3],[contact.butler.voice,'butler-voice',.74]];
  if(role==='poisoner')return[[contact.poison.uncork-materialLead.cork,'v4:poison-cork',.56,'transient',contact.poison.uncork],[contact.poison.pour-materialLead.pour,'v4:poison-pour',.48],[contact.poison.bubbles,'poison-bubbles',.4],...(scene.kind==='ACTION_SUBMITTED'?[[contact.poison.cough,'cough-'+(1+hash(scene.id)%3),.42] as RoleAudioCue]:[])];
  if(role==='monk'&&scene.kind==='ACTION_SUBMITTED')return[[contact.shield.cue,'v1:shield',.74,'transient',contact.shield.contact]];
@@ -169,7 +174,7 @@ export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,opti
   sampleAt(id,key,sample,Math.max(0,(at-elapsed)/rate),'private',rate,volume,offset,150);
  }
 }
-export async function auditionSample(sample:string){if(!/^(?:v[1345]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
+export async function auditionSample(sample:string){if(!/^(?:v[13456]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
 
 
 export type NominationSoundEvent={id?:string;kind?:string;startsAt?:number;durationMs?:number;outcome?:string};

@@ -46,3 +46,5 @@
 2026-11-13最新统一声音约束：前述独立书声许可/音乐开关方向已被本条取代。唯一正式偏好`ravens_effects_audio`统管音乐/公开音效/翻页，无值默认on、显式off尊重；旧book/lobby值不再门控，纸张prepare也不能越过总关闭。根音乐hook与active/fadeOut/ducked保留，但持续层不自带控件；页面/手册统一使用44px`GlobalAudioButton`音符，原音乐长胶囊与悬浮音效长按钮移除。Global开关同点击栈resume→正式事件→HTMLAudio.play；预览临时设置与线下私密静音规则保留。音轨/盾/恶魔四刀素材与时钟均不变，App/Home/Guide接入由来源与手册会话完成。
 
 2026-11-13提名/投票声音追加交付：`PublicNominationAudio`单一稳定owner同时负责L03发起16秒、L04待处决20秒、L02未达标/平票15秒及A03最终8秒；直接复用完整候选MP3，新增来源/许可/源SHA/ffprobe记录在`apps/web/public/audio/nomination/v1/`。短提示收起、换合法提名不剪尾；旧尾只轻压低，历史重击不补播，静音/后台/离页仍取消。SIM投票用公开绝对起止/ballotId，暂停和epoch按offset对齐、截止停，旧逐席票不套新8秒。本地预览相应三式时轴16/20/15秒，业务时序不改；EventStage页脚音符已移除，预览顶部音控保留。此为组件/声音交付，业务挂载与发布由来源统筹，未作手机试听验收。
+
+角色细节声音第一组：新增v6共11轨，洗衣妇入水/摩洗/滴水/固定模糊耳语，占卜连续低共鸣/玻璃细颤（YES/NO同声），调查镜缘/证物摩擦替换旧撞章，EVIL_START拆封/翻盖/抽信分别接触。只读取独立动作共享contact（65e05a8），最终MP3实测onset/peak索引由构建器自动生成；源原件8份及许可/SHA在sources/role-audio-v6，脚本build-role-audio-v6.py可离线重建。已认可翻页/M19/盾/slash/投毒/My lord原字节和公共nom稿未改；预览加入新单轨入口。该条为音频组交付，后续乌鸦/斜棺与其余角色仍待分组；手机听感未验收。
