@@ -1,0 +1,25 @@
+/* Public portrait badges: each mark has one meaning and never covers the face. */
+.rn-seat-ring .rn-seat{border:0;background:none;box-shadow:none;padding:0;overflow:visible}
+.rn-seat-ring .rn-seat--dead{opacity:1;filter:none}
+.rn-seat-ring .rn-seat--dead .rn-seat__name{text-decoration:none}
+.rn-seat-ring .rn-seat__avatar{position:relative;display:block;isolation:isolate;overflow:visible;border-radius:50%;width:var(--round-portrait,42px);height:var(--round-portrait,42px)}
+.rn-seat-ring .rn-seat__avatar>img:not(.rn-night-scratch){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:1}
+.rn-seat-ring .rn-seat__initial{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#1c2527;color:#d9cda9}
+.rn-seat-ring .rn-seat__avatar[data-avatar-state=THREATENED]>img,.rn-seat-ring .rn-seat__avatar[data-avatar-state=THREATENED]>.rn-seat__initial{filter:none;opacity:1}
+.rn-seat-ring .rn-seat__avatar[data-avatar-state=DEAD]>img:not(.rn-night-scratch),.rn-seat-ring .rn-seat__avatar[data-avatar-state=DEAD]>.rn-seat__initial{filter:grayscale(1);opacity:.55}
+.rn-seat-ring .rn-seat__number{position:absolute!important;left:-3px;top:-3px;bottom:auto;z-index:5;display:grid;place-items:center;min-width:15px;height:15px;padding:0 2px;border:0;border-radius:4px;background:#0b100fee;color:#e6d2a0;font:10px/1 var(--rn-mono);pointer-events:none}
+.rn-seat-ring .rn-seat--mine .rn-seat__number{background:#d3b977;color:#141710}
+.rn-seat-ring .rn-seat__name{display:block;max-width:100%;line-height:12px}
+.rn-seat-ring>.rn-seat .rn-seat__ballot{position:absolute;bottom:9px;right:-3px;z-index:6;border:1px solid #9dba98;border-radius:50%;background:#142319;color:#cce5bf;width:13px;height:13px;font-size:10px;line-height:12px;overflow:hidden}
+.rn-seat-ring>.rn-seat .rn-seat__hand{position:absolute;top:8px;right:-9px;z-index:5;font-size:14px;line-height:16px}
+.rn-seat-ring>.rn-seat .rn-seat__nomination{position:absolute;top:-6px;right:-4px;z-index:5;color:#ead195;background:#252414;border-radius:4px;font-size:15px;line-height:16px}
+.rn-seat-ring>.rn-seat .rn-seat__execution{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);z-index:5;border:1px solid #c3995e;border-radius:5px;padding:0 3px;background:#2b1b13;color:#f3d3a0;font-size:9px;line-height:13px;white-space:nowrap}
+.rn-avatar-state.rn-avatar-state--dead[viewBox]{inset:auto -3px -3px auto;width:16px;height:16px;overflow:visible;stroke:none}
+.rn-avatar-state--dead .rn-avatar-state__skull{fill:#d2d6d5;stroke:#111a1b}
+.rn-avatar-state.rn-avatar-state--threatened[viewBox]{inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);stroke:#d2b17a;stroke-width:2;stroke-dasharray:2 1}
+.rn-seat-ring .rn-seat__avatar>.rn-night-scratch{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:3;filter:none;opacity:1;pointer-events:none}
+.rn-seat-ring--fluid{position:absolute;inset:0;width:100%;height:100%;margin:0;aspect-ratio:1}
+.rn-seat-ring--fluid>.rn-seat{transform:translate(-50%,-50%);width:var(--round-seat,64px);height:var(--round-seat,64px);min-height:0;align-content:center;gap:0}
+.rn-seat-ring--fluid>.rn-seat>button:not(.rn-seat__private-mark){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:100%;height:100%;min-height:44px;min-width:44px;padding:0;border:0;background:none;color:inherit}
+
+.rn-seat-ring .rn-seat .rn-seat__number::after{content:none}

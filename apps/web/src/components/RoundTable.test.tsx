@@ -46,3 +46,10 @@ test('the last opened sheet traps focus even when an older portal is later in DO
  render(<Host/>);fireEvent.click(screen.getByRole('button',{name:'展开圆桌'}));fireEvent.click(screen.getByRole('button',{name:'查看线索'}));
  const close=screen.getByRole('button',{name:'关闭线索'});close.focus();fireEvent.keyDown(close,{key:'Tab'});expect(screen.getByText('人机与测试')).toHaveFocus();fireEvent.keyDown(document.activeElement!,{key:'Tab'});expect(screen.getByRole('combobox',{name:'目标'})).toHaveFocus();const last=screen.getByRole('button',{name:'末尾操作'});last.focus();fireEvent.keyDown(last,{key:'Tab'});const notice=screen.getByRole('button',{name:'返回城镇'});expect(notice).toHaveFocus();fireEvent.keyDown(notice,{key:'Tab',shiftKey:true});expect(last).toHaveFocus();fireEvent.keyDown(last,{key:'Tab'});fireEvent.keyDown(notice,{key:'Tab'});expect(screen.getByRole('button',{name:'关闭线索'})).toHaveFocus();
 });
+
+
+test('a wide display measures a square beyond the phone cap and remains bounded on both axes',()=>{
+ vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockReturnValue({width:1100,height:680,x:0,y:0,top:0,left:0,right:1100,bottom:680,toJSON:()=>({})});
+ const ui=render(<RoundTable count={12} maxDiameter={820} className="display__table">{()=>null}</RoundTable>);
+ expect(ui.container.querySelector('.round-table')).toHaveStyle({width:'680px',height:'680px'});
+});

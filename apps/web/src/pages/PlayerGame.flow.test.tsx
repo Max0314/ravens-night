@@ -25,3 +25,8 @@ test('a new nomination stays in the center; public voting locks by seat and conf
  const dead={...view,participant:{...view.participant,seat:3}};ui.rerender(<PlayerGame {...handlers} view={dead}/>);fireEvent.click(screen.getByRole('button',{name:'举手'}));expect(screen.getByRole('alertdialog',{name:'使用鬼票'})).toBeVisible();
  ui.rerender(<PlayerGame {...handlers} view={{...dead,game:{...dead.game!,nomination:{...dead.game!.nomination!,countedSeats:[3],countedVotes:{3:false}}}}}/>);expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'举手'})).toBeDisabled();
 });
+
+test('legacy received history is formatted for display while its text remains intact',()=>{
+ const view=fixture();view.roleConfirmed=true;view.game!.phase='DAY_DISCUSSION';view.history=[{seq:1,phase:'FIRST_NIGHT',day:0,kind:'INFORMATION',text:'【玩家1-甲】与【玩家2-乙】之一是镇长。'}];
+ const ui=render(<PlayerGame {...handlers} view={view}/>);fireEvent.click(screen.getByRole('button',{name:/^记录/}));fireEvent.click(screen.getByText('我的身份与线索记录'));expect(ui.container.querySelector('.clue-entry p')).toHaveTextContent('[甲]与[乙]之一是镇长。');expect(view.history[0]!.text).toBe('【玩家1-甲】与【玩家2-乙】之一是镇长。');
+});
