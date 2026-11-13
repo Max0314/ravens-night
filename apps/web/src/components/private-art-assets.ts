@@ -1,4 +1,6 @@
 import type {PrivateSceneDescriptor} from '@ravens/contracts';
+import {roleArt} from '../role-art.js';
+import {prewarmImages,readyImages,type ImagePreparation} from './image-prewarm.js';
 const v4=new Set(['book-shell','book-paper','book-paper-back','coffin-base','coffin-lid-front','coffin-lid-back','washer-basin-back','washer-basin-front','washer-linen','chef-board-clean','chef-carrot','crystal-shell','crystal-mist','poison-glass','poison-stopper','poison-mist','drunk-glass','raven-body','raven-wing','investigator-stamp','scarlet-cloak']);
 const v8=new Set(['envelope-back','envelope-front','envelope-flap-front','envelope-flap-back','envelope-seal','envelope-paper','envelope-seal-broken-left','envelope-seal-broken-right','investigator-evidence','investigator-magnifier','investigator-lens-glint','raven-perch','raven-body','raven-head-neck','raven-tail','raven-wing-left','raven-wing-right','raven-feather','coffin-oblique-base','coffin-oblique-lining','coffin-oblique-lid-front','coffin-oblique-lid-back','coffin-oblique-lid-edge','recluse-door-base','recluse-lantern','saint-candle-base','saint-flame-1','saint-flame-2','saint-flame-3','carriage-base','carriage-door','carriage-wheel-near-front','carriage-wheel-near-rear','carriage-wheel-far-front','carriage-lantern-near','carriage-lantern-far','carriage-lantern-inner','carriage-paper-1','carriage-paper-2','virgin-document-base','virgin-lily','virgin-ribbon','empath-heart-base','empath-chain']);
 const v5=new Set(['mayor-scepter','poison-vapour']);
@@ -35,8 +37,8 @@ export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
  if(normal&&role==='imp'&&scene.kind==='ACTION_SUBMITTED')urls.push(...['claw-screen-left','claw-screen-right','claw-avatar-left','claw-avatar-right'].map(privateAssetUrl));
  return urls;
 }
-export interface PreparedPrivateArt {ready:string[];failed:string[];timedOut:string[]}
-type LoadResult={src:string;status:'ready'|'failed'|'timedOut'};
-const cache=new Map<string,Promise<LoadResult>>();
-function load(src:string):Promise<LoadResult>{let pending=cache.get(src);if(pending)return pending;pending=new Promise(resolve=>{const image=new Image();let done=false;const finish=(status:LoadResult['status'])=>{if(done)return;done=true;clearTimeout(timeout);image.onload=null;image.onerror=null;if(status!=='ready')cache.delete(src);resolve({src,status});};const timeout=setTimeout(()=>finish('timedOut'),6000);image.onload=()=>{if(image.decode)void image.decode().then(()=>finish('ready'),()=>finish('failed'));else finish('ready');};image.onerror=()=>finish('failed');image.src=src;});cache.set(src,pending);while(cache.size>48)cache.delete(cache.keys().next().value!);return pending;}
-export async function preparePrivateArt(scene:PrivateSceneDescriptor):Promise<PreparedPrivateArt>{const result:PreparedPrivateArt={ready:[],failed:[],timedOut:[]};for(const item of await Promise.all(privateArtUrls(scene).map(load)))result[item.status].push(item.src);return result;}
+export type PreparedPrivateArt=ImagePreparation;
+export const preparePrivateArt=(scene:PrivateSceneDescriptor,onProgress?:(art:PreparedPrivateArt)=>void)=>prewarmImages(privateArtUrls(scene),onProgress);
+export const readyPrivateArt=(scene:PrivateSceneDescriptor)=>readyImages(privateArtUrls(scene));
+/** Only the next authorized scenes supplied by the caller, including their existing portrait fallback. */
+export const prewarmPrivateArt=(scene:PrivateSceneDescriptor)=>prewarmImages([...privateArtUrls(scene),roleArt(scene.themeRoleId).portraitUrl]);

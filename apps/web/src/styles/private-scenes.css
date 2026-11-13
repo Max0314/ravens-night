@@ -22,3 +22,5 @@
 
 .private-scene-body{position:relative;min-height:0;display:grid;grid-template-rows:minmax(0,1fr);overflow:hidden}
 .private-scene-body>.private-scene-loading{inset:0;z-index:10}
+
+.private-scene-content.is-art-pending>.private-scene-portrait{opacity:.22;filter:none}

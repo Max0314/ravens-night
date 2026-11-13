@@ -1,0 +1,19 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
+import {createRequire} from 'node:module';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {build} from 'esbuild';
+import sharp from 'sharp';
+
+const baseline='49a88f255a1456cd7a65c6dd359d665b66cde5eb',out=resolve('artifacts/cinematic-motion-2026-11-12/public'),webRequire=createRequire(resolve('apps/web/package.json'));
+const {createElement}=webRequire('react'),{renderToStaticMarkup}=webRequire('react-dom/server');await mkdir(out,{recursive:true});
+async function component(source){const bundle=await build({stdin:{contents:source,resolveDir:resolve('apps/web/src/components'),loader:'tsx'},bundle:true,write:false,platform:'node',format:'esm',packages:'external',jsx:'automatic',plugins:[{name:'react-path',setup(b){b.onResolve({filter:/^react(?:\/|$)/},args=>({path:pathToFileURL(webRequire.resolve(args.path)).href,external:true}));}}]});return(await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].text).toString('base64'))).DawnSkyArt;}
+const before=await component(execFileSync('git',['show',`${baseline}:apps/web/src/components/DawnSkyArt.tsx`],{encoding:'utf8'})),after=await component(await readFile('apps/web/src/components/DawnSkyArt.tsx','utf8')),images=new Map();
+async function frame(art,t,w,h){let svg=renderToStaticMarkup(createElement(art,{elapsedMs:t,durationMs:6600})).replace('width="100%" height="100%"',`width="${w}" height="${h}"`);for(const match of svg.matchAll(/href="(\/[^\"]+)"/g)){const url=match[1];if(!images.has(url))images.set(url,'data:image/png;base64,'+(await sharp(await readFile(resolve('apps/web/public',url.slice(1)))).png().toBuffer()).toString('base64'));svg=svg.replaceAll(`href="${url}"`,`href="${images.get(url)}"`);}return{markup:svg,pixels:await sharp(Buffer.from(svg)).flatten({background:'#101619'}).raw().toBuffer()};}
+const rows=[],times=[0,1000,1800,3000,4500,6600];for(const [w,h,label]of [[320,640,'portrait'],[640,360,'phone-landscape']]){const panels=[];for(const t of times){const a=await frame(before,t,w,h),b=await frame(after,t,w,h);let total=0,max=0,large=0;for(let i=0;i<a.pixels.length;i++){const delta=Math.abs(a.pixels[i]-b.pixels[i]);total+=delta;max=Math.max(max,delta);if(delta>12)large++;}rows.push({viewport:[w,h],elapsedMs:t,meanAbsoluteRgb:total/a.pixels.length,maxChannelDelta:max,channelsDeltaOver12:large/a.pixels.length});for(const pixels of [a.pixels,b.pixels])panels.push(await sharp(pixels,{raw:{width:w,height:h,channels:3}}).png().toBuffer());}
+ await sharp({create:{width:w*times.length,height:h*2,channels:3,background:'#101619'}}).composite(panels.map((input,index)=>({input,left:Math.floor(index/2)*w,top:(index%2)*h}))).png().toFile(resolve(out,`dawn-performance-${label}.png`));}
+const oldMarkup=(await frame(before,3000,320,640)).markup,newMarkup=(await frame(after,3000,320,640)).markup,count=(text,tag)=>(text.match(new RegExp(`<${tag}\\b`,'g'))??[]).length;
+const nativeBefore=(await frame(before,6600,688,1024)).pixels,nativeAfter=(await frame(after,6600,688,1024)).pixels;const nativeWindowSamples=[[245,319],[499,375]].map(([x,y])=>({x,y,before:[...nativeBefore.subarray((y*688+x)*3,(y*688+x)*3+3)],after:[...nativeAfter.subarray((y*688+x)*3,(y*688+x)*3+3)]}));
+const counts=markup=>Object.fromEntries(['filter','mask','feTurbulence','clipPath','use','image'].map(tag=>[tag,count(markup,tag)]));
+await writeFile(resolve(out,'dawn-performance.json'),JSON.stringify({baseline,method:'Actual previous/current React SVG rendered by sharp; before/after static rows; not a browser FPS measurement',before:counts(oldMarkup),after:counts(newMarkup),oldRepeatedSourcePixels:15*688*1024,newRepeatedAtlasPixels:15*160*72,newExtraDecodedBytes:46080+755712,nativeWindowSamples,frames:rows},null,2)+'\n');console.log(JSON.stringify({before:counts(oldMarkup),after:counts(newMarkup),frames:rows}));

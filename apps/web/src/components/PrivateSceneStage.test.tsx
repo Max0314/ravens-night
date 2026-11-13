@@ -6,7 +6,11 @@ import {afterEach,beforeEach,expect,test,vi} from 'vitest';
 import type {PrivateView} from '../api.js';
 import {acknowledgePresentations} from '../api.js';
 import {preparePrivateArt} from './PremiumArt.js';
+import {prewarmPrivateArt} from './private-art-assets.js';
+import {prepareRoleAudio} from './experience-audio.js';
 import {PrivateSceneStage,PrivateSceneContent} from './PrivateSceneStage.js';
+vi.mock('./private-art-assets.js',async original=>({...await original<typeof import('./private-art-assets.js')>(),prewarmPrivateArt:vi.fn(async()=>({ready:[],failed:[],timedOut:[]})),readyPrivateArt:vi.fn(()=>new Set<string>())}));
+vi.mock('./experience-audio.js',async original=>({...await original<typeof import('./experience-audio.js')>(),prepareRoleAudio:vi.fn(async()=>{})}));
 vi.mock('../api.js',async original=>({...await original<typeof import('../api.js')>(),acknowledgePresentations:vi.fn(async()=>({acked:[],revision:2}))}));
 vi.mock('./PremiumArt.js',async original=>({...await original<typeof import('./PremiumArt.js')>(),preparePrivateArt:vi.fn(async()=>({ready:[],failed:[],timedOut:[]}))}));
 async function advance(ms:number){await act(async()=>{for(let i=0;i<8;i++)await Promise.resolve();});await act(async()=>vi.advanceTimersByTime(ms));}
@@ -36,21 +40,22 @@ test('a higher room sheet pauses the art clock and cannot mark unread informatio
 test('new information waits for an already open keyboard instead of creating a covering dialog',()=>{document.documentElement.dataset.keyboard='open';render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);expect(screen.queryByRole('dialog')).not.toBeInTheDocument();act(()=>window.dispatchEvent(new CustomEvent('ravens:keyboard',{detail:{open:false}})));expect(screen.getByRole('dialog')).toBeInTheDocument();});
 test('poison separates its prop and outer atmosphere; demon screen and avatar hits arrive separately',()=>{const submitted={...scene,kind:'ACTION_SUBMITTED' as const,themeRoleId:'poisoner',shown:{type:'TARGET_SUBMITTED' as const,action:'POISON' as const,seats:[2]}};const ui=render(<PrivateSceneContent scene={submitted} view={fixture()} elapsedMs={1000}/>);expect(ui.container.querySelectorAll('[data-role="poisoner"]')).toHaveLength(1);expect(ui.container.querySelectorAll('.premium-poison-vapour')).toHaveLength(1);expect(ui.container.querySelector('.premium-poison-vapour')?.closest('.role-scene-art')).toBeNull();ui.rerender(<PrivateSceneContent scene={{...submitted,themeRoleId:'imp',shown:{...submitted.shown,action:'KILL'}}} view={fixture()} elapsedMs={1750}/>);expect(ui.container.querySelectorAll('.premium-demon-slashes')).toHaveLength(1);expect(ui.container.querySelector('.premium-demon-slashes')?.closest('.role-scene-art')).toBeNull();expect(ui.container.querySelector('.private-scene-person .premium-claw--avatar-left')).toBeNull();ui.rerender(<PrivateSceneContent scene={{...submitted,themeRoleId:'imp',shown:{...submitted.shown,action:'KILL'}}} view={fixture()} elapsedMs={2900}/>);expect(ui.container.querySelector('.private-scene-person .premium-claw--avatar-left')).not.toBeNull();expect(ui.container.querySelector('.private-scene-person .premium-claw--avatar-right')).toBeNull();ui.rerender(<PrivateSceneContent scene={{...submitted,themeRoleId:'imp',shown:{...submitted.shown,action:'KILL'}}} view={fixture()} elapsedMs={3450}/>);expect(ui.container.querySelector('.private-scene-person .premium-claw--avatar-right')).not.toBeNull();});
 
-test('slow preparation pauses only the private scene and a skipped load cannot revive it',async()=>{
+test('slow art never blocks the reveal clock or creates a blank loading screen; a skipped load cannot revive it',async()=>{
  let ready:()=>void=()=>{};vi.mocked(preparePrivateArt).mockImplementationOnce(()=>new Promise<import('./PremiumArt.js').PreparedPrivateArt>(resolve=>{ready=()=>resolve({ready:[],failed:[],timedOut:[]});}));
- render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);
- await advance(4500);expect(screen.getByRole('status')).toHaveTextContent('正在准备');expect(screen.getByRole('status').closest('.private-scene-body')).not.toBeNull();expect(acknowledgePresentations).not.toHaveBeenCalled();
+ const ui=render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);
+ await advance(2100);expect(screen.getByText('相邻邪恶玩家的对数：2')).toBeVisible();expect(ui.container.querySelector('.private-scene-loading')).toBeNull();expect(ui.container.querySelector('.is-art-pending .private-scene-portrait')).not.toBeNull();expect(acknowledgePresentations).not.toHaveBeenCalled();
  fireEvent.click(screen.getByRole('button',{name:'跳过本段 ×'}));await act(async()=>ready());expect(screen.queryByRole('dialog')).toBeNull();expect(acknowledgePresentations).toHaveBeenCalledTimes(1);
 });
+
 test('an 800ms rendering stall is caught up by the private clock instead of permanently lagging audio',async()=>{
  let tick:FrameRequestCallback=()=>{};vi.spyOn(performance,'now').mockReturnValue(1000);vi.spyOn(window,'requestAnimationFrame').mockImplementation(fn=>{tick=fn;return 1;});vi.spyOn(window,'cancelAnimationFrame').mockImplementation(()=>{});
  render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);await advance(0);
  act(()=>tick(1800));act(()=>tick(3200));expect(screen.getByText('相邻邪恶玩家的对数：2')).toBeVisible();expect(acknowledgePresentations).not.toHaveBeenCalled();
 });
 
-test('replaying the same completed history entry waits for media preparation again',async()=>{
+test('replaying the same completed entry keeps its clock independent of a slow media retry',async()=>{
  render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);await advance(4100);expect(acknowledgePresentations).toHaveBeenCalledTimes(1);
- let ready:()=>void=()=>{};vi.mocked(preparePrivateArt).mockImplementationOnce(()=>new Promise<import('./PremiumArt.js').PreparedPrivateArt>(resolve=>{ready=()=>resolve({ready:[],failed:[],timedOut:[]});}));act(()=>window.dispatchEvent(new CustomEvent('ravens:replay-private-scene',{detail:1})));await advance(3000);expect(screen.getByRole('status')).toHaveTextContent('正在准备');expect(screen.queryByText('相邻邪恶玩家的对数：2')).not.toBeInTheDocument();await act(async()=>ready());await advance(2100);expect(screen.getByText('相邻邪恶玩家的对数：2')).toBeVisible();
+ let ready:()=>void=()=>{};vi.mocked(preparePrivateArt).mockImplementationOnce(()=>new Promise<import('./PremiumArt.js').PreparedPrivateArt>(resolve=>{ready=()=>resolve({ready:[],failed:[],timedOut:[]});}));act(()=>window.dispatchEvent(new CustomEvent('ravens:replay-private-scene',{detail:1})));await advance(2100);expect(screen.getByText('相邻邪恶玩家的对数：2')).toBeVisible();await act(async()=>ready());await advance(2100);expect(screen.queryByRole('dialog')).toBeNull();expect(acknowledgePresentations).toHaveBeenCalledTimes(1);
 });
 
 test('information candidates keep their reveal gate; spy grimoire playback points to town without reproducing its snapshot',()=>{
@@ -143,4 +148,17 @@ test('companions appear only on the prepared envelope, with a readable sole fall
  const view=evil(),scene=view.presentations!.pending[0]!.scene,ready=new Set(['envelope-back','envelope-front','envelope-flap-front','envelope-flap-back','envelope-paper'].map(name=>`/art/effects/v8/${name}.webp`));
  const ui=render(<PrivateSceneContent scene={scene} view={view} elapsedMs={4600} readyAssets={ready}/>);expect(ui.container.querySelector('[data-envelope-paper]')).toHaveTextContent('同伴');expect(ui.container.querySelector('.private-start-cards,.private-scene-result,h2')).toBeNull();
  ui.rerender(<PrivateSceneContent scene={scene} view={view} elapsedMs={4600} readyAssets={new Set()}/>);expect(ui.container.querySelector('[data-envelope-paper]')).toBeNull();expect(ui.container.querySelector('[data-start-info-fallback]')).toHaveTextContent('同伴');expect(ui.container.querySelector('.private-start-cards')).toBeNull();
+});
+
+test('only two already authorized pending scenes warm while reading, before playback opens',()=>{
+ vi.mocked(prewarmPrivateArt).mockClear();const view=fixture();view.presentations!.pending=[0,1,2,3].map(i=>({historySeq:i+1,scene:{...scene,id:`warm-${i}`}}));
+ const props={view,code:'ABCDEF',reading:true,covered:false,onActivityChange:vi.fn(),onHandleTask:vi.fn()};const ui=render(<PrivateSceneStage {...props}/>);expect(screen.queryByRole('dialog')).toBeNull();expect(vi.mocked(prewarmPrivateArt).mock.calls.map(([s])=>s.id)).toEqual(['warm-0','warm-1']);
+ ui.rerender(<PrivateSceneStage {...props} view={{...view,revision:2}}/>);expect(vi.mocked(prewarmPrivateArt)).toHaveBeenCalledTimes(2);
+});
+test('unresolved audio cannot hold the private reveal clock',async()=>{
+ vi.mocked(prepareRoleAudio).mockImplementationOnce(()=>new Promise<void>(()=>{}));render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);await advance(2100);expect(screen.getByText('相邻邪恶玩家的对数：2')).toBeVisible();expect(screen.queryByText('正在准备画面与声音…')).toBeNull();
+});
+test('ready layers can appear before another request settles and fallback bluffs still obey 2400ms',async()=>{
+ vi.mocked(preparePrivateArt).mockImplementationOnce((_scene,update)=>{update?.({ready:['/art/effects/v4/chef-board-clean.webp'],failed:[],timedOut:[]});return new Promise(()=>{});});const ui=render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);await advance(0);expect(ui.container.querySelector('image[href="/art/effects/v4/chef-board-clean.webp"]')).not.toBeNull();expect(ui.container.querySelector('.is-art-pending .private-scene-portrait')).not.toBeNull();ui.unmount();
+ const view=evil();view.startInfo!.bluffs=[{roleId:'saint',name:'圣徒',summary:''}];const letter=view.presentations!.pending[0]!.scene,rendered=render(<PrivateSceneContent scene={letter} view={view} elapsedMs={1900} readyAssets={new Set()}/>);expect(rendered.container.querySelector('[data-start-info-fallback]')).toHaveTextContent('同伴');expect(rendered.container).not.toHaveTextContent('未在场角色');rendered.rerender(<PrivateSceneContent scene={letter} view={view} elapsedMs={2400} readyAssets={new Set()}/>);expect(rendered.container).toHaveTextContent('未在场角色');
 });
