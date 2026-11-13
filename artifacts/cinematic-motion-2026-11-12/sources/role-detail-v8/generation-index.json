@@ -109,6 +109,74 @@
           "sha256": "9c24c075b4353a5216d323acafd3afc2d0f674e65f26579ea7985362dd95425c"
         }
       ]
+    },
+    {
+      "id": "investigator-magnifier-initial",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/investigator-magnifier-before-length.png",
+      "outputSha256": "04ba52509fe7bb4973cb276d18e9cc3b0154976b81b6fec1e8de53262035e14c",
+      "prompt": "prompts/investigator-magnifier-initial.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/investigator.webp",
+          "sha256": "c5933f3fea950484858471f89e6b5695cdcd9a3a3be80b8206c96c6b71795e9b"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/investigator-magnifier.png",
+          "sha256": "bd57ba72ba106eeb42a85c285d6d561b686646966678584b3c19cc6ab4e57394"
+        }
+      ]
+    },
+    {
+      "id": "investigator-magnifier",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/investigator-magnifier.png",
+      "outputSha256": "f69f93ca360e8348255aa9b7e81659507455c97ccf3e68c46393a2cb03decf71",
+      "prompt": "prompts/investigator-magnifier.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-magnifier-before-length.png",
+          "sha256": "04ba52509fe7bb4973cb276d18e9cc3b0154976b81b6fec1e8de53262035e14c"
+        }
+      ]
+    },
+    {
+      "id": "investigator-evidence",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/investigator-evidence.png",
+      "outputSha256": "6a3bbde4b8c1cb5ecc3d9b0f7af3c65acccc65e5dc40588b52376f0712768111",
+      "prompt": "prompts/investigator-evidence.txt",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/investigator.webp",
+          "sha256": "c5933f3fea950484858471f89e6b5695cdcd9a3a3be80b8206c96c6b71795e9b"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/investigator-evidence.png",
+          "sha256": "f1ce7ac5e2095051575886f9d00ecd3000f23e3cf79cf9fe598bb03748eb036e"
+        }
+      ]
+    },
+    {
+      "id": "investigator-lens-glint",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/investigator-lens-glint.png",
+      "outputSha256": "6d20370f578f986539e443a9b3da6c72cb924169e6828be2df6d2e745ff9e2b9",
+      "prompt": "prompts/investigator-lens-glint.txt",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-magnifier.png",
+          "sha256": "f69f93ca360e8348255aa9b7e81659507455c97ccf3e68c46393a2cb03decf71"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/investigator-lens-glint.png",
+          "sha256": "ca1892340339a35b75b163c45cd1145fec409642ccd528a06d47f010a5c4d016"
+        }
+      ]
     }
   ]
 }
