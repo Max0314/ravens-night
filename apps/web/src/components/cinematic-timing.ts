@@ -19,6 +19,7 @@ export const cinematicTiming = {
   recluse: { swing: 350, settle: 3000 },
   saint: { flame: 350, wax: 650, waxSet: 1900 },
   baron: { arrive: 350, stop: 800, doorStart: 900, doorOpen: 1400, seals: [1450, 1650], paperStart: [1550, 1750], paperOut: [2250, 2450], settle: 2700 },
+  dawn: { door: 3000 },
   chef: [650, 1000, 1350],
   shield: { cue: 418, contact: 700 },
   reveal: { standard: 1900, oracle: 2200, bluffs: 2400 },
