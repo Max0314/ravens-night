@@ -1,0 +1,318 @@
+{
+  "version": 6,
+  "group": "role-detail-one",
+  "rebuild": "python scripts/build-role-audio-v6.py",
+  "seed": 20261113,
+  "sourceIndex": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v6/sources.json",
+  "license": "CC0-1.0 recorded material plus original project composition; all fixed source originals archived",
+  "files": [
+    {
+      "id": "washer-dip",
+      "file": "washer-dip.mp3",
+      "sha256": "db9ec296ce5cac4aa5dd683feff82c131fac1dac1f557ea3b9674f2e38b56719",
+      "bytes": 9238,
+      "durationMs": 500.0,
+      "decodedBytes": 88200,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 32.313,
+      "peakOffsetMs": 69.977,
+      "peakDbFS": -6.35,
+      "rmsDbFS": -24.44,
+      "sources": [
+        "cloth-heavy",
+        "water-drops"
+      ],
+      "layers": [
+        "Recorded cloth and quiet recorded water entry; no impact/voice"
+      ],
+      "processing": "highpass=f=100,lowpass=f=7000 -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -24,
+        "peakCap": 0.63,
+        "appliedGain": 0.773803,
+        "attackMs": 8.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "washer-scrub",
+      "file": "washer-scrub.mp3",
+      "sha256": "b0621f8503fc6c861dd4aa1ea7b506ed0bcdc91c241384c4f3782814b74502d1",
+      "bytes": 12581,
+      "durationMs": 720.0,
+      "decodedBytes": 127008,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 19.887,
+      "peakOffsetMs": 104.558,
+      "peakDbFS": -4.47,
+      "rmsDbFS": -25.83,
+      "sources": [
+        "cloth"
+      ],
+      "layers": [
+        "Two soft recorded cloth friction strokes"
+      ],
+      "processing": "highpass=f=100,lowpass=f=7000 -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -25,
+        "peakCap": 0.63,
+        "appliedGain": 0.686637,
+        "attackMs": 8.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "washer-drops",
+      "file": "washer-drops.mp3",
+      "sha256": "67cf500fe73afff1ab3567d0ed9d5f8b8488e86fa434f9031e329a6ffe2af3fd",
+      "bytes": 20105,
+      "durationMs": 1200.0,
+      "decodedBytes": 211680,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 43.424,
+      "peakOffsetMs": 46.054,
+      "peakDbFS": -5.32,
+      "rmsDbFS": -26.46,
+      "sources": [
+        "water-drops"
+      ],
+      "layers": [
+        "Three recorded drops, descending dynamics; source selection starts 7279.138ms"
+      ],
+      "processing": "highpass=f=100,lowpass=f=7000 -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -26,
+        "peakCap": 0.63,
+        "appliedGain": 0.788487,
+        "attackMs": 8.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "washer-whisper",
+      "file": "washer-whisper.mp3",
+      "sha256": "154bfd2d6627a8838f331f7f8f7edd0e1a95236eac738d5b3272261423d6fb7f",
+      "bytes": 26792,
+      "durationMs": 1600.0,
+      "decodedBytes": 282240,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 14.422,
+      "peakOffsetMs": 145.85,
+      "peakDbFS": -16.18,
+      "rmsDbFS": -29.44,
+      "sources": [
+        "whisper"
+      ],
+      "layers": [
+        "Original fixed montage of reversed 130ms recorded whisper grains; lexical order destroyed; never receives player/game data"
+      ],
+      "processing": "highpass=f=260,lowpass=f=4600 -> original soft saturation at 3x RMS -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -29,
+        "peakCap": 0.63,
+        "appliedGain": 18.46239,
+        "attackMs": 70.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "crystal-resonance",
+      "file": "crystal-resonance.mp3",
+      "sha256": "bd7037551faa882acaf71eda2875e60e60b7ee9cd5b69918bf1f4ebb0750e86d",
+      "bytes": 44346,
+      "durationMs": 2700.0,
+      "decodedBytes": 476280,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 18.118,
+      "peakOffsetMs": 291.542,
+      "peakDbFS": -18.09,
+      "rmsDbFS": -25.45,
+      "sources": [],
+      "layers": [
+        "Original authored slow low resonance; continuous 200ms onset, no result-specific pitch or chime"
+      ],
+      "processing": "highpass=f=45,lowpass=f=1100 -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -25,
+        "peakCap": 0.63,
+        "appliedGain": 0.126687,
+        "attackMs": 200.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "crystal-shiver",
+      "file": "crystal-shiver.mp3",
+      "sha256": "3bcc773ce129d11dc2ab4d641ecdb024d978cf51c1bf00724d39c78208a7a6af",
+      "bytes": 20941,
+      "durationMs": 1250.0,
+      "decodedBytes": 220500,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 12.336,
+      "peakOffsetMs": 370.59,
+      "peakDbFS": -20.41,
+      "rmsDbFS": -29.44,
+      "sources": [],
+      "layers": [
+        "Original authored glass-like fine partial vibration; slow 170ms onset, no impact ping and identical for YES/NO"
+      ],
+      "processing": "highpass=f=300,lowpass=f=2400 -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -29,
+        "peakCap": 0.63,
+        "appliedGain": 0.07153,
+        "attackMs": 170.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "investigator-lens",
+      "file": "investigator-lens.mp3",
+      "sha256": "530b934a483c921660de4868f76a7e0e67c1c2331f67c86d1fc38c127622c86b",
+      "bytes": 13835,
+      "durationMs": 800.0,
+      "decodedBytes": 141120,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 34.83,
+      "peakOffsetMs": 233.855,
+      "peakDbFS": -13.11,
+      "rmsDbFS": -26.44,
+      "sources": [
+        "cloth",
+        "bottle"
+      ],
+      "layers": [
+        "Recorded gentle surface/rim friction, not stamp, impact or alignment-result cue"
+      ],
+      "processing": "highpass=f=180,lowpass=f=5200 -> original soft saturation at 3x RMS -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -26,
+        "peakCap": 0.63,
+        "appliedGain": 0.795387,
+        "attackMs": 55.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "investigator-evidence",
+      "file": "investigator-evidence.mp3",
+      "sha256": "7b9dbf13f5c7537204bb04ea5b3a3a83d353ab92ce0cf0f5b2ff975af51d125a",
+      "bytes": 7566,
+      "durationMs": 400.0,
+      "decodedBytes": 70560,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 18.481,
+      "peakOffsetMs": 44.989,
+      "peakDbFS": -12.61,
+      "rmsDbFS": -25.44,
+      "sources": [
+        "paper-draw"
+      ],
+      "layers": [
+        "Recorded paper evidence slide; source selection starts 131.383ms"
+      ],
+      "processing": "highpass=f=150,lowpass=f=6000 -> original soft saturation at 3x RMS -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -25,
+        "peakCap": 0.63,
+        "appliedGain": 3.333386,
+        "attackMs": 28.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "envelope-seal",
+      "file": "envelope-seal.mp3",
+      "sha256": "2fb74dceb13a167e69ace86be4c49e467e5bfb2aef41e08be8347f2f0a76672c",
+      "bytes": 4640,
+      "durationMs": 220.0,
+      "decodedBytes": 38808,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 5.964,
+      "peakOffsetMs": 44.989,
+      "peakDbFS": -4.33,
+      "rmsDbFS": -24.59,
+      "sources": [
+        "paper-tear"
+      ],
+      "layers": [
+        "Recorded dry paper tear transient used as soft seal release foley; not falsely labeled a wax field recording; source 2725.261ms"
+      ],
+      "processing": "highpass=f=300,lowpass=f=6500 -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -22,
+        "peakCap": 0.63,
+        "appliedGain": 0.785386,
+        "attackMs": 3.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "envelope-flap",
+      "file": "envelope-flap.mp3",
+      "sha256": "9197c5208cbc0138bf280e4dc7fb80c162609354de0d3c27f7710531662f65ed",
+      "bytes": 10492,
+      "durationMs": 600.0,
+      "decodedBytes": 105840,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 46.032,
+      "peakOffsetMs": 180.181,
+      "peakDbFS": -7.46,
+      "rmsDbFS": -25.45,
+      "sources": [
+        "paper-handling"
+      ],
+      "layers": [
+        "Recorded paper flap movement; source 0.0ms"
+      ],
+      "processing": "highpass=f=150,lowpass=f=6500 -> original soft saturation at 3x RMS -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -25,
+        "peakCap": 0.63,
+        "appliedGain": 8.06003,
+        "attackMs": 18.0,
+        "releaseMs": 65
+      }
+    },
+    {
+      "id": "envelope-draw",
+      "file": "envelope-draw.mp3",
+      "sha256": "4e3fb304c71a7b99ac8f4188a034948604375cd8f210a4f8f277f72c943760cd",
+      "bytes": 12163,
+      "durationMs": 700.0,
+      "decodedBytes": 123480,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 16.893,
+      "peakOffsetMs": 293.9,
+      "peakDbFS": -10.63,
+      "rmsDbFS": -24.44,
+      "sources": [
+        "paper-draw"
+      ],
+      "layers": [
+        "Recorded paper extraction, separate physical take; source 131.383ms"
+      ],
+      "processing": "highpass=f=150,lowpass=f=6500 -> original soft saturation at 3x RMS -> gain -> alimiter=limit=0.63:level=false",
+      "normalization": {
+        "targetRmsDbFS": -24,
+        "peakCap": 0.63,
+        "appliedGain": 4.003371,
+        "attackMs": 25.0,
+        "releaseMs": 65
+      }
+    }
+  ],
+  "totalBytes": 182699,
+  "totalDecodedBytes": 1885716
+}

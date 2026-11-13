@@ -1,0 +1,263 @@
+{
+  "version": 9,
+  "group": "lamp-candle-carriage-detail",
+  "rebuild": "python scripts/build-role-audio-v9.py",
+  "sourceIndex": "artifacts/cinematic-motion-2026-11-12/sources/role-audio-v9/sources.json",
+  "license": "CC0-1.0 recordings; original project material arrangement",
+  "files": [
+    {
+      "id": "lamp-chain",
+      "file": "lamp-chain.mp3",
+      "sha256": "f68b2fe4a37ce14b1696633ba2da2d8677e611981ba356ee14dabdfc8a2b7689",
+      "bytes": 43510,
+      "durationMs": 2650.0,
+      "decodedBytes": 467460,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 6.553,
+      "peakOffsetMs": 64.694,
+      "peakDbFS": -16.24,
+      "rmsDbFS": -34.44,
+      "sources": [
+        "fine-chain"
+      ],
+      "layers": [
+        "Four diminishing excerpts of a real small metal chain, 0/650/1400/2100ms relative to lamp swing; no footsteps or door impact"
+      ],
+      "processing": "highpass=f=350,lowpass=f=6500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -34,
+        "peakCap": 0.63,
+        "appliedGain": 9.660309,
+        "attackMs": 25.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "small-flame",
+      "file": "small-flame.mp3",
+      "sha256": "032c0abe3b1217fb77a0ab461dbe387e48753e87677762ba3aee696a93b30cd0",
+      "bytes": 43510,
+      "durationMs": 2650.0,
+      "decodedBytes": 467460,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 20.998,
+      "peakOffsetMs": 2295.238,
+      "peakDbFS": -21.04,
+      "rmsDbFS": -34.45,
+      "sources": [
+        "fire"
+      ],
+      "layers": [
+        "Quiet continuous crop 350..3000ms of archived A04 fire recording, softened as lamp/candle foley; no ignition or three artificial flame strikes, not claimed as a candle field recording"
+      ],
+      "processing": "highpass=f=180,lowpass=f=2800 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -34,
+        "peakCap": 0.63,
+        "appliedGain": 1.690683,
+        "attackMs": 120.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "carriage-roll",
+      "file": "carriage-roll.mp3",
+      "sha256": "c2460e93049b2c000b58f5dc603831a96defb90b54011bddf776ad99eeee945a",
+      "bytes": 9238,
+      "durationMs": 500.0,
+      "decodedBytes": 88200,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 6.644,
+      "peakOffsetMs": 45.057,
+      "peakDbFS": -17.97,
+      "rmsDbFS": -28.44,
+      "sources": [
+        "wheel-roll"
+      ],
+      "layers": [
+        "Real rolling wheelbarrow friction crop at 15199.388ms, low-pass/softened as brief carriage-wheel foley; no horses, voices or claimed wooden-carriage field recording"
+      ],
+      "processing": "highpass=f=70,lowpass=f=1900 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -28,
+        "peakCap": 0.63,
+        "appliedGain": 0.27964,
+        "attackMs": 40.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "carriage-stop",
+      "file": "carriage-stop.mp3",
+      "sha256": "dea9556955872f6cf67d1089b5fd898aae9aa69fd7ab0720ad362ca4d1bc38c5",
+      "bytes": 5476,
+      "durationMs": 280.0,
+      "decodedBytes": 49392,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 23.288,
+      "peakOffsetMs": 26.735,
+      "peakDbFS": -15.73,
+      "rmsDbFS": -29.46,
+      "sources": [
+        "wood-small"
+      ],
+      "layers": [
+        "Single quiet recorded wood contact for light carriage settling, no cannon/gavel/theme hit"
+      ],
+      "processing": "highpass=f=60,lowpass=f=1800 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -29,
+        "peakCap": 0.63,
+        "appliedGain": 1.617094,
+        "attackMs": 6.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "carriage-hinge",
+      "file": "carriage-hinge.mp3",
+      "sha256": "17730ab3105ab5b8c9f0a65c2b6802cff482c4c3c16a282dbb1a480fcdc5c7e6",
+      "bytes": 10074,
+      "durationMs": 550.0,
+      "decodedBytes": 97020,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 9.864,
+      "peakOffsetMs": 241.882,
+      "peakDbFS": -18.86,
+      "rmsDbFS": -28.44,
+      "sources": [
+        "door-creak"
+      ],
+      "layers": [
+        "Recorded door friction crop, compressed to the small carriage-door hinge movement; no extra slam"
+      ],
+      "processing": "highpass=f=160,lowpass=f=4200 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -28,
+        "peakCap": 0.63,
+        "appliedGain": 0.791411,
+        "attackMs": 25.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "contract-seal-1",
+      "file": "contract-seal-1.mp3",
+      "sha256": "852ce5f29baa0c6fd1193ee5448f30433157f1eaad881063bd9a94776ff29046",
+      "bytes": 4222,
+      "durationMs": 200.0,
+      "decodedBytes": 35280,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 5.193,
+      "peakOffsetMs": 18.118,
+      "peakDbFS": -17.13,
+      "rmsDbFS": -28.43,
+      "sources": [
+        "paper-tear"
+      ],
+      "layers": [
+        "Different real dry paper-tear excerpt at 735.714ms as seal-release foley, not claimed as literal wax recording; no impact theme"
+      ],
+      "processing": "highpass=f=300,lowpass=f=6000 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -28,
+        "peakCap": 0.63,
+        "appliedGain": 0.476191,
+        "attackMs": 3.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "contract-seal-2",
+      "file": "contract-seal-2.mp3",
+      "sha256": "19cb5c0e183332d12505c83754349569ab6420c01f3480e6c4882c90f648c86d",
+      "bytes": 4222,
+      "durationMs": 200.0,
+      "decodedBytes": 35280,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 5.147,
+      "peakOffsetMs": 51.497,
+      "peakDbFS": -14.8,
+      "rmsDbFS": -28.47,
+      "sources": [
+        "paper-tear"
+      ],
+      "layers": [
+        "Different real dry paper-tear excerpt at 2725.261ms as seal-release foley, not claimed as literal wax recording; no impact theme"
+      ],
+      "processing": "highpass=f=300,lowpass=f=6000 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -28,
+        "peakCap": 0.63,
+        "appliedGain": 0.692625,
+        "attackMs": 3.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "contract-unroll-1",
+      "file": "contract-unroll-1.mp3",
+      "sha256": "b2f2dfcd54cbd501097027e4a263346bb33465bcaa51874285ddc67db764fbb1",
+      "bytes": 12163,
+      "durationMs": 700.0,
+      "decodedBytes": 123480,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 19.841,
+      "peakOffsetMs": 47.982,
+      "peakDbFS": -14.07,
+      "rmsDbFS": -27.44,
+      "sources": [
+        "paper-draw"
+      ],
+      "layers": [
+        "Different recorded paper take at 131.383ms, lowered/extended for thick parchment unrolling; no real outsider names/roles or recruitment sound"
+      ],
+      "processing": "highpass=f=120,lowpass=f=5500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -27,
+        "peakCap": 0.63,
+        "appliedGain": 2.523834,
+        "attackMs": 35.0,
+        "releaseMs": 70
+      }
+    },
+    {
+      "id": "contract-unroll-2",
+      "file": "contract-unroll-2.mp3",
+      "sha256": "e9974b36269fd70c800295f42af8ffc27eae5b87fbe6a5c21b299fda20ada3d2",
+      "bytes": 12163,
+      "durationMs": 700.0,
+      "decodedBytes": 123480,
+      "sampleRate": 44100,
+      "channels": 1,
+      "onsetOffsetMs": 63.923,
+      "peakOffsetMs": 256.077,
+      "peakDbFS": -9.7,
+      "rmsDbFS": -27.39,
+      "sources": [
+        "paper-handling"
+      ],
+      "layers": [
+        "Different recorded paper take at 0.0ms, lowered/extended for thick parchment unrolling; no real outsider names/roles or recruitment sound"
+      ],
+      "processing": "highpass=f=120,lowpass=f=5500 -> soft saturation at 3x RMS -> gain -> limiter 0.63",
+      "normalization": {
+        "targetRmsDbFS": -27,
+        "peakCap": 0.63,
+        "appliedGain": 5.229815,
+        "attackMs": 35.0,
+        "releaseMs": 70
+      }
+    }
+  ],
+  "totalBytes": 144578,
+  "totalDecodedBytes": 1487052
+}

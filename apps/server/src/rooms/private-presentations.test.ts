@@ -83,7 +83,7 @@ test('runtime schema4 REQUIRED WAIT_ACK migration preserves team/bluffs and part
  const service=new RoomService({now:()=>now,presentation:true}),code=service.create(7,'首夜迁移').room.code;
  const players=Array.from({length:7},(_,i)=>service.join(code,`首夜玩家${i+1}`,'PLAYER'));
  players.forEach(p=>service.setReady(code,p.token,true));service.startTutorial(code,players[0]!.token,'SKIP');
- const v3=service.snapshot(code);v3.game!.presentationVersion=3;service.restore([v3]);
+ const v3=service.snapshot(code);v3.game!.presentationVersion=3;delete v3.game!.openingNightVersion;v3.game!.presentationUntil=0;v3.game!.events=[];v3.game!.pendingPublications=[];delete v3.game!.publicProjection;initializePresentation(v3.game!,now);if(v3.metadata)delete v3.metadata.openingNightRulesVersion;service.restore([v3]);
  players.forEach(p=>service.confirmRole(code,p.token));now+=3850;service.advanceTime(now);
  const g=service.find(code).game!,entries=Object.entries(g.startInfo.entries);
  expect(g.startInfo).toMatchObject({mode:'REQUIRED',stage:'WAIT_ACK'});expect(entries).toHaveLength(2);

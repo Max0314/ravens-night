@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
+import {StrictMode} from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import type { ExperienceEvent } from "@ravens/contracts";
@@ -142,4 +143,37 @@ test("storyteller decisions remain hidden until the final public presentation en
   fireEvent.click(screen.getByRole("button",{name:"查看本局复盘"}));
   fireEvent.click(screen.getByText(/说书人裁量复盘/));
   expect(screen.getByText("该信息受中毒影响。")).toBeVisible();
+});
+
+test('a dawn blocked by a private scene waits on this page, then plays fully without consuming its seen cursor',()=>{
+ vi.useFakeTimers();vi.setSystemTime(epoch);const dawn=shot({id:'deferred-dawn',kind:'DAWN',startsAt:epoch,durationMs:6600,outcome:'NO_DEATH',seats:[],day:1});
+ const g=game([dawn]);const ui=render(<StrictMode><EventStage game={g} blocked/></StrictMode>);expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).toBeNull();expect(screen.queryByRole('button',{name:'知道了'})).toBeNull();
+ act(()=>vi.advanceTimersByTime(7000));expect(JSON.parse(sessionStorage.getItem('ravens_events_game-1')??'[]')).not.toContain(dawn.id);
+ ui.rerender(<StrictMode><EventStage game={game([dawn],epoch+7000)}/></StrictMode>);expect(screen.getByRole('dialog',{name:'城镇公开演出'})).toBeVisible();expect(screen.getByRole('heading',{name:'天亮了'})).toBeVisible();
+ act(()=>vi.advanceTimersByTime(6600));expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).toBeNull();expect(JSON.parse(sessionStorage.getItem('ravens_events_game-1')??'[]')).toContain(dawn.id);
+});
+test('historical dawns and a deferred dawn from a previous night are never replayed on recovery',()=>{
+ vi.useFakeTimers();const dawn=shot({id:'old-dawn',kind:'DAWN',startsAt:epoch,durationMs:6600,outcome:'NO_DEATH',day:1});
+ const ui=render(<EventStage game={game([dawn],epoch+7000)}/>);expect(screen.queryByRole('dialog')).toBeNull();ui.rerender(<EventStage game={game([dawn],epoch)} blocked/>);
+ ui.rerender(<EventStage game={{...game([dawn],epoch+8000),day:2,phase:'OTHER_NIGHT'}}/>);expect(screen.queryByRole('dialog')).toBeNull();
+});
+
+test('a genuine handbook still receives a lightweight dawn even while a private identity waits',()=>{
+ const dawn=shot({id:'reading-blocked-dawn',kind:'DAWN',startsAt:epoch,outcome:'NO_DEATH'});render(<EventStage game={game([dawn])} reading blocked/>);expect(screen.getByRole('button',{name:'知道了'})).toBeVisible();expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).toBeNull();
+});
+
+test.each(['ABORTED','GAME_OVER','DAY_DISCUSSION'] as const)('a queued nightfall cannot play after entering %s',phase=>{
+ const night=shot({id:'cancelled-night',kind:'NIGHT_FALLS',startsAt:epoch,durationMs:6200,day:1});const g={...game([night]),phase:'OTHER_NIGHT' as const};const ui=render(<EventStage game={g} blocked/>);
+ ui.rerender(<EventStage game={{...g,phase}}/>);expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).toBeNull();
+});
+
+test('a real first-night dawn queues before the public day patch and refreshes its published result without resetting playback',()=>{
+ vi.useFakeTimers();vi.setSystemTime(epoch);
+ const neutral=shot({id:'projected-dawn',kind:'DAWN',startsAt:epoch,durationMs:6600,timingVersion:4,day:1,message:'黎明将至。'});delete neutral.outcome;delete neutral.seats;
+ const night={...game([neutral]),phase:'FIRST_NIGHT' as const,day:0};const ui=render(<EventStage game={night} blocked/>);expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).toBeNull();
+ ui.rerender(<EventStage game={{...night,serverNow:epoch+1000}}/>);expect(screen.getByRole('dialog',{name:'城镇公开演出'})).toBeVisible();expect(ui.container.querySelector<HTMLElement>('.event-stage__progress')!.style.transform).toBe('scaleX(1)');
+ const published={...neutral,outcome:'DEATH' as const,seats:[3],message:'三号玩家没有醒来。'};
+ ui.rerender(<EventStage game={{...game([published],epoch+1800),phase:'DAY_DISCUSSION',day:1}}/>);
+ expect(ui.container.querySelector('.dawn-memorial')).toBeNull();expect(screen.queryByText('三号玩家没有醒来。')).toBeNull();const progress=Number(ui.container.querySelector<HTMLElement>('.event-stage__progress')!.style.transform.slice(7,-1));expect(progress).toBeCloseTo(1-800/6600,5);
+ act(()=>vi.advanceTimersByTime(960));expect(ui.container.querySelector('.dawn-memorial')).toBeNull();act(()=>vi.advanceTimersByTime(80));expect(ui.container.querySelector('.dawn-memorial')).toHaveTextContent('3号玩家');expect(screen.getByText('三号玩家没有醒来。')).toBeVisible();
 });

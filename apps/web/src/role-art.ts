@@ -2,12 +2,11 @@ import {beginnerRoles} from '@ravens/content';
 
 interface FrameArt {frameUrl?:string;frameThumbnailUrl?:string;frameSrcSet?:string}
 interface RoleArt extends FrameArt {portraitUrl:string;thumbnailUrl:string;portraitSrcSet?:string;portraitPosition:string}
-const FRAME_ROOT='/assets/ravens/role-type-frames-v3';
+const FRAME_URL='/assets/ravens/role-type-frames-v4/arch.svg';
 const PUBLIC_ROLE_TYPES=new Map(beginnerRoles.map(role=>[role.id,role.type]));
 export function roleFrame(type:string):FrameArt{
   if(!['TOWNSFOLK','OUTSIDER','MINION','DEMON'].includes(type))return {};
-  const id=type.toLowerCase();
-  return {frameUrl:`${FRAME_ROOT}/${id}.svg`,frameThumbnailUrl:`${FRAME_ROOT}/${id}.svg`};
+  return {frameUrl:FRAME_URL,frameThumbnailUrl:FRAME_URL};
 }
 
 const PORTRAIT_ROLES = new Set([

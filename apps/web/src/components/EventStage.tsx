@@ -1,3 +1,4 @@
+import {PublicTransitionQueue} from '../presentations/public-transitions.js';
 import {AtmosphericSky} from './AtmosphericSky.js';
 import {ArtImage} from './PremiumArt.js';
 import {FeedbackButton} from '@ravens/ui';
@@ -9,7 +10,6 @@ import {experienceTiming, type ExperienceEvent } from "@ravens/contracts";
 import type { GameView } from "../api.js";
 import { effectsAudioEnabled, scheduleCue, schedulePrivateCue, cancelEventAudio, completeEventAudio, silenceEffects } from "./experience-audio.js";
 import "../styles/experience.css";
-import {GlobalAudioButton} from './GlobalAudioButton.js';
 import {BloodSpray,ShotImpact,ExecutionGallows,PoisonArt,PoisonScreen,DemonScreen,ShieldArt,ButlerArt,DemonArt,Claw,VictoryArt} from './effects-art.js';
 import {privateAudioAllowed} from '../participation-audio.js';
 import '../styles/effects-v3.css';
@@ -30,7 +30,7 @@ export function eventAt(events: PublicEvent[], now: number, seen: Set<string>): 
 export function publicEventsAt(events: PublicEvent[], now: number): PublicEvent[] { return events.filter((event) => (event.startsAt ?? 0) <= now); }
 function loadCursor(gameKey: string): Set<string> { try { return new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { return new Set(); } }
 
-export function EventStage({ game, receipt, preview = false, room, reading=false,playback }: {playback?:EffectsPlayback; game?: GameView; receipt?: PrivateReceipt; preview?: boolean; room?: RoomView|undefined; reading?:boolean }) {
+export function EventStage({ game, receipt, preview = false, room, reading=false,blocked=false,onActivityChange,playback }: {blocked?:boolean;onActivityChange?:(active:boolean)=>void;playback?:EffectsPlayback; game?: GameView; receipt?: PrivateReceipt; preview?: boolean; room?: RoomView|undefined; reading?:boolean }) {
   const liveNow=useGameClock(game,room),now=playback?.now??liveNow;
   const nowRef=useRef(now);nowRef.current=now;
   const frozen=playback?.paused??room?.timeline?.mode==='MANUAL',rate=playback?.rate??1,clockEpoch=playback?.epoch??room?.timeline?.epoch;
@@ -56,6 +56,8 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   const receiptIds = useRef(new Set<string>());
   const quietEvents = useRef(new Set<string>()),quietKey=useRef(gameKey);
   if(quietKey.current!==gameKey){quietKey.current=gameKey;quietEvents.current.clear();}
+  const transitions=useRef(new PublicTransitionQueue()),transitionKey=useRef(gameKey);
+  if(transitionKey.current!==gameKey){transitions.current=new PublicTransitionQueue();transitionKey.current=gameKey;}
   const animationAnchor = useRef<{ id: string; delay: number } | undefined>(undefined);
   useEffect(() => {
     try { seen.current = new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { seen.current = new Set(); }
@@ -76,14 +78,19 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   }, [receipt?.id]);
   const privateElapsed=now-privateStart.current.at;
   const visiblePrivate=privateScene&&privateElapsed>=0&&privateElapsed<privateSceneDuration(privateScene.kind)?privateScene:undefined;
-  const active = eventAt(game?.events ?? [], now, new Set([...seen.current, ...dismissed]));
+  const excluded=new Set([...seen.current,...dismissed]);
+  const live=eventAt(game?.events??[],now,excluded);
+  const selected=transitions.current.select(game,live,now,blocked,reading,excluded);
+  const active=selected.active;
+  const elapsed=selected.elapsed;
+  useEffect(()=>{for(const id of selected.completed)remember(id);},[selected.completed.join(',')]);
   // Re-sample the authoritative clock per painted frame; do not invent a CSS clock.
   const [,renderMotion]=useState(0);
   useEffect(()=>{if(!active||frozen||hidden||playback)return;let frame=0;const tick=()=>{renderMotion(n=>n+1);frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);},[active?.id,frozen,hidden,!!playback]);
   const quiet=!!active&&(reading||quietEvents.current.has(active.id));
   if(quiet&&active)quietEvents.current.add(active.id);
   const notice=(game?.events??[]).filter(isCinematic).find(event=>noticeEvent(event)&&!dismissed.includes(event.id)&&now>=event.startsAt&&now<event.startsAt+event.durationMs);
-  const elapsed = active ? now - active.startsAt : 0;
+  useLayoutEffect(()=>{onActivityChange?.(!!active&&!quiet);return()=>onActivityChange?.(false);},[active?.id,quiet,onActivityChange]);
   if (active && (frozen || animationAnchor.current?.id !== `${active.id}:${clockEpoch??0}`)) animationAnchor.current = { id: `${active.id}:${clockEpoch??0}`, delay: -elapsed };
   if (!active) animationAnchor.current = undefined;
   const canSeek=typeof Element!=="undefined"&&typeof Element.prototype.getAnimations==="function";
@@ -92,8 +99,8 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   useEffect(() => {
     // A clock correction or stale poll may briefly hide an event near its delivery
     // boundary. Only completion or an explicit skip is allowed to advance the cursor.
-    if (!preview && previousEvent.current && previousEvent.current.id !== active?.id && now >= previousEvent.current.startsAt + previousEvent.current.durationMs) { remember(previousEvent.current.id); previousEvent.current = undefined; }
-    if (active) previousEvent.current = active;
+    if (!preview && previousEvent.current && previousEvent.current.id !== active?.id && previousEvent.current.id!==selected.waitingId && now >= previousEvent.current.startsAt + previousEvent.current.durationMs) { remember(previousEvent.current.id); previousEvent.current = undefined; }
+    if (active&&!selected.deferred) previousEvent.current = active;
   }, [active?.id,now]);
   const resultVisible=Boolean(active?.outcome)&&elapsed>=(active?experienceTiming(active.kind,active.timingVersion??1).resultOffset:0);
   useEffect(()=>{
@@ -139,7 +146,7 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
     seen.current.add(id);
     try { sessionStorage.setItem(`ravens_events_${gameKey}`, JSON.stringify([...seen.current].slice(-150))); } catch { /* Deduplication still works in this tab. */ }
   }
-  function skip() { silenceEffects(); if (active) { remember(active.id); setDismissed((all) => [...all, active.id]); } setPrivateScene(undefined); }
+  function skip() { if (active) { cancelEventAudio(active.id); remember(active.id); setDismissed((all) => [...all, active.id]); } if(privateScene)cancelEventAudio('private:'+privateScene.id);setPrivateScene(undefined); }
   const event = active;
   const showResult = Boolean(event?.outcome) && elapsed >= (event?experienceTiming(event.kind,event.timingVersion??1).resultOffset:0);
   const target = game?.seats.find((seat) => seat.seat === event?.targetSeat);
@@ -171,7 +178,7 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
         <p className="event-stage__result" aria-live="polite">{showResult || !["SHOT", "EXECUTION", "DAWN", "GAME_OVER"].includes(event.kind) ? formatPlayerText(event.message) : event.kind === "SHOT" ? `枪口指向 ${playerLabel(event.targetSeat,target?.nickname)}` : event.kind === "EXECUTION" ? emptyExecution ? "晚风穿过刑架，等待判决公布。" : `${playerLabel(event.targetSeat,target?.nickname)} 走向钟楼` : event.kind === "GAME_OVER" ? "结局即将揭晓。" : "每个人都屏住呼吸，等待今夜的消息。"}</p>
         {showResult && deaths.length > 0 && ["DAWN", "SHOT", "EXECUTION"].includes(event.kind) && event.outcome !== "NO_DEATH" ? <small className="event-stage__aftercare">死亡不等于离场。你仍可讨论，并保留一枚幽灵票。身份继续保密。</small> : null}
       </div>
-      <footer>{!preview?<GlobalAudioButton/>:null}<span>{reduced ? "已尊重减少动态效果偏好" : "所有屏幕共享同一段钟声"}</span><FeedbackButton type="button" onClick={skip}>跳过演出</FeedbackButton></footer>
+      <footer><span>{reduced ? "已尊重减少动态效果偏好" : "所有屏幕共享同一段钟声"}</span><FeedbackButton type="button" onClick={skip}>跳过演出</FeedbackButton></footer>
       <div className="event-stage__progress" style={{ transform: `scaleX(${Math.min(1, Math.max(0, 1 - elapsed / event.durationMs))})` }} />
     </section> : null}
     {visiblePrivate ? <section data-private-feedback="true" ref={privateRef} key={visiblePrivate.id} className={`private-ritual private-ritual--${visiblePrivate.kind.toLowerCase()}${event&&elapsed>=0?' private-ritual--compact':''}${staticMotion?' is-reduced':''}${frozen?' is-frozen':''}`} style={{'--private-duration':`${privateSceneDuration(visiblePrivate.kind)}ms`,'--scene-duration':`${privateSceneDuration(visiblePrivate.kind)}ms`,'--scene-delay':canSeek?'0ms':`${-privateElapsed}ms`} as CSSProperties} role="status" aria-label="仅你可见的行动回执"><FeedbackButton type="button" onClick={()=>setPrivateScene(undefined)}>收起 ×</FeedbackButton><p>仅你可见 · 行动已提交</p>{visiblePrivate.kind==='POISON'?<PoisonScreen/>:visiblePrivate.kind==='DEMON'?<DemonScreen/>:null}<div className="private-ritual__art" aria-hidden="true">{visiblePrivate.kind==='POISON'?<PoisonArt/>:visiblePrivate.kind==='PROTECT'?<ShieldArt/>:visiblePrivate.kind==='BUTLER'?<ButlerBow elapsedMs={privateElapsed} reducedMotion={reduced}/>:visiblePrivate.kind==='DEMON'?<DemonArt elapsedMs={privateElapsed} reduced={reduced}/>:<div className="private-sigil">{visiblePrivate.kind==='DIVINE'?'✧':'☾'}</div>}</div><h2>{({POISON:'毒液倾下',PROTECT:'守护之盾',BUTLER:'谨遵吩咐',DEMON:'暗翼掠过',DIVINE:'问询已提交',SEALED:'选择已封存'} as const)[visiblePrivate.kind]}</h2><div className="private-ritual__players">{visiblePrivate.targetSeats?.map(seat=><div className="private-target" key={seat}><ScenePerson game={game} seat={seat}/>{visiblePrivate.kind==='DEMON'?<Claw/>:null}</div>)}</div><strong>{visiblePrivate.target}</strong><small>选择已提交，实际结果以规则结算为准。</small></section> : null}

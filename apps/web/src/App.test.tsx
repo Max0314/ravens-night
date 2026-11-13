@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import {tutorialSteps} from './guide-content.js';
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
@@ -168,9 +169,9 @@ test("the room tutorial can be skipped with one action", () => {
   expect(onDone).toHaveBeenCalledOnce();
 });
 
-test("the optional tutorial finishes in three cards and can be skipped from every card", () => {
+test("the optional tutorial finishes the shared seven pages and can be skipped from every page", () => {
   const done=vi.fn();render(<Tutorial onBack={vi.fn()} onDone={done}/>);
-  for(let step=0;step<2;step++){expect(screen.getByRole("button",{name:"跳过教学"})).toBeEnabled();fireEvent.click(screen.getByRole("button",{name:"下一步"}));}
+  for(let step=0;step<tutorialSteps.length-1;step++){expect(screen.getByRole("button",{name:"跳过教学"})).toBeEnabled();fireEvent.click(screen.getByRole("button",{name:"下一步"}));}
   fireEvent.click(screen.getByRole("button",{name:"完成教学"}));expect(done).toHaveBeenCalledOnce();
 });
 
