@@ -39,7 +39,7 @@ test('identity and unacknowledged evil information stay actionable inside town',
 });
 test('public wheel retains self nomination and self public slayer declaration without role gating',()=>{
  const view=fixture();view.game!.phase='DAY_DISCUSSION';view.canNominate=true;view.canClaimSlayer=true;view.nominationTargets=[1,2,3];view.dayAbilityTargets=[1,2,3];delete view.action;
- const ui=render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);pick(1,'提名');fireEvent.click(screen.getByRole('button',{name:'确认提名 [甲]'}));expect(handlers.onNominate).toHaveBeenCalledWith(1);
+ const ui=render(<PlayerGame {...handlers} roomCode="ABCDEF" view={view}/>);pick(1,'提名');fireEvent.click(screen.getByRole('button',{name:'确认提名'}));expect(handlers.onNominate).toHaveBeenCalledWith(1);
  ui.rerender(<PlayerGame {...handlers} roomCode="ABCDEF" view={{...view,contextId:'next',game:{...view.game!,contextId:'next'}}}/>);pick(1,'开枪');fireEvent.click(screen.getByRole('button',{name:'确认公开开枪'}));expect(handlers.onUseAbility).toHaveBeenCalledWith(1);
 });
 test('all-table relationships are read-only for outsiders; own invitation opens accept and reject',async()=>{
