@@ -55,7 +55,7 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
     refresh(); const timer = window.setInterval(refresh, 1_200);
     return () => { active = false; window.clearInterval(timer); };
   }, [code, onRoomClosed]);
-  useEffect(() => { let active = true; void invitationQr(code, 320).then((value) => { if (active) setQr(value); }).catch(() => undefined); return () => { active = false; }; }, [code]);
+  useEffect(() => { let active = true; void invitationQr(code, 720).then((value) => { if (active) setQr(value); }).catch(() => undefined); return () => { active = false; }; }, [code]);
   useEffect(() => {
     const update = () => setFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", update);
@@ -74,7 +74,7 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
   const copy = phaseCopy[game?.phase ?? "ROLE_REVEAL"] ?? phaseCopy.ROLE_REVEAL!;
   const nominee = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nomineeSeat) : undefined;
   const nominator = game?.nomination ? seats.find((seat) => seat.seat === game.nomination!.nominatorSeat) : undefined;
-  const publicEvents = publicEventsAt(game?.events ?? [], now).slice(-3).reverse();
+  const publicEvents = publicEventsAt(game?.events ?? [], now).slice(-2).reverse();
   const isNight = game?.phase === "FIRST_NIGHT" || game?.phase === "OTHER_NIGHT";
   const publicDay=!!game&&["DAY_DISCUSSION","NOMINATION","VOTING"].includes(game.phase);
   const finalePending = game?.phase === "GAME_OVER" && (game.presentationUntil ?? 0) > (now);
@@ -86,11 +86,25 @@ export function Display({ code, onBack, onRoomClosed }: { code: string; onBack: 
     {upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}
     {game ? <section className="display__performance" aria-label="公共演出容器"><PublicNominationAudio game={game} room={room}/><EventStage game={game} room={room} /></section> : null}
     <header className="display__header"><span>鸦钟夜话 · {code}</span><div><span className={`display__phase display__phase--${isNight ? "night" : "day"}`}><span aria-hidden="true">{isNight ? "☾" : "☀"}</span>{phaseLabel(game?.phase, game?.day)}</span><button type="button" onClick={onBack}>返回首页</button><button type="button" onClick={() => void (fullscreen ? document.exitFullscreen() : document.documentElement.requestFullscreen())}>{fullscreen ? "退出全屏" : "进入全屏"}</button><GlobalAudioButton/></div></header>
-    <section className="display__town"><div className="display__canvas"><RoundTable count={seats.length} maxDiameter={820} className="display__table">{layout=><><SeatRing fluid diameter={layout.diameter} seats={seats} nightDeathSeats={game?publicNightDeathSeats(game):[]} nominatorSeat={publicDay?game?.nomination?.nominatorSeat:undefined} executionCandidate={publicDay&&!game?.executionTied?game?.onBlock:undefined} threatenedSeats={publicDay&&game?.nomination?[game.nomination.nomineeSeat]:[]} {...(!simultaneous&&game?.nomination?.currentVoterSeat ? { activeSeat: game.nomination.currentVoterSeat } : {})} {...(!simultaneous&&game?.nomination?.countedVotes ? { countedVotes: game.nomination.countedVotes } : {})} {...(game?.nomination?.raisedSeats ? { raisedSeats: game.nomination.raisedSeats } : {})} /><div className="display__center">{!game ? <div className="display__join">{qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}<p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1><small>请房主在手机上调整座位，准备后开局</small></div> : <><p>{simultaneous?"公开表决":defending ? "辩护时间" : game.phase === "VOTING" ? "顺时针表决" : copy.eyebrow}</p><h1>{finalePending ? "钟声仍在回响" : game.phase === "GAME_OVER" ? `${game.winner === "GOOD" ? "善良" : "邪恶"}获胜` : nominee ? playerLabel(nominee.seat,nominee.nickname) : copy.title}</h1><>{simultaneous&&game.nomination?<div className="display__ballot-status"><strong>{simultaneous.timeLabel}</strong><span>当前 <b>{game.nomination.votesRaised}</b> 票</span><span>已选择 {game.nomination.votesReceived}/{simultaneous.total} 人</span><small>{game.nomination.threshold} 票达标</small></div>:<small>{voteDetail}</small>}</></>}</div></>}</RoundTable></div></section>
+    <section className="display__town"><div className="display__canvas"><RoundTable count={seats.length} variant="display" maxDiameter={Number.POSITIVE_INFINITY} className="display__table">{layout=><><SeatRing fluid layout={layout} diameter={layout.diameter} seats={seats} nightDeathSeats={game?publicNightDeathSeats(game):[]} nominatorSeat={publicDay?game?.nomination?.nominatorSeat:undefined} executionCandidate={publicDay&&!game?.executionTied?game?.onBlock:undefined} threatenedSeats={publicDay&&game?.nomination?[game.nomination.nomineeSeat]:[]} {...(!simultaneous&&game?.nomination?.currentVoterSeat ? { activeSeat: game.nomination.currentVoterSeat } : {})} {...(!simultaneous&&game?.nomination?.countedVotes ? { countedVotes: game.nomination.countedVotes } : {})} {...(game?.nomination?.raisedSeats ? { raisedSeats: game.nomination.raisedSeats } : {})} /><div className="display__center">{!game ? <div className="display__join">
+      {qr ? <img src={qr} alt={`加入房间 ${code} 的二维码`} /> : null}
+      <p>扫码加入 · 房间 {code}</p><h1>{players.length}/{room?.playerCount ?? "?"} 位已入座</h1>
+      <p className="display__readiness">{players.filter(player=>player.ready).length}/{room?.playerCount??"?"} 已准备</p>
+      <small>请在手机上准备，由房主开局</small>
+    </div> : <>
+      <p>{simultaneous?"公开表决":defending ? "辩护时间" : game.phase === "VOTING" ? "顺时针表决" : copy.eyebrow}</p>
+      {publicDay&&nominee?<div className="display__nomination" aria-label="当前公开提名">
+        <div><small>提名人</small><strong>{nominator?.seat}号 {playerLabel(nominator?.seat,nominator?.nickname)}</strong></div>
+        <span aria-hidden="true">→</span><div><small>被提名者</small><h1>{nominee.seat}号 {playerLabel(nominee.seat,nominee.nickname)}</h1></div>
+      </div>:<h1>{finalePending ? "钟声仍在回响" : game.phase === "GAME_OVER" ? game.winner==='GOOD'?"善良获胜":game.winner==='EVIL'?"邪恶获胜":copy.title : copy.title}</h1>}
+      {simultaneous&&game.nomination?<div className="display__ballot-status">
+        <strong>{simultaneous.timeLabel}</strong><span>当前 <b>{game.nomination.votesRaised}</b> 票 <small>／ {game.nomination.threshold} 票达标</small></span><span>已选择 {game.nomination.votesReceived}/{simultaneous.total} 人</span>
+      </div>:<small>{publicDay?voteDetail:copy.detail}</small>}
+    </>}</div></>}</RoundTable></div></section>
     {seatError&&game?<p className="display__connection" role="status">{seatError}</p>:null}
     {game ? <Panel className="display__village-feed" aria-label="村庄公开信息">
       <header><div><span aria-hidden="true">⌁</span><strong>村庄公开信息</strong></div><small>所有玩家均可得知</small></header>
-      <ol>{publicEvents.map((event, index) => <li key={event.seq} className={index === 0 ? "is-latest" : ""}><span>{index === 0 ? "最新" : `记录 ${event.seq}`}</span><p>{formatPlayerText(event.message)}</p></li>)}</ol>
+      <ol>{publicEvents.length?publicEvents.map((event, index) => <li key={event.seq} className={index === 0 ? "is-latest" : ""}><span>{index === 0 ? "最新" : `记录 ${event.seq}`}</span><p>{formatPlayerText(event.message)}</p></li>):<li className="is-latest"><span>稍候</span><p>等待新的公开消息</p></li>}</ol>
     </Panel> : <Panel className={`display__notice${seatError ? " display__notice--error" : ""}`} aria-live="polite">{seatError ?? (players.length > 1 ? "座位与准备状态由玩家手机同步 · 没有大屏也能完整游玩" : `${players.length}/${room?.playerCount ?? "?"} 位玩家已入座`)}</Panel>}
   </main>;
 }

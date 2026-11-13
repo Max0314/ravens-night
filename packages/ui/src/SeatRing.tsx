@@ -22,6 +22,7 @@ export function SeatAvatarDecoration({ state }: { state: "THREATENED" | "DEAD" }
 }
 
 interface SeatRingProps {
+  layout?: ReturnType<typeof roundTableLayout>;
   seats: SeatView[];
   onSelect?: (seat: number, anchor?: HTMLElement) => void;
   ownSeat?: number;
@@ -40,10 +41,10 @@ interface SeatRingProps {
   selectableSeats?: number[];
 }
 
-export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, privateMarks, onPrivateMark, fluid=false, diameter=320, threatenedSeats, nightDeathSeats, nominatorSeat, executionCandidate, selectedSeats, selectableSeats }: SeatRingProps) {
-  const layout=roundTableLayout(seats.length,diameter);
+export function SeatRing({ seats, onSelect, ownSeat, activeSeat, countedVotes, raisedSeats, privateMarks, onPrivateMark, fluid=false, diameter=320, layout:providedLayout, threatenedSeats, nightDeathSeats, nominatorSeat, executionCandidate, selectedSeats, selectableSeats }: SeatRingProps) {
+  const layout=providedLayout??roundTableLayout(seats.length,diameter);
   const markerSeats=seats.map(p=>({seat:p.seat,caged:threatenedSeats?.includes(p.seat)||executionCandidate?.seat===p.seat,execution:executionCandidate?.seat===p.seat}));
-  const markerPositions=useMemo(()=>layoutSeatMarkers(layout,markerSeats,privateMarks??{}),[diameter,JSON.stringify(markerSeats),JSON.stringify(privateMarks)]);
+  const markerPositions=useMemo(()=>layoutSeatMarkers(layout,markerSeats,privateMarks??{}),[diameter,providedLayout,JSON.stringify(markerSeats),JSON.stringify(privateMarks)]);
   return <ol className={`rn-seat-ring${fluid?" rn-seat-ring--fluid":""}`} style={{ "--seat-count": seats.length } as CSSProperties}>
     {seats.map((seat, index) => {
       const caged=threatenedSeats?.includes(seat.seat)||executionCandidate?.seat===seat.seat;

@@ -1,11 +1,12 @@
 import {useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode} from 'react';
 import {roundTableLayout} from '@ravens/ui';
+import {displayTableLayout} from './display-table-layout.js';
 import {createPortal} from 'react-dom';
 import {RoomSheet} from './RoomPage.js';
 
 type Layout = ReturnType<typeof roundTableLayout>;
 /** Measure the available slot, then put a square inside it instead of stretching either axis. */
-export function RoundTable({count, className, children, expandedView=false, stable=false, maxDiameter=460}: {maxDiameter?:number;stable?:boolean;expandedView?:boolean;count:number; className:string; children:(layout:Layout)=>ReactNode}) {
+export function RoundTable({count, className, children, expandedView=false, stable=false, maxDiameter=460,variant='default'}: {variant?:'default'|'display';maxDiameter?:number;stable?:boolean;expandedView?:boolean;count:number; className:string; children:(layout:Layout)=>ReactNode}) {
   const slot = useRef<HTMLDivElement>(null), [diameter, setDiameter] = useState(320), [expanded, setExpanded] = useState(false);
   useEffect(()=>{const close=()=>setExpanded(false);window.addEventListener("ravens:return-town",close);return()=>window.removeEventListener("ravens:return-town",close);},[]);
   useLayoutEffect(() => {
@@ -19,8 +20,8 @@ export function RoundTable({count, className, children, expandedView=false, stab
     for (let parent=node.parentElement; parent; parent=parent.parentElement) if(parent.tagName==='DETAILS'){parent.addEventListener('toggle',measure);disclosures.push(parent);}
     return () => {observer?.disconnect();window.removeEventListener('resize',measure);window.visualViewport?.removeEventListener('resize',measure);disclosures.forEach(parent=>parent.removeEventListener('toggle',measure));};
   }, [stable,maxDiameter]);
-  const layout=roundTableLayout(count,diameter), compact=!expandedView&&diameter<layout.minimum;
-  const draw=(value:Layout)=><div className={`round-table ${className}`} style={{width:value.diameter,height:value.diameter,'--round-seat':`${value.seatSize}px`,'--round-portrait':`${value.portrait}px`} as CSSProperties}>{children(value)}</div>;
+  const layout=variant==='display'?displayTableLayout(count,diameter):roundTableLayout(count,diameter), compact=!expandedView&&diameter<layout.minimum;
+  const draw=(value:Layout)=><div className={`round-table ${className}`} style={{width:value.diameter,height:value.diameter,'--round-seat':`${value.seatSize}px`,'--round-portrait':`${value.portrait}px`,...(variant==='display'?{'--display-name':`${Math.min(value.portrait*.26,value.diameter*.034)}px`,'--display-mark':`${value.portrait*.24}px`}:{})} as CSSProperties}>{children(value)}</div>;
   return <div ref={slot} className="round-table-slot" data-diameter={diameter}>
     {compact?<><div className="round-table-preview" aria-hidden="true" inert style={{width:diameter,height:diameter}}><div style={{transform:`scale(${diameter/layout.minimum})`,transformOrigin:'top left'}}>{draw(roundTableLayout(count,layout.minimum))}</div></div><button type="button" className="round-table-expand" onClick={()=>setExpanded(true)} aria-label="展开圆桌"><span>展开圆桌</span></button></>:draw(layout)}
     {expanded?createPortal(<div className="round-table-expanded game-content--town remote-town-board"><RoomSheet title="圆桌" onClose={()=>setExpanded(false)}><RoundTable expandedView count={count} className={className}>{children}</RoundTable></RoomSheet></div>,document.body):null}
