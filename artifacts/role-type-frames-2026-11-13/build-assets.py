@@ -18,7 +18,7 @@ sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
 for column, frame in enumerate(json.loads((HERE / 'final-prompts.json').read_text(encoding='utf-8'))['frames']):
     crest_path = HERE / 'crests' / (frame['id'] + '.png')
     crest = Image.open(crest_path).convert('RGBA')
-    crest.thumbnail((round(width * .58), round(height * .13)), Image.Resampling.LANCZOS)
+    crest.thumbnail((round(width * .58), round(height * .09)), Image.Resampling.LANCZOS)
     result = base.copy()
     result.alpha_composite(crest, ((width - crest.width) // 2, 6))
     # Small matching reliefs remain on the side rails, outside the face aperture.
