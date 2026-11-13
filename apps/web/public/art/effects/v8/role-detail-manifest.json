@@ -1649,6 +1649,218 @@
           "499": null
         }
       }
+    },
+    {
+      "id": "raven-feather",
+      "group": "feather",
+      "targetRect": [
+        290,
+        208,
+        20,
+        84
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-feather.png",
+      "sourceSha256": "ff0cbdf80aa2655e5eaa774a84dde2721e7a39afe63cfe4d7814d614c9286775",
+      "sourceSize": [
+        749,
+        2098
+      ],
+      "sourceRect": [
+        130,
+        41,
+        521,
+        2038
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-feather.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "promptSha256": "7285a800b35fb0e1733a22020184069a6894e223c91d0c6dd2973ed7aebcb83b",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "raven-feather.webp",
+      "url": "/art/effects/v8/raven-feather.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 3620,
+      "sha256": "b21139be4ab207eaf5758765b9220552399efb6b0885ac8d328d5af7652e79cc",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          290,
+          208,
+          310,
+          292
+        ],
+        "alphaAbove128Bounds": [
+          290,
+          208,
+          309,
+          291
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": [
+            218,
+            283
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "recluse-door-base",
+      "group": "recluse",
+      "targetRect": [
+        60,
+        25,
+        500,
+        450
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/recluse-door-base.png",
+      "sourceSha256": "b2ee3693041d547c82dab9b4241f1e2ba8c1bb006f02131b6ce2fad93621a839",
+      "sourceSize": [
+        1312,
+        1199
+      ],
+      "sourceRect": [
+        6,
+        0,
+        1312,
+        1199
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/recluse-door-base.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "promptSha256": "d827b6a80a4e071e79ce01fc2119a3ed7897894fc99c14d4525deb61e233f69f",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "recluse-door-base.webp",
+      "url": "/art/effects/v8/recluse-door-base.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 346788,
+      "sha256": "44ef00c3adfb60ab4c5a84fff38e7bc571692de440118900416912ea3a5201a5",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          60,
+          25,
+          560,
+          475
+        ],
+        "alphaAbove128Bounds": [
+          61,
+          25,
+          559,
+          475
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            221,
+            463
+          ],
+          "110": [
+            148,
+            459
+          ],
+          "135": [
+            103,
+            464
+          ],
+          "273": [
+            38,
+            471
+          ],
+          "300": [
+            26,
+            472
+          ],
+          "327": [
+            26,
+            473
+          ],
+          "465": [
+            74,
+            465
+          ],
+          "490": [
+            103,
+            463
+          ],
+          "499": [
+            126,
+            455
+          ]
+        }
+      }
+    },
+    {
+      "id": "recluse-lantern",
+      "group": "recluse",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/recluse-lantern.png",
+      "sourceSha256": "b1e370229916b66f3e91fdb925d7f9a03633dfc5bd66f55c0ca2e1bdd7c5aeb5",
+      "sourceSize": [
+        1024,
+        1536
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/recluse-lantern-revision.txt",
+      "sourceAnchor": [
+        500,
+        25
+      ],
+      "worldAnchor": [
+        220,
+        150
+      ],
+      "uniformScale": 0.18,
+      "affineOutputToSource": [
+        5.555555555555555,
+        0,
+        -722.2222222222222,
+        0,
+        5.555555555555555,
+        -808.3333333333334
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "promptSha256": "7397f81f6f7c735ffc8586bcec521cfcc8bd118ba84bd8877c6f373698434034",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "recluse-lantern.webp",
+      "url": "/art/effects/v8/recluse-lantern.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 46988,
+      "sha256": "07c4ee4f4c32143aaacf9562aac0f942502b93d8d1846a077a9d2b908fc4cc5f",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          166,
+          149,
+          278,
+          399
+        ],
+        "alphaAbove128Bounds": [
+          166,
+          149,
+          278,
+          399
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            259,
+            393
+          ],
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
     }
   ],
   "contracts": {
@@ -2044,6 +2256,62 @@
             380,
             20
           ]
+        }
+      ]
+    },
+    "feather": {
+      "centre": [
+        300,
+        250
+      ],
+      "quillOrientation": "up",
+      "parts": [
+        {
+          "id": "raven-feather",
+          "targetRect": [
+            290,
+            208,
+            20,
+            84
+          ]
+        }
+      ],
+      "defaultZ": [
+        "raven-feather"
+      ]
+    },
+    "recluse": {
+      "lanternPivot": [
+        220,
+        150
+      ],
+      "defaultZ": [
+        "recluse-door-base",
+        "recluse-lantern"
+      ],
+      "parts": [
+        {
+          "id": "recluse-door-base",
+          "targetRect": [
+            60,
+            25,
+            500,
+            450
+          ]
+        },
+        {
+          "id": "recluse-lantern",
+          "promptFile": "recluse-lantern-revision.txt",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            500,
+            25
+          ],
+          "worldAnchor": [
+            220,
+            150
+          ],
+          "uniformScale": 0.18
         }
       ]
     }
