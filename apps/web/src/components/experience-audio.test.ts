@@ -6,11 +6,12 @@ const names=['shot','glass','impact','scream','poison','shield','butler','demon'
 const started:Array<{sample:number;at:number;offset:number;rate:number;stopped:boolean;stopAt?:number}>=[];
 class Param{value=0;setValueAtTime(){}linearRampToValueAtTime(){}exponentialRampToValueAtTime(){}}
 class Node{gain=new Param();frequency=new Param();playbackRate=new Param();buffer:{sample:number}|undefined;onended:(()=>void)|null=null;row:typeof started[number]|undefined;connect(){}disconnect(){}start(at:number,offset=0){this.row={sample:this.buffer?.sample??-1,at,offset,rate:this.playbackRate.value,stopped:false};started.push(this.row);}stop(at?:number){if(this.row){this.row.stopped=true;this.row.stopAt=at??0;}}}
+const gains:Node[]=[];
 let context:Context;
-class Context{state='running';currentTime=10;sampleRate=48000;destination={};constructor(){context=this;}async resume(){}createGain(){return new Node();}createBufferSource(){return new Node();}createOscillator(){return new Node();}async decodeAudioData(data:ArrayBuffer){return{sample:new Uint8Array(data)[0],duration:({shield:1.7,'slash-left':.57,'slash-right':.57,'wing-flap':.45,'wing-air':.65,'wing-root':.35,'butler-voice':.768,'role-butler':2.6,'night-bell':9,'dawn-bell':10.5,'poison-pour':.6541,'poison-cork':.2362,'chef-chop-1':.21,'chef-chop-2':.21,'chef-chop-3':.21} as Record<string,number>)[names[new Uint8Array(data)[0]!]!]??3};}createBuffer(){return{getChannelData:()=>new Float32Array(100)};}}
+class Context{state='running';currentTime=10;sampleRate=48000;destination={};constructor(){context=this;}async resume(){}createGain(){const node=new Node();gains.push(node);return node;}createBufferSource(){return new Node();}createOscillator(){return new Node();}async decodeAudioData(data:ArrayBuffer){return{sample:new Uint8Array(data)[0],duration:({shield:1.7,'slash-left':.57,'slash-right':.57,'wing-flap':.45,'wing-air':.65,'wing-root':.35,'butler-voice':.768,'role-butler':2.6,'night-bell':9,'dawn-bell':10.5,'poison-pour':.6541,'poison-cork':.2362,'chef-chop-1':.21,'chef-chop-2':.21,'chef-chop-3':.21} as Record<string,number>)[names[new Uint8Array(data)[0]!]!]??3};}createBuffer(){return{getChannelData:()=>new Float32Array(100)};}}
 let audio:typeof import('./experience-audio.js'),preferences:typeof import('../participation-audio.js');
 async function flush(){for(let i=0;i<20;i++)await Promise.resolve();}
-beforeEach(async()=>{vi.resetModules();localStorage.clear();started.length=0;vi.stubGlobal('AudioContext',Context);vi.stubGlobal('fetch',vi.fn(async(url:string)=>({ok:true,arrayBuffer:async()=>new Uint8Array([(()=>{const sample=names.indexOf(url.split('/').at(-1)!.replace('.mp3',''));if(sample<0)throw Error('Unmodelled audio '+url);return sample;})()]).buffer})));audio=await import('./experience-audio.js');preferences=await import('../participation-audio.js');await audio.enableEffectsAudio(true);await flush();});
+beforeEach(async()=>{vi.resetModules();localStorage.clear();started.length=0;gains.length=0;vi.stubGlobal('AudioContext',Context);vi.stubGlobal('fetch',vi.fn(async(url:string)=>({ok:true,arrayBuffer:async()=>new Uint8Array([(()=>{const sample=names.indexOf(url.split('/').at(-1)!.replace('.mp3',''));if(sample<0)throw Error('Unmodelled audio '+url);return sample;})()]).buffer})));audio=await import('./experience-audio.js');preferences=await import('../participation-audio.js');await audio.enableEffectsAudio(true);await flush();});
 afterEach(()=>{audio.silenceEffects();vi.unstubAllGlobals();});
 test('online enables private samples while mode selection keeps the master preference and offline cancels them',async()=>{
  audio.schedulePrivateCue('private-one','BUTLER',0);await flush();expect(started).toHaveLength(0);
@@ -137,4 +138,14 @@ test('only actually-started public voice and finale tails resume; seek and unhea
  const voice=started.filter(s=>!s.stopped&&names[s.sample]?.startsWith('hurt-night'));expect(voice).toHaveLength(1);expect(voice[0]?.offset).toBeCloseTo(.2);
  audio.scheduleCue('final-tail','GAME_OVER',900,4,false,{outcome:'GOOD',resultVisible:true});await flush();context.currentTime=11.2;audio.cancelEventAudio('final-tail');audio.scheduleCue('final-tail','GAME_OVER',1900,4,false,{outcome:'GOOD',resultVisible:true,mode:'RESUME'});await flush();expect(started.filter(s=>!s.stopped&&names[s.sample]==='good').at(-1)?.offset).toBe(1);
  const count=started.length;audio.scheduleCue('unheard-final','GAME_OVER',1000,4,false,{outcome:'GOOD',resultVisible:true,mode:'RESUME'});audio.scheduleCue('seek-final','GAME_OVER',1000,4,false,{outcome:'GOOD',resultVisible:true,mode:'SEEK',seekKey:1});audio.scheduleCue('seek-final','GAME_OVER',1050,4,false,{outcome:'GOOD',resultVisible:true,mode:'RESUME'});await flush();expect(started).toHaveLength(count);
+});
+
+
+test('preview sound and volume reach the master without changing room privacy or preferences',async()=>{
+ await audio.enableEffectsAudio(false);preferences.setParticipationMode('IN_PERSON');
+ const leave=audio.beginEffectsPreview();await audio.enableEffectsAudio(true);audio.setEffectsPreviewVolume(.31);
+ const scene=submitted('monk');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();
+ expect(started).toHaveLength(1);expect(gains.at(-1)?.gain.value).toBe(.31);
+ audio.setEffectsPreviewVolume(0);expect(gains.at(-1)?.gain.value).toBe(0);expect(preferences.participationMode()).toBe('IN_PERSON');expect(localStorage.getItem('ravens_effects_audio')).toBe('off');
+ leave();expect(audio.effectsAudioEnabled()).toBe(false);expect(started[0]?.stopped).toBe(true);expect(gains.at(-1)?.gain.value).toBe(.72);
 });
