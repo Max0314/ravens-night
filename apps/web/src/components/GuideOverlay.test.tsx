@@ -206,8 +206,8 @@ test('live guide pointer wiring selects the starting vertical corner and tracks 
   Object.defineProperties(book,{clientWidth:{value:360},clientHeight:{value:600}});
   fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:300,clientY:40});fireEvent.pointerMove(book,{pointerId:1,clientX:220,clientY:90});
   expect(document.querySelector('.page-turn-layer')?.getAttribute('data-turn-corner')).toBe('top');
-  const first=document.querySelector<HTMLElement>('.page-turn-next')!.style.clipPath;
-  fireEvent.pointerMove(book,{pointerId:1,clientX:220,clientY:140});expect(document.querySelector<HTMLElement>('.page-turn-next')!.style.clipPath).not.toBe(first);
+  const first=document.querySelector<HTMLElement>('.guide-page-incoming')!.style.clipPath;
+  fireEvent.pointerMove(book,{pointerId:1,clientX:220,clientY:140});expect(document.querySelector<HTMLElement>('.guide-page-incoming')!.style.clipPath).not.toBe(first);
   fireEvent.pointerCancel(book,{pointerId:1,clientX:220,clientY:140});act(()=>vi.advanceTimersByTime(200));expect(book).toHaveAttribute('data-page-key','tutorial:0');expect(audio.turn).not.toHaveBeenCalled();
   fireEvent.pointerDown(book,{pointerId:2,button:0,clientX:300,clientY:550});fireEvent.pointerMove(book,{pointerId:2,clientX:140,clientY:500});
   expect(document.querySelector('.page-turn-layer')?.getAttribute('data-turn-corner')).toBe('bottom');
@@ -269,4 +269,32 @@ test('an external global mute silences the book and prevents a pending turn from
   act(()=>{void enableEffectsAudio(false);});expect(audio.silence).toHaveBeenCalledOnce();expect(effectsAudioEnabled()).toBe(false);expect(screen.getByRole('button',{name:'开启声音'})).toBeVisible();
   act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).not.toHaveBeenCalled();audio.prepare.mockClear();
   fireEvent.click(screen.getByRole('button',{name:'下一条'}));expect(audio.prepare).not.toHaveBeenCalled();act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:2');expect(audio.turn).not.toHaveBeenCalled();
+});
+
+
+test('one warmed incoming sheet and its painting/frame nodes survive cancellation and promotion to the current page',()=>{
+  installPointer();vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);const book=document.querySelector<HTMLElement>('.guide-book')!,source=document.querySelector<HTMLElement>('.guide-page-surface')!,list=source.querySelector<HTMLElement>('.role-compendium')!,warmed=document.querySelector<HTMLElement>('[data-guide-page="roles:OUTSIDER:grid"]')!,images=[...warmed.querySelectorAll('img')];
+  Object.defineProperties(book,{clientWidth:{value:360},clientHeight:{value:600}});list.scrollTop=144;
+  expect(images.length).toBeGreaterThan(0);expect(images.every(image=>image.getAttribute('loading')==='eager')).toBe(true);
+  fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:300,clientY:60});fireEvent.pointerMove(book,{pointerId:1,clientX:180,clientY:100});
+  expect(document.querySelector('.guide-page-incoming')).toBe(warmed);expect(document.querySelector('.page-turn-layer .role-grid')).toBeNull();expect([...warmed.querySelectorAll('img')].every((image,i)=>image===images[i])).toBe(true);
+  fireEvent.pointerCancel(book,{pointerId:1,clientX:180,clientY:100});act(()=>vi.advanceTimersByTime(200));
+  expect(document.querySelector('.guide-page-surface')).toBe(source);expect(list.scrollTop).toBe(144);expect(document.querySelector('.guide-page-preload')).toBe(warmed);
+  fireEvent.pointerDown(book,{pointerId:2,button:0,clientX:300,clientY:60});fireEvent.pointerMove(book,{pointerId:2,clientX:100,clientY:100});fireEvent.pointerUp(book,{pointerId:2,clientX:100,clientY:100});act(()=>vi.advanceTimersByTime(400));
+  expect(document.querySelector('.guide-page-surface')).toBe(warmed);expect([...warmed.querySelectorAll('img')].every((image,i)=>image===images[i])).toBe(true);expect(warmed.style.clipPath).toBe('');expect(warmed.style.opacity).toBe('');expect(document.querySelectorAll('.guide-book>[data-guide-page]')).toHaveLength(2);
+});
+
+test('role details use one unframed painting with no hidden full category, while returning keeps the original framed list',()=>{
+  render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);const list=document.querySelector('.guide-page-surface .role-browser')!,images=[...list.querySelectorAll('img')];
+  expect(list.querySelector('.rn-portrait-frame__ornament')).not.toBeNull();fireEvent.click(screen.getByRole('button',{name:'查看洗衣妇详情'}));
+  const detail=screen.getByRole('article',{name:'洗衣妇详情'}),image=screen.getByRole('img',{name:'洗衣妇角色立绘'});
+  expect(image.tagName).toBe('IMG');expect(image).toHaveClass('role-detail__portrait');expect(detail.querySelector('.rn-portrait-frame')).toBeNull();expect(detail.closest('.role-compendium')?.querySelector('.role-browser')).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'返回镇民角色表'}));expect(document.querySelector('.guide-page-surface .role-browser')).toBe(list);expect([...list.querySelectorAll('img')].every((node,i)=>node===images[i])).toBe(true);
+});
+
+test('only the current bend gets a raster capture while the neighbor keeps its real prewarmed DOM',async()=>{
+  const width=vi.spyOn(HTMLElement.prototype,'clientWidth','get').mockReturnValue(360),height=vi.spyOn(HTMLElement.prototype,'clientHeight','get').mockReturnValue(600),prepare=vi.spyOn(PageTextureCache.prototype,'prepare').mockResolvedValue(undefined);
+  render(<GuideOverlay mode="roles" onClose={vi.fn()}/>);await act(async()=>{});
+  expect(prepare).toHaveBeenCalledOnce();expect(prepare.mock.calls[0]?.[1]).toBe(document.querySelector('.guide-page-surface'));expect(document.querySelector('.guide-page-preload .rn-portrait-frame__ornament')).not.toBeNull();cleanup();prepare.mockRestore();width.mockRestore();height.mockRestore();
 });

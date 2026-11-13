@@ -1,5 +1,3 @@
 /* The raster frame owns its decoration; existing carousel and page boxes stay put. */
-.guide-sheet .role-browser .role-index__frame{border:0;border-radius:0;background:none;overflow:visible;box-shadow:0 5px 14px #0004}
+.guide-sheet .role-browser .role-index__frame{max-width:128px;border:0;border-radius:0;background:none;overflow:visible;box-shadow:0 5px 14px #0004}
 .guide-sheet .role-index__portrait.rn-portrait-frame{width:100%;height:auto;aspect-ratio:4/5;background:none;filter:none}
-.guide-sheet .role-detail__portrait.rn-portrait-frame{background:none;-webkit-mask-image:none;mask-image:none}
-.guide-sheet .role-detail__portrait .rn-portrait-frame__image{-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 70%,#000c 81%,#0005 93%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 70%,#000c 81%,#0005 93%,transparent 100%)}
