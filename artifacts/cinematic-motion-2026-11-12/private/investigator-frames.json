@@ -1,12 +1,11 @@
 {
   "renderer": "LayeredSceneArt",
-  "method": "renderToStaticMarkup + embedded local raster images + sharp (no browser)",
+  "method": "renderToStaticMarkup + embedded PNG material + sharp; current contact sheets only (no browser)",
   "times": [
     0,
     700,
     1100,
     1400,
     2000
-  ],
-  "frames": 36
+  ]
 }
