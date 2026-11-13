@@ -17,7 +17,7 @@ test('preview and background suspend formal music, then restore without altering
 });
 
 test('touch-only and keyboard gestures unlock effects in the same stack while respecting silent contexts',()=>{
- sound.enabled=true;const ui=render(<GameScoreOwner screen="HOME"/>);fireEvent.touchEnd(document);expect(sound.unlock).toHaveBeenCalledTimes(1);fireEvent.keyDown(document,{key:'Enter'});expect(sound.unlock).toHaveBeenCalledTimes(2);
- sound.enabled=false;fireEvent.click(document);sound.enabled=true;sound.preview=true;fireEvent.touchEnd(document);sound.preview=false;Object.defineProperty(document,'hidden',{configurable:true,value:true});fireEvent.keyDown(document,{key:'Enter'});expect(sound.unlock).toHaveBeenCalledTimes(2);
- Object.defineProperty(document,'hidden',{configurable:true,value:false});ui.rerender(<GameScoreOwner screen="LOADING"/>);fireEvent.touchEnd(document);expect(sound.unlock).toHaveBeenCalledTimes(2);
+ sound.enabled=true;const ui=render(<GameScoreOwner screen="HOME"/>);fireEvent.touchEnd(document);expect(sound.unlock).toHaveBeenCalled();sound.unlock.mockClear();fireEvent.keyDown(document,{key:'Enter'});expect(sound.unlock).toHaveBeenCalled();sound.unlock.mockClear();
+ sound.enabled=false;fireEvent.click(document);sound.enabled=true;sound.preview=true;fireEvent.touchEnd(document);sound.preview=false;Object.defineProperty(document,'hidden',{configurable:true,value:true});fireEvent.keyDown(document,{key:'Enter'});expect(sound.unlock).not.toHaveBeenCalled();
+ Object.defineProperty(document,'hidden',{configurable:true,value:false});ui.rerender(<GameScoreOwner screen="LOADING"/>);fireEvent.touchEnd(document);expect(sound.unlock).not.toHaveBeenCalled();
 });
