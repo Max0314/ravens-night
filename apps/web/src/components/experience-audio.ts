@@ -7,11 +7,21 @@ export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper
 interface Playing {id:string;scope:Scope;at:number;sample:string;gain:GainNode;bell:boolean;end:number}
 let ctx:AudioContext|undefined,output:GainNode|undefined,unlockFlight:Promise<void>|undefined;
 let enabled=readPreference(),status='',semanticSeq=0;
+let previewAudio:{enabled:boolean;volume:number}|undefined;
+function previewPrivateAllowed(){return !!previewAudio||privateAudioAllowed();}
+export function effectsAudioVolume(){return previewAudio?.volume??.72;}
+export function setEffectsPreviewVolume(value:number){if(!previewAudio||!Number.isFinite(value))return;previewAudio.volume=Math.max(0,Math.min(1,value));if(output)output.gain.value=previewAudio.volume;}
+/** The lab auditions private cues without changing the room's participation mode or master preference. */
+export function beginEffectsPreview(){
+ silenceEffects();previewAudio={enabled:false,volume:.72};if(output)output.gain.value=.72;
+ window.dispatchEvent(new Event('ravens-effects-audio'));
+ return()=>{silenceEffects();previewAudio=undefined;if(output)output.gain.value=.72;window.dispatchEvent(new Event('ravens-effects-audio'));};
+}
 const buffers=new Map<string,Promise<AudioBuffer>>(),sizes=new Map<string,number>(),played=new Map<string,number>(),epochs=new Map<string,number>();
 const sources=new Map<AudioBufferSourceNode,Playing>();
 function readPreference(){try{return localStorage.getItem('ravens_effects_audio')==='on';}catch{return false;}}
-function destination(audio:AudioContext){if(!output){output=audio.createGain();output.gain.value=.72;if(typeof audio.createDynamicsCompressor==='function'){const limit=audio.createDynamicsCompressor();limit.threshold.value=-1;limit.knee.value=0;limit.ratio.value=20;limit.attack.value=.002;limit.release.value=.1;output.connect(limit);limit.connect(audio.destination);}else output.connect(audio.destination);}return output;}
-export function effectsAudioEnabled(){return enabled;}
+function destination(audio:AudioContext){if(!output){output=audio.createGain();output.gain.value=effectsAudioVolume();if(typeof audio.createDynamicsCompressor==='function'){const limit=audio.createDynamicsCompressor();limit.threshold.value=-1;limit.knee.value=0;limit.ratio.value=20;limit.attack.value=.002;limit.release.value=.1;output.connect(limit);limit.connect(audio.destination);}else output.connect(audio.destination);}return output;}
+export function effectsAudioEnabled(){return previewAudio?.enabled??enabled;}
 export function effectsAudioStatus(){return status;}
 function report(value:string){status=value;window.dispatchEvent(new Event('ravens:audio-status'));}
 export async function unlockEffectsAudio(){
@@ -21,8 +31,8 @@ export async function unlockEffectsAudio(){
  if(ctx.state==='running'){report('');return;}if(unlockFlight)return unlockFlight;const audio=ctx;
  unlockFlight=(async()=>{try{await audio.resume();report(audio.state==='running'?'':'点击开启声音后重试');if(audio.state==='running')window.dispatchEvent(new Event('ravens-effects-unlocked'));}catch{report('声音尚未解锁，请再次点击开启');}})().finally(()=>{unlockFlight=undefined;});return unlockFlight;
 }
-export async function enableEffectsAudio(value=true){enabled=value;try{localStorage.setItem('ravens_effects_audio',value?'on':'off');}catch{/* Tab preference remains. */}window.dispatchEvent(new Event('ravens-effects-audio'));if(!value){silenceEffects();return;}await unlockEffectsAudio();}
-function allowed(scope:Scope){return enabled&&ctx?.state==='running'&&!document.hidden&&(scope!=='private'||privateAudioAllowed());}
+export async function enableEffectsAudio(value=true){if(previewAudio)previewAudio.enabled=value;else{enabled=value;try{localStorage.setItem('ravens_effects_audio',value?'on':'off');}catch{/* Tab preference remains. */}}window.dispatchEvent(new Event('ravens-effects-audio'));if(!value){silenceEffects();return;}await unlockEffectsAudio();}
+function allowed(scope:Scope){return effectsAudioEnabled()&&ctx?.state==='running'&&!document.hidden&&(scope!=='private'||previewPrivateAllowed());}
 let activeLoads=0;const loadWaiters:Array<()=>void>=[];
 function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve();}return new Promise<void>(resolve=>loadWaiters.push(resolve));}
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
@@ -38,7 +48,7 @@ export function completeEventAudio(id:string){for(const [source,row]of sources)i
 export function silenceEffects(scope?:Scope){const ids=new Set<string>();for(const [source,row]of sources)if(!scope||row.scope===scope){ids.add(row.id);stop(source,row);}for(const id of epochs.keys())if(!scope||id.startsWith(scope+':'))ids.add(id);for(const id of ids)cancelEventAudio(id);}
 export function cancelSemantic(scope:'ui'|'book'){silenceEffects(scope);}
 if(typeof window!=='undefined'){
- window.addEventListener('ravens:participation-audio',()=>{if(!privateAudioAllowed())silenceEffects('private');});
+ window.addEventListener('ravens:participation-audio',()=>{if(!previewPrivateAllowed())silenceEffects('private');});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)silenceEffects();});
  window.addEventListener('ravens:ui-feedback',event=>{const detail=(event as CustomEvent<SemanticCue|{cue:SemanticCue;scope:'ui'|'private'}>).detail,cue=typeof detail==='string'?detail:detail.cue;if(['press','select','open','close','success','error'].includes(cue))playSemantic(cue,{scope:typeof detail==='string'?'ui':detail.scope});});
 }
@@ -119,7 +129,7 @@ export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
 }
 /** Prepare private media before its local art clock starts. Public timelines never wait. */
 export async function prepareRoleAudio(scene:PrivateSceneDescriptor):Promise<void>{
- if(!enabled||!ctx||!privateAudioAllowed())return;
+ if(!effectsAudioEnabled()||!ctx||!previewPrivateAllowed())return;
  let timer:ReturnType<typeof setTimeout>|undefined;
  await Promise.race([Promise.allSettled(roleAudioCues(scene).map(([,sample])=>load(sample))),new Promise<void>(resolve=>{timer=setTimeout(()=>{report('声音加载较慢，本段先继续；可在记录中重播');resolve();},6000);})]);
  clearTimeout(timer);

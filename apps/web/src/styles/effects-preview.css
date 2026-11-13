@@ -4,3 +4,6 @@
 @media(max-height:450px){.effects-lab__controls{font-size:10px;padding:4px 8px;gap:0}.effects-lab__controls>div{gap:3px}.effects-lab__controls button{padding:3px 7px}.effects-lab-private,.effects-lab.is-playing .event-stage{padding-top:calc(168px + env(safe-area-inset-top))}.effects-lab-private .private-scene-result{max-height:24dvh}}
 
 .effects-lab-private>.private-scene-body{flex:1;min-height:0}
+
+.effects-lab__sound{position:relative;z-index:725;flex:none;display:flex;align-items:center;gap:10px;min-height:52px;background:#10120ff5;color:#dfcca2;font-size:12px}.effects-lab__sound button{min-height:44px;border:1px solid #c7a45c55;border-radius:7px;background:#c5a36219;color:inherit;padding:5px 10px}.effects-lab__sound label{display:flex;align-items:center;gap:7px;flex:1;min-width:0}.effects-lab__sound input{min-width:30px;width:100%;max-width:220px;min-height:44px;accent-color:#b99858}.effects-lab__sound output{min-width:32px}.effects-lab.is-playing .effects-lab__header{display:none}.effects-lab.is-playing .effects-lab__controls{top:calc(60px + env(safe-area-inset-top))}.effects-lab.is-playing .event-stage,.effects-lab-private{padding-top:calc(244px + env(safe-area-inset-top))}
+@media(max-height:450px){.effects-lab.is-playing .event-stage,.effects-lab-private{padding-top:calc(222px + env(safe-area-inset-top))}}
