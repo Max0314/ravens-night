@@ -36,7 +36,7 @@ def measure(image):
     return result
 
 def save(image, row):
-    if 'prompt' in row and args.group in ['raven', 'coffin']:
+    if 'prompt' in row and args.group not in ['envelope', 'lens']:
         row['promptSha256'] = hashlib.sha256((ROOT / row['prompt']).read_text(encoding='utf-8').replace('\r\n', '\n').encode('utf-8')).hexdigest()
         row['promptHashEncoding'] = 'UTF-8, LF line endings'
     target = OUT / (row['id'] + '.webp')
@@ -206,6 +206,20 @@ if args.group == 'coffin':
             qa.paste(panel.convert('RGB'), (column*600,row*520+20))
             draw.text((column*600+12,row*520+4), name+' / offline only', fill='#ccb88b')
     qa.save(HERE / 'qa/coffin-assembly.png')
+
+if args.group in ['recluse', 'saint', 'feather']:
+    composed = Image.new('RGBA', (600,500))
+    for name in contract['groups'][args.group]['defaultZ']:
+        composed = Image.alpha_composite(composed, images[name])
+    base = images[contract['groups'][args.group]['parts'][0]['id']]
+    qa = Image.new('RGB', (1200,1040), '#0b0e0d')
+    draw = ImageDraw.Draw(qa)
+    for column, (name, layer) in enumerate([('base only', base), ('assembled', composed)]):
+        for row, background in enumerate(['#0b0e0d','#797977']):
+            panel = Image.alpha_composite(Image.new('RGBA',(600,500),background),layer)
+            qa.paste(panel.convert('RGB'), (column*600,row*520+20))
+            draw.text((column*600+12,row*520+4), name+' / offline still only', fill='#ccb88b')
+    qa.save(HERE / ('qa/'+args.group+'-assembly.png'))
 
 if args.group == 'raven':
     composed = Image.new('RGBA', (600, 500))

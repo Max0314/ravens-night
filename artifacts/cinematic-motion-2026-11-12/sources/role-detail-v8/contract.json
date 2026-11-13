@@ -400,6 +400,62 @@
           ]
         }
       ]
+    },
+    "feather": {
+      "centre": [
+        300,
+        250
+      ],
+      "quillOrientation": "up",
+      "parts": [
+        {
+          "id": "raven-feather",
+          "targetRect": [
+            290,
+            208,
+            20,
+            84
+          ]
+        }
+      ],
+      "defaultZ": [
+        "raven-feather"
+      ]
+    },
+    "recluse": {
+      "lanternPivot": [
+        220,
+        150
+      ],
+      "defaultZ": [
+        "recluse-door-base",
+        "recluse-lantern"
+      ],
+      "parts": [
+        {
+          "id": "recluse-door-base",
+          "targetRect": [
+            60,
+            25,
+            500,
+            450
+          ]
+        },
+        {
+          "id": "recluse-lantern",
+          "promptFile": "recluse-lantern-revision.txt",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            500,
+            25
+          ],
+          "worldAnchor": [
+            220,
+            150
+          ],
+          "uniformScale": 0.18
+        }
+      ]
     }
   }
 }
