@@ -19,6 +19,7 @@ pnpm build
 
 - [声音候选原件、说明与分析](artifacts/audio-candidates-2026-11-12/README.md)：55份完整编号文件，来源/许可与分析工具脚本均在目录中。移动试听副本位于`apps/web/public/audio-candidates/2026-11-12-v1/`；生成脚本`python scripts/build-audition-assets.py`，需FFmpeg/ffprobe。
 - [角色B版及选定稿](artifacts/character-production-b-2026-11-12/README.md)：投毒者、猩红女郎原件在approved；[间谍/处女修订原件](artifacts/character-production-b-revisions-2026-11-12/README.md)在originals。共用引用在`apps/web/src/role-art.ts`，旧A/B原图保留。
+- [送葬者/僧侣修订](artifacts/character-production-b-faces-2026-11-13/README.md)保存新面容与完整道具原件；[三类独立历史框](artifacts/independent-frames-2026-11-13/README.md)含透明PNG/WebP、22角色归类与离线合成样例，尚未自动接入页面。[四类同金色纹样框](artifacts/role-type-frames-2026-11-13/README.md)最终仅用于公开角色表小图；首页和本人身份已回原样；详情无框渐变，v2使用分类左右角花及软顶角（正式上线见部署记录）；不用于公共玩家的隐藏角色识别。
 - [演出动作及审查帧](artifacts/cinematic-motion-2026-11-12/README.md)：sources内已补存17张v4生成原图、Kenney原始CC0包与SHA索引，不依赖原电脑生成缓存。根图层裁切配置为sources/root-source-spec.json，可在仓库根运行`node scripts/prepare-motion-assets.mjs artifacts/cinematic-motion-2026-11-12/sources/root-source-spec.json`。v4声音可用`python scripts/build-cinematic-audio.py artifacts/cinematic-motion-2026-11-12/sources`重建（FFmpeg及NumPy）；管家蒙皮脚本另需Pillow、NumPy、OpenCV，参数见脚本说明。
 - `.tmp-ravens-art-20260807/`保留历史界面参考图；`.claude/launch.json`为项目启动配置。两者均随本轮交付保存，历史概念图不表示当前页面实现。
 
@@ -32,3 +33,5 @@ pnpm build
 - 角色图鉴：<https://clocktower.fribench.cn/?preview=portraits>
 
 正式发布只更新本游戏服务，遵守Fribench最新规范与全局发布锁。当前操作者要求不打开本地游戏/试听页面做浏览器验证；代码、媒体文件、DOM用例和HTTP检查可按对应风险执行。
+
+首页标题快速三击可进入动效调试；仅展示当前版本，顶部声音与音量可在播放中调整，不修改正式房间的私密声音模式。最新发布范围和手机待验收项以统一部署记录为准。

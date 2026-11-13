@@ -14,9 +14,9 @@ test("a player can instantly cover and reveal private role information", () => {
   expect(screen.getByText("共情者")).toBeVisible();
 });
 
-test('covering a framed private card removes its portrait and taxonomy ornament',()=>{
-  const view=render(<RoleCard name="小恶魔" alignment="邪恶 · 恶魔" ability="能力" portraitUrl="/imp.webp" frameUrl="/demon.webp" frameSrcSet="/demon-small.webp 240w, /demon.webp 960w"/>);
-  expect(view.container.querySelector('.rn-portrait-frame__ornament')).toHaveAttribute('src','/demon.webp');
+test('private role cards keep the unframed portrait and can still cover every image',()=>{
+  const view=render(<RoleCard name="小恶魔" alignment="邪恶 · 恶魔" ability="能力" portraitUrl="/imp.webp" {...{frameUrl:"/demon.webp",frameSrcSet:"/demon-small.webp 240w, /demon.webp 960w"}}/>);
+  expect(view.container.querySelector('.rn-portrait-frame')).toBeNull();
   expect(screen.getAllByRole('img')).toHaveLength(1);
   fireEvent.click(screen.getByRole('button',{name:'遮住身份'}));
   expect(view.container.querySelector('img')).toBeNull();

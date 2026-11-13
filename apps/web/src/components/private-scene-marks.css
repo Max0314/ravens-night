@@ -1,0 +1,4 @@
+.private-scene-avatar{position:relative;display:block;width:64px;height:64px;isolation:isolate;flex:none}
+.private-scene-person>.private-scene-avatar>.player-avatar{width:100%;height:100%;display:grid;place-items:center}
+.private-scene-avatar>.private-avatar-claw{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:hidden}
+@media(max-height:580px){.private-scene-avatar{width:42px;height:42px}}

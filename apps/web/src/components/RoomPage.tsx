@@ -1,3 +1,4 @@
+import {GlobalAudioButton} from './GlobalAudioButton.js';
 import {FeedbackButton} from '@ravens/ui';
 import { useEffect, useRef, type ReactNode } from "react";
 import { useBackLayer } from "../use-back-layer.js";
@@ -7,7 +8,7 @@ import { Avatar } from "./Avatar.js";
 const sheetStack:HTMLElement[]=[];
 
 export function RoomPageShell({ title, onBack, subtitle, children, actions, className="",hideBack=false }: {hideBack?:boolean;title:string;onBack:()=>void;subtitle?:ReactNode;children:ReactNode;actions?:ReactNode;className?:string}) {
-  return <main className={`room-page ${className}`}><header className="room-page__header">{hideBack?null:<FeedbackButton type="button" onClick={onBack} aria-label="返回首页">←</FeedbackButton>}<div><h1>{title}</h1>{subtitle ? <small>{subtitle}</small> : null}</div></header><div className="room-page__content">{children}</div>{actions ? <RoomActionBar>{actions}</RoomActionBar> : null}</main>;
+  return <main className={`room-page ${className}`}><header className={`room-page__header room-page__header--with-audio${hideBack?" room-page__header--with-menu":""}`}>{hideBack?null:<FeedbackButton type="button" onClick={onBack} aria-label="返回首页">←</FeedbackButton>}<div className="room-page__heading"><h1>{title}</h1>{subtitle ? <small>{subtitle}</small> : null}</div><div className="room-page__audio"><GlobalAudioButton/></div></header><div className="room-page__content">{children}</div>{actions ? <RoomActionBar>{actions}</RoomActionBar> : null}</main>;
 }
 export function RoomActionBar({children}:{children:ReactNode}){return <footer className="room-action-bar">{children}</footer>;}
 export function OperationStatus({busy,error,notice}:{busy?:boolean;error?:string|undefined;notice?:string|undefined}) {return <>{busy?<p className="operation-status" role="status">正在提交…</p>:null}{error?<p className="form-error" role="alert">{error}</p>:notice?<p className="operation-status" role="status">{notice}</p>:null}</>;}

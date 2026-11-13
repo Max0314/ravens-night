@@ -7,7 +7,10 @@ import type {PlayerSelection} from './use-player-profile.js';
 import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from "react";
 import { ApiError, hasPendingCommand, setRehearsalRole, retryPendingCommand, notifyStorageFailure, acknowledgeStartInfo, cancelNomination, castVote, completeTutorial, confirmRole, createRoom, readCreationIntent, finishCreationIntent, getAuthSession, getPrivateView as fetchPrivateView, getRoom as fetchRoom, resetAccountContext, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, setRoomReady, reorderRoomSeats, removeRoomPlayer, recoverRoom, resumeGame, finishDefense, type PrivateView, type RoomPlayMode, type RoomView } from "./api.js";
 import { GramophonePlayer } from "./components/GramophonePlayer.js";
-import { LobbyMusic } from "./components/LobbyMusic.js";
+import { useOpeningMusic } from "./components/LobbyMusic.js";
+import {GlobalAudioButton} from "./components/GlobalAudioButton.js";
+import {useGameClock} from "./use-game-clock.js";
+import "./styles/opening-audio-layout.css";
 import { GuideOverlay, type GuideMode } from "./components/GuideOverlay.js";
 import { RoomTools } from "./components/RoomTools.js";
 import { Create } from "./pages/Create.js";
@@ -56,6 +59,16 @@ export function App() {
   return <div className="app-viewport">{preview === "effects" ? <EffectsPreview /> : preview === "portraits" ? <PortraitsPreview /> : <RoomApp />}</div>;
 }
 
+/** Isolate the shared clock so music never re-renders the home/book every 80ms. */
+function OpeningMusicOwner({screen,room}:{screen:Screen;room:RoomView|undefined}){
+  const now=useGameClock(room?.game,room),game=room?.game;
+  const firstDawn=game?.events.find(event=>event.kind==='DAWN');
+  const active=screen!=='LOADING'&&screen!=='LOGIN'&&screen!=='DISPLAY';
+  const fadeOut=screen==='GAME'&&!!game&&(firstDawn?now>=(firstDawn.startsAt??0):!['ROLE_REVEAL','FIRST_NIGHT'].includes(game.phase));
+  useOpeningMusic(active,{fadeOut});
+  return null;
+}
+
 function RoomApp() {
   const invitedRoomCode = readInvitedRoomCode();
   const [screen, applyScreen] = useState<Screen>("LOADING");
@@ -96,6 +109,7 @@ function RoomApp() {
   const [backNotice, setBackNotice] = useState(false);
   const guideRef = useRef<GuideMode | undefined>(undefined);
 
+
   const isOrganizer = Boolean(room?.organizerId && participantId === room.organizerId);
   useEffect(()=>{if(!room||!participantId)return;const stored=readStoredRoom(room.code);if(stored&&stored.participantId===participantId&&(stored.isHost!==(room.organizerId===participantId)||stored.roomInstanceId!==room.roomInstanceId))saveSession({...stored,roomInstanceId:room.roomInstanceId,isHost:room.organizerId===participantId});},[room?.code,room?.roomInstanceId,room?.organizerId,participantId]);
 
@@ -118,15 +132,14 @@ function RoomApp() {
 
   useEffect(() => {
     const back = (event: PopStateEvent) => { entryEpoch.current++;setBusy(false);const next=event.state?.ravensScreen ?? "HOME"; screenRef.current=next;applyScreen(next); };
-    const hide = () => { if (document.hidden) setGuide(undefined); };
     const account = () => {
       // The SDK also announces its initial identity. Only an actual namespace
       // change needs clearing here; account-context already reloads that case.
       if (roomSessionKey() === SESSION_KEY) return;
       entryEpoch.current++;beginSession(); resetAccountContext(); setParticipantId(undefined); setGuide(undefined); setScreen("LOADING");
     };
-    window.addEventListener("popstate",back); document.addEventListener("visibilitychange",hide); window.addEventListener("fribench:account-change",account);
-    return () => { window.removeEventListener("popstate",back); document.removeEventListener("visibilitychange",hide); window.removeEventListener("fribench:account-change",account); };
+    window.addEventListener("popstate",back); window.addEventListener("fribench:account-change",account);
+    return () => { window.removeEventListener("popstate",back); window.removeEventListener("fribench:account-change",account); };
   }, []);
 
   useEffect(() => {
@@ -336,9 +349,9 @@ function RoomApp() {
     else setScreen("GAME");
   }
 
-  const withStatus = (page: ReactNode) => <>{page}{readPendingRoomSwitch()&&!busy?<p className="session-status" role="status">换房结果待确认<button type="button" onClick={()=>void retrySwitch()}>重试原换房操作</button></p>:null}{entryBlocked?<p className="session-status" role="alert">{error}<button type="button" onClick={()=>void initialize()}>重试房间核对</button></p>:null}{storageNotice?<p className="session-status" role="status">浏览器未保存恢复资料，请勿关闭或刷新此页面。</p>:null}{upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
+  const withStatus = (page: ReactNode) => <><OpeningMusicOwner screen={screen} room={room}/>{page}{readPendingRoomSwitch()&&!busy?<p className="session-status" role="status">换房结果待确认<button type="button" onClick={()=>void retrySwitch()}>重试原换房操作</button></p>:null}{entryBlocked?<p className="session-status" role="alert">{error}<button type="button" onClick={()=>void initialize()}>重试房间核对</button></p>:null}{storageNotice?<p className="session-status" role="status">浏览器未保存恢复资料，请勿关闭或刷新此页面。</p>:null}{upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
   const roomTools=!guide&&room&&participantId?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onHome={returnHome} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={setGuide}/>:null;
-  const withGuide = (page: ReactNode) => withStatus(<>{page}<LobbyMusic active={screen!=='HOME'&&!!room&&(['LOBBY','TUTORIAL'].includes(room.state)||room.game?.phase==='ROLE_REVEAL')}/>{screen!=='HOME'?roomTools:null}{guide ? <div className={`guide-host${screen==="GAME"&&privateView?.game?.phase==="VOTING"?" has-ballot-notice":screen==="GAME"&&hasPrivateTownTask(privateView)?" has-private-action-notice":""}`}><GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /></div> : null}</>);
+  const withGuide = (page: ReactNode) => withStatus(<>{page}{screen!=='HOME'?roomTools:null}{guide ? <div className={`guide-host${screen==="GAME"&&privateView?.game?.phase==="VOTING"?" has-ballot-notice":screen==="GAME"&&hasPrivateTownTask(privateView)?" has-private-action-notice":""}`}><GuideOverlay mode={guide} {...(privateView?.role ? { ownRole: privateView.role } : {})} onClose={() => setGuide(undefined)} /></div> : null}</>);
 
   if (screen === "LOADING") return withStatus(<main className="app-loading" aria-label="正在进入钟楼"><span>☾</span>{connectionState === "OFFLINE" ? <button type="button" onClick={() => void initialize()}>重新连接钟楼</button> : null}</main>);
   if (screen === "LOGIN") return withStatus(<Login onSubmit={submitLogin} busy={busy} {...(error ? { error } : {})} />);
@@ -408,7 +421,7 @@ function RoomApp() {
   if (screen === "DISPLAY") return withStatus(<Display key={`${room?.roomInstanceId}:${room?.code}`} code={room?.code ?? "------"} onBack={returnHome} onRoomClosed={handleRoomClosed} />);
   const stored = room ? readSession() : undefined;
   const guestSession=readSession(),guestCode=guestSession?.mode==='PLAYER'&&!guestSession.pendingJoin?guestSession.roomCode:undefined;
-  return withGuide(<Home accountTools={roomTools} {...(guestCode?{guestCode}:{})} onAccountResume={(code,id,mode)=>{entryEpoch.current++;setBusy(false);beginSession();selectRoomUrl(code,mode);saveSession({roomCode:code,mode,participantId:id});void restoreSession();}} onCreate={() => {entryEpoch.current++;setBusy(false);clearInvitationUrl();setError(undefined);setScreen("CREATE");}} onJoin={() => {entryEpoch.current++;setBusy(false);clearInvitationUrl();setError(undefined);setScreen("JOIN");}} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(error ? { error } : {})} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy } : {})} />);
+  return withGuide(<Home audioControl={!guide?<GlobalAudioButton/>:null} accountTools={roomTools} {...(guestCode?{guestCode}:{})} onAccountResume={(code,id,mode)=>{entryEpoch.current++;setBusy(false);beginSession();selectRoomUrl(code,mode);saveSession({roomCode:code,mode,participantId:id});void restoreSession();}} onCreate={() => {entryEpoch.current++;setBusy(false);clearInvitationUrl();setError(undefined);setScreen("CREATE");}} onJoin={() => {entryEpoch.current++;setBusy(false);clearInvitationUrl();setError(undefined);setScreen("JOIN");}} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} {...(error ? { error } : {})} {...(room && stored ? { activeRoom: room, activeMode: stored.mode, onResume: resumeRoom, onLeave: () => void exitRoom(), busy } : {})} />);
 }
 
 function isNetworkFailure(error: unknown): boolean { return !(error instanceof ApiError); }

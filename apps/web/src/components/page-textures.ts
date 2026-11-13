@@ -1,3 +1,8 @@
+/** Decode the mounted images we will actually reveal, without creating a second image cache. */
+export async function decodePageImages(element:HTMLElement){
+  await Promise.allSettled(Array.from(element.querySelectorAll('img')).map(img=>img.decode?.()??Promise.resolve()));
+}
+
 type Capture={key:string;generation:number;element:HTMLElement;width:number;height:number;done:(canvas:HTMLCanvasElement|undefined)=>void};
 export const releaseTexture=(canvas:HTMLCanvasElement)=>{canvas.width=0;canvas.height=0;};
 
@@ -31,20 +36,23 @@ export class PageTextureCache {
     }).catch(()=>deliver(undefined)).finally(()=>{window.clearTimeout(timeout);this.running=false;this.pump();});
   }
   private async capture(job:Capture){
+    const original=[job.element,...job.element.querySelectorAll<HTMLElement>('*')];
+    // html2canvas's renderer does not implement CSS filters or masks. Keep those paintings on the live DOM path.
+    if(original.some(node=>{const style=getComputedStyle(node),backdrop=style.backdropFilter||style.getPropertyValue('-webkit-backdrop-filter');const mask=style.maskImage||style.getPropertyValue('-webkit-mask-image');return !!(style.filter&&style.filter!=='none'||backdrop&&backdrop!=='none'||mask&&mask!=='none');}))return undefined;
     const module=await import('html2canvas');
     if(this.disposed||job.generation!==this.generation)return undefined;
     const clone=job.element.cloneNode(true) as HTMLElement;
     const holder=document.createElement('div');holder.className='guide-sheet guide-capture-host';holder.setAttribute('aria-hidden','true');holder.inert=true;
     Object.assign(holder.style,{position:'fixed',left:'-20000px',top:'0',width:`${job.width}px`,height:`${job.height}px`,overflow:'hidden',pointerEvents:'none'});
-    Object.assign(clone.style,{position:'relative',inset:'auto',width:`${job.width}px`,height:`${job.height}px`,opacity:'1',transform:'none',overflow:'hidden',filter:'none'});
+    Object.assign(clone.style,{position:'relative',inset:'auto',width:`${job.width}px`,height:`${job.height}px`,opacity:'1',transform:'none',overflow:'hidden'});
     clone.removeAttribute('hidden');
     for(const node of [clone,...clone.querySelectorAll<HTMLElement>('*')]){
-      node.removeAttribute('id');node.removeAttribute('tabindex');node.setAttribute('aria-hidden','true');node.style.filter='none';node.style.backdropFilter='none';
+      node.removeAttribute('id');node.removeAttribute('tabindex');node.setAttribute('aria-hidden','true');
       for(const attr of Array.from(node.attributes))if(attr.name.startsWith('on'))node.removeAttribute(attr.name);
       if(node instanceof HTMLInputElement||node instanceof HTMLTextAreaElement||node.isContentEditable){holder.remove();return undefined;}
     }
     // cloneNode does not preserve scroll offsets. Copy only the visible bounded page surface.
-    const original=[job.element,...job.element.querySelectorAll<HTMLElement>('*')],copies=[clone,...clone.querySelectorAll<HTMLElement>('*')];
+    const copies=[clone,...clone.querySelectorAll<HTMLElement>('*')];
     holder.append(clone);document.body.append(holder);
     for(let i=0;i<copies.length;i++){copies[i]!.scrollTop=original[i]?.scrollTop??0;copies[i]!.scrollLeft=original[i]?.scrollLeft??0;}
     try{

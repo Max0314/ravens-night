@@ -5,7 +5,7 @@
 .guide-page-toolbar>.guide-detail-toolbar>div>span{font-size:11px;color:#a99b7c;white-space:nowrap}
 .guide-page-toolbar>.guide-detail-toolbar>button{flex:none;min-height:44px;padding:6px 10px;border:1px solid #b79c4938;border-radius:9px;background:#b79c4912;color:#e4c994;font-size:13px}
 .guide-page-toolbar>.guide-detail-toolbar>button>span{margin-right:4px}
-.guide-sheet>.guide-book{touch-action:pan-y}
+.guide-sheet>.guide-book{touch-action:pan-y;-webkit-tap-highlight-color:transparent}
 @media(max-width:359px){.guide-page-toolbar>.guide-detail-toolbar{padding-inline:12px;gap:6px}.guide-page-toolbar>.guide-detail-toolbar>div{gap:5px}.guide-page-toolbar>.guide-detail-toolbar>button{padding-inline:7px}}
 
 /* The semantic page stays mounted. A bounded visual surface follows the hand above it. */
@@ -14,6 +14,9 @@
 .guide-backdrop:has(.role-detail){justify-content:center}
 .guide-book{position:relative;isolation:isolate;min-height:0;overflow:hidden;transform:translateX(var(--edge-drag,0px));transition:transform 120ms ease}
 .guide-page-surface,.guide-page-content{width:100%;height:100%;min-height:0;overflow:hidden}
+.guide-sheet{--guide-paper:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E") 0 0/160px 160px repeat,radial-gradient(ellipse at 18% 10%,#a77d3010,transparent 65%),linear-gradient(140deg,#18150f,#0b0b09 70%)}
+.guide-page-content{background:var(--guide-paper)}
+.guide-page-incoming{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none}
 .guide-page-preload{position:absolute;left:-20000px;top:0;width:100%;height:100%;overflow:hidden;pointer-events:none}
 .guide-page-content>.guide-tutorial{height:100%;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;text-align:center;padding:16px 20px}
 .guide-page-content>.role-compendium{height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0;-webkit-overflow-scrolling:touch}
@@ -22,8 +25,9 @@
 .guide-page-content .guide-tutorial__actions{flex:none;margin-top:18px;gap:12px}
 .guide-page-content .guide-tutorial__actions button{flex:1;min-height:46px}
 .page-turn-layer{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none;perspective:1200px;background:#12100b;contain:strict}
+.page-turn-layer--live{background:transparent}
 .page-turn-layer canvas{display:block;position:absolute;inset:0;z-index:4;width:100%;height:100%}
-.page-turn-old,.page-turn-next{position:absolute;inset:0;overflow:hidden;background:linear-gradient(140deg,#16130e,#090908 70%);backface-visibility:visible}
+.page-turn-old,.page-turn-next{position:absolute;inset:0;overflow:hidden;background:var(--guide-paper);backface-visibility:visible}
 .page-turn-old{z-index:2;will-change:clip-path}
 .page-turn-curl{position:absolute;inset:0;z-index:3;width:100%;height:100%;overflow:visible;filter:drop-shadow(2px 5px 5px #0007)}
 .page-turn-layer--reduced .page-turn-old{box-shadow:none}
@@ -38,13 +42,13 @@
 .guide-page-toolbar>.guide-step-count,.guide-page-toolbar>.guide-toolbar-title{width:100%;align-self:center;margin:0;padding:6px 16px;text-align:center;font-size:12px;line-height:1.5;color:#bda77a}
 
 /* Public taxonomy only; private role visibility continues to come from PrivateView. */
-.guide-page-toolbar .guide-detail-toolbar [data-public-role-type=MINION]{color:#dc8580}
-.guide-page-toolbar .guide-category-toolbar [data-role-type=MINION]{color:#dc8580}
-.guide-page-toolbar .guide-category-toolbar [data-role-type=MINION][aria-selected=true]{color:#f1a29a}
+.guide-page-toolbar .guide-detail-toolbar [data-public-role-type=MINION],.guide-page-toolbar .guide-detail-toolbar [data-public-role-type=DEMON]{color:#b76b58}
+.guide-page-toolbar .guide-category-toolbar [data-role-type=MINION],.guide-page-toolbar .guide-category-toolbar [data-role-type=DEMON]{color:#b76b58}
+.guide-page-toolbar .guide-category-toolbar [data-role-type=MINION][aria-selected=true],.guide-page-toolbar .guide-category-toolbar [data-role-type=DEMON][aria-selected=true]{color:#cf8b70}
 
 /* The arch encloses the portrait alone; the name sits directly on the page. */
 .guide-sheet .role-browser .role-grid>button{overflow:visible;border:0;border-radius:0;background:none;box-shadow:none;gap:0}
-.guide-sheet .role-browser .role-grid>button:active{border-color:transparent}
+.guide-sheet .role-browser .role-grid>button:active{border-color:transparent;transform:none}
 .guide-sheet .role-index__frame{display:block;overflow:hidden;width:100%;border:1px solid #b59b5866;border-radius:50% 50% 5px 5px / 30% 30% 5px 5px;background:#14120e;box-shadow:0 5px 14px #0004}
 .guide-sheet .role-browser .role-index__copy{padding:9px 2px 3px;background:none}
 .guide-sheet .role-browser .role-grid>button:focus-visible{outline:2px solid #dfbc73;outline-offset:4px;border-radius:5px}
