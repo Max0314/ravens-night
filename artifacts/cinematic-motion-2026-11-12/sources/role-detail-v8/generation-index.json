@@ -425,6 +425,70 @@
           "sha256": "76e9ba607e9eb79b24461aa4d771ec99e141c557cfe5e205809f7ed677a020ec"
         }
       ]
+    },
+    {
+      "id": "raven-feather",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/raven-feather.png",
+      "outputSha256": "ff0cbdf80aa2655e5eaa774a84dde2721e7a39afe63cfe4d7814d614c9286775",
+      "prompt": "prompts/raven-feather.txt",
+      "promptSha256": "7285a800b35fb0e1733a22020184069a6894e223c91d0c6dd2973ed7aebcb83b",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-wing-left.png",
+          "sha256": "2d6cf4db5a1735cedede7357e43725a9f1a78ed00c6cbbb2ccb375ddba1553ab"
+        }
+      ]
+    },
+    {
+      "id": "recluse-door-base",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/recluse-door-base.png",
+      "outputSha256": "b2ee3693041d547c82dab9b4241f1e2ba8c1bb006f02131b6ce2fad93621a839",
+      "prompt": "prompts/recluse-door-base.txt",
+      "promptSha256": "d827b6a80a4e071e79ce01fc2119a3ed7897894fc99c14d4525deb61e233f69f",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/recluse.webp",
+          "sha256": "31cc674b86dd034782642108af4358405a96042c92d38ede5514cf77234da82c"
+        }
+      ]
+    },
+    {
+      "id": "recluse-lantern-before-glow",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/recluse-lantern-before-glow.png",
+      "outputSha256": "fb4ce2e9b1a71c0799c5b576442d59f86faa55106a0946e2470dba429bfada30",
+      "prompt": "prompts/recluse-lantern.txt",
+      "promptSha256": "202a30e9ed3ee592a5d31d57af7393d48751be158a6fda0b24b14f0949fb210e",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/recluse.webp",
+          "sha256": "31cc674b86dd034782642108af4358405a96042c92d38ede5514cf77234da82c"
+        }
+      ]
+    },
+    {
+      "id": "recluse-lantern",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/recluse-lantern.png",
+      "outputSha256": "b1e370229916b66f3e91fdb925d7f9a03633dfc5bd66f55c0ca2e1bdd7c5aeb5",
+      "prompt": "prompts/recluse-lantern-revision.txt",
+      "promptSha256": "7397f81f6f7c735ffc8586bcec521cfcc8bd118ba84bd8877c6f373698434034",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/recluse-lantern-before-glow.png",
+          "sha256": "fb4ce2e9b1a71c0799c5b576442d59f86faa55106a0946e2470dba429bfada30"
+        }
+      ]
     }
   ]
 }
