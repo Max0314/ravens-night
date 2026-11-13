@@ -8,13 +8,15 @@ import {PrivateSceneQueue,sceneDuration,type QueuedScene} from '../presentations
 import {scheduleRoleCue,cancelEventAudio,prepareRoleAudio} from './experience-audio.js';
 import {RoleSceneArt} from './RoleSceneArt.js';
 import {butlerBowTiming} from './ButlerBow.js';
-import {DemonSlashes,ClawDecal,PoisonVapour,preparePrivateArt} from './PremiumArt.js';
+import {DemonSlashes,PoisonVapour,preparePrivateArt} from './PremiumArt.js';
 import {Avatar} from './Avatar.js';
 import {roleArt} from '../role-art.js';
 import {cinematicTiming} from './cinematic-timing.js';
 import type {SceneImprint} from './LayeredSceneArt.js';
 import {privateAssetUrl} from './private-art-assets.js';
 import '../styles/private-scenes.css';
+import {PrivateAvatarClaw} from './PrivateAvatarClaw.js';
+import './private-scene-marks.css';
 // New contact fields are supplied by the shared choreography; old bundles omit avatar hits.
 const demonAvatarTiming=cinematicTiming.demon as typeof cinematicTiming.demon & Partial<Record<'avatarLeft'|'avatarRight',number>>;
 const roleName=(id:string)=>beginnerRoles.find(r=>r.id===id)?.name??'角色';
@@ -59,7 +61,7 @@ export function PrivateSceneContent({scene,view,elapsedMs,reducedMotion=false,re
  const shown=scene.shown,revealed=elapsedMs>=(shown.type==='DIVINATION'||shown.type==='GRIMOIRE'?2200:1900),submitted=shown.type==='TARGET_SUBMITTED',name=roleName(scene.themeRoleId),art=roleArt(scene.themeRoleId);
  const targets=submitted||revealed?('seats'in shown?shown.seats:shown.type==='SHOWN_ROLE'?[shown.seat]:[]):[];
  const person=(seat:number)=>view.game?.seats.find(p=>p.seat===seat);
- const persons=(seats:readonly number[])=>seats.map(seat=>{const p=person(seat);return <div className="private-scene-person" key={seat}><Avatar id={p?.id??String(seat)} name={p?.nickname??`${seat}号`} url={p?.avatar}/>{scene.kind==='ACTION_SUBMITTED'&&scene.themeRoleId==='imp'?(['left','right'] as const).map(side=>elapsedMs>=(demonAvatarTiming[side==='left'?'avatarLeft':'avatarRight']??Infinity)&&(!readyAssets||readyAssets.has(privateAssetUrl('claw-avatar-'+side)))?<ClawDecal key={side} variant={`avatar-${side}`}/>:null):null}<span>{playerLabel(seat,p?.nickname)}</span></div>;});
+ const persons=(seats:readonly number[])=>seats.map(seat=>{const p=person(seat);return <div className="private-scene-person" key={seat}><span className="private-scene-avatar"><Avatar id={p?.id??String(seat)} name={p?.nickname??`${seat}号`} url={p?.avatar}/>{scene.kind==='ACTION_SUBMITTED'&&scene.themeRoleId==='imp'?(['left','right'] as const).map(side=>elapsedMs>=(demonAvatarTiming[side==='left'?'avatarLeft':'avatarRight']??Infinity)&&(!readyAssets||readyAssets.has(privateAssetUrl('claw-avatar-'+side)))?<PrivateAvatarClaw key={side} side={side}/>:null):null}</span><span>{playerLabel(seat,p?.nickname)}</span></div>;});
  let result='';
  switch(shown.type){
   case'IDENTITY':result=shown.summary;break;
@@ -77,7 +79,7 @@ export function PrivateSceneContent({scene,view,elapsedMs,reducedMotion=false,re
  // No semantic information or candidate/avatar node exists before its reveal gate.
  const grimoire=revealed&&shown.type==='GRIMOIRE'?view.history.find(e=>e.seq===shown.historySeq)?.grimoire:undefined;
  const info=revealed&&shown.type==='EVIL_START'&&view.startInfo?.infoId===shown.infoId?view.startInfo:undefined;
- const imprint:SceneImprint|undefined=scene.kind!=='IDENTITY'&&(revealed||submitted)?{label:formatPlayerText(result),...(shown.type==='COUNT'?{value:String(shown.value)}:shown.type==='DIVINATION'?{value:shown.value}:{}),marks:grimoire?grimoire.entries.map(p=>({label:playerLabel(p.seat,p.nickname),avatar:p.avatar,detail:p.roleName})):info?info.team.map(p=>({label:playerLabel(p.seat,p.nickname),avatar:p.avatar,detail:p.kind==='DEMON'?'恶魔':'爪牙'})):targets.map(seat=>{const p=person(seat);return{label:playerLabel(seat,p?.nickname),avatar:p?.avatar,...(shown.type==='CANDIDATES'||shown.type==='SHOWN_ROLE'?{detail:roleName(shown.roleId)}:{})};}),...(info&&elapsedMs>=2400?{bluffs:info.bluffs.map(r=>r.name)}:{})}:undefined;
+ const imprint:SceneImprint|undefined=scene.kind!=='IDENTITY'&&(revealed||submitted)?{label:formatPlayerText(result),...(shown.type==='COUNT'?{value:String(shown.value)}:shown.type==='DIVINATION'?{value:shown.value}:{}),marks:grimoire?grimoire.entries.map(p=>({label:playerLabel(p.seat,p.nickname),avatar:p.avatar,detail:p.roleName})):info?info.team.map(p=>({label:playerLabel(p.seat,p.nickname),avatar:p.avatar,detail:p.kind==='DEMON'?'恶魔':'爪牙'})):targets.map(seat=>{const p=person(seat);return{label:playerLabel(seat,p?.nickname),name:p?.nickname??'玩家',avatar:p?.avatar,...(shown.type==='CANDIDATES'||shown.type==='SHOWN_ROLE'?{detail:roleName(shown.roleId)}:{})};}),...(info&&elapsedMs>=2400?{bluffs:info.bluffs.map(r=>r.name)}:{})}:undefined;
  const slashes=scene.kind==='ACTION_SUBMITTED'&&scene.themeRoleId==='imp'&&(!readyAssets||['claw-screen-left','claw-screen-right'].every(n=>readyAssets.has(privateAssetUrl(n))));
  const poisonVapour=scene.themeRoleId==='poisoner'&&(scene.kind==='IDENTITY'||scene.kind==='ACTION_SUBMITTED')&&(!readyAssets||readyAssets.has(privateAssetUrl('poison-vapour')));
  return <div data-kind={scene.kind} className={`private-scene-content private-theme--${scene.themeRoleId}${reducedMotion?' is-reduced':''}`} style={{'--private-duration':`${sceneDuration(scene,butlerBowTiming.durationMs)}ms`,'--scene-duration':`${sceneDuration(scene,butlerBowTiming.durationMs)}ms`} as CSSProperties}>
