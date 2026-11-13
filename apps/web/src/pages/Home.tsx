@@ -1,11 +1,12 @@
 import {FeedbackButton} from '@ravens/ui';
 import { Button } from '@ravens/ui';
-import {useRef,type ReactNode} from 'react';
+import {useEffect,useRef,useState,type ReactNode} from 'react';
 import '../styles/home-effects-entry.css';
 import type { RoomView } from '../api.js';
 import { FilingLinks } from '../components/FilingLinks.js';
 import { AccountPanel } from '../components/AccountPanel.js';
 import { HomePortrait } from '../components/HomePortrait.js';
+import {RoomSheet} from '../components/RoomPage.js';
 
 interface HomeProps {
   onCreate:()=>void;onJoin:()=>void;onTutorial:()=>void;onRoles:()=>void;
@@ -15,10 +16,15 @@ interface HomeProps {
 export function Home({onCreate,onJoin,onTutorial,onRoles,activeRoom,activeMode,onResume,onLeave,busy=false,error,onAccountResume,accountTools,audioControl}:HomeProps){
   const titleTaps=useRef({count:0,at:0});
   const canLeave=activeRoom?.state==='LOBBY'||activeRoom?.state==='GAME_OVER'||activeRoom?.state==='ABORTED'||activeMode==='DISPLAY';
+  const [leaveTarget,setLeaveTarget]=useState<string>(),leaveConfirmed=useRef(false);
+  const roomKey=activeRoom?[activeRoom.roomInstanceId??activeRoom.code,activeRoom.code,activeRoom.state,activeMode??'PLAYER'].join(':'):undefined;
+  const leaveOpen=!!roomKey&&leaveTarget===roomKey&&canLeave&&!!onLeave;
+  useEffect(()=>{setLeaveTarget(undefined);leaveConfirmed.current=false;},[roomKey]);
   return <main className="home home--compact">
     <header className="home-header"><div className="home-brand"><span aria-hidden="true">☾</span><div><h1><a className="home-title-preview" href="/?preview=effects" title="快速三击打开动效调试" onClick={event=>{const now=performance.now(),tap=titleTaps.current;tap.count=now-tap.at<=450?tap.count+1:1;tap.at=now;if(tap.count<3)event.preventDefault();else tap.count=0;}}>鸦钟夜话</a></h1><small>RAVENS AT MIDNIGHT</small></div></div><div className="home-header-tools">{audioControl}<AccountPanel onResume={onAccountResume??(()=>undefined)} {...(accountTools?{tools:accountTools}:{})}/></div></header>
-    <HomePortrait navigationContent={activeRoom?<div className="home-current-room"><span>房间 {activeRoom.code}<small>{activeMode==='DISPLAY'?'大屏':'席位已保留'}</small></span>{canLeave&&onLeave?<FeedbackButton type="button" disabled={busy} onClick={onLeave}>离开房间</FeedbackButton>:null}</div>:undefined}/>
+    <HomePortrait/>
     <section className="home-controls" aria-label="游戏入口">
+      {activeRoom&&canLeave&&onLeave?<FeedbackButton className="home-leave-room" type="button" aria-label="离开房间" disabled={busy} onClick={()=>{if(!busy){leaveConfirmed.current=false;setLeaveTarget(roomKey);}}}><span>离开</span><span>房间</span></FeedbackButton>:null}
       <nav className="home-entry-grid" aria-label="首页操作">
         <Button onClick={activeRoom&&onResume?onResume:onJoin} disabled={busy}>{activeRoom?'继续当前房间':'加入房间'}</Button>
         <FeedbackButton className="home-guide-entry" type="button" onClick={onTutorial}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-3-2-6-2-9-1v15c3-1 6-1 9 1m0-15c3-2 6-2 9-1v15c-3-1-6-1-9 1V5Z"/></svg><span>查看教程</span></FeedbackButton>
@@ -28,5 +34,6 @@ export function Home({onCreate,onJoin,onTutorial,onRoles,activeRoom,activeMode,o
       {error?<p className="home-error" role="alert">{error}</p>:null}
     </section>
     <FilingLinks/>
+    {leaveOpen?<RoomSheet title="确认离开房间" confirmation onClose={()=>{if(!busy)setLeaveTarget(undefined);}} actions={<><Button disabled={busy} onClick={()=>{if(busy||leaveConfirmed.current||leaveTarget!==roomKey)return;leaveConfirmed.current=true;setLeaveTarget(undefined);onLeave?.();}}>确认离开</Button><FeedbackButton type="button" disabled={busy} onClick={()=>setLeaveTarget(undefined)}>取消</FeedbackButton></>}><p>确认离开当前房间？</p>{error?<p role="alert">{error}</p>:null}</RoomSheet>:null}
   </main>;
 }

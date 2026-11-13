@@ -81,3 +81,40 @@ test('Fribench login and account management return to a validated room invitatio
  let ui=render(<AccountPanel onResume={vi.fn()}/>);fireEvent.click(await screen.findByRole('button',{name:'打开资料设置'}));const login=await screen.findByRole('link',{name:'登录 Fribench'});expect(new URL(login.getAttribute('href')!,location.origin).searchParams.get('return_to')).toBe('/?room=ABCDEF&display=1');ui.unmount();
  vi.mocked(getAccount).mockResolvedValue({signedIn:true,rooms:[],guestClaimAvailable:false,profile});ui=render(<AccountPanel onResume={vi.fn()}/>);fireEvent.click(await screen.findByRole('button',{name:'打开账号设置'}));expect(new URL(screen.getByRole('link',{name:'账号安全'}).getAttribute('href')!,location.origin).searchParams.get('return_to')).toBe('/?room=ABCDEF&display=1');
 });
+
+
+test('carousel navigation and entry nodes survive room states while only the permitted leave control is shown',async()=>{
+  vi.mocked(getAccount).mockResolvedValue({signedIn:false,rooms:[],guestClaimAvailable:false});
+  const resume=vi.fn(),leave=vi.fn(),handlers={onJoin:vi.fn(),onCreate:vi.fn(),onTutorial:vi.fn(),onRoles:vi.fn()},room={code:'ABCDEF',state:'LOBBY',playerCount:6,participants:[]};
+  const ui=render(<Home {...handlers}/>),art=screen.getByLabelText('左右滑动切换角色'),counter=screen.getByLabelText('角色序号'),counterText=counter.textContent,navigation=counter.parentElement!,join=screen.getByRole('button',{name:'加入房间'}),entryGrid=join.parentElement!;
+  for(const state of ['LOBBY','TUTORIAL','RUNNING','GAME_OVER','ABORTED']){
+    ui.rerender(<Home {...handlers} activeRoom={{...room,state}} onResume={resume} onLeave={leave}/>);
+    expect(screen.getByLabelText('左右滑动切换角色')).toBe(art);expect(screen.getByLabelText('角色序号')).toBe(counter);expect(counter.textContent).toBe(counterText);
+    expect(navigation).toContainElement(screen.getByRole('button',{name:'上一位角色'}));expect(navigation).toContainElement(screen.getByRole('button',{name:'下一位角色'}));expect(screen.queryByText('已保留房间')).not.toBeInTheDocument();expect(screen.queryByText('ABCDEF')).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'继续当前房间'})).toBe(join);
+    const leaveButton=screen.queryByRole('button',{name:'离开房间'});expect(leaveButton!==null).toBe(['LOBBY','GAME_OVER','ABORTED'].includes(state));if(leaveButton){expect(leaveButton.parentElement).toBe(entryGrid.parentElement);expect(entryGrid).not.toContainElement(leaveButton);expect(navigation).not.toContainElement(leaveButton);}
+  }
+  fireEvent.click(screen.getByRole('button',{name:'继续当前房间'}));expect(resume).toHaveBeenCalledOnce();expect(leave).not.toHaveBeenCalled();
+  ui.rerender(<Home {...handlers} activeRoom={{...room,state:'RUNNING'}} activeMode="DISPLAY" onResume={resume} onLeave={leave} busy/>);expect(screen.getByRole('button',{name:'离开房间'})).toBeDisabled();expect(screen.getByRole('button',{name:'继续当前房间'})).toBeDisabled();
+  ui.rerender(<Home {...handlers}/>);expect(screen.queryByRole('button',{name:'离开房间'})).not.toBeInTheDocument();expect(screen.getByLabelText('角色序号')).toBe(counter);expect(screen.getByRole('button',{name:'加入房间'})).toBe(join);
+  await waitFor(()=>expect(getAccount).toHaveBeenCalled());
+});
+
+test('leaving requires confirmation, ignores busy repeat clicks, and keeps navigation after the seat is cleared',async()=>{
+  vi.mocked(getAccount).mockResolvedValue({signedIn:false,rooms:[],guestClaimAvailable:false});
+  const leave=vi.fn(),handlers={onJoin:vi.fn(),onCreate:vi.fn(),onTutorial:vi.fn(),onRoles:vi.fn()},room={code:'ABCDEF',state:'LOBBY',playerCount:6,participants:[]};
+  const ui=render(<Home {...handlers} activeRoom={room} onLeave={leave}/>),counter=screen.getByLabelText('角色序号'),art=screen.getByLabelText('左右滑动切换角色');
+  fireEvent.click(screen.getByRole('button',{name:'离开房间'}));expect(leave).not.toHaveBeenCalled();expect(screen.getByRole('alertdialog',{name:'确认离开房间'})).toBeVisible();
+  ui.rerender(<Home {...handlers} activeRoom={room} onLeave={leave} busy/>);expect(screen.getByRole('button',{name:'确认离开'})).toBeDisabled();fireEvent.click(screen.getByRole('button',{name:'确认离开'}));expect(leave).not.toHaveBeenCalled();
+  ui.rerender(<Home {...handlers} activeRoom={room} onLeave={leave}/>);fireEvent.click(screen.getByRole('button',{name:'确认离开'}));expect(leave).toHaveBeenCalledOnce();expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  ui.rerender(<Home {...handlers} activeRoom={room} onLeave={leave} error="离开失败，请重试"/>);expect(screen.getByRole('alert')).toHaveTextContent('离开失败，请重试');expect(screen.getByRole('button',{name:'离开房间'})).toBeEnabled();
+  ui.rerender(<Home {...handlers}/>);expect(screen.getByLabelText('角色序号')).toBe(counter);expect(screen.getByLabelText('左右滑动切换角色')).toBe(art);expect(screen.queryByRole('button',{name:'离开房间'})).not.toBeInTheDocument();
+  await waitFor(()=>expect(getAccount).toHaveBeenCalled());
+});
+
+test('canceling a leave confirmation never leaves and a changed room cannot reuse an old confirmation',async()=>{
+  vi.mocked(getAccount).mockResolvedValue({signedIn:false,rooms:[],guestClaimAvailable:false});
+  const leave=vi.fn(),handlers={onJoin:vi.fn(),onCreate:vi.fn(),onTutorial:vi.fn(),onRoles:vi.fn()},room={code:'ABCDEF',state:'LOBBY',playerCount:6,participants:[]};
+  const ui=render(<Home {...handlers} activeRoom={room} onLeave={leave}/>);fireEvent.click(screen.getByRole('button',{name:'离开房间'}));fireEvent.click(screen.getByRole('button',{name:'取消'}));expect(leave).not.toHaveBeenCalled();expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button',{name:'离开房间'}));ui.rerender(<Home {...handlers} activeRoom={{...room,code:'QWERTY'}} onLeave={leave}/>);expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();expect(leave).not.toHaveBeenCalled();
+  await waitFor(()=>expect(getAccount).toHaveBeenCalled());
+});
