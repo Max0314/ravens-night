@@ -36,6 +36,8 @@ def measure(image):
     return result
 
 def save(image, row):
+    if 'prompt' in row and args.group == 'raven':
+        row['promptSha256'] = sha(ROOT / row['prompt'])
     target = OUT / (row['id'] + '.webp')
     image.save(target, format='WEBP', lossless=True, method=6)
     images[row['id']] = image
@@ -46,6 +48,14 @@ for part in contract['groups'][args.group]['parts']:
     prompt = HERE / 'prompts' / (part['id'] + '.txt')
     original = Image.open(source).convert('RGBA')
     mode = part.get('processingMode')
+    if mode == 'anchor-fit':
+        sx, sy = part['sourceAnchor']
+        wx, wy = part['worldAnchor']
+        scale = part['uniformScale']
+        affine = (1 / scale, 0, sx - wx / scale, 0, 1 / scale, sy - wy / scale)
+        image = original.transform((600, 500), Image.Transform.AFFINE, affine, Image.Resampling.BICUBIC)
+        save(image, {'id': part['id'], 'group': args.group, 'source': str(source.relative_to(ROOT)).replace('\\', '/'), 'sourceSha256': sha(source), 'sourceSize': original.size, 'prompt': str(prompt.relative_to(ROOT)).replace('\\', '/'), 'sourceAnchor': part['sourceAnchor'], 'worldAnchor': part['worldAnchor'], 'uniformScale': scale, 'affineOutputToSource': affine, 'processing': 'Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.'})
+        continue
     if mode == 'calibrate-transparent-hole':
         a = original.getchannel('A')
         region = a.point(lambda value: 0 if value <= 8 else 255)
@@ -149,6 +159,18 @@ if args.group == 'lens':
             qa.paste(panel.convert('RGB'), (column * 600, row * 520 + 20))
             draw.text((column * 600 + 12, row * 520 + 4), f'same evidence1.5x | C{cx},{cy} | offline only', fill='#ccb88b')
     qa.save(HERE / 'qa/lens-assembly.png')
+
+if args.group == 'raven':
+    composed = Image.new('RGBA', (600, 500))
+    for name in contract['groups']['raven']['defaultZ']:
+        composed = Image.alpha_composite(composed, images[name])
+    qa = Image.new('RGB', (1200, 520), '#0b0e0d')
+    draw = ImageDraw.Draw(qa)
+    for column, background in enumerate(['#0b0e0d', '#797977']):
+        panel = Image.alpha_composite(Image.new('RGBA', (600, 500), background), composed)
+        qa.paste(panel.convert('RGB'), (column * 600, 20))
+        draw.text((column * 600 + 12, 4), 'six independent layers / neutral spread / offline only', fill='#ccb88b')
+    qa.save(HERE / 'qa/raven-assembly.png')
 
 ids = {r['id'] for r in rows}
 manifest['files'] = [r for r in manifest['files'] if r['id'] not in ids] + rows
