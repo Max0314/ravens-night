@@ -1,4 +1,4 @@
-import {playerLabel} from '@ravens/ui';
+import {playerLabel,formatPlayerText} from '@ravens/ui';
 import type { GameView } from "../api.js";
 import { Avatar } from "./Avatar.js";
 
@@ -22,11 +22,11 @@ export function VillageRecords({events,seats=[]}:{events:GameView['events'];seat
   const groups=new Map<string,PublicEvent[]>();
   for(const event of [...events].sort((a,b)=>b.seq-a.seq)){const label=groupLabel(event);const entries=groups.get(label)??[];entries.push(event);groups.set(label,entries);}
   const latest=[...groups.values()][0]?.[0];
-  return <details className="village-records"><summary><strong>村庄记录</strong><span>{events.length}</span>{latest?<small>最新：{latest.message}</small>:null}</summary>
+  return <details className="village-records"><summary><strong>村庄记录</strong><span>{events.length}</span>{latest?<small>最新：{formatPlayerText(latest.message)}</small>:null}</summary>
     <div className="village-records__timeline">{groups.size?[...groups].map(([label,entries])=><section className="village-records__group" key={label}><h3>{label}</h3><ol>{entries.map(event=><li className={`village-records__entry village-records__entry--${(event.kind??'NOTICE').toLowerCase()}`} key={event.id??event.seq}>
       <header><span>{labels[event.kind??'NOTICE']??'村庄消息'}</span>{event.votes===undefined?null:<small>{event.votes}票{event.threshold===undefined?'':` · ${event.threshold}票达标`}</small>}</header>
       {eventPlayers(event).length?<div className="village-records__players" aria-label="相关玩家">{eventPlayers(event).map(({seat,label},index)=>{const player=seats.find(p=>p.seat===seat);return <span className="village-records__player" key={`${seat}:${index}`}><Avatar id={player?.id??`seat-${seat}`} name={player?.nickname??'玩家'} url={player?.avatar}/><span><small>{label}</small><strong>{playerLabel(seat,player?.nickname)}</strong></span></span>;})}</div>:null}
-      <p>{event.message}</p>
+      <p>{formatPlayerText(event.message)}</p>
     </li>)}</ol></section>):<p className="village-records__empty">尚无村庄记录</p>}</div>
   </details>;
 }

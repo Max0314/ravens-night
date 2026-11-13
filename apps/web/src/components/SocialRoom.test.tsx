@@ -16,7 +16,7 @@ test("town owns opening; invitation responses stay in the fixed footer and night
   const ui = render(<SocialRoom {...props} open={false} />);
   expect(screen.queryByRole("button")).not.toBeInTheDocument();
   ui.rerender(<SocialRoom {...props} open />);
-  expect(screen.getByText("【玩家2-乙】 邀请你私聊")).toBeVisible();
+  expect(screen.getByText("[乙] 邀请你私聊")).toBeVisible();
   expect(screen.getByRole("button", { name: "接受邀请" }).closest("footer")).not.toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "接受邀请" }));
   await waitFor(() => expect(respondWhisper).toHaveBeenCalledWith("ABCDEF", "w", true));
@@ -29,7 +29,7 @@ test("closing the sheet keeps the conversation; only explicit end closes it", as
   const mine = view(), close = vi.fn(), refresh = vi.fn();
   mine.social = { invitations: [], activeWhisper: { id: "w", participants: [1, 2], messages: [{ id: "m", seat: 2, text: "只有双方可见", createdAt: 1 }] } };
   render(<SocialRoom code="ABCDEF" view={mine} open onClose={close} onRefresh={refresh} drafts={{}} setDrafts={vi.fn()} />);
-  fireEvent.click(screen.getByRole("button", { name: "关闭与 【玩家2-乙】 私聊" }));
+  fireEvent.click(screen.getByRole("button", { name: "关闭与 [乙] 私聊" }));
   expect(close).toHaveBeenCalledOnce(); expect(leaveWhisper).not.toHaveBeenCalled();
   const end = screen.getByRole("button", { name: "结束私聊" });
   expect(end.closest("footer")).not.toBeNull();

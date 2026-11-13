@@ -26,12 +26,12 @@ test('an unrevealed or no-death dawn has no inferred victim portraits or protect
 
 test('result town uses saved portraits and actual roles, with matching public seats and selectable full details',async()=>{
  vi.mocked(getRoomResult).mockResolvedValue({result});const ui=render(<ResultBoard code="ABCDEF" gameId="g1" game={game}/>);const ring=await screen.findByRole('list',{name:'终局角色圆桌'});
- expect(within(ring).getAllByRole('button')[0]).toHaveAccessibleName('【玩家1-乙】，真实身份小恶魔');expect(within(ring).getByRole('button',{name:/【玩家2-甲】/}).querySelector('img')?.getAttribute('src')).toBe('/saved-a.webp');expect(ui.container.querySelectorAll('.rn-avatar-state--dead')).toHaveLength(1);
- fireEvent.click(within(ring).getByRole('button',{name:/【玩家2-甲】/}));const center=screen.getByRole('dialog',{name:'甲 · 真实身份'});expect(within(center).getByText('酒鬼')).toBeVisible();expect(within(center).getByText('本局自认 图书管理员')).toBeVisible();expect(within(center).getByText('终局存活')).toBeVisible();fireEvent.click(within(center).getByRole('button',{name:'返回战况'}));expect(within(screen.getByLabelText('结算详情')).getByText('恶魔已死亡')).toBeVisible();
+ expect(within(ring).getAllByRole('button')[0]).toHaveAccessibleName('[乙]，真实身份小恶魔');expect(within(ring).getByRole('button',{name:/\[甲\]/}).querySelector('img')?.getAttribute('src')).toBe('/saved-a.webp');expect(ui.container.querySelectorAll('.rn-avatar-state--dead')).toHaveLength(1);
+ fireEvent.click(within(ring).getByRole('button',{name:/\[甲\]/}));const center=screen.getByRole('dialog',{name:'甲 · 真实身份'});expect(within(center).getByText('酒鬼')).toBeVisible();expect(within(center).getByText('本局自认 图书管理员')).toBeVisible();expect(within(center).getByText('终局存活')).toBeVisible();fireEvent.click(within(center).getByRole('button',{name:'返回战况'}));expect(within(screen.getByLabelText('结算详情')).getByText('恶魔已死亡')).toBeVisible();
 });
 
 test('old results never borrow another games seat numbers or life state',async()=>{
- vi.mocked(getRoomResult).mockResolvedValue({result});const ui=render(<ResultBoard code="ABCDEF" game={{...game,gameId:'g2'}}/>);const button=await screen.findByRole('button',{name:'乙，真实身份小恶魔'});expect(ui.container.querySelectorAll('.result-town__number,.rn-avatar-state--dead')).toHaveLength(0);fireEvent.click(button);expect(screen.queryByText('终局已死亡')).not.toBeInTheDocument();
+ vi.mocked(getRoomResult).mockResolvedValue({result});const ui=render(<ResultBoard code="ABCDEF" game={{...game,gameId:'g2'}}/>);const button=await screen.findByRole('button',{name:'[乙]，真实身份小恶魔'});expect(ui.container.querySelectorAll('.result-town__number,.rn-avatar-state--dead')).toHaveLength(0);fireEvent.click(button);expect(screen.queryByText('终局已死亡')).not.toBeInTheDocument();
 });
 
 test('a short result keeps a circular preview, expands twelve touch targets, and closes full details independently',async()=>{
@@ -40,7 +40,7 @@ test('a short result keeps a circular preview, expands twelve touch targets, and
  vi.mocked(getRoomResult).mockResolvedValue({result:{...result,participants}});
  render(<ResultBoard code="ABCDEF" gameId="g1"/>);fireEvent.click(await screen.findByRole('button',{name:'展开圆桌'}));
  const ring=screen.getByRole('list',{name:'终局角色圆桌'});expect(within(ring).getAllByRole('button')).toHaveLength(12);
- fireEvent.click(within(ring).getByRole('button',{name:'玩家1，真实身份酒鬼'}));const sheet=screen.getByRole('dialog',{name:'玩家1 · 真实身份'});
+ fireEvent.click(within(ring).getByRole('button',{name:'[玩家1]，真实身份酒鬼'}));const sheet=screen.getByRole('dialog',{name:'玩家1 · 真实身份'});
  expect(within(sheet).getByText('本局自认 图书管理员')).toBeVisible();expect(within(sheet).getByText('善良阵营')).toBeVisible();
  fireEvent.click(within(sheet).getByRole('button',{name:'关闭玩家1 · 真实身份'}));expect(screen.getByRole('dialog',{name:'圆桌'})).toBeVisible();expect(screen.queryByRole('dialog',{name:'玩家1 · 真实身份'})).not.toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'关闭圆桌'}));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

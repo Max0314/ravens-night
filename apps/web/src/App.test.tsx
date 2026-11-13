@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { App } from "./App.js";
 import { Home } from "./pages/Home.js";
 import { Lobby } from "./pages/Lobby.js";
@@ -12,7 +12,8 @@ import type { PrivateView } from "./api.js";
 import { rolePlayGuides } from "./guide-content.js";
 import { beginnerRoles } from "@ravens/content";
 
-afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); window.history.replaceState({}, "", "/"); vi.unstubAllGlobals(); });
+beforeEach(()=>{vi.spyOn(HTMLMediaElement.prototype,'play').mockResolvedValue();vi.spyOn(HTMLMediaElement.prototype,'pause').mockImplementation(()=>{});});
+afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); window.history.replaceState({}, "", "/"); vi.unstubAllGlobals();vi.restoreAllMocks(); });
 
 test("the first screen gives an authorized newcomer one clear way to join", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
@@ -78,7 +79,7 @@ test("evil first-night intelligence prominently shows teammate names and seat nu
   view.history=[];delete view.action;
   view.startInfo={infoId:'private-info',gameId:'game',team:[{seat:6,nickname:'小陈',kind:'DEMON'}],bluffs:[],acknowledged:false,canAcknowledge:true};
   const acknowledge=vi.fn();render(<PlayerGame view={view} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onConfirmStartInfo={acknowledge} onSubmitAction={vi.fn()} onNominate={vi.fn()} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()}/>);
-  expect(screen.getByRole('heading',{name:'首夜信息 · 仅你可见'})).toBeVisible();expect(screen.getByText('【玩家6-小陈】')).toBeVisible();expect(screen.getByText('恶魔')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'已知晓'}));expect(acknowledge).toHaveBeenCalledWith('private-info');
+  expect(screen.getByRole('heading',{name:'首夜信息 · 仅你可见'})).toBeVisible();expect(screen.getByText('[小陈]')).toBeVisible();expect(screen.getByText('恶魔')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'已知晓'}));expect(acknowledge).toHaveBeenCalledWith('private-info');
 
 });
 
@@ -166,16 +167,16 @@ test("a nomination is confirmed before submission and may be abandoned", () => {
   const onNominate = vi.fn();
   render(<PlayerGame view={playerView("DAY_DISCUSSION")} busy={false} canRestart={false} onBack={vi.fn()} onConfirmRole={vi.fn()} onSubmitAction={vi.fn()} onNominate={onNominate} onCancelNomination={vi.fn()} onVote={vi.fn()} onReady={vi.fn()} onUseAbility={vi.fn()} onRestart={vi.fn()} onOpenGuide={vi.fn()} />);
 
-  fireEvent.click(screen.getByRole("button", { name: "【玩家2-被提名人】 存活" }));
+  fireEvent.click(screen.getByRole("button", { name: "[被提名人] 存活" }));
   fireEvent.click(screen.getByRole("button", { name: "提名" }));
   expect(screen.getByRole("alertdialog",{name:"确认提名"})).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "取消" }));
   expect(screen.queryByRole("alertdialog",{name:"确认提名"})).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button",{name:"关闭玩家操作"}));
 
-  fireEvent.click(screen.getByRole("button", { name: "【玩家2-被提名人】 存活" }));
+  fireEvent.click(screen.getByRole("button", { name: "[被提名人] 存活" }));
   fireEvent.click(screen.getByRole("button", { name: "提名" }));
-  fireEvent.click(screen.getByRole("button", { name: "确认提名 2号" }));
+  fireEvent.click(screen.getByRole("button", { name: "确认提名 [被提名人]" }));
   expect(onNominate).toHaveBeenCalledWith(2);
 });
 

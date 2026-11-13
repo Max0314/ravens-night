@@ -1405,7 +1405,7 @@ export class RoomService {
 
   private playerLabel(room: RoomRecord, seat: number): string {
     const participant = room.participants.find((candidate) => candidate.mode === "PLAYER" && candidate.seat === seat);
-    return `【玩家${seat}-${participant?.nickname??'未知'}】`;
+    return `[${participant?.nickname??'未知'}]`;
   }
 
   private event(room:RoomRecord, message: string, kind: ExperienceEvent["kind"] = "NOTICE", details: Partial<ExperienceEvent> = {}): void {

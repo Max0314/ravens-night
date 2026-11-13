@@ -16,7 +16,7 @@ export function Home({onCreate,onJoin,onTutorial,onRoles,activeRoom,activeMode,o
   const titleTaps=useRef({count:0,at:0});
   const canLeave=activeRoom?.state==='LOBBY'||activeRoom?.state==='GAME_OVER'||activeRoom?.state==='ABORTED'||activeMode==='DISPLAY';
   return <main className="home home--compact">
-    <header className="home-header"><div className="home-brand"><span aria-hidden="true">☾</span><div><h1><a className="home-title-preview" href="/?preview=effects" aria-label="鸦钟夜话，快速三击打开动效调试" onClick={event=>{const now=performance.now(),tap=titleTaps.current;tap.count=now-tap.at<=450?tap.count+1:1;tap.at=now;if(tap.count<3)event.preventDefault();else tap.count=0;}}>鸦钟夜话</a></h1><small>RAVENS AT MIDNIGHT</small></div></div><AccountPanel onResume={onAccountResume??(()=>undefined)} {...(accountTools?{tools:accountTools}:{})}/></header>
+    <header className="home-header"><div className="home-brand"><span aria-hidden="true">☾</span><div><h1><a className="home-title-preview" href="/?preview=effects" title="快速三击打开动效调试" onClick={event=>{const now=performance.now(),tap=titleTaps.current;tap.count=now-tap.at<=450?tap.count+1:1;tap.at=now;if(tap.count<3)event.preventDefault();else tap.count=0;}}>鸦钟夜话</a></h1><small>RAVENS AT MIDNIGHT</small></div></div><AccountPanel onResume={onAccountResume??(()=>undefined)} {...(accountTools?{tools:accountTools}:{})}/></header>
     <HomePortrait/>
     <section className="home-controls" aria-label="游戏入口">
       {activeRoom?<div className="home-current-room"><span>房间 {activeRoom.code} · {activeMode==='DISPLAY'?'大屏':'席位已保留'}</span>{canLeave&&onLeave?<FeedbackButton type="button" disabled={busy} onClick={onLeave}>离开房间</FeedbackButton>:null}</div>:null}

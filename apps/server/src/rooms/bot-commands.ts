@@ -36,5 +36,5 @@ export function runBotCommand(service:RoomService,code:string,hostToken:string,c
   const target=targetSeat??picked.legal.find(seat=>seat!==picked.bot.seat&&game.publicProjection!.aliveSeats.includes(seat))??picked.legal[0]!;
   apply(picked.bot,token=>command==='NOMINATE_ONCE'?service.nominate(code,token,target):service.useDayAbility(code,token,target));
   room.botControl.version++;
-  return {status:'APPLIED',executedCount:1,actorSeat:picked.bot.seat!,actorNickname:picked.bot.nickname,message:`【玩家${picked.bot.seat}-${picked.bot.nickname}】已提交${command==='NOMINATE_ONCE'?'提名':'公开射击宣称'}`};
+  return {status:'APPLIED',executedCount:1,actorSeat:picked.bot.seat!,actorNickname:picked.bot.nickname,message:`[${picked.bot.nickname}]已提交${command==='NOMINATE_ONCE'?'提名':'公开射击宣称'}`};
 }

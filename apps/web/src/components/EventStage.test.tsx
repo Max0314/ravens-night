@@ -96,7 +96,7 @@ test("in-person players have the complete town and can inspect a dead player's g
   render(<PlayerGame {...handlers} view={player()} />);
   fireEvent.click(screen.getByRole("button", { name: "城镇" }));
   expect(screen.getByRole("region", { name: "公开城镇" })).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "【玩家3-3号玩家】 已死亡" }));
+  fireEvent.click(screen.getByRole("button", { name: "[3号玩家] 已死亡" }));
   fireEvent.click(screen.getByRole("button",{name:"详情"}));
   expect(screen.getByText("仍可讨论，保留一枚幽灵票。")).toBeVisible();
 });
@@ -118,7 +118,7 @@ test("a dead player confirms the single ghost vote before sending it", () => {
 
 test("non-slayer living players can make the same public claim without leaking their role", () => {
   const onUseAbility = vi.fn(); render(<PlayerGame {...handlers} onUseAbility={onUseAbility} view={player()} />);
-  fireEvent.click(screen.getByRole("button", { name: "【玩家3-3号玩家】 已死亡" }));
+  fireEvent.click(screen.getByRole("button", { name: "[3号玩家] 已死亡" }));
   fireEvent.click(screen.getByRole("button", { name: "开枪" })); expect(onUseAbility).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "确认公开开枪" })); expect(onUseAbility).toHaveBeenCalledWith(3);
 });
@@ -128,8 +128,8 @@ test("a ghost confirmation stops accepting a vote once its seat has been counted
   const onVote = vi.fn(); const content = render(<PlayerGame {...handlers} onVote={onVote} view={view} />);
   fireEvent.click(screen.getByRole("button", { name: "举手" }));
   content.rerender(<PlayerGame {...handlers} onVote={onVote} view={{ ...view, canVote: false, game: { ...view.game!, nomination: { ...view.game!.nomination!, countedSeats: [3], countedVotes: { 3: false } } } }} />);
-  expect(screen.getByRole("button", { name: "确认使用鬼票" })).toBeDisabled();
-  fireEvent.click(screen.getByRole("button", { name: "确认使用鬼票" })); expect(onVote).not.toHaveBeenCalled();
+  expect(screen.queryByRole("button", { name: "确认使用鬼票" })).not.toBeInTheDocument();
+  expect(onVote).not.toHaveBeenCalled();
   expect(screen.getByText("已锁票：未举手")).toBeVisible();
 });
 
