@@ -14,7 +14,7 @@ test('book uses shared semantic samples and rotates variants without a second au
 
 
 test('prepare unlocks synchronously and explicit enable gives paper feedback only when ready',async()=>{
- const audio=createBookAudio();const ready=audio.prepare(true);expect(shared.prepareBookAudio).toHaveBeenCalledOnce();expect(shared.playSemantic).not.toHaveBeenCalled();expect(await ready).toBe(true);expect(shared.playSemantic).toHaveBeenCalledWith('paper-lift',{scope:'book',variant:0});audio.dispose();
+ const audio=createBookAudio();const ready=audio.prepare(true);expect(shared.prepareBookAudio).toHaveBeenCalledOnce();expect(shared.playSemantic).not.toHaveBeenCalled();expect(await ready).toBe(true);expect(shared.playSemantic).toHaveBeenCalledWith('paper-turn',{scope:'book',variant:0});audio.dispose();
 });
 test('mute and dispose cancel delayed enable feedback, and a failed unlock never reports success',async()=>{
  let finish:(value:boolean)=>void=()=>{};shared.prepareBookAudio.mockImplementationOnce(()=>new Promise<boolean>(resolve=>{finish=resolve;}));const audio=createBookAudio(),ready=audio.prepare(true);audio.silence();finish(true);expect(await ready).toBe(false);expect(shared.playSemantic).not.toHaveBeenCalled();

@@ -15,3 +15,5 @@
 2026-11-13音频补充：恶魔当前接触轨在 `apps/web/public/audio/effects/v5/`，重建脚本 `scripts/build-contact-audio.py`；复用已固定SHA的v3源，未覆盖历史文件。主能量接触点85ms已补偿到共享时钟1450/1750/2050/2350ms，四次音效只表示袭击动作提交。预览仅显示当前v4演出，顶部常驻声音开关/实际主输出音量，私密试听设置与正式房间隔离；首页标题快速三击可进入，单轨试听仍保留。横屏矮窗使用右侧播放控制栏。本地仅代码/DOM/媒体数值核对，真机视听仍需正式环境人工验收。
 
 2026-11-13手机无声反馈追加：手册纸张声由书内开关授予局部许可，不再被默认关闭的演出总开关误拦截。`createBookAudio().prepare(feedback?: boolean): Promise<boolean>` 必须直接在声音开启/翻页手势内调用，先同步解锁并预热既有纸轨，再异步准备纹理；`silence`/`dispose`撤销该书许可与晚到反馈。不会开启私密动作音效或修改线上/线下/预览偏好；纸张仍用原轨，book范围增益从0.23调为0.65。共享解锁允许后续手势重新resume，不复用卡住的自动请求。此为代码与离线数值修复，不能替代手机可听验收。
+
+大厅M19无声反馈追加：原候选完整录音不变，运行另用 `apps/web/public/audio/music/v1/lobby-m19.mp3` 的完整响度修订副本（175.521秒，实测-20.73 LUFS/-2.44dBTP），脚本 `scripts/build-lobby-music.py` 从固定SHA候选重建，无新外部来源。大厅播放器音量改为0.8，预载音频；按实际readyState/paused/muted和playing/pause/waiting/error事件更新状态，8秒未起播或加载失败显示可重试入口，click/touchend直接重试未完成自动请求。不可把DOM/HTTP/Range/媒体数值检查写成手机真实可听验收。
