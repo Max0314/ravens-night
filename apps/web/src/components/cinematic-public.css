@@ -12,3 +12,10 @@
 .victory-tableau[data-cinematic] .victory-dawn-rays{inset:-5%;background:repeating-conic-gradient(from 0deg at 50% 55%,#fce8ac12 0deg,transparent 12deg,transparent 24deg)}
 .victory-tableau[data-cinematic] .victory-good-symbol>.premium-image{width:65%;height:75%;object-fit:contain}
 .victory-tableau[data-cinematic] .victory-good-symbol>.victory-neutral{color:#e3ca88;font:clamp(80px,22vw,210px) var(--rn-serif)}
+
+.atmospheric-sky{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+.atmospheric-sky__disc{position:absolute;left:50%;width:clamp(100px,34vmin,220px);height:auto;aspect-ratio:1;transform:translate(-50%,-50%);overflow:visible}
+.event-stage.event-stage--night_falls{background-image:linear-gradient(#04050822,#03040788),url('/art/effects/v5/night-town.webp');background-position:center top}
+.event-stage.event-stage--dawn{background-image:linear-gradient(#08090811,#08090888),url('/art/effects/v5/dawn-town.webp');background-position:center top}
+
+.event-stage.event-stage--night_falls,.event-stage.event-stage--dawn{background-size:cover;background-position:center top}

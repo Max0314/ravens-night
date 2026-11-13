@@ -16,3 +16,6 @@
 
 2026-11-13 第二批修订：v5新增独立透明短管双管猎枪、宽比例断头台（340×480运行画布、颈孔44直径随整台等比），原v4及旧绞刑架保留。书壳、书脊和16条活动页共用斜面投影；棺盖加入真实向上抬升，90度不再缩成线；水面覆盖浸水布、滴水位于盆前沿后；毒瓶实际液体内增加20枚裁切气泡；刀接触下移12px，三块菜片覆盖全部源菜尾端；鸦翼支点移至实际素材翼根。
 新原图及简述prompt保存在sources/nov13，构建命令 `node scripts/build-cinematics-v5.mjs`。本批重新输出的private与public黑/灰PNG是当前运行SVG静态关键帧；同目录既有GIF保留为11月12日历史版本，不代表本次动作，未打开本地演示或游戏网页。烧城环境板先随素材保存，下一批接入独立主体/火/烟/余烬层。
+
+2026-11-13 第三批修订：公开入夜/黎明使用独立缓升月亮/太阳（AtmosphericSky），背景v5/night-town与dawn-town已去预烘焙天体。胜利使用全屏town/atmosphere和独立meet主体；邪恶胜利恢复无恶魔烘焙的燃烧城镇，独立翅膀、透明火焰纹理、烟和32余烬。镇长使用无权杖底图加独立完整权杖，消除移动时底图空洞。透明绿雾原图保存在sources/nov13；构建将RGB约束深绿(.19G,.64G,.075G)，保留原alpha，黑/灰底PNG已核查无白边。PoisonVapour增加30枚由底部升至58%高度气泡，900ms开始显现；非compact为独立fixed全屏层。PrivateSceneStage的挂载由来源会话负责，条件为poisoner的IDENTITY/ACTION_SUBMITTED，并使用/art/effects/v5/poison-vapour.webp冻结readyKey；不表示能力成功。屏幕刀痕也独立fixed，中央道具保持原等比画布。
+本批所有生成素材使用built-in image_gen，生成prompt简述与尺寸/hash见sources/nov13/spec.json及v5/manifest.json；工程内路径均已落库，不依赖生成缓存。未执行浏览器、手机观感或听感验收。

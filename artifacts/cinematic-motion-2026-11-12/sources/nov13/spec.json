@@ -19,5 +19,62 @@
     "prompt": "Detailed gothic town engulfed in fire at night, clocktower and red-black sky; background only; no demons, wings, creatures or people.",
     "trim": false,
     "opaque": true
+  },
+  {
+    "id": "night-town",
+    "file": "night-town.png",
+    "prompt": "Remove only moon disk and concentrated halo from accepted gothic night town; reconstruct natural dark blue storm clouds; preserve town/mist/painterly composition. No celestial disks.",
+    "trim": false,
+    "opaque": true
+  },
+  {
+    "id": "dawn-town",
+    "file": "dawn-town.png",
+    "prompt": "Remove only sun disk from accepted gothic dawn town, replace with continuous warm golden sky/haze; preserve buildings/mist/painterly composition. No celestial disks.",
+    "trim": false,
+    "opaque": true
+  },
+  {
+    "id": "mayor-base",
+    "file": "mayor-base.png",
+    "prompt": "Remove only diagonal scepter from original mayor prop, reconstruct red cushion and scroll; preserve tower, parchment, seal and gothic painted style. Genuine transparency.",
+    "trim": false,
+    "opaque": false
+  },
+  {
+    "id": "mayor-scepter",
+    "file": "mayor-scepter.png",
+    "prompt": "Extract/recreate only crowned emerald orb ceremonial mayor scepter from accepted prop. Isolated diagonal upper-left orb to lower-right tip, polished green globe and ornate gold engraving. No tower, scroll, pillow, people or backdrop. Genuine alpha.",
+    "trim": false,
+    "opaque": false
+  },
+  {
+    "id": "moon",
+    "file": "moon-source.webp",
+    "prompt": "Derived disk texture from accepted v3 scene-night; explicit crop and circular clip, no generated replacement.",
+    "rect": {
+      "left": 228,
+      "top": 112,
+      "width": 78,
+      "height": 78
+    },
+    "circle": true,
+    "trim": false,
+    "opaque": false
+  },
+  {
+    "id": "poison-vapour",
+    "file": "poison-vapour.png",
+    "prompt": "Wide dark-green emerald forest-green volumetric poison vapor, transparent background, organic curling wisps and alpha fade, no bottle, object, white halo or backdrop.",
+    "trim": false,
+    "opaque": false,
+    "greenOnly": true
+  },
+  {
+    "id": "fire-bed",
+    "file": "fire-bed.png",
+    "prompt": "Wide low bed of detailed organic orange-red fire wisps, upper two thirds transparent, no white smoke, solid triangles, objects or scenery. Transparent VFX overlay for burning town.",
+    "trim": false,
+    "opaque": false
   }
 ]

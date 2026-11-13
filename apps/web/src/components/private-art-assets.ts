@@ -1,6 +1,7 @@
 import type {PrivateSceneDescriptor} from '@ravens/contracts';
 const v4=new Set(['book-shell','book-paper','book-paper-back','coffin-base','coffin-lid-front','coffin-lid-back','washer-basin-back','washer-basin-front','washer-linen','chef-board-clean','chef-carrot','crystal-shell','crystal-mist','poison-glass','poison-stopper','poison-mist','drunk-glass','raven-body','raven-wing','investigator-stamp','scarlet-cloak']);
-export const privateAssetUrl=(name:string)=>`/art/effects/${v4.has(name)?'v4':'v3'}/${name}.webp`;
+const v5=new Set(['mayor-scepter','poison-vapour']);
+export const privateAssetUrl=(name:string)=>name==='mayor'?'/art/effects/v5/mayor-base.webp':v5.has(name)?`/art/effects/v5/${name}.webp`:`/art/effects/${v4.has(name)?'v4':'v3'}/${name}.webp`;
 export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
  const role=scene.themeRoleId;let names:string[];
  if(scene.kind==='EVIL_START')names=['sealed-letter','book-paper'];
@@ -13,7 +14,8 @@ export function privateArtUrls(scene:PrivateSceneDescriptor):string[]{
  else if(role==='washerwoman')names=['washer-basin-back','washer-basin-front','washer-linen'];
  else if(role==='chef')names=['chef-board-clean','chef-carrot','chef-cleaver'];
  else if(role==='fortune_teller')names=['crystal-shell','crystal-mist'];
- else if(role==='poisoner')names=['poison-glass','poison-stopper','poison-mist'];
+ else if(role==='poisoner')names=['poison-glass','poison-stopper','poison-mist','poison-vapour'];
+ else if(role==='mayor')names=['mayor','mayor-scepter'];
  else if(role==='drunk')names=['drunk-glass'];
  else if(role==='ravenkeeper')names=['raven-body','raven-wing'];
  else if(role==='scarlet_woman')names=['scarlet-cloak'];
