@@ -19,7 +19,7 @@ export function gameScoreTrack(game:GameView|undefined,now:number):ScoreTrack{
  if(game.phase==='ROLE_REVEAL'||game.phase==='FIRST_NIGHT')return'M19';
  return game.phase==='OTHER_NIGHT'?'M18':'M15';
 }
-type Entry={audio:HTMLAudioElement;route?:{context:AudioContext;source:MediaElementAudioSourceNode;gain:GainNode};pending:boolean;generation:number;timer:ReturnType<typeof setTimeout>|undefined;cleanup:()=>void};
+type Entry={audio:HTMLAudioElement;route?:{context:AudioContext;source:MediaElementAudioSourceNode;gain:GainNode};loopHead:boolean;lastTime:number|undefined;pending:boolean;generation:number;timer:ReturnType<typeof setTimeout>|undefined;cleanup:()=>void};
 export interface ScorePlayback {track:ScoreTrack;active:boolean;ducked:boolean;context:string}
 /** One owner, one cached HTML player per track; full music never enters WebAudio's decoded cache. */
 export function createGameScorePlayer(report:(message:string)=>void=()=>{}){
@@ -29,11 +29,23 @@ export function createGameScorePlayer(report:(message:string)=>void=()=>{}){
  const clearRamp=()=>{clearInterval(ramp);ramp=undefined;};
  const pause=(entry:Entry)=>{entry.generation++;entry.pending=false;clearTimeout(entry.timer);entry.timer=undefined;if(ready&&entries.get(ready)===entry)ready=undefined;if(entry.route)entry.route.gain.gain.value=0;entry.audio.pause();};
  const stop=()=>{clearRamp();transition=undefined;duckRamp=undefined;ready=undefined;for(const entry of entries.values())pause(entry);};
+ const loopGain=(e:Entry)=>{
+  const {duration,currentTime}=e.audio;
+  if(!Number.isFinite(duration)||duration<=0||!Number.isFinite(currentTime)||currentTime<0){e.loopHead=false;e.lastTime=undefined;return 1;}
+  const span=Math.min(1.4,duration/2);
+  // Native loop owns the playhead. Only a tail-to-head wrap enables the head envelope.
+  if(e.lastTime!==undefined&&e.lastTime>=duration-span&&currentTime<span&&currentTime<e.lastTime)e.loopHead=true;
+  if(currentTime>=span)e.loopHead=false;
+  e.lastTime=currentTime;
+  const p=Math.max(0,Math.min(1,(duration-currentTime)/span,e.loopHead?currentTime/span:1));
+  return .5-.5*Math.cos(Math.PI*p);
+ };
  const tick=()=>{
   if(transition){const p=Math.min(1,(Date.now()-transition.at)/2000);for(const [id,e]of entries){const from=transition.from.get(id)??0;weights.set(id,from+((id===transition.to?1:0)-from)*p);if(p===1&&id!==transition.to)pause(e);}if(p===1)transition=undefined;}
   if(duckRamp){const p=Math.min(1,(Date.now()-duckRamp.at)/240);duckGain=duckRamp.from+(duckRamp.to-duckRamp.from)*p;if(p===1)duckRamp=undefined;}
-  for(const [id,e]of entries)if(e.route)e.route.gain.gain.value=Math.max(0,Math.min(1,(weights.get(id)??0)*duckGain));
-  if(!transition&&!duckRamp)clearRamp();
+  let playing=false;
+  for(const [id,e]of entries)if(e.route){const live=state.active&&!e.audio.paused&&!e.audio.muted&&e.route.context.state==='running';playing||=live;e.route.gain.gain.value=live?Math.max(0,Math.min(1,(weights.get(id)??0)*duckGain*loopGain(e))):0;}
+  if(!transition&&!duckRamp&&!playing)clearRamp();
  };
  const animate=()=>{if(!ramp)ramp=setInterval(tick,40);tick();};
  const fade=()=>{transition={to:state.track,at:Date.now(),from:new Map(weights)};animate();};
@@ -41,12 +53,12 @@ export function createGameScorePlayer(report:(message:string)=>void=()=>{}){
  const accept=(id:ScoreTrack,e:Entry)=>{
   if(disposed||!state.active){e.audio.pause();return;}if(id!==state.track){if(!(weights.get(id)??0))e.audio.pause();return;}
   if(e.audio.paused||e.audio.muted||e.audio.readyState<2||e.route?.context.state!=='running')return;
-  clearTimeout(e.timer);e.timer=undefined;e.pending=false;const changed=ready!==id;ready=id;report('');if(changed)fade();
+  clearTimeout(e.timer);e.timer=undefined;e.pending=false;const changed=ready!==id;ready=id;report('');if(changed)fade();else animate();
  };
  function entry(id:ScoreTrack){
   const existing=entries.get(id);if(existing)return existing;
   const audio=new Audio(scoreTracks[id]);audio.loop=true;audio.preload='auto';audio.muted=true;
-  const e:Entry={audio,pending:false,generation:0,timer:undefined,cleanup:()=>{}};
+  const e:Entry={audio,loopHead:false,lastTime:undefined,pending:false,generation:0,timer:undefined,cleanup:()=>{}};
   const playing=()=>accept(id,e),failed=()=>{if(disposed||id!==state.track)return;pause(e);report('音乐无法加载，请轻点音符重试；可继续游戏');};
   const waiting=()=>{if(id!==state.track||!state.active)return;e.pending=true;watch(id,e,e.generation);};
   const stalled=()=>{if(audio.paused||audio.readyState<3)waiting();};

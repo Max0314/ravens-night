@@ -22,7 +22,7 @@ class Gain {gain={value:0};connect=vi.fn();disconnect=vi.fn();}
 class Context extends EventTarget {state='running';destination={};gains=new Map<Player,Gain>();createGain(){return new Gain();}createMediaElementSource(audio:Player){return{connect:vi.fn((gain:Gain)=>{this.gains.set(audio,gain);}),disconnect:vi.fn()};}}
 const level=(player:Player)=>shared.context!.gains.get(player)!.gain.value;
 const players:Player[]=[];
-class Player extends EventTarget{loop=false;preload='';volume=1;muted=false;paused=true;currentTime=0;readyState=4;error:null|{code:number}=null;load=vi.fn();play=vi.fn(async()=>{this.paused=false;});pause=vi.fn(()=>{this.paused=true;});constructor(public src:string){super();players.push(this);}}
+class Player extends EventTarget{loop=false;preload='';volume=1;muted=false;paused=true;currentTime=0;duration=NaN;readyState=4;error:null|{code:number}=null;load=vi.fn();play=vi.fn(async()=>{this.paused=false;});pause=vi.fn(()=>{this.paused=true;});constructor(public src:string){super();players.push(this);}}
 const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
 beforeEach(()=>{vi.useFakeTimers();players.length=0;shared.context=new Context();shared.unlock.mockReset().mockResolvedValue(undefined);vi.stubGlobal('Audio',Player);});
 afterEach(()=>{vi.unstubAllGlobals();vi.useRealTimers();});
@@ -48,7 +48,7 @@ test('playing plus Promise confirmation stays idempotent and ducking preserves t
  expect(level(players[0]!)).toBeCloseTo(.13);expect(level(next)).toBeCloseTo(.13);expect(players[0]!.paused).toBe(false);vi.advanceTimersByTime(1000);expect(level(next)).toBeCloseTo(.26);expect(players[0]!.paused).toBe(true);p.dispose();
 });
 test('stalled with healthy media buffers never starts a failure timeout or interrupts music',async()=>{
- const report=vi.fn(),p=createGameScorePlayer(report);p.update({track:'M19',active:true,ducked:false,context:'one'});await flush();vi.advanceTimersByTime(2000);const a=players[0]!;a.dispatchEvent(new Event('stalled'));vi.advanceTimersByTime(8000);expect(a.paused).toBe(false);expect(report).toHaveBeenLastCalledWith('');expect(vi.getTimerCount()).toBe(0);p.dispose();
+ const report=vi.fn(),p=createGameScorePlayer(report);p.update({track:'M19',active:true,ducked:false,context:'one'});await flush();vi.advanceTimersByTime(2000);const a=players[0]!;a.dispatchEvent(new Event('stalled'));vi.advanceTimersByTime(8000);expect(a.paused).toBe(false);expect(report).toHaveBeenLastCalledWith('');expect(vi.getTimerCount()).toBe(1);p.dispose();expect(vi.getTimerCount()).toBe(0);
 });
 test('iOS read-only element volume still crossfades and ducks through shared streaming GainNodes',async()=>{
  class PhonePlayer extends Player{constructor(src:string){super(src);Object.defineProperty(this,'volume',{get:()=>1,set:()=>{throw Error('iOS element volume is not writable');}});}}
@@ -60,4 +60,19 @@ test('iOS read-only element volume still crossfades and ducks through shared str
 test('returning with an existing suspended context starts shared resume before media play',async()=>{
  const context=shared.context!,p=createGameScorePlayer(),state={track:'M19' as const,active:true,ducked:false,context:'resume'};p.update(state);await flush();vi.advanceTimersByTime(2000);const a=players[0]!,order:string[]=[];p.update({...state,active:false});context.state='suspended';
  shared.unlock.mockImplementation(async()=>{order.push('resume');context.state='running';context.dispatchEvent(new Event('statechange'));});a.play.mockImplementationOnce(async()=>{order.push('play');a.paused=false;});p.update(state);expect(order).toEqual(['resume','play']);await flush();vi.advanceTimersByTime(2000);expect(level(a)).toBe(.8);expect(a.paused).toBe(false);expect(players).toHaveLength(1);p.dispose();
+});
+test('native tail-to-head loops soften both sides without seeking or creating another player',async()=>{
+ const p=createGameScorePlayer(),state={track:'M19' as const,active:true,ducked:false,context:'loop'};p.update(state);await flush();vi.advanceTimersByTime(2000);const a=players[0]!;a.duration=100;
+ a.currentTime=98.6;vi.advanceTimersByTime(40);expect(level(a)).toBeCloseTo(.8);a.currentTime=99.3;vi.advanceTimersByTime(40);expect(level(a)).toBeCloseTo(.4);a.currentTime=99.99;vi.advanceTimersByTime(40);expect(level(a)).toBeLessThan(.001);
+ a.currentTime=0;vi.advanceTimersByTime(40);expect(level(a)).toBe(0);a.currentTime=.7;vi.advanceTimersByTime(40);expect(level(a)).toBeCloseTo(.4);a.currentTime=1.4;vi.advanceTimersByTime(40);expect(level(a)).toBeCloseTo(.8);expect(a.currentTime).toBe(1.4);expect(a.loop).toBe(true);expect(a.play).toHaveBeenCalledOnce();expect(players).toHaveLength(1);p.dispose();
+});
+test('loop envelope multiplies crossfade and duck independently, and pause resumes at the same loop position',async()=>{
+ const p=createGameScorePlayer(),state={track:'M19' as const,active:true,ducked:false,context:'loop-mix'};p.update(state);await flush();vi.advanceTimersByTime(2000);const a=players[0]!;a.duration=100;a.currentTime=99.3;vi.advanceTimersByTime(40);
+ p.update({...state,track:'M15',ducked:true});await flush();const b=players[1]!;b.duration=48;b.currentTime=10;vi.advanceTimersByTime(1000);expect(level(a)).toBeCloseTo(.065);expect(level(b)).toBeCloseTo(.13);
+ p.update({...state,track:'M15',ducked:true,active:false});expect(level(a)).toBe(0);expect(level(b)).toBe(0);expect(vi.getTimerCount()).toBe(0);vi.advanceTimersByTime(5000);expect(b.currentTime).toBe(10);p.update({...state,track:'M15',ducked:true});await flush();vi.advanceTimersByTime(2000);expect(b.currentTime).toBe(10);expect(level(b)).toBeCloseTo(.26);
+ b.currentTime=47.3;vi.advanceTimersByTime(40);b.currentTime=.7;vi.advanceTimersByTime(40);expect(level(b)).toBeCloseTo(.13);p.update({...state,track:'M15',ducked:true,active:false});vi.advanceTimersByTime(5000);p.update({...state,track:'M15',ducked:true});await flush();vi.advanceTimersByTime(2000);expect(b.currentTime).toBe(.7);expect(level(b)).toBeCloseTo(.13);expect(players).toHaveLength(2);p.dispose();
+});
+test('unknown or changing metadata never leaves the loop envelope silently latched',async()=>{
+ const p=createGameScorePlayer();p.update({track:'M19',active:true,ducked:false,context:'metadata'});await flush();vi.advanceTimersByTime(2000);const a=players[0]!;expect(level(a)).toBe(.8);
+ a.duration=Infinity;a.currentTime=50;vi.advanceTimersByTime(40);expect(level(a)).toBe(.8);a.duration=100;a.currentTime=99.3;vi.advanceTimersByTime(40);expect(level(a)).toBeCloseTo(.4);a.duration=NaN;a.currentTime=0;vi.advanceTimersByTime(40);expect(level(a)).toBe(.8);a.duration=100;vi.advanceTimersByTime(40);expect(level(a)).toBe(.8);p.dispose();
 });
