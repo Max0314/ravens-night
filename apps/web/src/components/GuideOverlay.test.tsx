@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import {PageTextureCache} from './page-textures.js';
+import {enableEffectsAudio,effectsAudioEnabled} from './experience-audio.js';
 import { GuideOverlay } from "./GuideOverlay.js";
 import { tutorialSteps } from "../guide-content.js";
 import {StrictMode} from 'react';
 const audio=vi.hoisted(()=>({prepare:vi.fn(async()=>true),turn:vi.fn(),silence:vi.fn(),dispose:vi.fn()}));
 vi.mock("./book-audio.js",()=>({createBookAudio:()=>audio}));
+beforeEach(async()=>{await enableEffectsAudio(true);});
+
 afterEach(()=>{cleanup();vi.clearAllMocks();vi.useRealTimers();vi.unstubAllGlobals();localStorage.clear();window.history.replaceState({},"","/");});
 
 function installPointer(){
@@ -60,10 +63,10 @@ test("role category tabs expose one group, support keyboard switching and constr
 });
 
 
-test('page turns follow actual navigation, allow muting and retain top-focused role artwork',()=>{
-  render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);
+test('page turns follow the global preference even with a stale book mute and retain top-focused role artwork',()=>{
+  localStorage.setItem('ravens_book_audio','off');render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);
   fireEvent.click(screen.getByRole('button',{name:'下一条'}));expect(audio.turn).toHaveBeenCalledOnce();
-  fireEvent.click(screen.getByRole('button',{name:'关闭翻页音效'}));fireEvent.click(screen.getByRole('button',{name:'角色表'}));expect(audio.turn).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole('button',{name:'关闭声音'}));fireEvent.click(screen.getByRole('button',{name:'角色表'}));expect(audio.turn).toHaveBeenCalledOnce();
   fireEvent.click(screen.getByRole('tab',{name:/镇民/}));expect(audio.turn).toHaveBeenCalledOnce();
   fireEvent.click(screen.getByRole('button',{name:'查看洗衣妇详情'}));expect(screen.getByRole('img',{name:'洗衣妇角色立绘'})).toHaveStyle({objectPosition:'50% 0%'});
 });
@@ -74,7 +77,7 @@ test('tutorial swipes share button turns, stop at the first page and enter roles
   swipePage(book,'back');expect(audio.turn).not.toHaveBeenCalled();
   swipePage(book,'next');expect(screen.getByText(`规则 2 / ${tutorialSteps.length}`)).toBeVisible();expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).toHaveBeenCalledOnce();
   fireEvent.click(screen.getByRole('button',{name:'上一条'}));expect(book).toHaveAttribute('data-page-key','tutorial:0');
-  fireEvent.click(screen.getByRole('button',{name:'关闭翻页音效'}));
+  fireEvent.click(screen.getByRole('button',{name:'关闭声音'}));
   for(let i=0;i<tutorialSteps.length;i++)swipePage(book,'next');
   expect(screen.getByRole('tab',{name:/镇民/})).toHaveAttribute('aria-selected','true');expect(audio.turn).toHaveBeenCalledTimes(2);
 });
@@ -250,10 +253,20 @@ test('book audio prepares synchronously on pointer, click and navigation keys be
   fireEvent.keyDown(screen.getByRole('tab',{name:/镇民/}),{key:'ArrowRight'});expect(audio.prepare).toHaveBeenCalledOnce();expect(audio.prepare.mock.invocationCallOrder[0]).toBeLessThan(audio.turn.mock.invocationCallOrder[0]!);
 });
 
-test('local book sound enable primes feedback on the same click and muted gestures never prepare',()=>{
-  installPointer();localStorage.setItem('ravens_book_audio','off');render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);const book=document.querySelector('.guide-book')!;
+test('the global sound button primes feedback on enable and total mute blocks stale local permission',async()=>{
+  await enableEffectsAudio(false);installPointer();localStorage.setItem('ravens_book_audio','on');render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);const book=document.querySelector('.guide-book')!;
   fireEvent.pointerDown(book,{pointerId:1,button:0,clientX:150,clientY:100});fireEvent.pointerUp(book,{pointerId:1,clientX:150,clientY:100});fireEvent.click(screen.getByRole('button',{name:'下一条'}));expect(audio.prepare).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button',{name:'开启翻页音效'}));expect(audio.prepare).toHaveBeenCalledExactlyOnceWith(true);expect(localStorage.getItem('ravens_book_audio')).toBe('on');
-  fireEvent.click(screen.getByRole('button',{name:'关闭翻页音效'}));expect(audio.silence).toHaveBeenCalledOnce();expect(localStorage.getItem('ravens_book_audio')).toBe('off');audio.prepare.mockClear();
+  fireEvent.click(screen.getByRole('button',{name:'开启声音'}));expect(audio.prepare).toHaveBeenCalledExactlyOnceWith(true);expect(localStorage.getItem('ravens_effects_audio')).toBe('on');expect(document.querySelectorAll('[data-global-audio-control]')).toHaveLength(1);
+  fireEvent.click(screen.getByRole('button',{name:'关闭声音'}));expect(audio.silence).toHaveBeenCalledOnce();expect(localStorage.getItem('ravens_effects_audio')).toBe('off');expect(localStorage.getItem('ravens_book_audio')).toBe('on');audio.prepare.mockClear();
   fireEvent.keyDown(screen.getByRole('button',{name:'下一条'}),{key:'Enter'});fireEvent.click(screen.getByRole('button',{name:'下一条'}));expect(audio.prepare).not.toHaveBeenCalled();
+});
+
+
+test('an external global mute silences the book and prevents a pending turn from playing without blocking navigation',()=>{
+  vi.useFakeTimers();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>setTimeout(()=>callback(performance.now()),16));vi.stubGlobal('cancelAnimationFrame',(id:number)=>clearTimeout(id));
+  render(<GuideOverlay mode="tutorial" onClose={vi.fn()}/>);const book=document.querySelector<HTMLElement>('.guide-book')!;Object.defineProperty(book,'clientWidth',{value:360});
+  fireEvent.click(screen.getByRole('button',{name:'下一条'}));expect(audio.turn).not.toHaveBeenCalled();
+  act(()=>{void enableEffectsAudio(false);});expect(audio.silence).toHaveBeenCalledOnce();expect(effectsAudioEnabled()).toBe(false);expect(screen.getByRole('button',{name:'开启声音'})).toBeVisible();
+  act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:1');expect(audio.turn).not.toHaveBeenCalled();audio.prepare.mockClear();
+  fireEvent.click(screen.getByRole('button',{name:'下一条'}));expect(audio.prepare).not.toHaveBeenCalled();act(()=>vi.advanceTimersByTime(400));expect(book).toHaveAttribute('data-page-key','tutorial:2');expect(audio.turn).not.toHaveBeenCalled();
 });

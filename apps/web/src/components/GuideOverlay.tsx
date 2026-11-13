@@ -7,6 +7,8 @@ import type {PrivateView} from '../api.js';
 import {rolePlayGuides,roleTypeGuidance,roleTypeNames,tutorialSteps} from '../guide-content.js';
 import {roleArt} from '../role-art.js';
 import {createBookAudio} from './book-audio.js';
+import {GlobalAudioButton} from './GlobalAudioButton.js';
+import {effectsAudioEnabled} from './experience-audio.js';
 import {dragTurnGrip,PageTurnController,shouldCompleteTurn,turnProgress,type TurnCorner,type TurnDirection,type TurnState} from './page-turn.js';
 import {PageTextureCache,preparePagePair} from './page-textures.js';
 import {PageTurnLayer} from './PageTurnLayer.js';
@@ -31,9 +33,8 @@ type Memory={scroll:number;advice:boolean};
 export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMode;ownRole?:PrivateView['role'];initialRoleId?:string;onClose:()=>void}){
   const initial={mode,step:0,category:beginnerRoles.find(role=>role.id===initialRoleId)?.type??'TOWNSFOLK',roleId:initialRoleId} as GuidePageState;
   const[page,setPage]=useState<GuidePageState>(initial),[transition,setTransition]=useState<TurnState<GuidePageState>>(),[neighbor,setNeighbor]=useState(()=>adjacentGuidePage(initial,1));
-  const[textureEpoch,setTextureEpoch]=useState(0),[sound,setSound]=useState(()=>{try{const saved=localStorage.getItem('ravens_book_audio');return saved==='on'||saved!=='off'&&!ownRole;}catch{return !ownRole;}});
+  const[textureEpoch,setTextureEpoch]=useState(0);
   const pageRef=useRef(page);pageRef.current=page;const closeRef=useRef(onClose);closeRef.current=onClose;
-  const soundRef=useRef(sound);soundRef.current=sound;
   const dialogRef=useRef<HTMLElement>(null),bookRef=useRef<HTMLDivElement>(null),surfaceRef=useRef<HTMLDivElement>(null),previewRef=useRef<HTMLDivElement>(null);
   const memory=useRef(new Map<string,Memory>()),bookmarks=useRef<Partial<Record<GuideMode,GuidePageState>>>({[mode]:initial}),origin=useRef({roleId:initialRoleId,category:initial.category,scroll:0});
   const audio=useRef<ReturnType<typeof createBookAudio>|null>(null),cache=useRef(new PageTextureCache()),directionRef=useRef<TurnDirection>(1),slow=useRef(false),queued=useRef<{target:GuidePageState;direction:TurnDirection}|undefined>(undefined),closing=useRef(false),texturesSuspended=useRef(false);
@@ -46,7 +47,7 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMod
   const captureKey=(p:GuidePageState)=>`${guidePageKey(p)}:${memory.current.get(guidePageKey(p))?.scroll??0}:${memory.current.get(guidePageKey(p))?.advice??false}:${bookRef.current?.clientWidth??0}x${bookRef.current?.clientHeight??0}:v2`;
   const callbacks=useRef<{finish:(target:GuidePageState|undefined)=>void;begin:(state:TurnState<GuidePageState>)=>void}>({finish:()=>{},begin:()=>{}});
   const controllerRef=useRef<PageTurnController<GuidePageState>|undefined>(undefined);
-  controllerRef.current??=new PageTurnController({begin:state=>callbacks.current.begin(state),finish:target=>callbacks.current.finish(target),sound:()=>{if(soundRef.current)audio.current?.turn();}});
+  controllerRef.current??=new PageTurnController({begin:state=>callbacks.current.begin(state),finish:target=>callbacks.current.finish(target),sound:()=>{if(effectsAudioEnabled())audio.current?.turn();}});
   const controller=controllerRef.current;
   callbacks.current.begin=state=>setTransition(state);
   callbacks.current.finish=target=>{
@@ -63,13 +64,13 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMod
     remember();directionRef.current=direction;
     const width=bookRef.current?.clientWidth??0;
     // Detached/SSR surfaces have no animation clock, but navigation must remain available.
-    if(!width&&!interactive){if(soundRef.current)audio.current?.turn();pageRef.current=target;setPage(target);bookmarks.current[target.mode]=target;cache.current.invalidate();setNeighbor(adjacentGuidePage(target,direction));return;}
+    if(!width&&!interactive){if(effectsAudioEnabled())audio.current?.turn();pageRef.current=target;setPage(target);bookmarks.current[target.mode]=target;cache.current.invalidate();setNeighbor(adjacentGuidePage(target,direction));return;}
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const renderer=reduced?'reduced':!slow.current&&pageRef.current.mode!=='mine'&&target.mode!=='mine'&&cache.current.get(captureKey(pageRef.current))&&cache.current.get(captureKey(target))?'canvas':'dom';
     if(controller.begin(pageRef.current,target,direction,renderer,corner)&&!interactive)controller.settle(true,true);
   }
   // Unlock on the original activation stack, before navigation or texture promises.
-  function prepareSound(){if(soundRef.current)void audio.current?.prepare();}
+  function prepareSound(){if(effectsAudioEnabled())void audio.current?.prepare();}
   function closeBook(){closing.current=true;queued.current=undefined;controller.cancel();cache.current.dispose();audio.current?.silence();feedback.close();closeRef.current();}
   function closeDetail(){const current=pageRef.current;if(current.mode!=='roles'||!current.roleId)return;memory.current.set(`roles:${origin.current.category}:grid`,{scroll:origin.current.scroll,advice:false});navigate({...current,category:origin.current.category,roleId:undefined},-1);}
   const detailCloseRef=useRef(closeDetail);detailCloseRef.current=closeDetail;
@@ -82,7 +83,7 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMod
   function stepTo(direction:TurnDirection){const target=adjacentGuidePage(pageRef.current,direction);if(target)navigate(target,direction);}
   function detailTo(direction:TurnDirection){const current=pageRef.current,roles=beginnerRoles.filter(role=>role.type===current.category),role=roles[roles.findIndex(role=>role.id===current.roleId)+direction];if(role)navigate({...current,roleId:role.id},direction);}
   const onSlow=useCallback(()=>{slow.current=true;},[]);
-  useEffect(()=>{closing.current=false;cache.current=new PageTextureCache();audio.current=createBookAudio();return()=>{closing.current=true;controller.dispose();cache.current.dispose();audio.current?.dispose();window.clearTimeout(scrollTimer.current);};},[controller]);
+  useEffect(()=>{closing.current=false;cache.current=new PageTextureCache();audio.current=createBookAudio();const syncSound=()=>{if(!effectsAudioEnabled())audio.current?.silence();};window.addEventListener('ravens-effects-audio',syncSound);return()=>{closing.current=true;window.removeEventListener('ravens-effects-audio',syncSound);controller.dispose();cache.current.dispose();audio.current?.dispose();window.clearTimeout(scrollTimer.current);};},[controller]);
   useLayoutEffect(()=>{const saved=memory.current.get(pageKey),scroller=scrollElement();if(scroller)scroller.scrollTop=saved?.scroll??0;const advice=surfaceRef.current?.querySelector<HTMLDetailsElement>('details');if(advice)advice.open=saved?.advice??false;const detail=surfaceRef.current?.querySelector<HTMLElement>('.role-detail');if(detail)detail.focus({preventScroll:true});else if(origin.current.roleId&&page.mode==='roles')surfaceRef.current?.querySelector<HTMLButtonElement>(`[data-role-id="${origin.current.roleId}"]`)?.focus({preventScroll:true});},[pageKey]);
   useEffect(()=>{
     if(transition||texturesSuspended.current)return;const surface=surfaceRef.current,preview=previewRef.current,host=bookRef.current;if(!surface||!host||!host.clientWidth||!host.clientHeight)return;
@@ -145,7 +146,7 @@ export function GuideOverlay({mode,ownRole,initialRoleId,onClose}:{mode:GuideMod
   const pageProps={ownRole,onStep:stepTo,onSelect:selectRole,onDetail:detailTo,onBlank:closeDetail,onScroll,onAdvice:()=>{remember();cache.current.invalidate();setTextureEpoch(value=>value+1);}};
   return <div className="guide-backdrop" role="presentation" onMouseDown={event=>{if(event.target===event.currentTarget){if(detail)closeDetail();else closeBook();}}}>
     <section ref={dialogRef} className="guide-sheet" onPointerDownCapture={prepareSound} onClickCapture={prepareSound} onKeyDownCapture={event=>{if(['Enter',' ','ArrowLeft','ArrowRight','Home','End'].includes(event.key))prepareSound();}} role="dialog" aria-modal="true" aria-label="游戏帮助" tabIndex={-1}>
-      <header className="guide-sheet__header"><div><span className="guide-sheet__mark">☾</span><strong>钟楼手册</strong></div><div className="guide-header-actions"><button type="button" aria-label={sound?'关闭翻页音效':'开启翻页音效'} aria-pressed={sound} onClick={()=>{if(sound)audio.current?.silence();else void audio.current?.prepare(true);setSound(value=>!value);try{localStorage.setItem('ravens_book_audio',sound?'off':'on');}catch{/* Device-only preference. */}}}>{sound?'♪':'♩'}</button><button type="button" onClick={closeBook} aria-label="关闭游戏帮助">关闭手册 ×</button></div></header>
+      <header className="guide-sheet__header"><div><span className="guide-sheet__mark">☾</span><strong>钟楼手册</strong></div><div className="guide-header-actions"><GlobalAudioButton onEnable={()=>{void audio.current?.prepare(true);}}/><button type="button" onClick={closeBook} aria-label="关闭游戏帮助">关闭手册 ×</button></div></header>
       <nav className="guide-tabs" aria-label="手册页面">{([...(ownRole?[{id:'mine' as const,label:'我的角色'}]:[]),{id:'tutorial' as const,label:'新手教程'},{id:'roles' as const,label:'角色表'}]).map(tab=><button type="button" key={tab.id} className={page.mode===tab.id?'is-active':''} onClick={()=>modeTo(tab.id)}>{tab.label}</button>)}</nav>
       <div className="guide-page-toolbar" data-guide-toolbar={detail?'detail':page.mode==='roles'?'grid':page.mode}>
         {detail?<nav className="guide-detail-toolbar" aria-label="角色详情导航"><div><strong>{detail.name}</strong><span data-public-role-type={detail.type}>{roleTypeNames[detail.type]}</span></div><button type="button" aria-label={`返回${roleTypeNames[origin.current.category]}角色表`} onClick={closeDetail}><span aria-hidden="true">↶</span> 返回角色表</button></nav>:null}
