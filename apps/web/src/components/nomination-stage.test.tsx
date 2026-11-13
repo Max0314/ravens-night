@@ -43,8 +43,8 @@ test('history shows only published results today and distinguishes tie from fail
 
 test('gallows clears a stale execution candidate after a highest-vote tie',()=>{
   const view=fixture(),game={...view.game!,phase:'NOMINATION' as const,executionTied:true,onBlock:{seat:4,votes:5}};delete game.nomination;
-  const ui=render(<Gallows game={game} room={view.room}/>),board=screen.getByLabelText('提名与处决席');expect(board).toHaveTextContent('最高票持平 · 暂无处决候选');expect(board).not.toHaveTextContent('当前处决候选');expect(board.querySelector('.gallows__portrait')).toBeNull();
-  ui.rerender(<Gallows game={{...view.game!,executionTied:true,onBlock:{seat:4,votes:5}}} room={view.room}/>);expect(board).toHaveTextContent('当前提名');expect(board).not.toHaveTextContent('当前处决候选：4号');
+  const ui=render(<Gallows game={game} room={view.room}/>),board=screen.getByLabelText('提名与处决席');expect(board).toHaveTextContent('最高票持平 · 暂无处决候选');expect(board).not.toHaveTextContent('当前处决候选');expect(board.querySelector('.gallows__portrait')).toBeNull();expect(board.querySelector('.gallows__drawing>svg')).toBeNull();
+  ui.rerender(<Gallows game={{...view.game!,executionTied:true,onBlock:{seat:4,votes:5}}} room={view.room}/>);expect(board).toHaveTextContent('当前提名');expect(board).not.toHaveTextContent('当前处决候选：4号');expect(board.querySelector('.gallows__drawing>svg')).toBeNull();
 });
 test('gallows moves the nominated avatar from its matching table seat once per ballot',()=>{
   const view=fixture(),cancel=vi.fn(),animate=vi.fn().mockReturnValue({cancel});
@@ -66,7 +66,7 @@ test('gallows uses a rope for a living candidate and only the public death flag 
   expect(ui.container.querySelector('.gallows__portrait .rn-avatar-state--threatened')).not.toBeNull();
   expect(ui.container.querySelector('.gallows__portrait .rn-avatar-state--dead')).toBeNull();
   ui.rerender(<Gallows game={{...game,seats:game.seats.map(p=>p.seat===3?{...p,alive:false}:p)}} room={view.room}/>);
-  expect(ui.container.querySelector('.gallows__portrait .rn-avatar-state--threatened')).toBeNull();
+  expect(ui.container.querySelector('.gallows__portrait .rn-avatar-cage')).not.toBeNull();
   expect(ui.container.querySelector('.gallows__portrait .rn-avatar-state--dead')).not.toBeNull();
   const ended={...game,phase:'NOMINATION' as const};delete ended.nomination;
   ui.rerender(<Gallows game={ended} room={view.room}/>);

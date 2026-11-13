@@ -15,3 +15,10 @@ test.each([5,7,12])('private marks stay beside their owning avatars without chan
  ui.rerender(<TownBoard {...props} privateVisible={false}/>);expect(ui.container.querySelector('.rn-seat__private-mark')).toBeNull();
  const next=ui.container.querySelector('.round-table')!;expect(next.getAttribute('style')).toBe(geometry);expect([...next.querySelectorAll('.rn-seat')].map(node=>node.getAttribute('style'))).toEqual(positions);
 });
+
+test('player details keep received related clues private and expose public status without hidden causes',()=>{
+ const view=fixture(5);view.game!.seats[1]!.alive=false;view.game!.events=[{seq:2,kind:'DAWN',outcome:'DEATH',seats:[2],startsAt:0,timingVersion:4,message:'公开黎明'}];view.game!.serverNow=3000;view.room={code:'ROOM',state:'RUNNING',playerCount:5,participants:[],timeline:{mode:'MANUAL',epoch:0}};
+ const props={view,busy:false,onNominate:vi.fn(),onShoot:vi.fn()};const ui=render(<TownBoard {...props}/>);fireEvent.click(screen.getByRole('button',{name:/长昵称.*已死亡/}));fireEvent.click(screen.getByRole('button',{name:'详情'}));
+ const facts=screen.getByRole('region',{name:'我已获知的相关线索'});expect(facts).toHaveTextContent('可能是图书管理员');expect(facts).toHaveTextContent('爪牙同伴');expect(facts).toHaveTextContent('你已选择的主人');expect(screen.getByRole('region',{name:'玩家公开状态'})).toHaveTextContent('夜间死亡（黎明公布）');
+ ui.rerender(<TownBoard {...props} privateVisible={false}/>);expect(screen.queryByRole('region',{name:'我已获知的相关线索'})).not.toBeInTheDocument();
+});

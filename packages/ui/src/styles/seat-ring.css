@@ -3,11 +3,11 @@
 .rn-seat-ring .rn-seat--dead{opacity:1;filter:none}
 .rn-seat-ring .rn-seat--dead .rn-seat__name{text-decoration:none}
 .rn-seat-ring .rn-seat__avatar{position:relative;display:block;isolation:isolate;overflow:visible;border-radius:50%;width:var(--round-portrait,42px);height:var(--round-portrait,42px)}
-.rn-seat-ring .rn-seat__avatar>img:not(.rn-night-scratch){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:1}
+.rn-seat-ring .rn-seat__avatar>img:not(.rn-night-scratch):not(.rn-avatar-cage){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:1}
 .rn-seat-ring .rn-seat__initial{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#1c2527;color:#d9cda9}
 .rn-seat-ring .rn-seat__avatar[data-avatar-state=THREATENED]>img,.rn-seat-ring .rn-seat__avatar[data-avatar-state=THREATENED]>.rn-seat__initial{filter:none;opacity:1}
-.rn-seat-ring .rn-seat__avatar[data-avatar-state=DEAD]>img:not(.rn-night-scratch),.rn-seat-ring .rn-seat__avatar[data-avatar-state=DEAD]>.rn-seat__initial{filter:grayscale(1);opacity:.55}
-.rn-seat-ring .rn-seat .rn-seat__portrait-anchor>.rn-seat__number{position:absolute!important;left:auto;top:auto;right:calc(100% - 3px);bottom:calc(100% - 3px);z-index:5;display:grid;place-items:center;min-width:15px;height:15px;padding:0 2px;border:0;border-radius:4px;background:#0b100fee;color:#e6d2a0;font:10px/1 var(--rn-mono);pointer-events:none}
+.rn-seat-ring .rn-seat__avatar[data-avatar-state=DEAD]>img:not(.rn-night-scratch):not(.rn-avatar-cage),.rn-seat-ring .rn-seat__avatar[data-avatar-state=DEAD]>.rn-seat__initial{filter:grayscale(1);opacity:.55}
+.rn-seat-ring .rn-seat .rn-seat__portrait-anchor>.rn-seat__number{position:absolute!important;left:-3px;top:auto;right:auto;bottom:calc(100% + 8px);z-index:5;display:grid;place-items:center;min-width:15px;height:15px;padding:0 2px;border:0;border-radius:4px;background:#0b100fee;color:#e6d2a0;font:10px/1 var(--rn-mono);pointer-events:none}
 .rn-seat-ring .rn-seat--mine .rn-seat__number{background:#d3b977;color:#141710}
 .rn-seat-ring .rn-seat__name{display:block;max-width:100%;line-height:12px}
 .rn-seat-ring>.rn-seat .rn-seat__ballot{position:absolute;bottom:9px;right:-3px;z-index:6;border:1px solid #9dba98;border-radius:50%;background:#142319;color:#cce5bf;width:13px;height:13px;font-size:10px;line-height:12px;overflow:hidden}
@@ -29,3 +29,11 @@
 .round-table-preview:has(.rn-seat__portrait-anchor){overflow:visible}
 
 .display .display__town:has(.rn-seat__portrait-anchor){overflow:visible}
+
+/* Fixed v7 front-opening anchor supplied by the cinematic asset manifest. */
+.rn-avatar-state.rn-avatar-cage[alt]{inset:auto;position:absolute;left:-40.9090909%;top:-50%;right:auto;bottom:auto;width:190%;height:190%;max-width:none;border-radius:0;object-fit:contain;filter:none;opacity:1;z-index:3;pointer-events:none}
+.rn-seat-ring>.rn-seat .rn-seat__execution{display:flex;align-items:center;justify-content:center;gap:2px}
+.rn-seat__execution>svg{width:12px;height:12px;stroke:currentColor;stroke-width:1.7}
+.gallows .gallows__portrait[data-avatar-state=THREATENED] .player-avatar{filter:none;opacity:1}
+
+.rn-seat-ring .rn-seat--caged .rn-seat__name{position:relative;z-index:5;border-radius:3px;background:#0b100fee}
