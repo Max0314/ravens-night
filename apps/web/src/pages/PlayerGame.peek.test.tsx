@@ -60,3 +60,9 @@ test('local audio disappears for identity, my peek, a normal sheet and a guide, 
  ui.rerender(<PlayerGame {...handlers} view={{...view,roleConfirmed:false,game:{...view.game!,phase:'ROLE_REVEAL'}}}/>);expect(audio()).toBeNull();
  ui.rerender(<PlayerGame {...handlers} view={{...view,game:{...view.game!,phase:'ROLE_REVEAL'}}}/>);expect(audio()).toBeNull();expect(screen.getByRole('status')).toHaveTextContent('身份已确认');
 });
+
+test('a restored opening-night lock removes a role peek and never revives it at the deadline',()=>{
+ const view=fixture(),ui=render(<PlayerGame {...handlers} view={view}/>);open();const locked={...view,game:{...view.game!,phase:'ROLE_REVEAL' as const,serverNow:1000,presentationUntil:7200}};
+ ui.rerender(<PlayerGame {...handlers} view={locked}/>);expect(screen.queryByRole('dialog',{name:'我的角色立绘'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'查看我的角色立绘'})).not.toBeInTheDocument();expect(screen.queryByText('厨师')).not.toBeInTheDocument();
+ ui.rerender(<PlayerGame {...handlers} view={{...locked,game:{...locked.game!,serverNow:7200}}}/>);expect(screen.getByRole('button',{name:'查看我的角色立绘'})).toBeVisible();expect(screen.queryByRole('dialog',{name:'我的角色立绘'})).not.toBeInTheDocument();
+});
