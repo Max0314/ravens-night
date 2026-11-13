@@ -17,3 +17,7 @@
 2026-11-13手机无声反馈追加：手册纸张声由书内开关授予局部许可，不再被默认关闭的演出总开关误拦截。`createBookAudio().prepare(feedback?: boolean): Promise<boolean>` 必须直接在声音开启/翻页手势内调用，先同步解锁并预热既有纸轨，再异步准备纹理；`silence`/`dispose`撤销该书许可与晚到反馈。不会开启私密动作音效或修改线上/线下/预览偏好；纸张仍用原轨，book范围增益从0.23调为0.65。共享解锁允许后续手势重新resume，不复用卡住的自动请求。此为代码与离线数值修复，不能替代手机可听验收。
 
 大厅M19无声反馈追加：原候选完整录音不变，运行另用 `apps/web/public/audio/music/v1/lobby-m19.mp3` 的完整响度修订副本（175.521秒，实测-20.73 LUFS/-2.44dBTP），脚本 `scripts/build-lobby-music.py` 从固定SHA候选重建，无新外部来源。大厅播放器音量改为0.8，预载音频；按实际readyState/paused/muted和playing/pause/waiting/error事件更新状态，8秒未起播或加载失败显示可重试入口，click/touchend直接重试未完成自动请求。不可把DOM/HTTP/Range/媒体数值检查写成手机真实可听验收。
+
+2026-11-13用户澄清开场音乐范围：替代原大厅至全员身份确认截止。组件现提供`OpeningMusic`（兼容`LobbyMusic`）稳定挂载接口，支持跨首页/创建/加入/大厅/教学/身份确认/首夜保持同一M19音源与进度；首晨实际演出startsAt由App公开时钟驱动fadeOut，800ms降到0后暂停；ducked将前景期间音量平滑压到0.26而不中断。返回菜单或下一把可恢复原进度；不更改已认可的恶魔四刀或素材。此条记录组件交付，App范围接入/上线由来源会话统一记录。
+
+跨入口音源所有权补充：App根层只调用一次`useOpeningMusic`，页面通过44px内联`OpeningMusicControl`移动控制，保证首页→创建/加入→房间不重建播放器。旧`LobbyMusic`/`OpeningMusic`wrapper仅保留兼容。`fadeOut`、`ducked`驱动包络，公开首晨时间及入口挂载由来源App集成；没有修改Home/App或恶魔素材/时钟。
