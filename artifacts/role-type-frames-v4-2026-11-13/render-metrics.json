@@ -1,0 +1,40 @@
+{
+  "method": "sharp/librsvg only, no browser; 120x160 frame and image silhouette",
+  "frameSha256": "e62cd3bab2b406541cd1f429031d81dcdea5e28d422b277de8dee59a22844c0e",
+  "maxFrameLumaOnDark": 66.17,
+  "paintedPixels": 1570,
+  "samples": [
+    {
+      "name": "town",
+      "cornerAlpha": [
+        0,
+        0
+      ],
+      "topCenterAlpha": 255
+    },
+    {
+      "name": "outsider",
+      "cornerAlpha": [
+        0,
+        0
+      ],
+      "topCenterAlpha": 255
+    },
+    {
+      "name": "minion",
+      "cornerAlpha": [
+        0,
+        0
+      ],
+      "topCenterAlpha": 255
+    },
+    {
+      "name": "demon",
+      "cornerAlpha": [
+        0,
+        0
+      ],
+      "topCenterAlpha": 255
+    }
+  ]
+}

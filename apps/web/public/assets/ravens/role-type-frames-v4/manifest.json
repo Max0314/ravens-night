@@ -1,0 +1,26 @@
+{
+  "collection": "role-type-frames-v4",
+  "createdAt": "2026-11-13",
+  "source": "artifacts/role-type-frames-v4-2026-11-13/source.mjs",
+  "usage": "One shared inset frame, role index previews only. Full and thumbnail fields use the same immutable URL.",
+  "palette": {
+    "outer": "#51452f",
+    "inner": "#786344"
+  },
+  "geometry": {
+    "upper": "Concentric semicircles centered at (120,120), radii 117/112",
+    "lower": "v3 double rails and soft bottom corners retained",
+    "portraitClip": "Guide-only CSS border-radius 50% 50% 6.666667% 6.666667% / 37.5% 37.5% 5% 5% on a 3:4 image"
+  },
+  "frames": [
+    {
+      "id": "arch",
+      "file": "arch.svg",
+      "width": 240,
+      "height": 320,
+      "scalable": true,
+      "bytes": 487,
+      "sha256": "e62cd3bab2b406541cd1f429031d81dcdea5e28d422b277de8dee59a22844c0e"
+    }
+  ]
+}
