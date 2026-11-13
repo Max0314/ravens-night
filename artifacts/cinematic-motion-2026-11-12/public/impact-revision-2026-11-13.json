@@ -1,0 +1,35 @@
+{
+  "method": "Production React SVGs, local images embedded as PNG, sharp; static media only",
+  "private": {
+    "avatarSizes": [
+      64,
+      42
+    ],
+    "scale": 3.2,
+    "tiles": [
+      "64 left",
+      "64 both",
+      "42 left",
+      "42 both"
+    ],
+    "avatar": "Synthetic fixture; nickname drawn separately, not a browser screenshot"
+  },
+  "public": {
+    "viewports": [
+      [
+        320,
+        568
+      ],
+      [
+        844,
+        390
+      ]
+    ],
+    "frames": [
+      "250ms after result",
+      "1400ms after result",
+      "reduced static"
+    ],
+    "scope": "Blood layer only; header/footer/target readability protected by DOM/CSS and not represented as browser screenshot"
+  }
+}

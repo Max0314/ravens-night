@@ -12,7 +12,7 @@ import type { PrivateView } from "./api.js";
 import { rolePlayGuides } from "./guide-content.js";
 import { beginnerRoles } from "@ravens/content";
 
-beforeEach(()=>{vi.spyOn(HTMLMediaElement.prototype,'play').mockResolvedValue();vi.spyOn(HTMLMediaElement.prototype,'pause').mockImplementation(()=>{});});
+beforeEach(()=>{vi.spyOn(HTMLMediaElement.prototype,'load').mockImplementation(()=>{});vi.spyOn(HTMLMediaElement.prototype,'play').mockResolvedValue();vi.spyOn(HTMLMediaElement.prototype,'pause').mockImplementation(()=>{});});
 afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); window.history.replaceState({}, "", "/"); vi.unstubAllGlobals();vi.restoreAllMocks(); });
 
 test("the first screen gives an authorized newcomer one clear way to join", async () => {
@@ -52,7 +52,8 @@ test("the home screen exposes an interactive tutorial and the complete role comp
   const tutorialBody=screen.getByRole("heading", {name:"阵营与胜负"}).closest(".guide-tutorial__body")!;tutorialBody.scrollTop=160;
   fireEvent.click(screen.getByRole("button", { name: "下一条" }));
   expect(screen.getByRole("heading", { name: "昼夜流程" })).toBeVisible();
-  expect(tutorialBody.scrollTop).toBe(0);
+  expect(screen.getByRole("heading",{name:"昼夜流程"}).closest(".guide-tutorial__body")!.scrollTop).toBe(0);
+  expect(tutorialBody.scrollTop).toBe(160);
   fireEvent.click(screen.getByRole("button", { name: "角色表" }));
   expect(screen.getByRole("tablist",{name:"角色分类"})).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: /洗衣妇/ }));

@@ -29,6 +29,24 @@ export function ResultBlood({elapsedMs,resultAt,variant='burst',reduced=false}:{
  return <svg className={`result-blood result-blood--${variant}`} viewBox="-100 -80 200 160" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style={{opacity:fade,transform:'translate(-50%,-50%)',overflow:'visible'}}><image href={`/art/effects/v3/blood-${variant}.webp`} x="-100" y="-66.7" width="200" height="133.4" preserveAspectRatio="xMidYMid meet" transform={`scale(${reduced?.8:.2+Math.min(1,t/130)*.9})`}/>{!reduced&&variant!=='stain'&&Array.from({length:16},(_,i)=>{const degrees=variant==='left'?145+(i*31)%70:variant==='right'?-35+(i*31)%70:20+(i*37)%140,a=degrees*Math.PI/180,d=(30+i*7%95)*p;return <ellipse data-blood-particle="true" key={i} rx={2+i%4} ry={1.5+i%3} fill={i%3?'#a41b20':'#d43b2d'} transform={`translate(${Math.cos(a)*d} ${Math.sin(a)*d+35*p*p}) rotate(${i*29})`}/>;})}</svg>;
 }
 
+/** Only the published death result can paint this viewport layer. */
+export function ExecutionBloodScreen({elapsedMs,resultAt,death,empty,resultVisible,reduced=false}:{elapsedMs:number;resultAt:number;death:boolean;empty:boolean;resultVisible:boolean;reduced?:boolean}){
+ const id=useId().replace(/:/g,''),t=elapsedMs-resultAt;
+ if(!resultVisible||!death||empty||t<0)return null;
+ const p=reduced?1:Math.min(1,t/210),fade=reduced?.8:Math.max(.45,1-Math.max(0,t-2200)/4200),flow=reduced?1:Math.min(1,t/1700);
+ return <svg xmlns="http://www.w3.org/2000/svg" className={`execution-blood-screen${reduced?' is-reduced':''}`} viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true" style={{opacity:fade}} data-testid="execution-blood-screen">
+  <defs><radialGradient id={`${id}-rim`}><stop offset=".35" stopColor="#75030b" stopOpacity="0"/><stop offset="1" stopColor="#b00d1c" stopOpacity=".34"/></radialGradient></defs>
+  <rect width={1000} height={600} fill={`url(#${id}-rim)`}/>
+  <g opacity={.95*p} transform={`translate(500 330) scale(${reduced?1:.4+.6*p}) translate(-500 -330)`}>
+   <image href="/art/effects/v3/blood-burst.webp" x={-170} y={80} width={760} height={470} preserveAspectRatio="xMidYMid meet"/>
+   <image href="/art/effects/v3/blood-right.webp" x={560} y={70} width={660} height={440} preserveAspectRatio="xMidYMid meet"/>
+  </g>
+  <g opacity={.9*p}><image href="/art/effects/v3/blood-stain.webp" x={-150} y={-50+flow*35} width={640} height={440} preserveAspectRatio="xMidYMid meet"/><image href="/art/effects/v3/blood-stain.webp" x={680} y={30+flow*50} width={450} height={410} preserveAspectRatio="xMidYMid meet" transform="rotate(18 900 180)"/><image href="/art/effects/v3/blood-stain.webp" x={250} y={420} width={700} height={300} preserveAspectRatio="xMidYMid meet"/></g>
+  <g fill="none" stroke="#b51b28" strokeLinecap="round" opacity={.8*p}>{Array.from({length:12},(_,i)=>{const x=i<6?25+i*28:825+(i-6)*28,y=90+(i*41)%120,length=(50+i%4*30)*flow;return <path key={i} data-blood-trail="true" d={`M${x} ${y}Q${x-4} ${y+length*.45} ${x+Math.sin(i)*7} ${y+length}`} strokeWidth={2+i%3}/>;})}</g>
+  {!reduced?Array.from({length:24},(_,i)=>{const q=Math.min(1,Math.max(0,t-i*5)/700),a=i*Math.PI*2/24,d=(250+i%5*85)*q;return <ellipse data-screen-blood-particle="true" key={i} cx={500+Math.cos(a)*d} cy={330+Math.sin(a)*d*.7+80*q*q} rx={2+i%5} ry={1.5+i%3} fill={i%3?'#ba1420':'#ef3434'} opacity={1-q}/>;}):null}
+ </svg>;
+}
+
 const slowGames=new Set<string>();
 /** Distort the actual visible DOM surface, never a screenshot or hidden private layer. */
 export function GlassRefraction({seed,elapsedMs,impactAt=850,reduced=false}:{seed:string;elapsedMs:number;impactAt?:number;reduced?:boolean}){

@@ -21,3 +21,33 @@
 .town-center .town-night-confirm>div>button{max-width:50%;min-width:44px}
 .town-center .town-night-confirm>div>button>span:not(.player-avatar){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .town-center .town-night-confirm>div>button>b{font-weight:400;flex:none}
+
+/* Keep one local audio control beside the role chip; reserve the menu's 48px lane. */
+.game-page--town>.game-header{padding-right:48px!important;column-gap:6px}
+.game-page--town .game-header>.game-header__sound[data-global-audio-control]{flex:0 0 44px;width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;background:none;box-shadow:none}
+.game-page--town .game-header>button.role-chip{display:inline-flex;align-items:center;justify-content:center;flex:0 1 74px;min-height:44px;padding-inline:6px;cursor:pointer}
+.game-page--town .game-header>.game-header__phase{flex:1 1 90px;min-width:0}
+.game-page--town .game-header>.game-header__phase>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body:has(.guide-backdrop,[role="dialog"],[role="alertdialog"]) .player-session [data-global-audio-control]{display:none}
+@media(max-width:359px){.game-page--town .game-header__phase>span{gap:3px;font-size:9px}.game-page--town .game-header>button.role-chip{flex-basis:62px;max-width:62px}.game-page--town .game-header>.game-voice-entry{display:none}}
+
+/* An opaque stage under the private cover, independent of hidden identity content. */
+.player-session .player-wait-scene,.player-session .game-page.game-page--identity{background-color:#080b0d;background-image:linear-gradient(180deg,#080b0d82,#080b0dbd 55%,#080b0df5),url('/art/rooms/courtyard-night.webp');background-size:cover;background-position:center}
+.player-session>.privacy-curtain.player-wait-scene{position:relative;inset:auto;z-index:0;flex:1;min-height:0;width:100%;margin:0;padding:max(20px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));display:grid;place-items:center;overflow:auto;overscroll-behavior:contain;text-align:center;isolation:isolate}
+.player-session .game-page.game-page--waiting{padding:0;overflow:hidden}
+.player-session .game-page>.inline-waiting.player-wait-scene{display:grid;place-items:center;width:100%;max-width:none;min-height:0;margin:0;padding:24px 20px;overflow:auto;overscroll-behavior:contain;text-align:center}
+.player-session .player-wait-scene>.player-wait-scene__content{position:relative;display:grid;justify-items:center;gap:14px;width:min(100%,420px);min-height:0;margin:0;padding:24px 16px;border:0;background:none;box-shadow:none;color:#d7c9a8}
+.player-session .player-wait-scene__content>h1{margin:0;font:400 clamp(22px,6vw,32px)/1.35 var(--rn-serif);color:#e2d0a5}
+.player-session .player-wait-scene__content>p{margin:0;color:#b8b2a4;font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+.player-session .player-wait-scene__content>.player-wait-scene__eyebrow{color:#af9868;font-size:10px;letter-spacing:.28em}
+.player-session .player-wait-scene__content>.player-wait-scene__seal{display:grid;place-items:center;width:72px;height:72px;margin:0 0 8px;border:1px solid #b69b5e66;border-radius:50%;color:#c9af72;font:32px var(--rn-serif);box-shadow:0 0 0 8px #b69b5e08,0 0 0 9px #b69b5e1a}
+.player-session .player-wait-scene__content>.waiting-orbit{width:44px;height:44px;margin:10px 0 0;border-color:#b69b5e44}
+.player-session .player-wait-scene__content>.waiting-orbit span{transform:translate(17px,-4px)}
+.town-center .town-identity-wait{display:grid;justify-items:center;gap:8px;color:#d6c398;font-size:11px;line-height:1.5;text-align:center}
+.town-center .town-identity-wait>p{margin:0}
+@media(orientation:landscape) and (max-height:540px){.game-page--town>.game-header{padding-right:0!important}.game-page--town .game-header>button.role-chip{flex-basis:54px;max-width:54px}.player-session .player-wait-scene>.player-wait-scene__content{gap:8px;padding:12px}.player-session .player-wait-scene__content>.player-wait-scene__seal{width:44px;height:44px;font-size:24px;margin:0}.player-session .player-wait-scene__content>.waiting-orbit{display:none}}
+
+.public-ballot--simultaneous .ballot-countdown{font-variant-numeric:tabular-nums;color:#ead09c;font-weight:600}
+.player-session>.public-ballot.public-ballot--simultaneous .public-ballot__progress{display:grid!important;gap:2px}
+
+.town-ballot-center .public-ballot__progress>.ballot-countdown{font-size:12px;line-height:1.25}

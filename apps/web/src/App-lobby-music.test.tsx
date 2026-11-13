@@ -22,9 +22,9 @@ afterEach(()=>{cleanup();vi.restoreAllMocks();vi.unstubAllGlobals();localStorage
 test('M19 survives role confirmation and first night, then fades at the published first dawn',async()=>{
  const initial=fixture('ROLE_REVEAL',false,1);vi.mocked(getRoom).mockResolvedValue(initial.room);vi.mocked(getPrivateView).mockResolvedValue(initial.privateView);
  saveSession({roomCode:'ABCDEF',mode:'PLAYER',participantId:'me'});window.history.replaceState({},'','/?room=ABCDEF');render(<App/>);
- await screen.findByRole('heading',{name:'身份确认'});await waitFor(()=>expect(tracks[0]?.paused).toBe(false));const track=tracks[0]!;expect(track.src).toContain('/lobby-m19.mp3');track.currentTime=43;
+ await screen.findByRole('heading',{name:'身份确认'});expect(screen.queryByRole('button',{name:'房间菜单'})).toBeNull();expect(screen.queryByRole('button',{name:'关闭声音'})).toBeNull();await waitFor(()=>expect(tracks[0]?.paused).toBe(false));const track=tracks[0]!;expect(track.src).toContain('/lobby-m19.mp3');track.currentTime=43;
  const mine=fixture('ROLE_REVEAL',true,2);vi.mocked(getRoom).mockResolvedValue(mine.room);vi.mocked(getPrivateView).mockResolvedValue(mine.privateView);
- await act(async()=>feed.receive?.(mine));expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);
+ await act(async()=>feed.receive?.(mine));expect(screen.queryByRole('button',{name:'房间菜单'})).toBeNull();expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);
  const night=fixture('FIRST_NIGHT',true,3);vi.mocked(getRoom).mockResolvedValue(night.room);vi.mocked(getPrivateView).mockResolvedValue(night.privateView);
  await act(async()=>feed.receive?.(night));expect(track.paused).toBe(false);expect(track.currentTime).toBe(43);expect(tracks).toHaveLength(1);
  const dawn=fixture('DAY_DISCUSSION',true,4);const startsAt=Date.now()+10_000;

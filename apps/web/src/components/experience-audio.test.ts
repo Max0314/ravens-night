@@ -59,7 +59,7 @@ test('monk action restores the exact accepted v1 shield and its metal transient 
 });
 test('imp action separates both rip cues without duplicating the generic wing theme',async()=>{
  preferences.setParticipationMode('ONLINE');const scene=submitted('imp');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();
- expect(started.some(s=>s.sample===names.indexOf('role-imp'))).toBe(false);expect(started.filter(s=>s.sample===names.indexOf('slash-left')).map(s=>s.at)).toEqual([11.365,11.965]);expect(started.filter(s=>s.sample===names.indexOf('slash-right')).map(s=>s.at)).toEqual([11.665,12.265]);
+ expect(started.some(s=>s.sample===names.indexOf('role-imp'))).toBe(false);expect(started.filter(s=>s.sample===names.indexOf('slash-left')).map(s=>s.at)).toEqual([11.615,12.815]);expect(started.filter(s=>s.sample===names.indexOf('slash-right')).map(s=>s.at)).toEqual([12.165,13.365]);
  audio.cancelEventAudio('private:'+scene.id);expect(started.every(s=>s.stopped)).toBe(true);
 });
 test('closing a slow single-track audition cancels its eventual decode',async()=>{
@@ -94,7 +94,7 @@ test('resume continues a spoken tail from its offset, while seek skips the past 
  preferences.setParticipationMode('ONLINE');const butler=submitted('butler');await audio.prepareRoleAudio(butler);audio.scheduleRoleCue(butler,0);await flush();context.currentTime=11.8;audio.cancelEventAudio('private:'+butler.id);audio.scheduleRoleCue(butler,1800,{mode:'RESUME'});await flush();
  const voice=started.filter(s=>names[s.sample]==='butler-voice'&&!s.stopped);expect(voice).toHaveLength(1);expect(voice[0]?.offset).toBeCloseTo(.35);expect(voice[0]?.at).toBe(11.8);
  audio.cancelEventAudio('private:'+butler.id);const count=started.length;audio.scheduleRoleCue(butler,1800,{mode:'SEEK'});await flush();expect(started).toHaveLength(count);
- const imp=submitted('imp');await audio.prepareRoleAudio(imp);audio.scheduleRoleCue(imp,1600,{mode:'RESUME'});await flush();expect(started.slice(count).map(s=>names[s.sample])).toEqual(['slash-right','slash-left','slash-right']);expect(started[count]?.at).toBeCloseTo(11.865);
+ const imp=submitted('imp');await audio.prepareRoleAudio(imp);audio.scheduleRoleCue(imp,1900,{mode:'RESUME'});await flush();expect(started.slice(count).map(s=>names[s.sample])).toEqual(['slash-right','slash-left','slash-right']);expect(started[count]?.at).toBeCloseTo(12.065);
 });
 
 test('a shield paused in its lead-in preserves the future contact without restarting the transient',async()=>{
@@ -153,7 +153,7 @@ test('preview sound and volume reach the master without changing room privacy or
 
 test('four demon contacts use audible v5 stems, compensate decoded attack energy and stay uncancelled by the voice/source cap',async()=>{
  preferences.setParticipationMode('ONLINE');const scene=submitted('imp');await audio.prepareRoleAudio(scene);audio.scheduleRoleCue(scene,0);await flush();
- const slashes=started.filter(s=>names[s.sample]?.startsWith('slash-'));expect(slashes).toHaveLength(4);expect(slashes.every(s=>!s.stopped)).toBe(true);expect(slashes.map(s=>Math.round((s.at-10)*1000+85))).toEqual([1450,1750,2050,2350]);
+ const slashes=started.filter(s=>names[s.sample]?.startsWith('slash-'));expect(slashes).toHaveLength(4);expect(slashes.every(s=>!s.stopped)).toBe(true);expect(slashes.map(s=>Math.round((s.at-10)*1000+85))).toEqual([1700,2250,2900,3450]);
  expect(fetch).toHaveBeenCalledWith('/audio/effects/v5/slash-left.mp3');expect(fetch).toHaveBeenCalledWith('/audio/effects/v5/slash-right.mp3');expect(started.some(s=>names[s.sample]?.startsWith('hurt-'))).toBe(false);
  const manifest=JSON.parse(readFileSync(resolve('apps/web/public/audio/effects/v5/manifest.json'),'utf8'));expect(manifest.files.map((f:{contactOffsetMs:number})=>f.contactOffsetMs)).toEqual([85,85]);
 });

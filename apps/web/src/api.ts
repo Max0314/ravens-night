@@ -97,7 +97,7 @@ export async function retryPendingCommand(code: string) {
 
 async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
   const generation=accountGeneration;
-  const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode(), "x-ravens-protocol": "6" });
+  const headers = new Headers({ "content-type": "application/json", "x-room-mode": currentRoomMode(), "x-ravens-protocol": "7" });
   if (init?.method && init.method !== "GET") headers.set("x-command-id", crypto.randomUUID());
   new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
   const options = { ...init, credentials: "same-origin" as const, headers };

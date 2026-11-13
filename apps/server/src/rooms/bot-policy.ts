@@ -32,7 +32,7 @@ export function chooseBotAction({view:v,memory:m,seed,now,slow}:BotObservation):
     const prior=m.ballot?.ballotId===g.nomination.ballotId?m.ballot:undefined;
     if(!prior?.initialSubmitted||v.role?.roleId==='butler'&&prior.correctionCount===0&&raised!==prior.lastRaised){
       const index=g.nomination.voterOrder?.indexOf(seat)??-1,counted=g.nomination.countedSeats?.length??0;
-      return{kind:'VOTE',args:{raised},delay:Math.min(1500,500*(slow?3:1)),...(index>=counted&&g.nomination.nextCountAt!==undefined?{latest:g.nomination.nextCountAt+(index-counted)*1500}:{})};
+      return{kind:'VOTE',args:{raised},delay:Math.min(1500,500*(slow?3:1)),...(g.nomination.mode==='SIMULTANEOUS'?{latest:g.nomination.voteEndsAt}:index>=counted&&g.nomination.nextCountAt!==undefined?{latest:g.nomination.nextCountAt+(index-counted)*1500}:{})};
     }
     return;
   }

@@ -1,0 +1,6 @@
+.nomination-notice.nomination-notice--above-navigation{bottom:var(--nomination-navigation-bottom);max-height:var(--nomination-navigation-height);overflow-y:auto;overscroll-behavior:contain}
+.player-private .game-content--record{padding-bottom:var(--nomination-record-padding,0px);scroll-padding-bottom:var(--nomination-record-padding,0px)}
+
+.nomination-notice--simultaneous .nomination-notice__summary{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:0;font-variant-numeric:tabular-nums}
+.nomination-notice--simultaneous .nomination-notice__summary>.ballot-countdown{grid-column:1/-1;font-size:14px;color:#ead09c}
+.nomination-notice--simultaneous .nomination-notice__summary>span:last-child{grid-column:1/-1}
