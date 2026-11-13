@@ -25,6 +25,8 @@ pnpm build
 
 音频分析的CLAP模型及Python环境重建方法见候选包TOOLING.md；模型权重、node_modules、构建缓存和本机环境通过对应安装步骤恢复，不是源码素材。
 
+局内分阶段配乐入口为`GameScoreOwner`，选曲规则在`game-score.ts`；`python scripts/build-game-score.py`从仓库已保存候选原件重建`apps/web/public/audio/music/v2`。来源、许可、裁切起点与产物哈希见该目录`SOURCES.md`及`manifest.json`，运行菜单提供署名页。完整背景乐流式播放，私密情报配乐只解码短片段；是否已上线以统一部署记录为准。
+
 ## 线上查看
 
 - 游戏：<https://clocktower.fribench.cn>
