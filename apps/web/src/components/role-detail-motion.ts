@@ -1,4 +1,4 @@
-import {cinematicTiming as timing,smooth} from './cinematic-timing.js';
+import {cinematicTiming as timing,smooth,unit} from './cinematic-timing.js';
 import {rotatePoint,polygonArea,liquidLevel,belowWater,type Point,type Quad} from './private-prop-motion.js';
 
 export function materialMesh(xs:readonly number[],ys:readonly number[],project:(p:Point)=>Point){const pieces:{source:[Point,Point,Point];target:[Point,Point,Point]}[]=[];for(let y=0;y<ys.length-1;y++)for(let x=0;x<xs.length-1;x++){const a={x:xs[x]!,y:ys[y]!},b={x:xs[x+1]!,y:ys[y]!},c={x:xs[x]!,y:ys[y+1]!},d={x:xs[x+1]!,y:ys[y+1]!};for(const source of [[a,b,c],[b,d,c]] as [Point,Point,Point][])pieces.push({source,target:source.map(project) as [Point,Point,Point]});}return pieces;}
@@ -20,3 +20,9 @@ export function empathDetailPose(t:number,reduced=false){const e=timing.empath,r
 
 export function lanternDetailPose(t:number,reduced=false){const l=timing.recluse,age=Math.max(0,t-l.swing),angle=reduced||t<l.swing?0:8*Math.sin(age/190)*Math.exp(-age/1700)*(1-smooth(t,l.settle-300,l.settle));return{angle,light:reduced?.75:.75+.06*Math.sin(t/180)+.035*Math.sin(t/83),mist:reduced?0:Math.sin(t/1100)*5};}
 export function candleDetailPose(t:number,index:number,reduced=false){const phase=index*2.1;return{angle:reduced?0:Math.sin(t/230+phase)*1.4,scaleX:reduced?1:1+Math.sin(t/170+phase)*.035,scaleY:reduced?1:.96+Math.sin(t/130+phase)*.07,opacity:reduced?.94:.91+Math.sin(t/180+phase)*.07,wax:reduced?1:smooth(t,timing.saint.wax+index*80,timing.saint.waxSet)};}
+
+export const virginBind={centre:{x:215,y:205},stem:{x:378,y:186},tip:{x:529,y:200},ribbon:{x:435,y:190}} as const;
+export function flowerPetalPoint(p:Point,t:number,reduced=false):Point{const centre=virginBind.centre,dx=p.x-centre.x,dy=p.y-centre.y,r=Math.hypot(dx/140,dy/140),weight=(1-smooth(r,.8,1.3))*(1-smooth(p.x,300,365));if(!weight)return p;const outer=r>.45,start=outer?timing.flower.outerStart:timing.flower.innerStart,delay=(Math.sin(Math.atan2(dy,dx)*3)+1)*65,fold=reduced?0:(1-smooth(t-delay,start,timing.flower.open-delay))*.18;return{x:p.x-dx*weight*fold,y:p.y-dy*weight*fold*.7};}
+export function ribbonMaterialPoint(p:Point,t:number,reduced=false):Point{const anchor=virginBind.ribbon,distance=Math.hypot(p.x-anchor.x,p.y-anchor.y),weight=unit(distance/200),energy=reduced?0:smooth(t,timing.flower.ribbon,timing.flower.ribbon+200)*(1-smooth(t,timing.flower.settle-300,timing.flower.settle)),wave=Math.sin(t/220-distance/85)*energy*weight*2.2;return{x:p.x+wave,y:p.y+wave*.65};}
+
+export function empathChainPoint(p:Point,t:number,reduced=false):Point{const weight=smooth(p.y,110,320),amplitude=empathDetailPose(t,reduced).chain*3.5*weight;return{x:p.x+Math.sin((p.y-110)/95)*amplitude,y:p.y+amplitude*(.3+.7*smooth(p.y,110,348))};}

@@ -38,9 +38,6 @@ export function washerPose(t:number){const w=timing.washer,sink=90*smooth(t,w.di
 export function poisonStreamPath(t:number):string {const points=Array.from({length:17},(_,i)=>{const age=i*10;return streamPoint(t-age,age);}).filter((p):p is Point=>!!p);return points.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ');}
 
 export function triangleMatrix(source:readonly [Point,Point,Point],target:readonly [Point,Point,Point]):string {const [a,b,c]=source,[p,q,r]=target,ux=b.x-a.x,uy=b.y-a.y,vx=c.x-a.x,vy=c.y-a.y,det=ux*vy-uy*vx,A=((q.x-p.x)*vy-(r.x-p.x)*uy)/det,C=(-(q.x-p.x)*vx+(r.x-p.x)*ux)/det,B=((q.y-p.y)*vy-(r.y-p.y)*uy)/det,D=(-(q.y-p.y)*vx+(r.y-p.y)*ux)/det;return `matrix(${A} ${B} ${C} ${D} ${p.x-A*a.x-C*a.y} ${p.y-B*a.x-D*a.y})`;}
-/** Continuous connected surface: flower tips unfold; remote ribbon, seal and document stay still. */
-export function flowerMesh(t:number){const amount=.08*(1-smooth(t,650,1750)),vertex=(x:number,y:number):Point=>{if(x===0||x===600||y===0||y===500)return{x,y};const dx=x-185,dy=y-190,weight=Math.exp(-Math.pow(dx/140,4)-Math.pow(dy/135,4));return{x:x-dx*weight*amount,y:y-dy*weight*amount*.7};};const triangles:{source:[Point,Point,Point];target:[Point,Point,Point]}[]=[];for(let y=0;y<4;y++)for(let x=0;x<6;x++){const a={x:x*100,y:y*125},b={x:(x+1)*100,y:y*125},c={x:x*100,y:(y+1)*125},d={x:(x+1)*100,y:(y+1)*125};for(const source of [[a,b,c],[b,d,c]] as [Point,Point,Point][])triangles.push({source,target:source.map(p=>vertex(p.x,p.y)) as [Point,Point,Point]});}return triangles;}
-
 /** Orthographic fold about an arbitrary image-space seam; both hinge endpoints remain fixed. */
 export function hingePlaneMatrix(a:Point,b:Point,angle:number):string {const length=Math.hypot(b.x-a.x,b.y-a.y),ux=(b.x-a.x)/length,uy=(b.y-a.y)/length,vx=-uy,vy=ux,c=Math.cos(angle*Math.PI/180),A=ux*ux+c*vx*vx,B=ux*uy+c*vx*vy,D=uy*uy+c*vy*vy;return `matrix(${A} ${B} ${B} ${D} ${a.x-A*a.x-B*a.y} ${a.y-B*a.x-D*a.y})`;}
 
