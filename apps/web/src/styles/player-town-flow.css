@@ -46,3 +46,8 @@ body:has(.guide-backdrop,[role="dialog"],[role="alertdialog"]) .player-session [
 .town-center .town-identity-wait{display:grid;justify-items:center;gap:8px;color:#d6c398;font-size:11px;line-height:1.5;text-align:center}
 .town-center .town-identity-wait>p{margin:0}
 @media(orientation:landscape) and (max-height:540px){.game-page--town>.game-header{padding-right:0!important}.game-page--town .game-header>button.role-chip{flex-basis:54px;max-width:54px}.player-session .player-wait-scene>.player-wait-scene__content{gap:8px;padding:12px}.player-session .player-wait-scene__content>.player-wait-scene__seal{width:44px;height:44px;font-size:24px;margin:0}.player-session .player-wait-scene__content>.waiting-orbit{display:none}}
+
+.public-ballot--simultaneous .ballot-countdown{font-variant-numeric:tabular-nums;color:#ead09c;font-weight:600}
+.player-session>.public-ballot.public-ballot--simultaneous .public-ballot__progress{display:grid!important;gap:2px}
+
+.town-ballot-center .public-ballot__progress>.ballot-countdown{font-size:12px;line-height:1.25}
