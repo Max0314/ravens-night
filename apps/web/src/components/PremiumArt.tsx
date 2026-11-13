@@ -14,7 +14,7 @@ export type {PreparedPrivateArt} from './private-art-assets.js';
 export function ClawDecal({variant='dawn',style,className=''}:{variant?:'screen-left'|'screen-right'|'avatar-left'|'avatar-right'|'dawn'|'town';style?:CSSProperties;className?:string}){return <ArtImage name={`claw-${variant}`} className={`premium-claw premium-claw--${variant} ${className}`} {...(style?{style}:{})}/>;}
 export function DemonSlashes({elapsedMs,reduced=false}:{elapsedMs:number;reduced?:boolean}){
  if(reduced)return null;
- return <div className="premium-demon-slashes" aria-hidden="true">{(['left','right'] as const).map((side,i)=>{const dt=elapsedMs-cinematicTiming.demon[side],p=clamp(dt/160),fade=dt<600?1:Math.max(0,1-(dt-600)/850);return dt<0?null:<ClawDecal key={side} variant={`screen-${side}`} style={{opacity:fade,clipPath:`inset(0 ${side==='left'?(1-p)*100:0}% 0 ${side==='right'?(1-p)*100:0}%)`,transform:`translateX(${(1-p)*(i?20:-20)}px)`}}/>;})}</div>;
+ return <div className="premium-demon-slashes" aria-hidden="true">{(['left','right'] as const).map((side,i)=>{const dt=elapsedMs-cinematicTiming.demon[side],p=clamp(dt/260),fade=dt<600?1:Math.max(0,1-(dt-600)/850);return dt<0?null:<ClawDecal key={side} variant={`screen-${side}`} style={{opacity:fade,clipPath:`inset(0 ${side==='left'?(1-p)*100:0}% 0 ${side==='right'?(1-p)*100:0}%)`,transform:`translateX(${(1-p)*(i?20:-20)}px)`}}/>;})}</div>;
 }
 export function PoisonVapour({elapsedMs,compact=false,reduced=false}:{elapsedMs:number;compact?:boolean;reduced?:boolean}){
  const t=elapsedMs-900;if(t<0)return null;const fade=Math.min(1,t/250)*Math.max(0,1-Math.max(0,t-1900)/1000);
