@@ -51,3 +51,8 @@ export function startInfoScene(view:PrivateView):QueuedScene|undefined{
  const recorded=view.history.find(entry=>entry.presentation?.shown.type==='EVIL_START'&&entry.presentation.shown.infoId===info.infoId);
  return {historySeq:recorded?.seq??Math.max(0,...view.history.map(entry=>entry.seq))+1,local:true,scene:recorded?.presentation??{version:1,id:`start-info:${view.game.gameId}:${info.infoId}`,kind:'EVIL_START',themeRoleId:view.role.roleId,shown:{type:'EVIL_START',infoId:info.infoId}}};
 }
+
+/** Automatic playback and its public-transition barrier must use the same eligibility rule. */
+export function canAutoPlayPrivateScene(scene:PrivateSceneDescriptor,roleConfirmed:boolean|undefined){
+ return !(scene.themeRoleId==='spy'&&scene.shown.type==='GRIMOIRE')&&(scene.kind!=='IDENTITY'||roleConfirmed===true);
+}
