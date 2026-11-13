@@ -1,4 +1,4 @@
-import {useLayoutEffect,useRef,useState,useSyncExternalStore,type ReactNode,type CSSProperties} from 'react';
+import {useLayoutEffect,useRef,useState,useSyncExternalStore,type ReactNode,type CSSProperties,type RefObject} from 'react';
 import {bendSheetPoint,clipSheet,pageCurl,PageTurnController,sheetBands,sheetDistance,sheetRectangle,type CurlGeometry,type SheetPoint} from './page-turn.js';
 
 export function sampleDrawCost(budget:{count:number;total:number},started:number,ended:number){
@@ -17,7 +17,7 @@ export function bandMatrix(points:SheetPoint[],g:CurlGeometry):[number,number,nu
 const polygon=(points:SheetPoint[])=>points.map(point=>`${point.x},${point.y}`).join(' ');
 const paperBack=[105,88,63];
 const paperColor=(back:boolean,shade:number)=>`rgb(${(back?paperBack:[70,60,43]).map(channel=>Math.round(channel*(1-shade))).join(' ')})`;
-export function PageTurnLayer<T>({controller,outgoing,incoming,fromTexture,onSlow}:{controller:PageTurnController<T>;outgoing?:ReactNode;incoming:ReactNode;fromTexture?:HTMLCanvasElement|undefined;onSlow:()=>void}){
+export function PageTurnLayer<T>({controller,outgoing,incoming,incomingRef,fromTexture,onSlow}:{controller:PageTurnController<T>;outgoing?:ReactNode;incoming?:ReactNode;incomingRef?:RefObject<HTMLElement|null>;fromTexture?:HTMLCanvasElement|undefined;onSlow:()=>void}){
   const turn=useSyncExternalStore(controller.subscribe,controller.getSnapshot,controller.getSnapshot),canvasRef=useRef<HTMLCanvasElement>(null),hostRef=useRef<HTMLDivElement>(null),timing=useRef({count:0,total:0}),[size,setSize]=useState({width:1,height:1});
   useLayoutEffect(()=>{const host=hostRef.current;if(host)setSize({width:host.clientWidth||1,height:host.clientHeight||1});},[]);
   useLayoutEffect(()=>{
@@ -38,17 +38,23 @@ export function PageTurnLayer<T>({controller,outgoing,incoming,fromTexture,onSlo
     }
     if(sampleDrawCost(timing.current,started,performance.now()))onSlow();
   },[turn,fromTexture,onSlow]);
-  if(!turn)return null;
   // Normalized geometry keeps the no-texture path available from its very first frame.
   const {width,height}=size;
-  const geometry=pageCurl(width,height,turn),bands=sheetBands(geometry,24),front=clipSheet(sheetRectangle(geometry),geometry,-geometry.arc/2);
+  const geometry=pageCurl(width,height,turn??{direction:1,corner:'bottom',grip:{x:1,y:1}}),bands=sheetBands(geometry,24),front=clipSheet(sheetRectangle(geometry),geometry,-geometry.arc/2);
   const revealed=clipSheet(sheetRectangle(geometry),geometry,-geometry.arc/2,false);
   const revealClip=geometry.flat?'polygon(0 0,0 0,0 0)':`polygon(${revealed.map(point=>`${point.x/width*100}% ${point.y/height*100}%`).join(',')})`;
   // Keep the already-decoded live page below us; only cover the area actually lifted.
   const live=outgoing===undefined;
   const frontClip=front.length>=3?`polygon(${front.map(point=>`${point.x/width*100}% ${point.y/height*100}%`).join(',')})`:'polygon(0 0,0 0,0 0)';
+  useLayoutEffect(()=>{
+    const element=incomingRef?.current;if(!element||!turn)return;
+    element.style.clipPath=turn.renderer==='reduced'?'none':revealClip;
+    element.style.opacity=turn.renderer==='reduced'?String(turn.progress):'1';
+    return()=>{element.style.removeProperty('clip-path');element.style.removeProperty('opacity');};
+  },[incomingRef,turn,revealClip]);
+  if(!turn)return null;
   return <div ref={hostRef} className={`page-turn-layer page-turn-layer--${turn.renderer}${live?' page-turn-layer--live':''}`} aria-hidden="true" inert data-turn-corner={turn.corner} style={{'--page-progress':turn.progress,'--page-direction':turn.direction} as CSSProperties}>
-    <div className="page-turn-next" style={live?(turn.renderer==='reduced'?{opacity:turn.progress}:{clipPath:revealClip}):undefined}>{incoming}</div>
+    {incoming!==undefined?<div className="page-turn-next" style={live?(turn.renderer==='reduced'?{opacity:turn.progress}:{clipPath:revealClip}):undefined}>{incoming}</div>:null}
     {!live?<div className="page-turn-old" style={turn.renderer==='reduced'?{opacity:1-turn.progress}:{clipPath:geometry.flat?undefined:frontClip}}>{outgoing}</div>:null}
     {turn.renderer!=='reduced'?<svg className="page-turn-curl" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none"><g>{bands.filter(band=>band.shade>0).map((band,i)=><polygon key={i} points={polygon(band.points.map(point=>bendSheetPoint(point,geometry)))} fill={paperColor(band.back,band.shade)} stroke={paperColor(band.back,band.shade)} strokeWidth={.7} vectorEffect="non-scaling-stroke"/>)}</g></svg>:null}
     {turn.renderer==='canvas'?<canvas ref={canvasRef}/>:null}

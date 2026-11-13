@@ -1,0 +1,146 @@
+{
+  "collection": "role-type-frames-v2",
+  "createdAt": "2026-11-13",
+  "tool": "built-in image_gen",
+  "usage": "Role index thumbnails only. No home/detail/own-card integration in this asset delivery.",
+  "thumbnailDecision": "Reuse existing 240x320 size; Guide caps actual frame width at 120 CSS px, at least 2x. No extra middle-size tier.",
+  "design": "Soft rounded/beveled outer corners and arch shoulders; distinct category motifs in BOTH upper corner panels and side rails; unified aged gold/black bronze.",
+  "frames": [
+    {
+      "id": "townsfolk",
+      "type": "TOWNSFOLK",
+      "source": "artifacts/role-type-frames-v2-2026-11-13/originals/townsfolk.png",
+      "sourceSha256": "fbb7e4a7245c7ecef9c2f34f31630c88761e19e747fb1f2c60a441ab29db4f70",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "sourceCentreAlpha": 0,
+      "sourceCentralMaxAlpha": 1,
+      "sourceVisibleAlphaAbove8Bounds": [
+        19,
+        8,
+        1067,
+        1431
+      ],
+      "variants": [
+        {
+          "file": "townsfolk.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 515172,
+          "sha256": "6be804c51030b404e93ec4e601029303bb15e7d93bfea3eda0f1939cabe532ca",
+          "encoding": "lossless WebP; full-image proportional downscale; original alpha retained"
+        },
+        {
+          "file": "townsfolk-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 48046,
+          "sha256": "82b39cf1e96de843f201e39982b8656bf13b978984f58fd804ff64738341d9f1",
+          "encoding": "lossless WebP; full-image proportional downscale; original alpha retained"
+        }
+      ]
+    },
+    {
+      "id": "outsider",
+      "type": "OUTSIDER",
+      "source": "artifacts/role-type-frames-v2-2026-11-13/originals/outsider.png",
+      "sourceSha256": "acdf64edc5884c12bb7725449ccdc41ee54b5988282912660c47e18755f7ad2b",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "sourceCentreAlpha": 0,
+      "sourceCentralMaxAlpha": 1,
+      "sourceVisibleAlphaAbove8Bounds": [
+        17,
+        18,
+        1069,
+        1432
+      ],
+      "variants": [
+        {
+          "file": "outsider.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 527872,
+          "sha256": "b110b25390b642a00e125cdf194c08b03b7ff9ab9a8b5a3eeedb4baf5fb3002e",
+          "encoding": "lossless WebP; full-image proportional downscale; original alpha retained"
+        },
+        {
+          "file": "outsider-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 47460,
+          "sha256": "7e3430096dfcc15446f04b956ea35e8d9a82f34b0178bc85e2fab23be3efc10d",
+          "encoding": "lossless WebP; full-image proportional downscale; original alpha retained"
+        }
+      ]
+    },
+    {
+      "id": "minion",
+      "type": "MINION",
+      "source": "artifacts/role-type-frames-v2-2026-11-13/originals/minion.png",
+      "sourceSha256": "25300665863137f560da506439becb71081a389c66760d42deb622c873398812",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "sourceCentreAlpha": 0,
+      "sourceCentralMaxAlpha": 1,
+      "sourceVisibleAlphaAbove8Bounds": [
+        20,
+        11,
+        1065,
+        1428
+      ],
+      "variants": [
+        {
+          "file": "minion.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 505330,
+          "sha256": "8e9aff8996b373278f4ba1851471663a9266b9c50de63bf6f8e345cf9708a62b",
+          "encoding": "lossless WebP; full-image proportional downscale; original alpha retained"
+        },
+        {
+          "file": "minion-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 44406,
+          "sha256": "e7095cf425d5341ee1c606070c1dc14908c0529012e60b4143de3a46b254da40",
+          "encoding": "lossless WebP; full-image proportional downscale; original alpha retained"
+        }
+      ]
+    },
+    {
+      "id": "demon",
+      "type": "DEMON",
+      "source": "artifacts/role-type-frames-v2-2026-11-13/originals/demon.png",
+      "sourceSha256": "d5f24c057e51d58034490d8e0b1c6a49f1910e05ee5fd45d816f94f571a84081",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "sourceCentreAlpha": 0,
+      "sourceCentralMaxAlpha": 1,
+      "sourceVisibleAlphaAbove8Bounds": [
+        18,
+        27,
+        1068,
+        1435
+      ],
+      "variants": [
+        {
+          "file": "demon.webp",
+          "width": 960,
+          "height": 1280,
+          "bytes": 503174,
+          "sha256": "07dff949f885674a149e5c6c4434560a2fc74f785e6a65c3f0230a73445677a0",
+          "encoding": "lossless WebP; full-image proportional downscale; original alpha retained"
+        },
+        {
+          "file": "demon-small.webp",
+          "width": 240,
+          "height": 320,
+          "bytes": 38884,
+          "sha256": "b70e435fcc415625162e7d57ad72fb3296bf88df0e76c5e31960c8db6ba2549e",
+          "encoding": "lossless WebP; full-image proportional downscale; original alpha retained"
+        }
+      ]
+    }
+  ]
+}
