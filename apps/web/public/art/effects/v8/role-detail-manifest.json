@@ -1188,6 +1188,467 @@
         }
       },
       "promptSha256": "4bd4d75073880182f3cc8f9831d1cfe63eca07e5f4fc1a1b4a598bc8e2493a14"
+    },
+    {
+      "id": "coffin-oblique-base",
+      "group": "coffin",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-base.png",
+      "sourceSha256": "e00d60e5da136a727f981bd9116c8edd49f1fc2f73d5ab5341c9ad6c8774b296",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/coffin-oblique-base-revision.txt",
+      "sourceRect": [
+        15,
+        322,
+        1360,
+        1084
+      ],
+      "sourceQuad": [
+        [
+          -61,
+          668
+        ],
+        [
+          1160,
+          333
+        ],
+        [
+          1402,
+          565
+        ],
+        [
+          166,
+          927
+        ]
+      ],
+      "targetQuad": [
+        [
+          75,
+          190
+        ],
+        [
+          445,
+          90
+        ],
+        [
+          515,
+          240
+        ],
+        [
+          140,
+          355
+        ]
+      ],
+      "perspectiveOutputToSource": [
+        3.313458018226118,
+        0.0737740413454076,
+        -323.61637424526015,
+        -0.436689668824213,
+        1.751241004684203,
+        369.0010155037204,
+        -6.943703659605353e-06,
+        1.0502369880627346e-05
+      ],
+      "processing": "Whole independently generated material, explicit plane normalization/projective placement only; natural painted bevel silhouette retained, no painted polygon replacement.",
+      "promptSha256": "ca3e423c868fd69c98c63c2ebb27d47fadc990004e8a49ec67fc78bffe8e6447",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "coffin-oblique-base.webp",
+      "url": "/art/effects/v8/coffin-oblique-base.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 139062,
+      "sha256": "e748089b99460fe2ac82007d0e5f302a4a85125227d94af20d74b53ae3fd133b",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          97,
+          84,
+          503,
+          458
+        ],
+        "alphaAbove128Bounds": [
+          97,
+          84,
+          502,
+          458
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            240,
+            319
+          ],
+          "110": [
+            221,
+            400
+          ],
+          "135": [
+            172,
+            397
+          ],
+          "273": [
+            132,
+            414
+          ],
+          "300": [
+            117,
+            404
+          ],
+          "327": [
+            119,
+            394
+          ],
+          "465": [
+            125,
+            341
+          ],
+          "490": [
+            180,
+            348
+          ],
+          "499": [
+            201,
+            258
+          ]
+        }
+      }
+    },
+    {
+      "id": "coffin-oblique-lining",
+      "group": "coffin",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-lining.png",
+      "sourceSha256": "ec2451131bc36ac957ccf3fcd1b7e0ab5cfa08c102d317e570a3deaacc5f3685",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/coffin-oblique-lining.txt",
+      "sourceRect": [
+        55,
+        331,
+        1321,
+        839
+      ],
+      "sourceQuad": [
+        [
+          55,
+          331
+        ],
+        [
+          1321,
+          331
+        ],
+        [
+          1321,
+          839
+        ],
+        [
+          55,
+          839
+        ]
+      ],
+      "targetQuad": [
+        [
+          75,
+          190
+        ],
+        [
+          445,
+          90
+        ],
+        [
+          515,
+          240
+        ],
+        [
+          140,
+          355
+        ]
+      ],
+      "perspectiveOutputToSource": [
+        2.9577845304826247,
+        -1.1552587643592527,
+        54.550685236988514,
+        0.753918519089098,
+        3.0387918893527677,
+        -291.56790987014546,
+        -0.00013987100714834386,
+        0.00023562944492002652
+      ],
+      "occlusionMask": "Enclosed actual shell alpha<=8 cavity, expanded1px under rim; prevents lining spilling outside bevel corners. Painted cloth preserved.",
+      "processing": "Whole independently generated material, explicit plane normalization/projective placement only; natural painted bevel silhouette retained, no painted polygon replacement.",
+      "promptSha256": "706fb9484e1d8bcec925cd63ffc4623e28f72b8b763df848f404c38e3d0cc607",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "coffin-oblique-lining.webp",
+      "url": "/art/effects/v8/coffin-oblique-lining.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 69706,
+      "sha256": "d49228e6f9011ab89e86d823403128627367f903c15f6734c72f646154bfc83e",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          115,
+          126,
+          483,
+          338
+        ],
+        "alphaAbove128Bounds": [
+          115,
+          126,
+          483,
+          338
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": [
+            221,
+            299
+          ],
+          "273": [
+            171,
+            308
+          ],
+          "300": [
+            164,
+            300
+          ],
+          "327": [
+            156,
+            291
+          ],
+          "465": [
+            180,
+            247
+          ],
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "coffin-oblique-lid-front",
+      "group": "coffin",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-lid-front.png",
+      "sourceSha256": "76e9ba607e9eb79b24461aa4d771ec99e141c557cfe5e205809f7ed677a020ec",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/coffin-oblique-lid-front.txt",
+      "sourceRect": [
+        59,
+        330,
+        1315,
+        818
+      ],
+      "localSize": [
+        380,
+        200
+      ],
+      "processing": "Whole independently generated material, explicit plane normalization/projective placement only; natural painted bevel silhouette retained, no painted polygon replacement.",
+      "promptSha256": "c7143291977dd0aff4b45ab7057906fe00a4fcf9846023f93c200d773349635b",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "coffin-oblique-lid-front.webp",
+      "url": "/art/effects/v8/coffin-oblique-lid-front.webp",
+      "width": 380,
+      "height": 200,
+      "bytes": 122526,
+      "sha256": "58cd760b8de952db376673c8a7fb2299b491fbfc7f39ccd6fb10169ffe52b775",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          0,
+          0,
+          380,
+          200
+        ],
+        "alphaAbove128Bounds": [
+          1,
+          1,
+          379,
+          199
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            1,
+            198
+          ],
+          "110": [
+            1,
+            198
+          ],
+          "135": [
+            1,
+            198
+          ],
+          "273": [
+            1,
+            198
+          ],
+          "300": [
+            1,
+            198
+          ],
+          "327": [
+            1,
+            198
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "coffin-oblique-lid-back",
+      "group": "coffin",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-lid-back.png",
+      "sourceSha256": "751b468fbca916c19905545e344010d8a10102b0d6b6c0783c0a54454feb6205",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/coffin-oblique-lid-back.txt",
+      "sourceRect": [
+        56,
+        325,
+        1317,
+        819
+      ],
+      "localSize": [
+        380,
+        200
+      ],
+      "processing": "Whole independently generated material, explicit plane normalization/projective placement only; natural painted bevel silhouette retained, no painted polygon replacement.",
+      "promptSha256": "53fc0c5a9363714a961f24817fd55f5fa626f6afb510d26760ad8acd374cf476",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "coffin-oblique-lid-back.webp",
+      "url": "/art/effects/v8/coffin-oblique-lid-back.webp",
+      "width": 380,
+      "height": 200,
+      "bytes": 103494,
+      "sha256": "dfd26bff151fca683030f30eaa3f326a483c3c9b7dda3221560f40dd69bdf21f",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          0,
+          1,
+          380,
+          199
+        ],
+        "alphaAbove128Bounds": [
+          1,
+          1,
+          379,
+          198
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            2,
+            197
+          ],
+          "110": [
+            2,
+            197
+          ],
+          "135": [
+            2,
+            197
+          ],
+          "273": [
+            2,
+            197
+          ],
+          "300": [
+            2,
+            197
+          ],
+          "327": [
+            2,
+            197
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "coffin-oblique-lid-edge",
+      "group": "coffin",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-lid-edge.png",
+      "sourceSha256": "138f8131b70e0647097517c69b455b24b64e83dc6bad0ceb3ca36ada355d4e75",
+      "sourceSize": [
+        1728,
+        910
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/coffin-oblique-lid-edge.txt",
+      "sourceRect": [
+        73,
+        407,
+        1654,
+        503
+      ],
+      "localSize": [
+        380,
+        20
+      ],
+      "processing": "Whole independently generated material, explicit plane normalization/projective placement only; natural painted bevel silhouette retained, no painted polygon replacement.",
+      "promptSha256": "2c5f830b05af64c44964f56eb90e0d5832f65a0a53ffc8b7600844684ef8f3ce",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "coffin-oblique-lid-edge.webp",
+      "url": "/art/effects/v8/coffin-oblique-lid-edge.webp",
+      "width": 380,
+      "height": 20,
+      "bytes": 11520,
+      "sha256": "8fd3ba5fd9bb59a63546deff27e4026e02e2e68d023c8487b79499366e273eb1",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          0,
+          0,
+          380,
+          20
+        ],
+        "alphaAbove128Bounds": [
+          0,
+          0,
+          380,
+          19
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            0,
+            18
+          ],
+          "110": [
+            0,
+            18
+          ],
+          "135": [
+            0,
+            18
+          ],
+          "273": [
+            1,
+            18
+          ],
+          "300": [
+            1,
+            18
+          ],
+          "327": [
+            0,
+            18
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
     }
   ],
   "contracts": {
@@ -1451,6 +1912,139 @@
       "footTip": [
         315,
         350
+      ]
+    },
+    "coffin": {
+      "lidClosedQuad": [
+        [
+          75,
+          190
+        ],
+        [
+          445,
+          90
+        ],
+        [
+          515,
+          240
+        ],
+        [
+          140,
+          355
+        ]
+      ],
+      "hinge": [
+        [
+          75,
+          190
+        ],
+        [
+          445,
+          90
+        ]
+      ],
+      "lidLocalSize": [
+        380,
+        200
+      ],
+      "lidEdgeLocalSize": [
+        380,
+        20
+      ],
+      "physicalLidThickness": 8,
+      "opening": "empty, no authorized information baked in",
+      "defaultZ": [
+        "coffin-oblique-lining",
+        "coffin-oblique-base"
+      ],
+      "parts": [
+        {
+          "id": "coffin-oblique-base",
+          "promptFile": "coffin-oblique-base-revision.txt",
+          "processingMode": "project-plane",
+          "sourceQuad": [
+            [
+              -61,
+              668
+            ],
+            [
+              1160,
+              333
+            ],
+            [
+              1402,
+              565
+            ],
+            [
+              166,
+              927
+            ]
+          ],
+          "targetQuad": [
+            [
+              75,
+              190
+            ],
+            [
+              445,
+              90
+            ],
+            [
+              515,
+              240
+            ],
+            [
+              140,
+              355
+            ]
+          ]
+        },
+        {
+          "id": "coffin-oblique-lining",
+          "processingMode": "project-plane",
+          "targetQuad": [
+            [
+              75,
+              190
+            ],
+            [
+              445,
+              90
+            ],
+            [
+              515,
+              240
+            ],
+            [
+              140,
+              355
+            ]
+          ]
+        },
+        {
+          "id": "coffin-oblique-lid-front",
+          "processingMode": "local-plane",
+          "localSize": [
+            380,
+            200
+          ]
+        },
+        {
+          "id": "coffin-oblique-lid-back",
+          "processingMode": "local-plane",
+          "localSize": [
+            380,
+            200
+          ]
+        },
+        {
+          "id": "coffin-oblique-lid-edge",
+          "processingMode": "local-plane",
+          "localSize": [
+            380,
+            20
+          ]
+        }
       ]
     }
   }

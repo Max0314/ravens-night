@@ -267,6 +267,139 @@
         315,
         350
       ]
+    },
+    "coffin": {
+      "lidClosedQuad": [
+        [
+          75,
+          190
+        ],
+        [
+          445,
+          90
+        ],
+        [
+          515,
+          240
+        ],
+        [
+          140,
+          355
+        ]
+      ],
+      "hinge": [
+        [
+          75,
+          190
+        ],
+        [
+          445,
+          90
+        ]
+      ],
+      "lidLocalSize": [
+        380,
+        200
+      ],
+      "lidEdgeLocalSize": [
+        380,
+        20
+      ],
+      "physicalLidThickness": 8,
+      "opening": "empty, no authorized information baked in",
+      "defaultZ": [
+        "coffin-oblique-lining",
+        "coffin-oblique-base"
+      ],
+      "parts": [
+        {
+          "id": "coffin-oblique-base",
+          "promptFile": "coffin-oblique-base-revision.txt",
+          "processingMode": "project-plane",
+          "sourceQuad": [
+            [
+              -61,
+              668
+            ],
+            [
+              1160,
+              333
+            ],
+            [
+              1402,
+              565
+            ],
+            [
+              166,
+              927
+            ]
+          ],
+          "targetQuad": [
+            [
+              75,
+              190
+            ],
+            [
+              445,
+              90
+            ],
+            [
+              515,
+              240
+            ],
+            [
+              140,
+              355
+            ]
+          ]
+        },
+        {
+          "id": "coffin-oblique-lining",
+          "processingMode": "project-plane",
+          "targetQuad": [
+            [
+              75,
+              190
+            ],
+            [
+              445,
+              90
+            ],
+            [
+              515,
+              240
+            ],
+            [
+              140,
+              355
+            ]
+          ]
+        },
+        {
+          "id": "coffin-oblique-lid-front",
+          "processingMode": "local-plane",
+          "localSize": [
+            380,
+            200
+          ]
+        },
+        {
+          "id": "coffin-oblique-lid-back",
+          "processingMode": "local-plane",
+          "localSize": [
+            380,
+            200
+          ]
+        },
+        {
+          "id": "coffin-oblique-lid-edge",
+          "processingMode": "local-plane",
+          "localSize": [
+            380,
+            20
+          ]
+        }
+      ]
     }
   }
 }

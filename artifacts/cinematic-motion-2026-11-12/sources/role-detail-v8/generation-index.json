@@ -195,7 +195,8 @@
           "sha256": "f466ce11662b64463e20d9f415ece5fefcb41aa6caaaf4bc9ef9e85068a537d7"
         }
       ],
-      "promptSha256": "a0dc3fc0bc11e395ef3d3cbf4e97a4c8993b1ce30b881a5e5dc2574434e38604"
+      "promptSha256": "a0dc3fc0bc11e395ef3d3cbf4e97a4c8993b1ce30b881a5e5dc2574434e38604",
+      "promptHashEncoding": "UTF-8, LF line endings"
     },
     {
       "id": "raven-body",
@@ -214,7 +215,8 @@
           "sha256": "71f61da13070dae51bef0628553b058d73b77bcfdd58b2024b636679e1c2820d"
         }
       ],
-      "promptSha256": "843df50dfb9843a5826f9ddb8271d9b13a1f7a9f04720dbe56c1952e5a0aeab7"
+      "promptSha256": "843df50dfb9843a5826f9ddb8271d9b13a1f7a9f04720dbe56c1952e5a0aeab7",
+      "promptHashEncoding": "UTF-8, LF line endings"
     },
     {
       "id": "raven-head-neck",
@@ -237,7 +239,8 @@
           "sha256": "8ac9e160ed987a5fd8a057834d7afe3b4bbdbaecbd7dc8cd37773e3d2740e07a"
         }
       ],
-      "promptSha256": "9006a2579791d652229c3f5b3b6b8abfefe667a2e96b14e45d6c3a170a8bd415"
+      "promptSha256": "9006a2579791d652229c3f5b3b6b8abfefe667a2e96b14e45d6c3a170a8bd415",
+      "promptHashEncoding": "UTF-8, LF line endings"
     },
     {
       "id": "raven-tail",
@@ -260,7 +263,8 @@
           "sha256": "ec7e27e904589df1c6f3c70b2eb0f1ae8a5b0cb11942cf3e1abf867484103208"
         }
       ],
-      "promptSha256": "146b7479d60a1ab393e6d31ffafa35b896dd76f181c01d5c8b22462fe93e1bf4"
+      "promptSha256": "146b7479d60a1ab393e6d31ffafa35b896dd76f181c01d5c8b22462fe93e1bf4",
+      "promptHashEncoding": "UTF-8, LF line endings"
     },
     {
       "id": "raven-wing-left",
@@ -283,7 +287,8 @@
           "sha256": "873050e0560cc8ba80854d0e904a0e0a800ec8cb4614ea9c7aa069bbde67c261"
         }
       ],
-      "promptSha256": "65443a85eb8bcc4091a093d33bf248134b779c6d6ecf2ed086579cc6e49bc48e"
+      "promptSha256": "65443a85eb8bcc4091a093d33bf248134b779c6d6ecf2ed086579cc6e49bc48e",
+      "promptHashEncoding": "UTF-8, LF line endings"
     },
     {
       "id": "raven-wing-right",
@@ -306,7 +311,120 @@
           "sha256": "8de990458835762d8c843fcc94297e2aa53c59e29467cfbc78c7b2773be4f5fa"
         }
       ],
-      "promptSha256": "4bd4d75073880182f3cc8f9831d1cfe63eca07e5f4fc1a1b4a598bc8e2493a14"
+      "promptSha256": "4bd4d75073880182f3cc8f9831d1cfe63eca07e5f4fc1a1b4a598bc8e2493a14",
+      "promptHashEncoding": "UTF-8, LF line endings"
+    },
+    {
+      "id": "coffin-oblique-base-before-geometry",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/coffin-oblique-base-before-geometry.png",
+      "outputSha256": "a4b3f42398c253903d372a09c75ec2c57e2537cd7a727e1921bc55471bf327b0",
+      "prompt": "prompts/coffin-oblique-base.txt",
+      "promptSha256": "68f1051a5a245f2d3f754e888c982d1e203256fb36d112551e268d8218841926",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/undertaker.webp",
+          "sha256": "b1da12fac5795ea99fcd5bd010df282f36520236a09a2272a6ce525213ae2ca1"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/coffin-oblique-base.png",
+          "sha256": "a2eaae60d068cf64045603336fafde477b48b39a9ec5797cde45a595da87256c"
+        }
+      ]
+    },
+    {
+      "id": "coffin-oblique-base",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/coffin-oblique-base.png",
+      "outputSha256": "e00d60e5da136a727f981bd9116c8edd49f1fc2f73d5ab5341c9ad6c8774b296",
+      "prompt": "prompts/coffin-oblique-base-revision.txt",
+      "promptSha256": "ca3e423c868fd69c98c63c2ebb27d47fadc990004e8a49ec67fc78bffe8e6447",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-base-before-geometry.png",
+          "sha256": "a4b3f42398c253903d372a09c75ec2c57e2537cd7a727e1921bc55471bf327b0"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/coffin-oblique-base.png",
+          "sha256": "a2eaae60d068cf64045603336fafde477b48b39a9ec5797cde45a595da87256c"
+        }
+      ]
+    },
+    {
+      "id": "coffin-oblique-lining",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/coffin-oblique-lining.png",
+      "outputSha256": "ec2451131bc36ac957ccf3fcd1b7e0ab5cfa08c102d317e570a3deaacc5f3685",
+      "prompt": "prompts/coffin-oblique-lining.txt",
+      "promptSha256": "706fb9484e1d8bcec925cd63ffc4623e28f72b8b763df848f404c38e3d0cc607",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-base.png",
+          "sha256": "e00d60e5da136a727f981bd9116c8edd49f1fc2f73d5ab5341c9ad6c8774b296"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/coffin-oblique-lining.png",
+          "sha256": "65c6eefb8e7d644c027101e5ec3cfec111210876e12387c14f961ea367431ffb"
+        }
+      ]
+    },
+    {
+      "id": "coffin-oblique-lid-front",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/coffin-oblique-lid-front.png",
+      "outputSha256": "76e9ba607e9eb79b24461aa4d771ec99e141c557cfe5e205809f7ed677a020ec",
+      "prompt": "prompts/coffin-oblique-lid-front.txt",
+      "promptSha256": "c7143291977dd0aff4b45ab7057906fe00a4fcf9846023f93c200d773349635b",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-base.png",
+          "sha256": "e00d60e5da136a727f981bd9116c8edd49f1fc2f73d5ab5341c9ad6c8774b296"
+        },
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/guides/coffin-oblique-lid-front.png",
+          "sha256": "6d2fdfec1ca14e2dbfde00fa487dc84ec02962c5ae21eb10f57dd701e0f9ce62"
+        }
+      ]
+    },
+    {
+      "id": "coffin-oblique-lid-back",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/coffin-oblique-lid-back.png",
+      "outputSha256": "751b468fbca916c19905545e344010d8a10102b0d6b6c0783c0a54454feb6205",
+      "prompt": "prompts/coffin-oblique-lid-back.txt",
+      "promptSha256": "53fc0c5a9363714a961f24817fd55f5fa626f6afb510d26760ad8acd374cf476",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-lid-front.png",
+          "sha256": "76e9ba607e9eb79b24461aa4d771ec99e141c557cfe5e205809f7ed677a020ec"
+        }
+      ]
+    },
+    {
+      "id": "coffin-oblique-lid-edge",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/coffin-oblique-lid-edge.png",
+      "outputSha256": "138f8131b70e0647097517c69b455b24b64e83dc6bad0ceb3ca36ada355d4e75",
+      "prompt": "prompts/coffin-oblique-lid-edge.txt",
+      "promptSha256": "2c5f830b05af64c44964f56eb90e0d5832f65a0a53ffc8b7600844684ef8f3ce",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/coffin-oblique-lid-front.png",
+          "sha256": "76e9ba607e9eb79b24461aa4d771ec99e141c557cfe5e205809f7ed677a020ec"
+        }
+      ]
     }
   ]
 }
