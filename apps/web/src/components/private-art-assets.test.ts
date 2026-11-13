@@ -12,3 +12,5 @@ test('articulated raven preparation includes its real perch and every independen
 test('oblique coffin preparation includes its real cavity and the independent slab edge',()=>{expect(privateArtUrls(scene('undertaker'))).toEqual(['base','lining','lid-front','lid-back','lid-edge'].map(part=>`/art/effects/v8/coffin-oblique-${part}.webp`));});
 
 test('lamp and candle preparation load their real separated layers instead of the old composite and paper',()=>{expect(privateArtUrls(scene('recluse'))).toEqual(['/art/effects/v8/recluse-door-base.webp','/art/effects/v8/recluse-lantern.webp']);expect(privateArtUrls(scene('saint'))).toEqual(['candle-base','flame-1','flame-2','flame-3'].map(part=>`/art/effects/v8/saint-${part}.webp`));});
+
+test('the carriage preloads three real wheel layers and both paper textures with reusable breakable wax',()=>{const urls=privateArtUrls(scene('baron'));expect(urls).toHaveLength(13);expect(urls.filter(url=>url.includes('carriage-wheel-'))).toHaveLength(3);expect(urls.filter(url=>url.includes('carriage-paper-'))).toHaveLength(2);expect(urls).toContain('/art/effects/v8/envelope-seal-broken-right.webp');});
