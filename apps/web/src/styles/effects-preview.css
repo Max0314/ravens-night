@@ -7,3 +7,12 @@
 
 .effects-lab__sound{position:relative;z-index:725;flex:none;display:flex;align-items:center;gap:10px;min-height:52px;background:#10120ff5;color:#dfcca2;font-size:12px}.effects-lab__sound button{min-height:44px;border:1px solid #c7a45c55;border-radius:7px;background:#c5a36219;color:inherit;padding:5px 10px}.effects-lab__sound label{display:flex;align-items:center;gap:7px;flex:1;min-width:0}.effects-lab__sound input{min-width:30px;width:100%;max-width:220px;min-height:44px;accent-color:#b99858}.effects-lab__sound output{min-width:32px}.effects-lab.is-playing .effects-lab__header{display:none}.effects-lab.is-playing .effects-lab__controls{top:calc(60px + env(safe-area-inset-top))}.effects-lab.is-playing .event-stage,.effects-lab-private{padding-top:calc(244px + env(safe-area-inset-top))}
 @media(max-height:450px){.effects-lab.is-playing .event-stage,.effects-lab-private{padding-top:calc(222px + env(safe-area-inset-top))}}
+
+@media(max-height:450px) and (orientation:landscape){
+ .effects-lab.is-playing{--lab-sidebar:min(340px,44vw)}
+ .effects-lab.is-playing .effects-lab__controls{left:auto;right:max(8px,env(safe-area-inset-right));top:calc(60px + env(safe-area-inset-top));bottom:max(8px,env(safe-area-inset-bottom));transform:none;width:calc(var(--lab-sidebar) - 16px);max-height:calc(100dvh - 72px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;align-content:start;padding:8px}
+ .effects-lab__controls>div{flex-wrap:wrap;justify-content:flex-start}.effects-lab__controls>div:first-child{justify-content:space-between}.effects-lab__controls label{flex:1;min-width:90px}.effects-lab__controls button,.effects-lab__controls select{min-height:44px}
+ .effects-lab.is-playing .effects-lab-private{right:var(--lab-sidebar);padding:calc(58px + env(safe-area-inset-top)) 8px 8px;}
+ .effects-lab.is-playing .event-stage{padding:calc(58px + env(safe-area-inset-top)) calc(var(--lab-sidebar) + 8px) 8px 8px;}
+ .effects-lab.is-playing .effects-lab__anchors>div{position:static}.effects-lab.is-playing .event-notice{right:calc(var(--lab-sidebar) + 8px);top:calc(60px + env(safe-area-inset-top))}
+}
