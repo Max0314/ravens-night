@@ -1,0 +1,50 @@
+{
+  "collection": "gothic-b-faces-v4",
+  "selectedAt": "2026-11-13",
+  "portraits": [
+    {
+      "id": "undertaker",
+      "source": "undertaker.png",
+      "sourceSha256": "51bc7703d142115b808b84822473007ae4eba9da0be4a89bc665ead2c95ec3cf",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "processing": "Encode full image at native aspect ratio; no painting, cropping, reframing or recolouring. Existing UI crop remains.",
+      "variants": [
+        {
+          "file": "undertaker.webp",
+          "width": 960,
+          "height": 1280,
+          "sha256": "0d01ab5e643cf3a62693de1c48d1b9a62334835354dc90e7fcf54388d50d5669"
+        },
+        {
+          "file": "undertaker-small.webp",
+          "width": 240,
+          "height": 320,
+          "sha256": "e1572046f76bfa40b9f2bd0e46fdacdd6feeda8db72bf1169f9e3ad66c786630"
+        }
+      ]
+    },
+    {
+      "id": "monk",
+      "source": "monk.png",
+      "sourceSha256": "feccc9d4e73140f56dcf6eaec730e7c9adcc906b1ce4c81a614bea8697a5a177",
+      "sourceWidth": 1086,
+      "sourceHeight": 1448,
+      "processing": "Encode full image at native aspect ratio; no painting, cropping, reframing or recolouring. Existing UI crop remains.",
+      "variants": [
+        {
+          "file": "monk.webp",
+          "width": 960,
+          "height": 1280,
+          "sha256": "3db306dc2d6745d16058c420982e073e472393996d5d2e77a9a9522868ad9c9e"
+        },
+        {
+          "file": "monk-small.webp",
+          "width": 240,
+          "height": 320,
+          "sha256": "1d1bb949ddf389e86c265d7e66ece760f3db3a7f9c39b48f4997ccd156a1ba52"
+        }
+      ]
+    }
+  ]
+}
