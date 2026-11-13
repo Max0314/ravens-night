@@ -1,17 +1,17 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
-import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import {act,cleanup,fireEvent,render,screen} from '@testing-library/react';
 import {afterEach,expect,test,vi} from 'vitest';
 import {PlayerGame} from './PlayerGame.js';
 import type {PrivateView} from '../api.js';
 import {RoomSheet} from '../components/RoomPage.js';
 vi.mock('../components/PrivateSceneStage.js',()=>({PrivateSceneStage:({onHandleTask}:{onHandleTask:()=>void})=><button onClick={onHandleTask}>测试处理当前操作</button>}));
 vi.mock('../components/RoomPage.js',async original=>{const actual=await original<typeof import('../components/RoomPage.js')>();return {...actual,RoomSheet:vi.fn((props:Parameters<typeof actual.RoomSheet>[0])=><actual.RoomSheet {...props}/>)};});
-afterEach(()=>{cleanup();vi.clearAllMocks();});
+afterEach(()=>{cleanup();vi.clearAllMocks();sessionStorage.clear();vi.useRealTimers();});
 const handlers={busy:false,canRestart:false,onBack:vi.fn(),onConfirmRole:vi.fn(),onSubmitAction:vi.fn(),onNominate:vi.fn(),onCancelNomination:vi.fn(),onVote:vi.fn(),onReady:vi.fn(),onUseAbility:vi.fn(),onRestart:vi.fn(),onOpenGuide:vi.fn()};
 function fixture():PrivateView{return {state:'RUNNING',roomInstanceId:'room',contextId:'role',participant:{id:'a',nickname:'甲',seat:1},role:{roleId:'chef',name:'厨师',type:'TOWNSFOLK',alignment:'GOOD',summary:'能力',beginnerTip:'建议'},roleConfirmed:false,history:[],messages:[],game:{phase:'ROLE_REVEAL',gameId:'g',contextId:'role',day:0,aliveCount:3,readyCount:0,serverNow:1000,events:[],seats:[1,2,3].map(seat=>({id:String(seat),seat,nickname:'名字'+seat,alive:seat!==3,connected:true,ghostVoteAvailable:true}))}};}
-test('role confirmation stays actionable before the art and closes only after server success',()=>{
- const view=fixture();view.game!.presentationUntil=999999;const ui=render(<PlayerGame {...handlers} view={view}/>);
+test('role confirmation is actionable after nightfall and closes only after server success',()=>{
+ const view=fixture();view.game!.presentationUntil=1000;const ui=render(<PlayerGame {...handlers} view={view}/>);
  expect(screen.queryByRole('button',{name:'关闭身份确认'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'开启声音'})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'游玩建议'}));expect(screen.getByRole('button',{name:'关闭厨师 · 游玩建议'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'关闭厨师 · 游玩建议'}));fireEvent.click(screen.getByRole('button',{name:'确认身份'}));expect(handlers.onConfirmRole).toHaveBeenCalledOnce();expect(screen.getByRole('dialog',{name:'身份确认'})).toBeVisible();
  ui.rerender(<PlayerGame {...handlers} view={{...view,roleConfirmed:true}}/>);expect(screen.queryByRole('dialog',{name:'身份确认'})).not.toBeInTheDocument();
 });
@@ -49,4 +49,12 @@ test('simultaneous ballot details explain the preparation and shared cutoff with
 test('the pre-game waiting scene can be uncovered after the page is hidden before any game snapshot exists',()=>{
  const ui=render(<PlayerGame {...handlers}/>);expect(screen.getByText('等待所有玩家').closest('.player-wait-scene')).not.toBeNull();
  fireEvent(window,new Event('ravens:cover-private'));expect(ui.container.querySelector('.player-private')).toHaveAttribute('hidden');expect(screen.getByLabelText('私密内容已遮住')).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'显示私密内容'}));expect(screen.queryByLabelText('私密内容已遮住')).not.toBeInTheDocument();expect(screen.getByText('等待所有玩家')).toBeVisible();
+});
+
+test.each([false,true])('opening night hides all role content even if already confirmed=%s, skipping never unlocks it',confirmed=>{
+ vi.useFakeTimers();const view=fixture();view.roleConfirmed=confirmed;view.game!.presentationUntil=7450;view.game!.events=[{seq:1,id:'opening-night',kind:'NIGHT_FALLS',gameId:'g',message:'夜幕降临，请闭眼。',occurredAt:1000,startsAt:1250,durationMs:6200,timingVersion:4}];
+ const ui=render(<PlayerGame {...handlers} view={view}/>);expect(screen.getByRole('dialog',{name:'城镇公开演出'})).toBeVisible();expect(ui.container.querySelector('.role-chip,.rn-role-card,.town-role-confirm')).toBeNull();expect(screen.queryByText('厨师')).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'确认身份'})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'跳过演出'}));expect(screen.queryByRole('dialog',{name:'城镇公开演出'})).not.toBeInTheDocument();expect(screen.getByRole('heading',{name:'夜幕正在降临'})).toBeVisible();expect(screen.queryByRole('button',{name:'确认身份'})).not.toBeInTheDocument();
+ ui.rerender(<PlayerGame {...handlers} view={{...view,revision:2,game:{...view.game!,serverNow:7449}}}/>);expect(ui.container.querySelector('.role-chip,.rn-role-card,.town-role-confirm')).toBeNull();
+ ui.rerender(<PlayerGame {...handlers} view={{...view,revision:3,game:{...view.game!,serverNow:7450}}}/>);if(!confirmed){expect(screen.getByRole('dialog',{name:'身份确认'})).toBeVisible();fireEvent.click(screen.getByRole('button',{name:'确认身份'}));expect(handlers.onConfirmRole).toHaveBeenCalledOnce();}else expect(screen.getByRole('status')).toHaveTextContent('身份已确认');
 });
