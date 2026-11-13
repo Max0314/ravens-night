@@ -762,6 +762,432 @@
           "499": null
         }
       }
+    },
+    {
+      "id": "raven-perch",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-perch.png",
+      "sourceSha256": "9297700720cf67bb89181657a7bfb40c96db5adb0d416379fd1507b8a94af41d",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-perch.txt",
+      "sourceAnchor": [
+        750,
+        737
+      ],
+      "worldAnchor": [
+        315,
+        340
+      ],
+      "uniformScale": 0.3,
+      "affineOutputToSource": [
+        3.3333333333333335,
+        0,
+        -300.0,
+        0,
+        3.3333333333333335,
+        -396.3333333333335
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-perch.webp",
+      "url": "/art/effects/v8/raven-perch.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 41514,
+      "sha256": "224e5317203b6914ce9f00b8ff72c59e9e11f4b7fa0d4ced481ea7a093bd2661",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          149,
+          269,
+          452,
+          441
+        ],
+        "alphaAbove128Bounds": [
+          149,
+          269,
+          451,
+          441
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            320,
+            357
+          ],
+          "300": [
+            338,
+            367
+          ],
+          "327": [
+            341,
+            366
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "a0dc3fc0bc11e395ef3d3cbf4e97a4c8993b1ce30b881a5e5dc2574434e38604"
+    },
+    {
+      "id": "raven-body",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-body.png",
+      "sourceSha256": "f51e28b8230fe0ce9f8da903a6eff0fe07e4d838b945c33e0386a9b1fa5d141e",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-body.txt",
+      "sourceAnchor": [
+        667,
+        956
+      ],
+      "worldAnchor": [
+        315,
+        350
+      ],
+      "uniformScale": 0.26,
+      "affineOutputToSource": [
+        3.846153846153846,
+        0,
+        -544.5384615384614,
+        0,
+        3.846153846153846,
+        -390.1538461538462
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-body.webp",
+      "url": "/art/effects/v8/raven-body.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 29592,
+      "sha256": "eda36863de9934c43cfc733c7af8a02de6d59a8dc8fe42cbdcb822f0b73f5aea",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          272,
+          181,
+          387,
+          350
+        ],
+        "alphaAbove128Bounds": [
+          272,
+          181,
+          387,
+          350
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            237,
+            246
+          ],
+          "300": [
+            197,
+            339
+          ],
+          "327": [
+            181,
+            346
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "843df50dfb9843a5826f9ddb8271d9b13a1f7a9f04720dbe56c1952e5a0aeab7"
+    },
+    {
+      "id": "raven-head-neck",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-head-neck.png",
+      "sourceSha256": "d60ff8906951149fbe4bcb31729221588c778671a46c5b85da958c86f01f44a9",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-head-neck.txt",
+      "sourceAnchor": [
+        650,
+        850
+      ],
+      "worldAnchor": [
+        330,
+        218
+      ],
+      "uniformScale": 0.17,
+      "affineOutputToSource": [
+        5.88235294117647,
+        0,
+        -1291.1764705882351,
+        0,
+        5.88235294117647,
+        -432.3529411764705
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-head-neck.webp",
+      "url": "/art/effects/v8/raven-head-neck.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 26634,
+      "sha256": "02a2d3e705f24161a4aabb615d89ebda01cbd82f8869a4decdc7d30c45cdc332",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          285,
+          97,
+          406,
+          246
+        ],
+        "alphaAbove128Bounds": [
+          285,
+          97,
+          406,
+          246
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": [
+            146,
+            218
+          ],
+          "327": [
+            106,
+            242
+          ],
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "9006a2579791d652229c3f5b3b6b8abfefe667a2e96b14e45d6c3a170a8bd415"
+    },
+    {
+      "id": "raven-tail",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-tail.png",
+      "sourceSha256": "ba435a1e5aa7b26aeef4dde060e428b89b45d6ae4907b2f184326a14cc28ebda",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-tail.txt",
+      "sourceAnchor": [
+        980,
+        140
+      ],
+      "worldAnchor": [
+        300,
+        290
+      ],
+      "uniformScale": 0.125,
+      "affineOutputToSource": [
+        8.0,
+        0,
+        -1420.0,
+        0,
+        8.0,
+        -2180.0
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-tail.webp",
+      "url": "/art/effects/v8/raven-tail.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 14648,
+      "sha256": "8f4c5afaa34d512e72dd1e9099db5aa9f1be357d7d9b70a0c4401f396e2f8171",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          215,
+          284,
+          307,
+          404
+        ],
+        "alphaAbove128Bounds": [
+          215,
+          284,
+          307,
+          404
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            307,
+            387
+          ],
+          "300": [
+            284,
+            326
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "146b7479d60a1ab393e6d31ffafa35b896dd76f181c01d5c8b22462fe93e1bf4"
+    },
+    {
+      "id": "raven-wing-left",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-wing-left.png",
+      "sourceSha256": "2d6cf4db5a1735cedede7357e43725a9f1a78ed00c6cbbb2ccb375ddba1553ab",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-wing-left.txt",
+      "sourceAnchor": [
+        1230,
+        450
+      ],
+      "worldAnchor": [
+        303,
+        214
+      ],
+      "uniformScale": 0.19,
+      "affineOutputToSource": [
+        5.2631578947368425,
+        0,
+        -364.7368421052631,
+        0,
+        5.2631578947368425,
+        -676.3157894736842
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-wing-left.webp",
+      "url": "/art/effects/v8/raven-wing-left.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 44556,
+      "sha256": "ae41fb668f33b956cb4ad18b9c6fa142220d09bf1b066a15cabf54db254e625b",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          73,
+          178,
+          325,
+          293
+        ],
+        "alphaAbove128Bounds": [
+          73,
+          178,
+          325,
+          293
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            196,
+            262
+          ],
+          "110": [
+            194,
+            257
+          ],
+          "135": [
+            187,
+            259
+          ],
+          "273": [
+            206,
+            285
+          ],
+          "300": [
+            199,
+            267
+          ],
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      },
+      "promptSha256": "65443a85eb8bcc4091a093d33bf248134b779c6d6ecf2ed086579cc6e49bc48e"
+    },
+    {
+      "id": "raven-wing-right",
+      "group": "raven",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/raven-wing-right.png",
+      "sourceSha256": "b591b5b96cea57726339f4fbcac8c61578d6690951624351a5b57640e7e07341",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/raven-wing-right.txt",
+      "sourceAnchor": [
+        180,
+        550
+      ],
+      "worldAnchor": [
+        350,
+        214
+      ],
+      "uniformScale": 0.165,
+      "affineOutputToSource": [
+        6.0606060606060606,
+        0,
+        -1941.212121212121,
+        0,
+        6.0606060606060606,
+        -746.969696969697
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "file": "raven-wing-right.webp",
+      "url": "/art/effects/v8/raven-wing-right.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 33300,
+      "sha256": "cc5d5ce4961ec4e7431073581a6ff872f5262f036ded78dc8b4022cf91aef846",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          329,
+          154,
+          540,
+          281
+        ],
+        "alphaAbove128Bounds": [
+          329,
+          154,
+          540,
+          281
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": [
+            159,
+            236
+          ],
+          "490": [
+            156,
+            243
+          ],
+          "499": [
+            155,
+            232
+          ]
+        }
+      },
+      "promptSha256": "4bd4d75073880182f3cc8f9831d1cfe63eca07e5f4fc1a1b4a598bc8e2493a14"
     }
   ],
   "contracts": {
@@ -898,6 +1324,133 @@
           "glassLocalScale": 0.9,
           "opacity": 0.22
         }
+      ]
+    },
+    "raven": {
+      "footContact": [
+        315,
+        340
+      ],
+      "hip": [
+        330,
+        310
+      ],
+      "nearWingShoulder": [
+        303,
+        214
+      ],
+      "farWingShoulder": [
+        350,
+        214
+      ],
+      "neckRoot": [
+        330,
+        218
+      ],
+      "headPivot": [
+        356,
+        124
+      ],
+      "tailRoot": [
+        300,
+        290
+      ],
+      "orientation": "three-quarter facing right; wings spread; left is near wing",
+      "defaultZ": [
+        "raven-perch",
+        "raven-wing-right",
+        "raven-tail",
+        "raven-body",
+        "raven-wing-left",
+        "raven-head-neck"
+      ],
+      "parts": [
+        {
+          "id": "raven-perch",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            750,
+            737
+          ],
+          "worldAnchor": [
+            315,
+            340
+          ],
+          "uniformScale": 0.3
+        },
+        {
+          "id": "raven-body",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            667,
+            956
+          ],
+          "worldAnchor": [
+            315,
+            350
+          ],
+          "uniformScale": 0.26
+        },
+        {
+          "id": "raven-head-neck",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            650,
+            850
+          ],
+          "worldAnchor": [
+            330,
+            218
+          ],
+          "uniformScale": 0.17
+        },
+        {
+          "id": "raven-tail",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            980,
+            140
+          ],
+          "worldAnchor": [
+            300,
+            290
+          ],
+          "uniformScale": 0.125
+        },
+        {
+          "id": "raven-wing-left",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            1230,
+            450
+          ],
+          "worldAnchor": [
+            303,
+            214
+          ],
+          "uniformScale": 0.19
+        },
+        {
+          "id": "raven-wing-right",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            180,
+            550
+          ],
+          "worldAnchor": [
+            350,
+            214
+          ],
+          "uniformScale": 0.165
+        }
+      ],
+      "branchContactSurface": [
+        315,
+        340
+      ],
+      "footTip": [
+        315,
+        350
       ]
     }
   }
