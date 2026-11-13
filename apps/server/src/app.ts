@@ -178,13 +178,16 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     const account=accounts.get(request);let context=signedCookie(request,'ravens_create_context');if(!context){context=randomBytes(32).toString('base64url');reply.setCookie('ravens_create_context',context,{...cookieOptions('/'),sameSite:'lax'});}
     const kind=account?'ACCOUNT' as const:'GUEST' as const,owner=creationOwner(sessionSecret,kind,account?.sub??context);creationRate(owner);return issueCreationTicket(sessionSecret,kind,owner,now());
   });
-  app.post<{Body:{playerCount:number;organizerName:string;creationVersion?:2;playMode?:RoomPlayMode;voiceRoomUrl?:string;createTicket:string}}>('/api/rooms',{schema:{body:bodySchema({creationVersion:{const:2},playerCount:{type:'integer',minimum:5,maximum:12},organizerName:{type:'string',minLength:1,maxLength:24},playMode:{enum:['IN_PERSON','REMOTE','HYBRID']},voiceRoomUrl:{type:'string',maxLength:2048},createTicket:{type:'string',maxLength:2000}},['playerCount','organizerName','createTicket'])}},async(request,reply)=>{
+  app.post<{Body:{playerCount:number;organizerName:string;creationVersion?:2;playMode?:RoomPlayMode;voiceRoomUrl?:string;sixPlayerEvilCooperation?:boolean;createTicket:string}}>('/api/rooms',{schema:{body:bodySchema({sixPlayerEvilCooperation:{type:'boolean'},creationVersion:{const:2},playerCount:{type:'integer',minimum:5,maximum:12},organizerName:{type:'string',minLength:1,maxLength:24},playMode:{enum:['IN_PERSON','REMOTE','HYBRID']},voiceRoomUrl:{type:'string',maxLength:2048},createTicket:{type:'string',maxLength:2000}},['playerCount','organizerName','createTicket'])}},async(request,reply)=>{
     const ticket=parseCreationTicket(sessionSecret,request.body.createTicket),id=request.headers['x-command-id'];if(typeof id!=='string'||!/^[-a-f0-9]{36}$/i.test(id))throw new RoomError('COMMAND_ID_REQUIRED','缺少创建操作编号',400);
     const account=accounts.get(request),guestContext=signedCookie(request,'ravens_create_context'),key=creationKey(sessionSecret,ticket.actorDigest,id);
     const name=request.body.organizerName.trim(),mode=request.body.playMode??'IN_PERSON',voice=request.body.creationVersion===2?request.body.voiceRoomUrl?.trim()||undefined:mode==='IN_PERSON'?undefined:request.body.voiceRoomUrl?.trim()||undefined;
     if(request.body.creationVersion===2&&request.body.playMode!==undefined)throw new RoomError('INVALID_REQUEST','统一创建不接受房间模式',400);
     if(!name||/[\u0000-\u001f\u007f]/.test(name))throw new RoomError('INVALID_REQUEST','昵称请输入1至24个字符',400);
-    const fingerprint=createHash('sha256').update(JSON.stringify(request.body.creationVersion===2?[2,request.body.playerCount,name,voice??null]:[request.body.playerCount,name,mode,voice??null])).digest('hex');
+    if(request.body.sixPlayerEvilCooperation===true&&request.body.playerCount!==6)throw new RoomError('INVALID_RULES','邪恶协作仅适用于6人房间',400);
+    const creationValues=request.body.creationVersion===2?[2,request.body.playerCount,name,voice??null]:[request.body.playerCount,name,mode,voice??null];
+    if(request.body.sixPlayerEvilCooperation===true)creationValues.push('six-player-evil-cooperation-v1');
+    const fingerprint=createHash('sha256').update(JSON.stringify(creationValues)).digest('hex');
     const result=await runtime.execute(rooms=>{
       const prior=rooms.creationRequest(key),owner=ticket.actorKind==='ACCOUNT'?account?creationOwner(sessionSecret,'ACCOUNT',account.sub):undefined:guestContext?creationOwner(sessionSecret,'GUEST',guestContext):undefined;
       if(ticket.actorKind==='ACCOUNT'&&owner!==ticket.actorDigest)throw new RoomError('CREATION_OWNER_CHANGED','登录身份已变化，请重新创建',403);
@@ -199,13 +202,13 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       if(owner!==ticket.actorDigest||ticket.actorKind!==(account?'ACCOUNT':'GUEST'))throw new RoomError('CREATE_CONTEXT_CHANGED','创建身份已变化，请重新发起创建');
       if(ticket.expiresAt<=now())throw new RoomError('CREATE_TICKET_EXPIRED','创建凭据已过期，请重新创建',410);
       creationRate(ticket.actorDigest);
-      const created=rooms.create(request.body.playerCount,name,mode,voice),room=rooms.find(created.room.code),organizerToken=creationOrganizer(sessionSecret,key,room.roomInstanceId);room.organizerTokenHash=hashOpaqueToken(organizerToken);room.metadata={...room.metadata,creationKey:key};if(account)room.organizerAccountId=account.sub;
+      const created=rooms.create(request.body.playerCount,name,mode,voice,request.body.sixPlayerEvilCooperation===true),room=rooms.find(created.room.code),organizerToken=creationOrganizer(sessionSecret,key,room.roomInstanceId);room.organizerTokenHash=hashOpaqueToken(organizerToken);room.metadata={...room.metadata,creationKey:key};if(account)room.organizerAccountId=account.sub;
       rooms.putCreationRequest({key,actorDigest:ticket.actorDigest,fingerprint,payload:{actorKind:ticket.actorKind,code:room.code,roomInstanceId:room.roomInstanceId,createdAt:now()},expiresAt:now()+86400000});
       return{code:room.code,organizerToken,creationId:id};
     });
     reply.setCookie('ravens_organizer',result.organizerToken,cookieOptions(roomPath(result.code)));if(guestContext)reply.setCookie('ravens_create_context',guestContext,{...cookieOptions('/'),sameSite:'lax'});return reply.code(201).send(result);
   });
-  app.get<RoomRequest>('/api/rooms/:code/summary',async request=>{const room=runtime.service.find(request.params.code),roster=activePlayers(room),canJoin=room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);return{code:room.code,roomInstanceId:room.roomInstanceId,state:room.state,playerCount:room.playerCount,activeHumanCount:humans(room).length,botCount:bots(room).length,occupiedAvatars:[...new Set(roster.flatMap(p=>p.avatarSnapshot?[avatarSelectionUrl(p.avatarSnapshot)]:[]))],canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};});
+  app.get<RoomRequest>('/api/rooms/:code/summary',async request=>{const room=runtime.service.find(request.params.code),roster=activePlayers(room),canJoin=room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);return{code:room.code,roomInstanceId:room.roomInstanceId,state:room.state,playerCount:room.playerCount,sixPlayerEvilCooperation:runtime.service.publicView(room.code).sixPlayerEvilCooperation,rulesSummary:runtime.service.publicView(room.code).rulesSummary,activeHumanCount:humans(room).length,botCount:bots(room).length,occupiedAvatars:[...new Set(roster.flatMap(p=>p.avatarSnapshot?[avatarSelectionUrl(p.avatarSnapshot)]:[]))],canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};});
   const expectedControlVersion={type:'integer',minimum:0};
   function control(path:string,properties:Record<string,unknown>,required:string[],bindGame:boolean,apply:(rooms:RoomService,code:string,token:string,body:Record<string,unknown>)=>ControlResult){
     app.post<RoomRequest>(`/api/rooms/:code/${path}`,{schema:{body:bodySchema({...roomCommandProperties,expectedControlVersion,...properties},[...roomCommandRequired,'expectedControlVersion',...required])}},async request=>{
@@ -392,6 +395,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       return view === "profile" ? {...privateView(runtime.service,request.params.code,token),...result as object} : view === "result" ? { ...result as object, self: runtime.service.self(request.params.code, token, accounts.get(request)?.sub) } : view === "public" ? publicView(runtime.service, request.params.code, token, accounts.get(request)?.sub) : privateView(runtime.service, request.params.code, token);
     });
   }
+  command('rules',{sixPlayerEvilCooperation:{type:'boolean'}},['sixPlayerEvilCooperation'],(rooms,code,token,body)=>rooms.setSixPlayerEvilCooperation(code,token,body.sixPlayerEvilCooperation as boolean),'public',true);
   command("start", { tutorialMode: { enum: ["SKIP", "OPTIONAL"] }, markHostReady: { type: "boolean" } }, [], (rooms, code, token, body) => rooms.startTutorial(code, token, body.tutorialMode as "SKIP" | "OPTIONAL" ?? "SKIP", body.markHostReady === true), "public", true);
   command("reset", {}, [], (rooms, code, token) => {
     rooms.reset(code, token);

@@ -127,6 +127,7 @@ const DEFENSE_MS = 20_000;
 const SIMULTANEOUS_VOTE_MS = 8_000;
 
 export interface GameRuntime {
+  sixPlayerEvilCooperation?: boolean;
   /** Absent on persisted games that still enter night after role confirmation. */
   openingNightVersion?: 1;
   presentationVersion:1|2|3|4;
@@ -199,18 +200,19 @@ export class RoomService {
     this.#presentation = options.presentation ?? true;
   }
 
-  create(playerCount: number, organizerName: string, playMode: RoomPlayMode = "IN_PERSON", voiceRoomUrl?: string): { room: RoomRecord; organizerToken: string } {
+  create(playerCount: number, organizerName: string, playMode: RoomPlayMode = "IN_PERSON", voiceRoomUrl?: string, sixPlayerEvilCooperation=false): { room: RoomRecord; organizerToken: string } {
     if (!Number.isInteger(playerCount) || playerCount < 5 || playerCount > 12) {
       throw new Error("Player count must be between 5 and 12");
     }
     if (!["IN_PERSON", "REMOTE", "HYBRID"].includes(playMode)) throw new Error("Unknown play mode");
+    if(typeof sixPlayerEvilCooperation!=='boolean'||sixPlayerEvilCooperation&&playerCount!==6)throw new RoomError('INVALID_RULES','邪恶协作仅适用于6人房间',400);
     const normalizedVoiceRoomUrl = voiceRoomUrl?.trim();
     if (normalizedVoiceRoomUrl && !isSafeExternalUrl(normalizedVoiceRoomUrl)) throw new Error("Voice link must use http or https");
     let code = createRoomCode();
     while (this.#rooms.has(code)) code = createRoomCode();
     const organizerToken = createOpaqueToken();
     const room: RoomRecord = {
-      schemaVersion: 5, timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true},roomInstanceId: randomUUID(), setupId: randomUUID(),
+      schemaVersion: 5, timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true,...(sixPlayerEvilCooperation?{sixPlayerEvilCooperation:true}:{})},roomInstanceId: randomUUID(), setupId: randomUUID(),
       id: randomUUID(),
       code,
       organizerName: organizerName.trim().slice(0, 24) || "组织者",
@@ -504,6 +506,14 @@ export class RoomService {
     for (const player of room.participants) player.ready = false;
   }
 
+  setSixPlayerEvilCooperation(code:string,token:string,enabled:boolean):void{
+    const room=this.find(code);this.requireHost(room,token);
+    if(room.state!=='LOBBY')throw new RoomError('RULES_LOCKED','开局后不能修改规则');
+    if(typeof enabled!=='boolean'||enabled&&room.playerCount!==6)throw new RoomError('INVALID_RULES','邪恶协作仅适用于6人房间',400);
+    if((room.metadata?.sixPlayerEvilCooperation===true)===enabled)return;
+    room.metadata={...room.metadata,sixPlayerEvilCooperation:enabled};this.invalidateSetup(room);this.changed(room);
+  }
+
   private requireHost(room: RoomRecord, token: string): ParticipantRecord {
     const host = this.organizer(room);
     if (!host || host.controller!=="HUMAN" || host.left || host.tokenHash !== hashOpaqueToken(token)) throw new RoomError("HOST_REQUIRED", "只有现任房主可以操作", 403);
@@ -599,6 +609,7 @@ export class RoomService {
       const code = normalizeRoomCode(snapshot.code);
       if (![undefined, 1, 2, 3, 4,5].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) throw new Error(`Room ${code}: invalid roster snapshot`);
+      for(const enabled of [snapshot.metadata?.sixPlayerEvilCooperation,snapshot.game?.sixPlayerEvilCooperation])if(enabled!==undefined&&(typeof enabled!=='boolean'||enabled&&snapshot.playerCount!==6))throw new Error(`Room ${code}: invalid six-player rules`);
       if(snapshot.game?.openingNightVersion!==undefined&&snapshot.game.openingNightVersion!==1||snapshot.metadata?.openingNightRulesVersion!==undefined&&snapshot.metadata.openingNightRulesVersion!==1)throw new Error(`Room ${code}: unsupported opening night version`);
       if(![2,3,4,5].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
       if(snapshot.game&&snapshot.game.presentationVersion!==undefined&&![1,2,3,4].includes(snapshot.game.presentationVersion))throw new Error("Unsupported presentation version");
@@ -650,14 +661,16 @@ export class RoomService {
   publicView(codeInput: string) {
     const room = this.find(codeInput);
     const organizer = this.organizer(room);
+    const cooperation=room.game?room.game.sixPlayerEvilCooperation===true:room.metadata?.sixPlayerEvilCooperation===true;
     return {
       code: room.code,
       timeline:{mode:room.timeline.mode,epoch:room.timeline.epoch},botControl:this.botControlView(room),activeHumanCount:humans(room).length,botCount:bots(room).length,
       protocolVersion: 7 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
       revision: room.revision, serverNow: this.#now(),
-      rulesSummary: room.playerCount < 7 ? "5–6 人采用官方 Teensyville：恶魔与爪牙互不认识，恶魔没有三个伪装。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。" : "暗流涌动标准规则。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。",
+      rulesSummary: cooperation ? "自定义增强：6人局邪恶协作，恶魔与爪牙首夜相认，恶魔获得三个不在场善良伪装；夜间击杀规则不变。" : room.playerCount < 7 ? "5–6 人采用官方 Teensyville：恶魔与爪牙互不认识，恶魔没有三个伪装。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。" : "暗流涌动标准规则。提名后辩护 20 秒，从被提名者下一座顺时针每席 1.5 秒计票；本席计票前可调整举手，未举手不消耗鬼票。",
       state: room.game && room.state !== "ABORTED" ? room.game.publicProjection?.phase === "GAME_OVER" ? "GAME_OVER" : "RUNNING" : room.state,
       playerCount: room.playerCount,
+      sixPlayerEvilCooperation:cooperation,
       playMode: room.playMode,
       ...(room.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {}),
       ...(organizer ? { organizerId: organizer.id, organizerName: organizer.nickname } : {}),
@@ -1378,6 +1391,7 @@ export class RoomService {
     const seed=randomUUID();
     const game: GameRuntime = {
       openingNightVersion:1,presentationVersion:4,presentationSeen:{},roleNotifications:[],startInfo:createStartInfo(room,seed),
+      ...(room.playerCount===6&&room.metadata?.sixPlayerEvilCooperation===true?{sixPlayerEvilCooperation:true}:{}),
       hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL"||!!room.rehearsalRole,
       contextId: randomUUID(),
       gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: seed, presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
@@ -1404,7 +1418,7 @@ export class RoomService {
     }
     const demon = room.assignments.find((candidate) => candidate.roleType === "DEMON");
     const minions = room.assignments.filter((candidate) => candidate.roleType === "MINION");
-    if (room.playerCount < 7) {
+    if (room.playerCount < 7&&!game.sixPlayerEvilCooperation) {
       const smallGameNotice = "官方 Teensyville 小局规则：恶魔与爪牙互不认识，小恶魔没有三个安全伪装。";
       if (demon) this.privateMessage(game, demon.seat, smallGameNotice, "NOTICE");
       for (const minion of minions) this.privateMessage(game, minion.seat, smallGameNotice, "NOTICE");
