@@ -38,9 +38,9 @@
 .guide-page-toolbar>.guide-step-count,.guide-page-toolbar>.guide-toolbar-title{width:100%;align-self:center;margin:0;padding:6px 16px;text-align:center;font-size:12px;line-height:1.5;color:#bda77a}
 
 /* Public taxonomy only; private role visibility continues to come from PrivateView. */
-.guide-page-toolbar .guide-detail-toolbar [data-public-role-type=MINION]{color:#dc8580}
-.guide-page-toolbar .guide-category-toolbar [data-role-type=MINION]{color:#dc8580}
-.guide-page-toolbar .guide-category-toolbar [data-role-type=MINION][aria-selected=true]{color:#f1a29a}
+.guide-page-toolbar .guide-detail-toolbar [data-public-role-type=MINION],.guide-page-toolbar .guide-detail-toolbar [data-public-role-type=DEMON]{color:#b76b58}
+.guide-page-toolbar .guide-category-toolbar [data-role-type=MINION],.guide-page-toolbar .guide-category-toolbar [data-role-type=DEMON]{color:#b76b58}
+.guide-page-toolbar .guide-category-toolbar [data-role-type=MINION][aria-selected=true],.guide-page-toolbar .guide-category-toolbar [data-role-type=DEMON][aria-selected=true]{color:#cf8b70}
 
 /* The arch encloses the portrait alone; the name sits directly on the page. */
 .guide-sheet .role-browser .role-grid>button{overflow:visible;border:0;border-radius:0;background:none;box-shadow:none;gap:0}
