@@ -11,7 +11,7 @@ test('v2 shot, winner and full-role publication respect the new immutable result
  t.advance(2799);expect(game().winner).toBeUndefined();t.advance(1);expect(game().winner).toBe('GOOD');expect(mine().storytellerDecisions).toBeUndefined();
  t.advance(4199);expect(mine().canRestart).toBe(false);t.advance(1);expect(mine().storytellerDecisions).toBeDefined();expect(mine().canRestart).toBe(true);
 });
-test('v2 nomination holds the presentation first, then preserves full 20 second defense and 1500ms seat slots',()=>{
+test('v2 nomination choreography still precedes the new 20 second defense and common 8 second finish',()=>{
  const t=table();t.service.nominate(t.code,t.players[0]!.token,3);t.advance(3300);const g=()=>t.service.publicView(t.code).game!;
- expect(g().nomination!.voteStartsAt!-g().serverNow!).toBe(20000);t.players.forEach(p=>t.service.vote(t.code,p.token,true));t.advance(20000);expect(g().nomination!.countedSeats).toEqual([]);t.advance(1499);expect(g().nomination!.countedSeats).toEqual([]);t.advance(1);expect(g().nomination!.countedSeats).toEqual([4]);
+ expect(g().nomination!.voteStartsAt!-g().serverNow!).toBe(20000);t.players.forEach(p=>t.service.vote(t.code,p.token,true));t.advance(20000);expect(g().nomination).toMatchObject({mode:'SIMULTANEOUS',countdownStarted:true});expect(g().nomination!.countedSeats).toBeUndefined();t.advance(7999);expect(g().nomination).toBeDefined();t.advance(1);expect(t.service.snapshot(t.code).game!.phase).toBe('NOMINATION');
 });

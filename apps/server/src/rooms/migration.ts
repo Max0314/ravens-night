@@ -13,7 +13,9 @@ export function validateLegacyRoom(room: RoomRecord): void {
   if(room.assignments.length!==room.playerCount||game.aliveSeats.some(s=>!players.some(p=>p.seat===s)))fail("role/seat references");
   if(game.phase==="VOTING"&&!game.nomination)fail("active ballot");
   const ballot=game.nomination;
-  if(ballot?.voterOrder && (!Array.isArray(ballot.countedSeats)||!ballot.countedVotes||![ballot.defenseUntil,ballot.voteStartsAt,ballot.voteEndsAt,ballot.nextCountAt].every(Number.isFinite)))fail("ballot clock or frozen votes");
+  if(ballot?.mode==='SIMULTANEOUS'){
+    if(!Array.isArray(ballot.voterOrder)||![ballot.defenseUntil,ballot.preparationEndsAt,ballot.voteStartsAt,ballot.voteEndsAt].every(Number.isFinite)||typeof ballot.defenseFinished!=='boolean'||typeof ballot.countdownStarted!=='boolean'||ballot.voteEndsAt! - ballot.voteStartsAt! !== 8000)fail("simultaneous ballot clock");
+  }else if(ballot?.voterOrder && (!Array.isArray(ballot.countedSeats)||!ballot.countedVotes||![ballot.defenseUntil,ballot.voteStartsAt,ballot.voteEndsAt,ballot.nextCountAt].every(Number.isFinite)))fail("ballot clock or frozen votes");
 }
 
 /** v1 receipts often contain a complete private room. Keep only the operation's small result. */

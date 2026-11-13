@@ -6,7 +6,7 @@ import {RoomService,type RoomRecord} from './service.js';
 import type {RoomRepository} from '../game/live-runtime.js';
 import {avatarChoices} from '@ravens/contracts';
 
-const protocol={'x-ravens-protocol':'6'};
+const protocol={'x-ravens-protocol':'7'};
 class MemoryRepository implements RoomRepository{
   records=new Map<string,RoomRecord>();fail=false;commits:Array<{changed:string[];deleted:string[]}>=[];
   async initialize(){}async close(){}async loadAll(){return [...this.records.values()].map(r=>structuredClone(r));}
@@ -159,7 +159,7 @@ test('the source websocket closes only after its deletion is committed; old prot
   const t=await fixture();try{
     const old=await t.app.injectWS(`/api/rooms/${t.source}/live?protocol=4&mode=PLAYER`,{headers:{cookie:t.sourceCookie}});
     try{expect(await new Promise(resolve=>old.once('close',(code:number)=>resolve(code)))).toBe(1008);}finally{old.terminate();}
-    const ws=await t.app.injectWS(`/api/rooms/${t.source}/live?protocol=6&mode=PLAYER`,{headers:{cookie:t.sourceCookie}});
+    const ws=await t.app.injectWS(`/api/rooms/${t.source}/live?protocol=7&mode=PLAYER`,{headers:{cookie:t.sourceCookie}});
     try{
       const payload=await t.body();t.repository.fail=true;expect((await t.join(payload)).statusCode).toBe(503);expect(ws.readyState).toBe(1);
       const closed=new Promise(resolve=>ws.once('close',(code:number)=>resolve(code)));t.repository.fail=false;expect((await t.join(payload)).statusCode).toBe(201);expect(await closed).toBe(1008);

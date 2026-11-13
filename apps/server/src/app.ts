@@ -85,7 +85,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     }
     const pathname = request.url.split("?")[0]!;
     const roomApi=/^\/api\/rooms(?:\/|$)/.test(pathname)||pathname==='/api/room-create-ticket';
-    if(roomApi&&!request.headers.upgrade&&!(request.method==='GET'&&/^\/api\/rooms\/[^/]+\/summary$/.test(pathname))&&request.headers['x-ravens-protocol']!=='6')return reply.code(426).send({errorCode:'CLIENT_UPGRADE_REQUIRED',error:'游戏已更新，请刷新页面后继续',refreshRequired:true});
+    if(roomApi&&!request.headers.upgrade&&!(request.method==='GET'&&/^\/api\/rooms\/[^/]+\/summary$/.test(pathname))&&request.headers['x-ravens-protocol']!=='7')return reply.code(426).send({errorCode:'CLIENT_UPGRADE_REQUIRED',error:'游戏已更新，请刷新页面后继续',refreshRequired:true});
     if (/\/auth\/login$|\/join$|\/recover$|\/switch-ticket$|\/presentations\/ack$/.test(pathname) && request.method === "POST") {
       const key = `${request.ip}:${pathname.split("/").at(-1)}`;
       const current = attempts.get(key);
@@ -431,7 +431,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
 
   void app.register(async (scope) => {
     scope.get<{ Params: { code: string }; Querystring: { mode?: string;protocol?:string } }>("/api/rooms/:code/live", { websocket: true }, (socket, request) => {
-      if(request.query.protocol!=="6"){socket.close(1008,"Client upgrade required");return;}
+      if(request.query.protocol!=="7"){socket.close(1008,"Client upgrade required");return;}
       const mode = request.query.mode === "DISPLAY" ? "DISPLAY" : "PLAYER";
       let token: string;
       try { token = participantToken(request, undefined, mode); member(runtime.service.find(request.params.code), token, mode); }

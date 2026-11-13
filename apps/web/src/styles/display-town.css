@@ -38,3 +38,6 @@ main.display{position:relative;height:100%;min-height:0;grid-template-rows:auto 
 }
 
 .display__performance .effects-audio,.display__performance .event-notice{pointer-events:auto}
+
+.display .display__ballot-status{display:grid;gap:3px;font-size:clamp(10px,1.2vw,18px);line-height:1.4;font-variant-numeric:tabular-nums}
+.display .display__ballot-status>strong{font-size:clamp(14px,2vw,28px);color:#ead09c}

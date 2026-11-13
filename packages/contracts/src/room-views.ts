@@ -21,7 +21,7 @@ export interface GameView {
   events: Array<Partial<ExperienceEvent> & { seq: number; message: string }>;
   readyCount: number;
   aliveCount: number;
-  nomination?: { ballotId?: string; nominatorSeat: number; nomineeSeat: number; votesReceived: number; votesRaised: number; threshold: number; votersRequired?: number; defenseUntil?: number; voteStartsAt?: number; voteEndsAt?: number; currentVoterSeat?: number; countedSeats?: number[]; countedVotes?: Record<number, boolean>; voterOrder?: number[]; raisedSeats?: number[]; nextCountAt?: number };
+  nomination?: { mode?: "SIMULTANEOUS"; defenseFinished?: boolean; preparationEndsAt?: number; countdownStarted?: boolean; ballotId?: string; nominatorSeat: number; nomineeSeat: number; votesReceived: number; votesRaised: number; threshold: number; votersRequired?: number; defenseUntil?: number; voteStartsAt?: number; voteEndsAt?: number; currentVoterSeat?: number; countedSeats?: number[]; countedVotes?: Record<number, boolean>; voterOrder?: number[]; raisedSeats?: number[]; nextCountAt?: number };
   onBlock?: { seat: number; votes: number };
   executionTied?: boolean;
   winner?: "GOOD" | "EVIL";
@@ -74,6 +74,7 @@ export interface PrivateView extends Partial<RoomProtocolView> {
   role?: { roleId: string; alignment: "GOOD" | "EVIL"; type: string; name: string; summary: string; beginnerTip: string; perceivedAs?: string };
   roleConfirmed?: boolean;
   voteRaised?: boolean;
+  voteSubmitted?: boolean;
   messages: string[];
   history: PrivateHistoryEntry[];
   game?: GameView;

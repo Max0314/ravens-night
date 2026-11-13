@@ -1,4 +1,3 @@
-import {GlobalAudioButton} from '../components/GlobalAudioButton.js';
 import {TestRolePicker} from '../components/TestRolePicker.js';
 import {RoomProfileEditor} from '../components/RoomProfileEditor.js';
 import {SeatOrderGrid} from '../components/SeatOrderGrid.js';
@@ -30,6 +29,6 @@ export function Lobby({ rehearsal,rolePending=false,onRetryRole,onChooseRole,roo
     <div className="lobby-help"><button type="button" onClick={onRoles}>角色表</button><button type="button" onClick={onTutorial}>规则</button>{canBegin?<button type="button" onClick={()=>window.dispatchEvent(new Event("ravens:bot-controls"))}>人机补位 / 测试</button>:null}</div>
     {canBegin ? <label className="tutorial-choice"><input type="checkbox" checked={tutorial} onChange={e=>setTutorial(e.target.checked)}/>开局前看简短教学</label> : null}
     {notice ? <p role="status">{notice}</p> : null}{error ? <p role="alert" className="form-error">{error}</p> : null}
-    </div><footer className="lobby-primary">{canBegin&&reason?<small role="status">{reason}</small>:null}<div className="lobby-primary__actions"><div className="lobby-primary__start">{canBegin ? <Button onClick={()=>onBegin(tutorial ? "OPTIONAL" : "SKIP")} disabled={!canStart}>{busy ? "正在提交…" : mine?.ready ? "开始游戏" : "准备并开始"}</Button> : mine && onReady ? <><Button disabled={busy} onClick={()=>onReady(!mine.ready)}>{mine.ready ? "取消准备" : "我已准备"}</Button><small>等待房主开始</small></> : null}</div><GlobalAudioButton/></div></footer>
+    </div><footer className="lobby-primary">{canBegin&&reason?<small role="status">{reason}</small>:null}<div className="lobby-primary__actions"><div className="lobby-primary__start">{canBegin ? <Button onClick={()=>onBegin(tutorial ? "OPTIONAL" : "SKIP")} disabled={!canStart}>{busy ? "正在提交…" : mine?.ready ? "开始游戏" : "准备并开始"}</Button> : mine && onReady ? <><Button disabled={busy} onClick={()=>onReady(!mine.ready)}>{mine.ready ? "取消准备" : "我已准备"}</Button><small>等待房主开始</small></> : null}</div></div></footer>
   </main>;
 }
