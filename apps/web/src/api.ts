@@ -2,6 +2,7 @@ import type {PlayerSelection} from './use-player-profile.js';
 import type { ExperienceEvent, StorytellerDecision, RoomProtocolView, RoomCommandContext } from "@ravens/contracts";
 import {roomSessionKey} from './account-context.js';
 import { isOlderSnapshot } from "./snapshot-order.js";
+import {observeRoomAudioDelivery,resetRoomAudioDeliveries,roomAudioRequestFailed,type RoomAudioObservation} from './room-audio-delivery.js';
 import type {PresentationAckRequest,PresentationAckResponse} from '@ravens/contracts';
 import type { RoomParticipant, RoomPlayMode, GameView, RoomView, PrivateView, RoomResult } from "@ravens/contracts";
 export type { RoomParticipant, RoomPlayMode, GameView, RoomView, PrivateView, RoomResult, PrivateHistoryEntry, PrivateHistoryPhase, PrivateHistoryKind } from "@ravens/contracts";
@@ -16,8 +17,9 @@ interface Intent { onCommitted?: (() => void) | undefined; url: string; init: Re
 const unsentVotes = new Map<string, Intent>();
 const pending = new Map<string, Intent>();
 const contextKey = (code: string, mode = currentRoomMode()) => `${code.toUpperCase()}:${mode}`;
-export function resetAccountContext(){accountGeneration++; contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear(); joinIntents.clear();joinFlights.clear();switchMemory=undefined;switchFlight=undefined;switchPreparation=undefined; creationIntent=undefined; creationFlights.clear();}
-export function observeRoomView(code: string, incoming: ContextView, mode = currentRoomMode()) {
+export function resetAccountContext(){accountGeneration++; resetRoomAudioDeliveries(); contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear(); joinIntents.clear();joinFlights.clear();switchMemory=undefined;switchFlight=undefined;switchPreparation=undefined; creationIntent=undefined; creationFlights.clear();}
+export function observeRoomView(code: string, incoming: ContextView, mode = currentRoomMode(),audioObservation?:RoomAudioObservation) {
+  observeRoomAudioDelivery(code,incoming,mode,audioObservation);
   const key = contextKey(code, mode), previous = contexts.get(key);
   if (!incoming.roomInstanceId || !incoming.self) return;
   if (isOlderSnapshot(incoming, previous)) return;
@@ -101,6 +103,8 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
   if (init?.method && init.method !== "GET") headers.set("x-command-id", crypto.randomUUID());
   new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
   const options = { ...init, credentials: "same-origin" as const, headers };
+  const audioCommand=init?.method==='POST'?/^\/api\/rooms\/([^/]+)\/(nominate|vote)$/.exec(url):null;
+  const audioObservation:RoomAudioObservation|undefined=audioCommand?{liveKind:audioCommand[2]==='nominate'?'NOMINATION':'VOTE_RESULT',afterSeq:Math.max(-Infinity,...(contexts.get(contextKey(audioCommand[1]!,headers.get('x-room-mode')==='DISPLAY'?'DISPLAY':'PLAYER'))?.game?.events??[]).map(event=>event.seq))}:undefined;
   // Only receipt-backed commands can be safely retried after an ambiguous disconnect.
   const retryable = init?.method === "POST" && /^\/api\/rooms\/[^/]+\/(?:bots(?:\/control|\/step|\/command)?|rehearsal\/(?:clock|advance|role)|start|reset|seats|ready|resume|tutorial\/complete|role\/confirm|first-night-info\/ack|profile|action|nominate|nomination\/(?:cancel|defense\/complete)|vote|day\/(?:ready|ability)|whispers(?:\/leave|\/[^/]+\/(?:respond|messages))?|recovery|recover)$/.test(url);
   for (let attempt = 0; ; attempt++) {
@@ -114,7 +118,7 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
       const match = /^\/api\/rooms\/([^/?]+)(?:[/?]|$)/.exec(url);
       if (match && typeof body === "object" && body) {
         const view = body as ContextView;
-        if (view.roomInstanceId) observeRoomView(match[1]!, view, headers.get("x-room-mode") === "DISPLAY" ? "DISPLAY" : "PLAYER");
+        if (view.roomInstanceId) observeRoomView(match[1]!, view, headers.get("x-room-mode") === "DISPLAY" ? "DISPLAY" : "PLAYER",audioObservation);
         else if (view.self) {
           const key = contextKey(match[1]!), old = contexts.get(key);
           if (old && (!old.self || view.self.commandVersion >= old.self.commandVersion)) contexts.set(key, { ...old, self: view.self });
@@ -122,6 +126,8 @@ async function rawRequest<T>(url: string, init?: RequestInit): Promise<T> {
       }
       return body;
     } catch (error) {
+      const roomMatch=/^\/api\/rooms\/([^/?]+)(?:\/me)?(?:\?|$)/.exec(url);
+      if(generation===accountGeneration&&roomMatch&&(!init?.method||init.method==='GET')&&(controller.signal.aborted||error instanceof TypeError||error instanceof ApiError&&error.status>=500))roomAudioRequestFailed(roomMatch[1]!,headers.get('x-room-mode')==='DISPLAY'?'DISPLAY':'PLAYER');
       if (controller.signal.aborted) throw new Error("请求超时，操作结果待确认，请重试原操作");
       if (!(retryable && attempt === 0 && error instanceof TypeError)) throw error;
     } finally { clearTimeout(timer); }

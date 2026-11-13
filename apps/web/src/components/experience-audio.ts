@@ -8,6 +8,7 @@ import {roleAudioV9 as finalLead} from './role-audio-v9.js';
 import {roleMusicCues} from './role-score.js';
 import {dawnAudio} from './dawn-audio.js';
 import {audioPreferences,audioPreferencesEvent} from './audio-preferences.js';
+import type {RoomAudioDelivery} from '../room-audio-delivery.js';
 type Scope='public'|'private'|'ui'|'book'|'nomination'|'ballot';
 export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
@@ -70,7 +71,7 @@ function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
  const prefix=sample.match(/^(v[13456789]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[13456789]:/,'');
  const candidate=/^candidate:(L02|L03|L04|A03)$/.exec(sample)?.[1],score=/^score:(M03|M22)$/.exec(sample)?.[1],ambient=/^ambient:(dawn-door)$/.exec(sample)?.[1],url=ambient?'/audio/ambience/v1/'+ambient+'.mp3':score?'/audio/music/v2/scene-'+score.toLowerCase()+'.mp3':candidate?'/audio-candidates/2026-11-12-v1/'+candidate+'.mp3':'/audio/effects/'+version+'/'+name+'.mp3';
- const pending=(async()=>{await takeLoadSlot();try{const response=await fetch(url);if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
+ const pending=(async()=>{await takeLoadSlot();try{const response=await fetch(url);if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||!sizes.has(key)||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{if(buffers.get(sample)===pending){buffers.delete(sample);sizes.delete(sample);}report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
 /** Invoke directly in the book's user gesture; no global/private sound preference changes. */
 export function prepareBookAudio(owner:object):Promise<boolean>{
@@ -99,10 +100,14 @@ function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,ra
  if(!claim(id+':'+cue,at))return;
  void load(sample).then(buffer=>{
   if(ctx!==audio||epochs.get(id)!==epoch||!allowed(scope)||(audio.currentTime-at)*1000>lateWindow||offset>=buffer.duration)return;
+  const {source,when}=startBuffer(audio,buffer,id,sample,at,scope,rate,volume,offset,bell);onStarted?.(buffer,when,source);
+ }).catch(()=>{/* Missing media never blocks interaction. */});
+}
+/** Call only after the owner has checked its generation, permission and clock. */
+function startBuffer(audio:AudioContext,buffer:AudioBuffer,id:string,sample:string,at:number,scope:Scope,rate=1,volume=.6,offset=0,bell=false){
   const group=(sample:string)=>sample.startsWith('score:')?'music':/^(v6:washer-whisper|hurt-|cough-|butler-voice)/.test(sample)?'voice':'material',kind=group(sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s.sample)===kind&&s.at<=at&&s.end>at);if(scope!=='nomination'&&own.length>=(scope==='ui'||scope==='book'||kind!=='material'?1:3))stop(own[0]![0],own[0]![1]);
   if(!bell&&!sample.startsWith('ambient:')&&scope!=='ui'&&scope!=='book')for(const row of sources.values())if(row.bell){const duckAt=Math.max(at,audio.currentTime);row.gain.gain.setValueAtTime(row.gain.gain.value,duckAt);row.gain.gain.linearRampToValueAtTime(.035,duckAt+.04);row.gain.gain.linearRampToValueAtTime(.2,duckAt+.34);}
-  const source=audio.createBufferSource(),gain=audio.createGain();source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));sources.set(source,{id,scope,at,sample,gain,bell,end:at+(buffer.duration-offset)/rate});source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};const when=Math.max(audio.currentTime,at);source.start(when,offset);onStarted?.(buffer,when,source);
- }).catch(()=>{/* Missing media never blocks interaction. */});
+  const source=audio.createBufferSource(),gain=audio.createGain(),when=Math.max(audio.currentTime,at);source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};try{source.start(when,offset);}catch(error){source.disconnect();gain.disconnect();throw error;}sources.set(source,{id,scope,at:when,sample,gain,bell,end:when+(buffer.duration-offset)/rate});return{source,when};
 }
 const hash=(id:string)=>[...id].reduce((v,c)=>(Math.imul(v,31)+c.charCodeAt(0))>>>0,0);
 let previousPrivateUi='';
@@ -208,7 +213,7 @@ export function scheduleRoleCue(scene:PrivateSceneDescriptor,elapsed:number,opti
 export async function auditionSample(sample:string){if(!/^(?:v[13456789]:)?[a-z0-9_-]+$/.test(sample)||!allowed('ui'))return;silenceEffects('ui');const id='ui:audition:'+(++semanticSeq);epochs.set(id,0);try{await load(sample);if(allowed('ui')&&epochs.get(id)===0)sampleAt(id,'audition',sample,0,'ui',1,sample==='v1:shield'?.74:.6,0,500);}catch{}}
 
 
-export type NominationSoundEvent={id?:string;kind?:string;startsAt?:number;durationMs?:number;outcome?:string};
+export type NominationSoundEvent={id?:string;kind?:string;startsAt?:number;durationMs?:number;outcome?:string;seq?:number;day?:number};
 export function nominationSound(kind:string|undefined,outcome?:string){return kind==='NOMINATION'?'L03':kind==='VOTE_RESULT'?(outcome==='ON_BLOCK'?'L04':outcome==='NONE'||outcome==='TIED'?'L02':undefined):undefined;}
 export function nominationSoundDuration(kind:string|undefined,outcome?:string){const sample=nominationSound(kind,outcome);return sample==='L03'?16000:sample==='L04'?20000:sample==='L02'?15000:0;}
 export async function prepareNominationAudio(){if(!effectsAudioEnabled()||!ctx)return;await Promise.allSettled(['L02','L03','L04','A03'].map(id=>load('candidate:'+id)));}
@@ -217,27 +222,66 @@ const nominationDucked=new WeakSet<GainNode>();
 function duckNominationTails(id:string,when:number){for(const row of sources.values())if(row.scope==='nomination'&&row.id!==id&&row.at<=when&&!nominationDucked.has(row.gain)){nominationDucked.add(row.gain);row.gain.gain.setValueAtTime(row.gain.gain.value,when);row.gain.gain.linearRampToValueAtTime(.12,when+.06);}}
 /** A notice's visual lifetime never owns these long public tails. */
 export function createNominationAudio(ownerId:string){
- const owner={},events=new Map<string,{id:string;at:number}>();nominationOwners.add(owner);let disposed=false,initialized=false,lastEpoch:number|string|undefined,previewKey='';
+ type Delivery={id:string;at:number;sample:string;state:'pending'|'started'|'skipped';history?:boolean;when?:number;epoch?:number;loading?:boolean;buffer?:AudioBuffer;retryAfter?:number};
+ const owner={},events=new Map<string,Delivery>();nominationOwners.add(owner);let disposed=false,initialized=false,lastEpoch:number|string|undefined,previewKey='';
+ let anchor={now:0,at:0},paused=false,contextKey:string|undefined,active=true,revision=-Infinity,latestHit:NominationSoundEvent|undefined,observedContext:AudioContext|undefined,lastDelivery:number|undefined;
+ const audible=()=>!paused&&effectsAudioEnabled()&&!document.hidden;
+ const permitted=()=>active&&audible();
  const cancel=()=>{for(const row of events.values())cancelEventAudio(row.id);};
- const interrupt=(now:number)=>{cancel();for(const [key,row]of events)if(row.at>now)events.delete(key);};
- return {
-  update(list:NominationSoundEvent[],now:number,options:{paused?:boolean;epoch?:number|string}={}){
-   if(disposed)return;const initial=!initialized;initialized=true;if(lastEpoch!==undefined&&lastEpoch!==options.epoch)interrupt(now);lastEpoch=options.epoch;
-   const blocked=options.paused||!allowed('nomination');if(blocked)interrupt(now);
-   for(const event of list){const sample=nominationSound(event.kind,event.outcome),at=event.startsAt;if(!sample||!event.id||typeof at!=='number'||!Number.isFinite(at)||events.has(event.id))continue;
-    if(at>now+1500)continue;const id='nomination:'+ownerId+':'+event.id;
-    if(initial&&at<now||at<now-500||blocked){if(at<=now)events.set(event.id,{id,at});continue;}
-    events.set(event.id,{id,at});sampleAt(id,'full', 'candidate:'+sample,Math.max(0,at-now),'nomination',1,.52,0,500,false,(_buffer,when)=>duckNominationTails(id,when));
+ const interrupt=(now:number)=>{cancel();for(const [key,row]of events){row.state='skipped';row.history=false;delete row.buffer;if(row.at>now)events.delete(key);}};
+ const cancelPending=(except?:string)=>{for(const [key,row]of events)if(key!==except){row.history=false;if(row.state==='pending'||row.state==='started'&&row.when!==undefined&&row.when>(ctx?.currentTime??0)){cancelEventAudio(row.id);row.state='skipped';delete row.buffer;}}};
+ const later=(a:NominationSoundEvent,b:NominationSoundEvent)=>a.seq!==undefined&&b.seq!==undefined?a.seq>b.seq:(a.startsAt??0)>(b.startsAt??0);
+ const pump=(retry=false)=>{
+  if(disposed||!permitted())return;
+  const audio=ctx;if(!audio)return;
+  if(observedContext!==audio){observedContext?.removeEventListener?.('statechange',restored);observedContext=audio;audio.addEventListener?.('statechange',restored);}
+  for(const row of events.values()){
+   if(row.state!=='pending')continue;
+   if(epochs.get(row.id)!==row.epoch){row.state='skipped';delete row.buffer;continue;}
+   if(row.buffer&&audio.state==='running'&&(retry||performance.now()>=(row.retryAfter??0))){
+    // Eligibility was established on delivery. Decode/queue latency must not turn it into history.
+    const now=anchor.now+Math.max(0,performance.now()-anchor.at),when=audio.currentTime+Math.max(0,row.at-now)/1000;
+    try{const started=startBuffer(audio,row.buffer,row.id,'candidate:'+row.sample,when,'nomination',1,.52);row.state='started';row.when=started.when;delete row.buffer;duckNominationTails(row.id,started.when);}
+    catch{row.retryAfter=performance.now()+1000;}
+   }else if(!row.buffer&&!row.loading&&(retry||performance.now()>=(row.retryAfter??0))){
+    row.loading=true;void load('candidate:'+row.sample).then(buffer=>{row.loading=false;if(disposed||row.state!=='pending')return;row.buffer=buffer;pump();}).catch(()=>{row.loading=false;row.retryAfter=performance.now()+1000;});
    }
+  }
+ };
+ const restored=()=>{if(ctx?.state==='running')pump(true);};
+ const gesture=()=>{if(disposed||!permitted()||![...events.values()].some(row=>row.state==='pending'))return;void unlockEffectsAudio().then(()=>pump(true));pump();};
+ for(const name of ['pointerdown','touchend','click','keydown','WeixinJSBridgeReady'])document.addEventListener(name,gesture);
+ return {
+  update(list:NominationSoundEvent[],now:number,options:{paused?:boolean;epoch?:number|string;retry?:boolean;context?:string;active?:boolean;day?:number;revision?:number;delivery?:RoomAudioDelivery}={}){
+   if(disposed||options.revision!==undefined&&options.revision<revision)return;if(options.revision!==undefined)revision=options.revision;
+   const initial=!initialized;initialized=true;anchor={now,at:performance.now()};paused=!!options.paused;active=options.active??true;
+   if(lastEpoch!==undefined&&lastEpoch!==options.epoch)interrupt(now);lastEpoch=options.epoch;
+   if(contextKey!==options.context)cancelPending();contextKey=options.context;
+   if(options.delivery&&options.delivery.generation!==lastDelivery){cancelPending();lastDelivery=options.delivery.generation;}
+   if(!audible())interrupt(now);else if(!active)cancelPending();
+   const hit=list.filter(event=>nominationSound(event.kind,event.outcome)).reduce<NominationSoundEvent|undefined>((last,event)=>!last||later(event,last)?event:last,undefined);
+   if(hit&&(!latestHit||later(hit,latestHit))){latestHit=hit;cancelPending(hit.id);}
+   for(const event of list){const sample=nominationSound(event.kind,event.outcome),at=event.startsAt,confirmed=!!event.id&&!!options.delivery?.liveIds.has(event.id);if(!sample||!event.id||typeof at!=='number'||!Number.isFinite(at))continue;
+    const previous=events.get(event.id);if(previous&&!(previous.history&&confirmed))continue;
+    if(at>now+1500)continue;const id='nomination:'+ownerId+':'+event.id;
+    // Recovery uses actual transport receipt facts. Ordinary late packets remain live deliveries.
+    // Legacy callers without receipt facts retain the finite media-lifetime history boundary.
+    const recovered=!confirmed&&options.delivery&&(options.delivery.historyIds.has(event.id)||event.seq!==undefined&&event.seq<=options.delivery.historyThrough);
+    const obsolete=!!(latestHit&&later(latestHit,event)||options.day!==undefined&&event.day!==undefined&&options.day!==event.day);
+    const history=!confirmed&&initial&&at<now||recovered||!options.delivery&&at+nominationSoundDuration(event.kind,event.outcome)<=now||obsolete;
+    if(history||!permitted()){if(at<=now)events.set(event.id,{id,at,sample,state:'skipped',history:!!recovered&&!obsolete&&permitted()});continue;}
+    if(!epochs.has(id))epochs.set(id,0);events.set(event.id,{id,at,sample,state:'pending',epoch:epochs.get(id)!});
+   }
+   if(permitted()&&[...events.values()].some(row=>row.state==='pending')&&!ctx)void unlockEffectsAudio().then(()=>pump(true));pump(options.retry);
   },
   preview(event:NominationSoundEvent,elapsed:number,options:AudioPlayback={}){
    if(disposed)return;const sample=nominationSound(event.kind,event.outcome),id='nomination:'+ownerId+':'+event.id,key=String(event.id)+':'+String(options.seekKey??0);
-   if(key!==previewKey){cancel();previewKey=key;events.clear();}events.set(event.id??'',{id,at:0});
+   if(key!==previewKey){cancel();previewKey=key;events.clear();}events.set(event.id??'',{id,at:0,sample:sample??'',state:'started'});
    if(options.paused||!allowed('nomination')){cancelEventAudio(id);return;}if(!sample||elapsed<0||elapsed>=nominationSoundDuration(event.kind,event.outcome))return;
    sampleAt(id,'preview:'+(epochs.get(id)??0),'candidate:'+sample,0,'nomination',options.rate??1,.52,elapsed/1000,150);
   },
   interrupt,
-  dispose(){if(disposed)return;disposed=true;cancel();nominationOwners.delete(owner);},
+  dispose(){if(disposed)return;disposed=true;cancel();events.clear();observedContext?.removeEventListener?.('statechange',restored);for(const name of ['pointerdown','touchend','click','keydown','WeixinJSBridgeReady'])document.removeEventListener(name,gesture);nominationOwners.delete(owner);},
  };
 }
 export interface BallotAudioWindow {id:string;startsAt:number;endsAt:number}

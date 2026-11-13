@@ -1,6 +1,7 @@
 import {useLayoutEffect,useRef} from 'react';
 import type {GameView,RoomView} from '../api.js';
 import {useGameClock} from '../use-game-clock.js';
+import {roomAudioDelivery} from '../room-audio-delivery.js';
 import type {EffectsPlayback} from './EventStage.js';
 import {createBallotCountdownAudio,createNominationAudio,prepareNominationAudio,type BallotAudioWindow} from './experience-audio.js';
 
@@ -21,7 +22,7 @@ export function PublicNominationAudio({game,room,playback}:{game?:GameView;room?
    const state=latest.current,liveNow=state.now+(state.paused||state.playback?0:Math.max(0,performance.now()-state.at));
    const muted=state.paused||document.hidden;
    if(state.playback){const event=state.game?.events.find(e=>e.kind==='NOMINATION'||e.kind==='VOTE_RESULT');if(event)tails.preview(event,liveNow-(event.startsAt??0),{paused:muted,rate:state.playback.rate,mode:state.playback.mode??'START',seekKey:state.epoch});}
-   else tails.update(state.game?.events??[],liveNow,{paused:muted,epoch:state.epoch});
+   else if(state.game){const delivery=roomAudioDelivery(state.game);tails.update(state.game.events,liveNow,{paused:muted,epoch:state.epoch,retry,context:state.game.day+':'+(state.game.contextId??state.game.nomination?.ballotId??state.game.phase),day:state.game.day,active:['DAY_DISCUSSION','NOMINATION','VOTING'].includes(state.game.phase),...(state.game.revision!==undefined?{revision:state.game.revision}:{}),...(delivery?{delivery}:{})});}
    const presentation=state.game?.presentationUntil??0;
    ballot.update(state.playback?undefined:ballotAudioWindow(state.game),Math.max(liveNow,presentation),{paused:muted||presentation>liveNow,epoch:state.epoch,retry});
   };

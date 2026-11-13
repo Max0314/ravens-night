@@ -19,3 +19,7 @@ test('manual time, hidden visibility and legacy ballots never create a local vot
  const g=game(),room={code:'ABCDEF',state:'RUNNING',playerCount:5,participants:[],timeline:{mode:'MANUAL',epoch:4}} as RoomView,ui=render(<PublicNominationAudio game={g} room={room}/>);expect(shared.ballot.update.mock.calls.at(-1)?.[2]).toMatchObject({paused:true,epoch:4});
  const legacy=game();if(legacy.nomination)delete legacy.nomination.mode;expect(ballotAudioWindow(legacy)).toBeUndefined();ui.rerender(<PublicNominationAudio game={g}/>);act(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));});expect(shared.ballot.update.mock.calls.at(-1)?.[2]).toMatchObject({paused:true});
 });
+test('an absent game never initializes history; the first actual snapshot carries its authoritative context',()=>{
+ const ui=render(<PublicNominationAudio/>);expect(shared.tails.update).not.toHaveBeenCalled();ui.rerender(<PublicNominationAudio game={{...game(),contextId:'round-a',revision:8,day:2}}/>);expect(shared.tails.update.mock.calls.at(-1)?.[2]).toMatchObject({context:'2:round-a',day:2,revision:8,active:true});
+ ui.rerender(<PublicNominationAudio game={{...game(),phase:'OTHER_NIGHT'}}/>);expect(shared.tails.update.mock.calls.at(-1)?.[2]).toMatchObject({active:false});
+});
