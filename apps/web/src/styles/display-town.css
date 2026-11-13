@@ -1,5 +1,9 @@
 /* Public television canvas only. Personal screens retain their own geometry and type. */
-main.display{--display-unit:clamp(16px,2.6vh,72px);position:relative;height:100%;min-height:0;grid-template-rows:auto minmax(0,1fr) auto;gap:calc(var(--display-unit)*.35);padding:calc(var(--display-unit)*.6) var(--display-unit)}
+main.display{--display-town-art:url('/art/display/v1/town-day.webp');background:#04080d;--display-unit:clamp(16px,2.6vh,72px);position:relative;height:100%;min-height:0;grid-template-rows:auto minmax(0,1fr) auto;gap:calc(var(--display-unit)*.35);padding:calc(var(--display-unit)*.6) var(--display-unit)}
+main.display--role_reveal,main.display--first_night,main.display--other_night{--display-town-art:url('/art/display/v1/town-night.webp')}
+/* Override the legacy shared !important stripe layer only on the public display. */
+main.display::before{background:linear-gradient(180deg,#03080e60,transparent 38%,#03080e99),radial-gradient(ellipse at 50% 50%,#03080e66,transparent 68%),var(--display-town-art) center/cover no-repeat!important;opacity:1!important}
+
 .display .display__header{align-items:center;gap:var(--display-unit);font-size:var(--display-unit);letter-spacing:.04em}
 .display .display__header>div{gap:calc(var(--display-unit)*.4);flex-wrap:nowrap}
 .display .display__header button{min-height:max(44px,calc(var(--display-unit)*1.6));font-size:calc(var(--display-unit)*.72);padding:calc(var(--display-unit)*.2) calc(var(--display-unit)*.5)}
