@@ -1,0 +1,45 @@
+{
+  "source": {
+    "url": "/art/effects/v5/dawn-town.webp",
+    "width": 688,
+    "height": 1024,
+    "sha256": "0c301dde1cb9682ab58080f8824a57bf36c1a695a212dba418246bbb40a42ce7"
+  },
+  "baker": "scripts/build-dawn-layers.mjs",
+  "atlas": {
+    "columns": 5,
+    "tileWidth": 32,
+    "tileHeight": 24,
+    "padding": 1,
+    "windowSamplingGuard": 1
+  },
+  "fog": {
+    "seed": 29,
+    "frequency": [
+      0.006,
+      0.018
+    ],
+    "octaves": 3,
+    "blur": 3,
+    "scale": 0.5,
+    "maskMovesWithTexture": true
+  },
+  "layers": [
+    {
+      "url": "/art/effects/v9/dawn-window-glass.webp",
+      "width": 160,
+      "height": 72,
+      "bytes": 1420,
+      "decodedBytes": 46080,
+      "sha256": "9c59bf735403377c9dd4d568ad3224a3daf4ccfddb4c2ac5dcc07b32ac0201ab"
+    },
+    {
+      "url": "/art/effects/v9/dawn-mist.webp",
+      "width": 369,
+      "height": 512,
+      "bytes": 170096,
+      "decodedBytes": 755712,
+      "sha256": "1486c7fb3d9164dad193c93127c0a40931f434d23d3230fe36bdb33400a64986"
+    }
+  ]
+}

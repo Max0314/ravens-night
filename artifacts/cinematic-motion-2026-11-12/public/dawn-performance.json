@@ -1,0 +1,175 @@
+{
+  "baseline": "49a88f255a1456cd7a65c6dd359d665b66cde5eb",
+  "method": "Actual previous/current React SVG rendered by sharp; before/after static rows; not a browser FPS measurement",
+  "before": {
+    "filter": 3,
+    "mask": 2,
+    "feTurbulence": 1,
+    "clipPath": 15,
+    "use": 17,
+    "image": 1
+  },
+  "after": {
+    "filter": 0,
+    "mask": 0,
+    "feTurbulence": 0,
+    "clipPath": 0,
+    "use": 0,
+    "image": 17
+  },
+  "oldRepeatedSourcePixels": 10567680,
+  "newRepeatedAtlasPixels": 172800,
+  "newExtraDecodedBytes": 801792,
+  "frames": [
+    {
+      "viewport": [
+        320,
+        640
+      ],
+      "elapsedMs": 0,
+      "meanAbsoluteRgb": 0.16330078125,
+      "maxChannelDelta": 10,
+      "channelsDeltaOver12": 0
+    },
+    {
+      "viewport": [
+        320,
+        640
+      ],
+      "elapsedMs": 1000,
+      "meanAbsoluteRgb": 0.16011881510416667,
+      "maxChannelDelta": 10,
+      "channelsDeltaOver12": 0
+    },
+    {
+      "viewport": [
+        320,
+        640
+      ],
+      "elapsedMs": 1800,
+      "meanAbsoluteRgb": 0.150849609375,
+      "maxChannelDelta": 53,
+      "channelsDeltaOver12": 0.00016438802083333333
+    },
+    {
+      "viewport": [
+        320,
+        640
+      ],
+      "elapsedMs": 3000,
+      "meanAbsoluteRgb": 0.1627685546875,
+      "maxChannelDelta": 83,
+      "channelsDeltaOver12": 0.0005908203125
+    },
+    {
+      "viewport": [
+        320,
+        640
+      ],
+      "elapsedMs": 4500,
+      "meanAbsoluteRgb": 0.11165201822916666,
+      "maxChannelDelta": 98,
+      "channelsDeltaOver12": 0.0011295572916666667
+    },
+    {
+      "viewport": [
+        320,
+        640
+      ],
+      "elapsedMs": 6600,
+      "meanAbsoluteRgb": 0.0450341796875,
+      "maxChannelDelta": 103,
+      "channelsDeltaOver12": 0.0011637369791666667
+    },
+    {
+      "viewport": [
+        640,
+        360
+      ],
+      "elapsedMs": 0,
+      "meanAbsoluteRgb": 0.0699681712962963,
+      "maxChannelDelta": 9,
+      "channelsDeltaOver12": 0
+    },
+    {
+      "viewport": [
+        640,
+        360
+      ],
+      "elapsedMs": 1000,
+      "meanAbsoluteRgb": 0.06747395833333333,
+      "maxChannelDelta": 9,
+      "channelsDeltaOver12": 0
+    },
+    {
+      "viewport": [
+        640,
+        360
+      ],
+      "elapsedMs": 1800,
+      "meanAbsoluteRgb": 0.05703703703703704,
+      "maxChannelDelta": 40,
+      "channelsDeltaOver12": 0.0002097800925925926
+    },
+    {
+      "viewport": [
+        640,
+        360
+      ],
+      "elapsedMs": 3000,
+      "meanAbsoluteRgb": 0.09947193287037037,
+      "maxChannelDelta": 58,
+      "channelsDeltaOver12": 0.0009302662037037037
+    },
+    {
+      "viewport": [
+        640,
+        360
+      ],
+      "elapsedMs": 4500,
+      "meanAbsoluteRgb": 0.10409288194444444,
+      "maxChannelDelta": 69,
+      "channelsDeltaOver12": 0.0017259837962962962
+    },
+    {
+      "viewport": [
+        640,
+        360
+      ],
+      "elapsedMs": 6600,
+      "meanAbsoluteRgb": 0.058641493055555556,
+      "maxChannelDelta": 73,
+      "channelsDeltaOver12": 0.001796875
+    }
+  ],
+  "nativeWindowSamples": [
+    {
+      "x": 245,
+      "y": 319,
+      "before": [
+        47,
+        49,
+        49
+      ],
+      "after": [
+        47,
+        49,
+        49
+      ]
+    },
+    {
+      "x": 499,
+      "y": 375,
+      "before": [
+        39,
+        39,
+        39
+      ],
+      "after": [
+        39,
+        39,
+        39
+      ]
+    }
+  ]
+}
