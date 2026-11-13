@@ -22,3 +22,14 @@ test('player details keep received related clues private and expose public statu
  const facts=screen.getByRole('region',{name:'我已获知的相关线索'});expect(facts).toHaveTextContent('可能是图书管理员');expect(facts).toHaveTextContent('爪牙同伴');expect(facts).toHaveTextContent('你已选择的主人');expect(screen.getByRole('region',{name:'玩家公开状态'})).toHaveTextContent('夜间死亡（黎明公布）');
  ui.rerender(<TownBoard {...props} privateVisible={false}/>);expect(screen.queryByRole('region',{name:'我已获知的相关线索'})).not.toBeInTheDocument();
 });
+
+test('nomination confirmation is concise while its target remains visible in the body',()=>{
+ const view=fixture(5),nominate=vi.fn(),ui=render(<TownBoard view={view} busy={false} onNominate={nominate} onShoot={vi.fn()}/>);
+ fireEvent.click(ui.container.querySelector('[data-seat-number="2"]>button')!);fireEvent.click(screen.getByRole('button',{name:'提名'}));const dialog=screen.getByRole('alertdialog',{name:'确认提名'});
+ expect(dialog.querySelector('.seat-detail h3')).toHaveTextContent(view.game!.seats[1]!.nickname);fireEvent.click(within(dialog).getByRole('button',{name:'确认提名'}));expect(nominate).toHaveBeenCalledExactlyOnceWith(2);
+});
+test('wheel initially focuses an action and retains a reachable close control when all actions are unavailable',()=>{
+ const view=fixture(5),props={view,busy:false,onNominate:vi.fn(),onShoot:vi.fn()},ui=render(<TownBoard {...props}/>);
+ fireEvent.click(ui.container.querySelector('[data-seat-number="2"]>button')!);expect(screen.getByRole('button',{name:'详情'})).toHaveFocus();const close=screen.getByRole('button',{name:'关闭玩家操作'});expect(close).toHaveClass('player-wheel__close');close.focus();expect(close).toHaveFocus();fireEvent.click(close);
+ ui.rerender(<TownBoard {...props} busy/>);fireEvent.click(ui.container.querySelector('[data-seat-number="2"]>button')!);expect(screen.getByRole('button',{name:'关闭玩家操作'})).toHaveFocus();fireEvent.keyDown(window,{key:'Escape'});expect(screen.queryByRole('dialog',{name:/操作/})).not.toBeInTheDocument();
+});

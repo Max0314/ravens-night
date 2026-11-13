@@ -105,7 +105,7 @@ function PlayerGameContent({ privateVisible=true, reading=false, deferStartInfo=
   useEffect(()=>{if(view?.roleConfirmed)setRoleOpen(false);},[view?.roleConfirmed]);
   useEffect(()=>{if(view?.startInfo?.acknowledged)setInfoOpen(false);},[view?.startInfo?.acknowledged]);
   useEffect(()=>{if(!privateVisible){setSocialOpen(false);setAdviceOpen(false);setVoteOpen(false);setReviewOpen(false);}},[privateVisible]);
-  useEffect(()=>{if(showBallot){setTab("TOWN");setPauseOpen(false);setAdviceOpen(false);setSocialOpen(false);setVoteOpen(view?.game?.phase==='VOTING');setRoleOpen(true);setManualInfoId(view?.startInfo?.infoId);setInfoOpen(!view?.startInfo?.acknowledged);}},[showBallot]);
+  useEffect(()=>{if(showBallot){setTab("TOWN");setPauseOpen(false);setAdviceOpen(false);setSocialOpen(false);setVoteOpen(false);setRoleOpen(true);setManualInfoId(view?.startInfo?.infoId);setInfoOpen(!view?.startInfo?.acknowledged);}},[showBallot]);
   function changeTab(next:typeof tab){if(next!==tab)playSemantic('select');positions.current[tab]=content.current?.scrollTop??0;setTab(next);if(next==="RECORD")setReadSeq(view?.history.at(-1)?.seq??0);}
   useLayoutEffect(()=>{if(content.current)content.current.scrollTop=positions.current[tab]??0;},[tab,game?.gameId]);
   useEffect(()=>{positions.current={};if(content.current)content.current.scrollTop=0;},[game?.gameId,view?.participant.id]);

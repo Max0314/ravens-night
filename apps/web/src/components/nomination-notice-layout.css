@@ -1,0 +1,2 @@
+.nomination-notice.nomination-notice--above-navigation{bottom:var(--nomination-navigation-bottom);max-height:var(--nomination-navigation-height);overflow-y:auto;overscroll-behavior:contain}
+.player-private .game-content--record{padding-bottom:var(--nomination-record-padding,0px);scroll-padding-bottom:var(--nomination-record-padding,0px)}
