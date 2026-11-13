@@ -456,6 +456,111 @@
           "uniformScale": 0.18
         }
       ]
+    },
+    "saint": {
+      "wickTips": [
+        [
+          232,
+          119
+        ],
+        [
+          315,
+          75
+        ],
+        [
+          396,
+          167
+        ]
+      ],
+      "flameRoots": [
+        [
+          232,
+          125
+        ],
+        [
+          315,
+          80
+        ],
+        [
+          396,
+          172
+        ]
+      ],
+      "defaultZ": [
+        "saint-candle-base",
+        "saint-flame-1",
+        "saint-flame-2",
+        "saint-flame-3"
+      ],
+      "parts": [
+        {
+          "id": "saint-candle-base",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            681,
+            87
+          ],
+          "worldAnchor": [
+            315,
+            75
+          ],
+          "uniformScale": 0.35
+        },
+        {
+          "id": "saint-flame-1",
+          "sourceFile": "saint-flames.png",
+          "promptFile": "saint-flames.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            0,
+            0,
+            720,
+            720
+          ],
+          "targetRect": [
+            224,
+            83,
+            16,
+            42
+          ]
+        },
+        {
+          "id": "saint-flame-2",
+          "sourceFile": "saint-flames.png",
+          "promptFile": "saint-flames.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            720,
+            0,
+            1440,
+            720
+          ],
+          "targetRect": [
+            306,
+            34,
+            18,
+            46
+          ]
+        },
+        {
+          "id": "saint-flame-3",
+          "sourceFile": "saint-flames.png",
+          "promptFile": "saint-flames.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            1440,
+            0,
+            2160,
+            720
+          ],
+          "targetRect": [
+            389,
+            135,
+            15,
+            37
+          ]
+        }
+      ]
     }
   }
 }
