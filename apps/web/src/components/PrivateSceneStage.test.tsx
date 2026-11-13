@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
+import {StrictMode} from 'react';
 import {act,cleanup,fireEvent,render,screen} from '@testing-library/react';
 import {afterEach,beforeEach,expect,test,vi} from 'vitest';
 import type {PrivateView} from '../api.js';
@@ -52,14 +53,14 @@ test('replaying the same completed history entry waits for media preparation aga
  let ready:()=>void=()=>{};vi.mocked(preparePrivateArt).mockImplementationOnce(()=>new Promise<import('./PremiumArt.js').PreparedPrivateArt>(resolve=>{ready=()=>resolve({ready:[],failed:[],timedOut:[]});}));act(()=>window.dispatchEvent(new CustomEvent('ravens:replay-private-scene',{detail:1})));await advance(3000);expect(screen.getByRole('status')).toHaveTextContent('正在准备');expect(screen.queryByText('相邻邪恶玩家的对数：2')).not.toBeInTheDocument();await act(async()=>ready());await advance(2100);expect(screen.getByText('相邻邪恶玩家的对数：2')).toBeVisible();
 });
 
-test('information candidates are not mounted before 1900; grimoire waits until 2200 and uses the recorded snapshot',()=>{
+test('information candidates keep their reveal gate; spy grimoire playback points to town without reproducing its snapshot',()=>{
  const view=fixture();view.game!.seats=[{seat:2,nickname:'现在的昵称',avatar:'/current-avatar.webp',alive:true,connected:true,ghostVoteAvailable:true}];
  const candidates={...scene,themeRoleId:'librarian',shown:{type:'CANDIDATES' as const,roleId:'saint',seats:[2,3] as [number,number]}};
  const ui=render(<PrivateSceneContent scene={candidates} view={view} elapsedMs={1899}/>);expect(ui.container.textContent).not.toContain('圣徒');expect(ui.container.querySelector('.private-scene-person')).toBeNull();expect(ui.container.querySelector('[data-projection]')).toBeNull();
  ui.rerender(<PrivateSceneContent scene={candidates} view={view} elapsedMs={1900}/>);expect(ui.container.textContent).toContain('二人中有一位是圣徒');expect(ui.container.querySelectorAll('.private-scene-person')).toHaveLength(2);
  view.history[0]!.grimoire={entries:[{seat:2,nickname:'当夜的昵称',avatar:'/night-avatar.webp',roleName:'士兵',alive:true,reminders:['保护']}]};const spy={...scene,themeRoleId:'spy',shown:{type:'GRIMOIRE' as const,historySeq:1}};
  ui.rerender(<PrivateSceneContent scene={spy} view={view} elapsedMs={2199}/>);expect(ui.container.textContent).not.toContain('当夜的昵称');expect(ui.container.querySelector('image[href="/night-avatar.webp"]')).toBeNull();
- ui.rerender(<PrivateSceneContent scene={spy} view={view} elapsedMs={2200}/>);expect(ui.container.textContent).toContain('当夜的昵称');expect(ui.container.textContent).not.toContain('现在的昵称');expect(ui.container.querySelector('image[href="/night-avatar.webp"]')).not.toBeNull();
+ ui.rerender(<PrivateSceneContent scene={spy} view={view} elapsedMs={2200}/>);expect(ui.container.textContent).toContain('可在城镇查看魔典');expect(ui.container.textContent).not.toContain('当夜的昵称');expect(ui.container.querySelector('.private-grimoire')).toBeNull();expect(view.history[0]!.grimoire!.entries[0]!.nickname).toBe('当夜的昵称');
 });
 
 test('failed layers stay absent for the playback and audio setting changes do not replace its frozen ready set',async()=>{
@@ -105,4 +106,41 @@ test('demon decals are anchored inside the avatar box, separately from a long ni
  expect(box.querySelector('.player-avatar')).not.toBeNull();expect(box.querySelectorAll('.private-avatar-claw')).toHaveLength(2);
  expect(box.textContent).not.toContain('很长昵称');expect(box.nextElementSibling).toHaveTextContent('很长昵称');
  ui.rerender(<PrivateSceneContent scene={demon} view={view} elapsedMs={2900} readyAssets={new Set()}/>);expect(ui.container.querySelector('.private-avatar-claw')).toBeNull();
+});
+
+function evil():PrivateView{
+ const view=fixture();view.roleConfirmed=true;view.role={roleId:'spy',name:'间谍',alignment:'EVIL',type:'MINION',summary:'能力',beginnerTip:'建议'};view.startInfo={infoId:'team',gameId:'game',team:[{seat:2,nickname:'同伴',kind:'DEMON'}],bluffs:[],acknowledged:false,canAcknowledge:true};
+ const start={version:1 as const,id:'start',kind:'EVIL_START' as const,themeRoleId:'spy',shown:{type:'EVIL_START' as const,infoId:'team'}};view.presentations!.pending=[{historySeq:2,scene:start}];view.history=[{seq:2,kind:'INFORMATION',phase:'FIRST_NIGHT',day:0,text:'阵营信息',presentation:start}];return view;
+}
+test('evil-start holds at its end for an explicit business acknowledgement, failure retries, and server success alone advances it',async()=>{
+ const view=evil(),confirm=vi.fn(),props={view,code:'ABCDEF',reading:false,covered:false,onActivityChange:vi.fn(),onHandleTask:vi.fn(),onConfirmStartInfo:confirm};const ui=render(<PrivateSceneStage {...props}/>);await advance(5000);
+ expect(screen.getByRole('button',{name:'已知晓'})).toBeEnabled();expect(confirm).not.toHaveBeenCalled();expect(acknowledgePresentations).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'已知晓'}));expect(confirm).toHaveBeenCalledWith('team');
+ ui.rerender(<PrivateSceneStage {...props} busy/>);expect(screen.getByRole('button',{name:'正在确认…'})).toBeDisabled();ui.rerender(<PrivateSceneStage {...props} error="确认失败，请重试"/>);expect(screen.getByRole('alert')).toHaveTextContent('确认失败');fireEvent.click(screen.getByRole('button',{name:'已知晓'}));expect(confirm).toHaveBeenCalledTimes(2);expect(screen.getByRole('dialog')).toBeVisible();
+ ui.rerender(<PrivateSceneStage {...props} view={{...view,startInfo:{...view.startInfo!,acknowledged:true}}}/>);expect(screen.queryByRole('dialog')).toBeNull();expect(acknowledgePresentations).toHaveBeenCalledTimes(1);expect(vi.mocked(acknowledgePresentations).mock.calls[0]![1].entries).toEqual([{historySeq:2,disposition:'COMPLETE'}]);
+});
+test('skipping evil motion and privacy covering cannot acknowledge companions, and town can resume the same reveal',async()=>{
+ const view=evil(),confirm=vi.fn(),props={view,code:'ABCDEF',reading:false,covered:false,onActivityChange:vi.fn(),onHandleTask:vi.fn(),onConfirmStartInfo:confirm};const ui=render(<PrivateSceneStage {...props}/>);await advance(0);fireEvent.click(screen.getByRole('button',{name:'跳过动画'}));expect(screen.getByRole('button',{name:'已知晓'})).toBeVisible();expect(confirm).not.toHaveBeenCalled();expect(acknowledgePresentations).not.toHaveBeenCalled();
+ ui.rerender(<PrivateSceneStage {...props} covered/>);await advance(5000);expect(screen.queryByRole('dialog')).toBeNull();ui.rerender(<PrivateSceneStage {...props}/>);act(()=>window.dispatchEvent(new Event('ravens:return-town')));expect(screen.queryByRole('dialog')).toBeNull();act(()=>window.dispatchEvent(new CustomEvent('ravens:show-start-info',{detail:'team'})));expect(screen.getByRole('button',{name:'已知晓'})).toBeVisible();expect(confirm).not.toHaveBeenCalled();
+});
+test('legacy startInfo gets one local reveal without inventing an art ACK, and absence of authorized startInfo never invents teammates',async()=>{
+ const view=evil();delete view.presentations;view.history=[];const confirm=vi.fn(),props={view,code:'ABCDEF',reading:false,covered:false,onActivityChange:vi.fn(),onHandleTask:vi.fn(),onConfirmStartInfo:confirm};const ui=render(<PrivateSceneStage {...props}/>);await advance(5000);expect(ui.container.querySelector('[data-kind="EVIL_START"]')).toHaveTextContent('同伴');expect(ui.container.querySelector('.private-start-cards')).toBeNull();expect(ui.container.querySelector('[data-start-info-fallback]')).not.toBeNull();fireEvent.click(screen.getByRole('button',{name:'已知晓'}));
+ ui.rerender(<PrivateSceneStage {...props} view={{...view,startInfo:{...view.startInfo!,acknowledged:true}}}/>);expect(acknowledgePresentations).not.toHaveBeenCalled();ui.unmount();const small=fixture();small.presentations!.pending=[];small.history=[];render(<PrivateSceneStage {...props} view={small}/>);expect(screen.queryByRole('dialog')).toBeNull();
+});
+test('spy grimoire auto segments are skipped as art only while identity, companions and other roles keep their actual queues',async()=>{
+ const view=evil(),identity={version:1 as const,id:'identity-spy',kind:'IDENTITY' as const,themeRoleId:'spy',shown:{type:'IDENTITY' as const,roleId:'spy',summary:'不应展开的能力大段'}};
+ const grimoire={version:1 as const,id:'grimoire',kind:'INFORMATION' as const,themeRoleId:'spy',shown:{type:'GRIMOIRE' as const,historySeq:3}};view.presentations!.pending.unshift({historySeq:1,scene:identity});view.presentations!.pending.push({historySeq:3,scene:grimoire},{historySeq:4,scene});view.history.push({seq:3,kind:'INFORMATION',phase:'FIRST_NIGHT',day:0,text:'魔典快照',presentation:grimoire,grimoire:{entries:[]}});
+ const confirm=vi.fn(),props={view,code:'ABCDEF',reading:false,covered:false,onActivityChange:vi.fn(),onHandleTask:vi.fn(),onConfirmStartInfo:confirm};const ui=render(<PrivateSceneStage {...props}/>);await advance(2200);expect(screen.getByText('可在城镇查看魔典')).toBeVisible();expect(screen.queryByText('不应展开的能力大段')).toBeNull();expect(vi.mocked(acknowledgePresentations).mock.calls.flatMap(call=>call[1].entries)).toContainEqual({historySeq:3,disposition:'SKIP'});expect(confirm).not.toHaveBeenCalled();
+ await advance(1700);expect(ui.container.querySelector('[data-kind="EVIL_START"]')).not.toBeNull();await advance(5000);fireEvent.click(screen.getByRole('button',{name:'已知晓'}));ui.rerender(<PrivateSceneStage {...props} view={{...view,startInfo:{...view.startInfo!,acknowledged:true}}}/>);await advance(2200);expect(screen.getByText('相邻邪恶玩家的对数：2')).toBeVisible();expect(view.history.find(entry=>entry.seq===3)?.grimoire).toBeDefined();
+});
+
+test('spy auto-art SKIP survives the actual StrictMode lifecycle without acknowledging gameplay or showing a second book',async()=>{
+ const view=fixture();view.history=[];view.presentations!.pending=[{historySeq:3,scene:{version:1,id:'spy-only',kind:'INFORMATION',themeRoleId:'spy',shown:{type:'GRIMOIRE',historySeq:3}}}];const confirm=vi.fn();
+ render(<StrictMode><PrivateSceneStage view={view} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()} onConfirmStartInfo={confirm}/></StrictMode>);await advance(0);
+ expect(screen.queryByRole('dialog')).toBeNull();expect(vi.mocked(acknowledgePresentations).mock.calls.flatMap(call=>call[1].entries)).toContainEqual({historySeq:3,disposition:'SKIP'});expect(confirm).not.toHaveBeenCalled();
+});
+
+test('companions appear only on the prepared envelope, with a readable sole fallback if the paper cannot load',()=>{
+ const view=evil(),scene=view.presentations!.pending[0]!.scene,ready=new Set(['envelope-back','envelope-front','envelope-flap-front','envelope-flap-back','envelope-paper'].map(name=>`/art/effects/v8/${name}.webp`));
+ const ui=render(<PrivateSceneContent scene={scene} view={view} elapsedMs={4600} readyAssets={ready}/>);expect(ui.container.querySelector('[data-envelope-paper]')).toHaveTextContent('同伴');expect(ui.container.querySelector('.private-start-cards,.private-scene-result,h2')).toBeNull();
+ ui.rerender(<PrivateSceneContent scene={scene} view={view} elapsedMs={4600} readyAssets={new Set()}/>);expect(ui.container.querySelector('[data-envelope-paper]')).toBeNull();expect(ui.container.querySelector('[data-start-info-fallback]')).toHaveTextContent('同伴');expect(ui.container.querySelector('.private-start-cards')).toBeNull();
 });

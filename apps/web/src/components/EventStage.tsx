@@ -1,3 +1,4 @@
+import {PublicTransitionQueue} from '../presentations/public-transitions.js';
 import {AtmosphericSky} from './AtmosphericSky.js';
 import {ArtImage} from './PremiumArt.js';
 import {FeedbackButton} from '@ravens/ui';
@@ -29,7 +30,7 @@ export function eventAt(events: PublicEvent[], now: number, seen: Set<string>): 
 export function publicEventsAt(events: PublicEvent[], now: number): PublicEvent[] { return events.filter((event) => (event.startsAt ?? 0) <= now); }
 function loadCursor(gameKey: string): Set<string> { try { return new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { return new Set(); } }
 
-export function EventStage({ game, receipt, preview = false, room, reading=false,playback }: {playback?:EffectsPlayback; game?: GameView; receipt?: PrivateReceipt; preview?: boolean; room?: RoomView|undefined; reading?:boolean }) {
+export function EventStage({ game, receipt, preview = false, room, reading=false,blocked=false,onActivityChange,playback }: {blocked?:boolean;onActivityChange?:(active:boolean)=>void;playback?:EffectsPlayback; game?: GameView; receipt?: PrivateReceipt; preview?: boolean; room?: RoomView|undefined; reading?:boolean }) {
   const liveNow=useGameClock(game,room),now=playback?.now??liveNow;
   const nowRef=useRef(now);nowRef.current=now;
   const frozen=playback?.paused??room?.timeline?.mode==='MANUAL',rate=playback?.rate??1,clockEpoch=playback?.epoch??room?.timeline?.epoch;
@@ -55,6 +56,8 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   const receiptIds = useRef(new Set<string>());
   const quietEvents = useRef(new Set<string>()),quietKey=useRef(gameKey);
   if(quietKey.current!==gameKey){quietKey.current=gameKey;quietEvents.current.clear();}
+  const transitions=useRef(new PublicTransitionQueue()),transitionKey=useRef(gameKey);
+  if(transitionKey.current!==gameKey){transitions.current=new PublicTransitionQueue();transitionKey.current=gameKey;}
   const animationAnchor = useRef<{ id: string; delay: number } | undefined>(undefined);
   useEffect(() => {
     try { seen.current = new Set(JSON.parse(sessionStorage.getItem(`ravens_events_${gameKey}`) ?? "[]") as string[]); } catch { seen.current = new Set(); }
@@ -75,14 +78,19 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   }, [receipt?.id]);
   const privateElapsed=now-privateStart.current.at;
   const visiblePrivate=privateScene&&privateElapsed>=0&&privateElapsed<privateSceneDuration(privateScene.kind)?privateScene:undefined;
-  const active = eventAt(game?.events ?? [], now, new Set([...seen.current, ...dismissed]));
+  const excluded=new Set([...seen.current,...dismissed]);
+  const live=eventAt(game?.events??[],now,excluded);
+  const selected=transitions.current.select(game,live,now,blocked,reading,excluded);
+  const active=selected.active;
+  const elapsed=selected.elapsed;
+  useEffect(()=>{for(const id of selected.completed)remember(id);},[selected.completed.join(',')]);
   // Re-sample the authoritative clock per painted frame; do not invent a CSS clock.
   const [,renderMotion]=useState(0);
   useEffect(()=>{if(!active||frozen||hidden||playback)return;let frame=0;const tick=()=>{renderMotion(n=>n+1);frame=requestAnimationFrame(tick);};frame=requestAnimationFrame(tick);return()=>cancelAnimationFrame(frame);},[active?.id,frozen,hidden,!!playback]);
   const quiet=!!active&&(reading||quietEvents.current.has(active.id));
   if(quiet&&active)quietEvents.current.add(active.id);
   const notice=(game?.events??[]).filter(isCinematic).find(event=>noticeEvent(event)&&!dismissed.includes(event.id)&&now>=event.startsAt&&now<event.startsAt+event.durationMs);
-  const elapsed = active ? now - active.startsAt : 0;
+  useLayoutEffect(()=>{onActivityChange?.(!!active&&!quiet);return()=>onActivityChange?.(false);},[active?.id,quiet,onActivityChange]);
   if (active && (frozen || animationAnchor.current?.id !== `${active.id}:${clockEpoch??0}`)) animationAnchor.current = { id: `${active.id}:${clockEpoch??0}`, delay: -elapsed };
   if (!active) animationAnchor.current = undefined;
   const canSeek=typeof Element!=="undefined"&&typeof Element.prototype.getAnimations==="function";
@@ -91,8 +99,8 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   useEffect(() => {
     // A clock correction or stale poll may briefly hide an event near its delivery
     // boundary. Only completion or an explicit skip is allowed to advance the cursor.
-    if (!preview && previousEvent.current && previousEvent.current.id !== active?.id && now >= previousEvent.current.startsAt + previousEvent.current.durationMs) { remember(previousEvent.current.id); previousEvent.current = undefined; }
-    if (active) previousEvent.current = active;
+    if (!preview && previousEvent.current && previousEvent.current.id !== active?.id && previousEvent.current.id!==selected.waitingId && now >= previousEvent.current.startsAt + previousEvent.current.durationMs) { remember(previousEvent.current.id); previousEvent.current = undefined; }
+    if (active&&!selected.deferred) previousEvent.current = active;
   }, [active?.id,now]);
   const resultVisible=Boolean(active?.outcome)&&elapsed>=(active?experienceTiming(active.kind,active.timingVersion??1).resultOffset:0);
   useEffect(()=>{
