@@ -39,7 +39,7 @@ test('M19 survives role confirmation and first night, then fades at the publishe
 test('home, create and join reuse one music owner and one compact global header control',async()=>{
  render(<App/>);await screen.findByRole('heading',{name:'鸦钟夜话'});await waitFor(()=>expect(tracks[0]?.paused).toBe(false));const track=tracks[0]!;track.currentTime=28;
  expect(screen.getAllByRole('button',{name:/关闭声音/})).toHaveLength(1);
- fireEvent.click(screen.getByRole('button',{name:'创建房间'}));await screen.findByRole('heading',{name:'创建房间'});expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);expect(track.currentTime).toBe(28);
+ fireEvent.click(screen.getByRole('button',{name:'创建房间'}));await screen.findByRole('heading',{name:'创建房间'});expect(screen.getByRole('button',{name:'关闭声音'}).closest('.room-page__header')).not.toBeNull();expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);expect(track.currentTime).toBe(28);
  fireEvent.click(screen.getByRole('button',{name:'返回首页'}));await screen.findByRole('heading',{name:'鸦钟夜话'});
- fireEvent.click(screen.getByRole('button',{name:'加入房间'}));await screen.findByRole('heading',{name:'加入房间'});expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);expect(track.currentTime).toBe(28);
+ fireEvent.click(screen.getByRole('button',{name:'加入房间'}));await screen.findByRole('heading',{name:'加入房间'});expect(screen.getByRole('button',{name:'关闭声音'}).closest('.room-page__header')).not.toBeNull();expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);expect(track.currentTime).toBe(28);
 });

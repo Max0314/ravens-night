@@ -1,15 +1,16 @@
-/* Header controls reserve their own space; no music panel covers game content. */
+/* One sound preference, controls placed within each scene rather than over it. */
 .home-header-tools{display:flex;align-items:center;gap:6px;flex:none;}
 .home-header{gap:8px;}
 .home-brand{min-width:0;}
-.opening-audio-slot{position:fixed;top:calc(10px + env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));z-index:209;display:flex;align-items:center;}
-.opening-audio-slot--room{right:calc(max(10px,env(safe-area-inset-right)) + 52px);}
-.opening-audio-slot--room~.compact-lobby>header,
-.opening-audio-slot--room~.room-page>.room-page__header,
-.opening-audio-slot--room~.player-session .game-header{padding-right:128px;}
+.room-page__header.room-page__header--with-audio{padding-right:0;}
+.room-page__header.room-page__header--with-menu{padding-right:56px;}
+.room-page__heading{flex:1;min-width:0;}
+.room-page__audio{flex:none;display:flex;align-items:center;}
+.lobby-primary__actions{display:flex;align-items:center;gap:8px;}
+.lobby-primary__start{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:center;}
+.lobby-primary__start>.rn-button{width:100%;}
 @media(max-width:359px){.home-header-tools{gap:2px;}.home-brand h1{font-size:21px;letter-spacing:.1em;}.home-brand>span{font-size:30px;}.home-brand{gap:6px;}}
 
-/* Test-state captions remain in the menu; the trigger stays a compact dot icon. */
-.opening-audio-slot--room~.room-tools-trigger{width:48px;min-width:48px;max-width:48px;}
-.opening-audio-slot--room~.room-tools-trigger small{position:absolute;right:5px;top:5px;width:5px;height:5px;overflow:hidden;border-radius:50%;background:#c3a463;font-size:0;line-height:0;}
-.opening-audio-slot~.display .display__header{padding-right:60px;}
+/* Keep the menu trigger compact even when a test-state hint is present. */
+.app-viewport .room-tools-trigger{width:48px;min-width:48px;max-width:48px;}
+.app-viewport .room-tools-trigger small{position:absolute;right:5px;top:5px;width:5px;height:5px;overflow:hidden;border-radius:50%;background:#c3a463;font-size:0;line-height:0;}
