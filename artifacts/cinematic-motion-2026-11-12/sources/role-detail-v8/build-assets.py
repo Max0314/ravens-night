@@ -54,10 +54,21 @@ def project(image, source_quad, target_quad, size=(600, 500)):
     return image.transform(size, Image.Transform.PERSPECTIVE, coefficients, Image.Resampling.BICUBIC), coefficients
 
 for part in contract['groups'][args.group]['parts']:
-    source = HERE / 'originals' / (part['id'] + '.png')
+    source = HERE / 'originals' / part.get('sourceFile', part['id'] + '.png')
     prompt = HERE / 'prompts' / part.get('promptFile', part['id'] + '.txt')
     original = Image.open(source).convert('RGBA')
     mode = part.get('processingMode')
+    if mode == 'source-region':
+        region = part['sourceRegion']
+        material = original.crop(tuple(region))
+        visible = bounds(material.getchannel('A'), 8)
+        assert visible, source
+        crop = (max(0,visible[0]-1)+region[0],max(0,visible[1]-1)+region[1],min(material.width,visible[2]+1)+region[0],min(material.height,visible[3]+1)+region[1])
+        x,y,w,h = part['targetRect']
+        image = Image.new('RGBA',(600,500))
+        image.alpha_composite(original.crop(crop).resize((w,h),Image.Resampling.LANCZOS),(x,y))
+        save(image, {'id':part['id'],'group':args.group,'source':str(source.relative_to(ROOT)).replace('\\','/'),'sourceSha256':sha(source),'sourceSize':original.size,'sourceRegion':region,'sourceRect':crop,'targetRect':part['targetRect'],'prompt':str(prompt.relative_to(ROOT)).replace('\\','/'),'processing':'One naturally separate generated sprite from its declared non-overlapping source region; preserve painted alpha and normalize only this complete sprite to target rect, no geometric repaint.'})
+        continue
     if mode in ['project-plane', 'local-plane']:
         visible = bounds(original.getchannel('A'), 8)
         crop = (max(0, visible[0]-1), max(0, visible[1]-1), min(original.width, visible[2]+1), min(original.height, visible[3]+1))

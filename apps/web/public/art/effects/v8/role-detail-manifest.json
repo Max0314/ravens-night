@@ -1861,6 +1861,288 @@
           "499": null
         }
       }
+    },
+    {
+      "id": "saint-candle-base",
+      "group": "saint",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/saint-candle-base.png",
+      "sourceSha256": "c698bb16b231e1bbdcb2f00062257fc2f9143e1d604ff7b56dc96a9314ed8fc2",
+      "sourceSize": [
+        1312,
+        1199
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/saint-candle-base.txt",
+      "sourceAnchor": [
+        681,
+        87
+      ],
+      "worldAnchor": [
+        315,
+        75
+      ],
+      "uniformScale": 0.35,
+      "affineOutputToSource": [
+        2.857142857142857,
+        0,
+        -219.0000000000001,
+        0,
+        2.857142857142857,
+        -127.2857142857143
+      ],
+      "processing": "Whole independently painted original, uniformly resampled around an explicitly measured material anchor onto the common world canvas. No shape painting or cut of a composite.",
+      "promptSha256": "fd9b0440c7b4972f682a20aebee96d7ca5f74d9a52122d7211481258afec417c",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "saint-candle-base.webp",
+      "url": "/art/effects/v8/saint-candle-base.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 164072,
+      "sha256": "eac67dece974791386dd7462ccbd8592e42003e5402cca14d3c5302b602ad072",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          90,
+          75,
+          534,
+          464
+        ],
+        "alphaAbove128Bounds": [
+          91,
+          75,
+          534,
+          464
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            418,
+            443
+          ],
+          "110": [
+            388,
+            447
+          ],
+          "135": [
+            346,
+            462
+          ],
+          "273": [
+            245,
+            463
+          ],
+          "300": [
+            80,
+            458
+          ],
+          "327": [
+            80,
+            463
+          ],
+          "465": [
+            353,
+            456
+          ],
+          "490": [
+            375,
+            452
+          ],
+          "499": [
+            388,
+            455
+          ]
+        }
+      }
+    },
+    {
+      "id": "saint-flame-1",
+      "group": "saint",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/saint-flames.png",
+      "sourceSha256": "0cc7e4d85c7c905619d808627d2347edd0123ee93e194c9f58b182448b573873",
+      "sourceSize": [
+        2172,
+        724
+      ],
+      "sourceRegion": [
+        0,
+        0,
+        720,
+        720
+      ],
+      "sourceRect": [
+        248,
+        191,
+        419,
+        601
+      ],
+      "targetRect": [
+        224,
+        83,
+        16,
+        42
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/saint-flames.txt",
+      "processing": "One naturally separate generated sprite from its declared non-overlapping source region; preserve painted alpha and normalize only this complete sprite to target rect, no geometric repaint.",
+      "promptSha256": "cf1af63eb44f38471de09e5242b7ef622463f528219502ab4095702c3df0d74c",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "saint-flame-1.webp",
+      "url": "/art/effects/v8/saint-flame-1.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 2028,
+      "sha256": "a30b4a435a9c07cfe4b23e5c5af75d6e968b4336f7bf901d02e9e89bf14b564d",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          224,
+          83,
+          240,
+          125
+        ],
+        "alphaAbove128Bounds": [
+          226,
+          86,
+          238,
+          124
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "saint-flame-2",
+      "group": "saint",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/saint-flames.png",
+      "sourceSha256": "0cc7e4d85c7c905619d808627d2347edd0123ee93e194c9f58b182448b573873",
+      "sourceSize": [
+        2172,
+        724
+      ],
+      "sourceRegion": [
+        720,
+        0,
+        1440,
+        720
+      ],
+      "sourceRect": [
+        977,
+        56,
+        1188,
+        612
+      ],
+      "targetRect": [
+        306,
+        34,
+        18,
+        46
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/saint-flames.txt",
+      "processing": "One naturally separate generated sprite from its declared non-overlapping source region; preserve painted alpha and normalize only this complete sprite to target rect, no geometric repaint.",
+      "promptSha256": "cf1af63eb44f38471de09e5242b7ef622463f528219502ab4095702c3df0d74c",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "saint-flame-2.webp",
+      "url": "/art/effects/v8/saint-flame-2.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 2268,
+      "sha256": "cb70abae8e33ceb08a5f7f01f4e8eb32499a9daf4a44b76075110118a38adc61",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          306,
+          34,
+          324,
+          80
+        ],
+        "alphaAbove128Bounds": [
+          308,
+          36,
+          322,
+          79
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "saint-flame-3",
+      "group": "saint",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/saint-flames.png",
+      "sourceSha256": "0cc7e4d85c7c905619d808627d2347edd0123ee93e194c9f58b182448b573873",
+      "sourceSize": [
+        2172,
+        724
+      ],
+      "sourceRegion": [
+        1440,
+        0,
+        2160,
+        720
+      ],
+      "sourceRect": [
+        1764,
+        326,
+        1903,
+        607
+      ],
+      "targetRect": [
+        389,
+        135,
+        15,
+        37
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/saint-flames.txt",
+      "processing": "One naturally separate generated sprite from its declared non-overlapping source region; preserve painted alpha and normalize only this complete sprite to target rect, no geometric repaint.",
+      "promptSha256": "cf1af63eb44f38471de09e5242b7ef622463f528219502ab4095702c3df0d74c",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "file": "saint-flame-3.webp",
+      "url": "/art/effects/v8/saint-flame-3.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 1756,
+      "sha256": "0f906eee037ca8ca472f7a781a78b6977f8fbf126953c7310cc81e784df9e1ae",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          389,
+          135,
+          404,
+          172
+        ],
+        "alphaAbove128Bounds": [
+          391,
+          138,
+          402,
+          171
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
     }
   ],
   "contracts": {
@@ -2312,6 +2594,111 @@
             150
           ],
           "uniformScale": 0.18
+        }
+      ]
+    },
+    "saint": {
+      "wickTips": [
+        [
+          232,
+          119
+        ],
+        [
+          315,
+          75
+        ],
+        [
+          396,
+          167
+        ]
+      ],
+      "flameRoots": [
+        [
+          232,
+          125
+        ],
+        [
+          315,
+          80
+        ],
+        [
+          396,
+          172
+        ]
+      ],
+      "defaultZ": [
+        "saint-candle-base",
+        "saint-flame-1",
+        "saint-flame-2",
+        "saint-flame-3"
+      ],
+      "parts": [
+        {
+          "id": "saint-candle-base",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            681,
+            87
+          ],
+          "worldAnchor": [
+            315,
+            75
+          ],
+          "uniformScale": 0.35
+        },
+        {
+          "id": "saint-flame-1",
+          "sourceFile": "saint-flames.png",
+          "promptFile": "saint-flames.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            0,
+            0,
+            720,
+            720
+          ],
+          "targetRect": [
+            224,
+            83,
+            16,
+            42
+          ]
+        },
+        {
+          "id": "saint-flame-2",
+          "sourceFile": "saint-flames.png",
+          "promptFile": "saint-flames.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            720,
+            0,
+            1440,
+            720
+          ],
+          "targetRect": [
+            306,
+            34,
+            18,
+            46
+          ]
+        },
+        {
+          "id": "saint-flame-3",
+          "sourceFile": "saint-flames.png",
+          "promptFile": "saint-flames.txt",
+          "processingMode": "source-region",
+          "sourceRegion": [
+            1440,
+            0,
+            2160,
+            720
+          ],
+          "targetRect": [
+            389,
+            135,
+            15,
+            37
+          ]
         }
       ]
     }

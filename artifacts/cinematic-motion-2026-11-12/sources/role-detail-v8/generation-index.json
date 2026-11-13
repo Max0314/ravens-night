@@ -489,6 +489,38 @@
           "sha256": "fb4ce2e9b1a71c0799c5b576442d59f86faa55106a0946e2470dba429bfada30"
         }
       ]
+    },
+    {
+      "id": "saint-candle-base",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/saint-candle-base.png",
+      "outputSha256": "c698bb16b231e1bbdcb2f00062257fc2f9143e1d604ff7b56dc96a9314ed8fc2",
+      "prompt": "prompts/saint-candle-base.txt",
+      "promptSha256": "fd9b0440c7b4972f682a20aebee96d7ca5f74d9a52122d7211481258afec417c",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/saint.webp",
+          "sha256": "87a48415c92f5bfca3d58d98b41cd705a16b70cb4d8622aafa548ce35ebbaff3"
+        }
+      ]
+    },
+    {
+      "id": "saint-flames",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/saint-flames.png",
+      "outputSha256": "0cc7e4d85c7c905619d808627d2347edd0123ee93e194c9f58b182448b573873",
+      "prompt": "prompts/saint-flames.txt",
+      "promptSha256": "cf1af63eb44f38471de09e5242b7ef622463f528219502ab4095702c3df0d74c",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/saint.webp",
+          "sha256": "87a48415c92f5bfca3d58d98b41cd705a16b70cb4d8622aafa548ce35ebbaff3"
+        }
+      ]
     }
   ]
 }
