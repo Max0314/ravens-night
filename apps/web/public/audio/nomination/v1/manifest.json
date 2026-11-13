@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "mapping": {
+    "NOMINATION": "L03",
+    "ON_BLOCK": "L04",
+    "NONE": "L02",
+    "TIED": "L02",
+    "FINAL_EIGHT_SECONDS": "A03"
+  },
+  "files": [
+    {
+      "id": "L03",
+      "author": "Ravens audition edit; sources: marcelofg55",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "sources": [
+        "https://opengameart.org/content/dark-long-hits"
+      ],
+      "sha256": "5c3410213452f047301f7107a542c7cf65339b2e8730fa669ad030ef513863ba",
+      "source_sha256": "3a957692321a62e00daab7b17d948ac0cce17d9fbf852b8b66714e446844f5bf",
+      "processing": "源文件22s起截取16s，300ms收尾，峰值-3dBFS。",
+      "url": "/audio-candidates/2026-11-12-v1/L03.mp3",
+      "durationSeconds": 16.0,
+      "decoded": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "sample_rate": "44100",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "16.000000"
+        }
+      }
+    },
+    {
+      "id": "L04",
+      "author": "Ravens audition edit; sources: marcelofg55",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "sources": [
+        "https://opengameart.org/content/dark-long-hits"
+      ],
+      "sha256": "f1a8822f233d2347261d0c47196df18d6882b5a602e502f931e3964e73e1e2ae",
+      "source_sha256": "683c496677c9a1e1fbc8afdc73123a7f00e5f34ae44129ebabfdbc78636cfa5b",
+      "processing": "源文件44s起截取20s，300ms收尾，峰值-3dBFS。",
+      "url": "/audio-candidates/2026-11-12-v1/L04.mp3",
+      "durationSeconds": 20.0,
+      "decoded": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "sample_rate": "44100",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "20.000000"
+        }
+      }
+    },
+    {
+      "id": "L02",
+      "author": "Ravens audition edit; sources: marcelofg55",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "sources": [
+        "https://opengameart.org/content/dark-long-hits"
+      ],
+      "sha256": "26678aa2409b3f37db5694d1b40b1db38ecb754d1753bb1a9e7c71195cdb9a88",
+      "source_sha256": "c025d3539d6540f60c6dd255c7f967cab6ac6fac55f2a2f2eaf839a854937fb6",
+      "processing": "源文件0s起截取15s，300ms收尾，峰值-3dBFS。",
+      "url": "/audio-candidates/2026-11-12-v1/L02.mp3",
+      "durationSeconds": 15.0,
+      "decoded": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "sample_rate": "44100",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "15.000000"
+        }
+      }
+    },
+    {
+      "id": "A03",
+      "author": "bart",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sources": [
+        "https://opengameart.org/content/ticking-clock"
+      ],
+      "sha256": "c4c1735da3a53fa6eb4d8417f862a2dab272cf51bceedb33ca159390d66365d5",
+      "source_sha256": "dc4dc1bf2c4bbeee5fd0841a87610ed19d851a92abc973ce0f5ff3caec40d537",
+      "processing": "原始文件，仅重命名。",
+      "url": "/audio-candidates/2026-11-12-v1/A03.mp3",
+      "durationSeconds": 8.0,
+      "decoded": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "sample_rate": "44100",
+            "channels": 2
+          }
+        ],
+        "format": {
+          "duration": "8.000000"
+        }
+      }
+    }
+  ],
+  "changes": "Use the complete archived audition MP3s unchanged; no extra trim, normalization or looping."
+}
