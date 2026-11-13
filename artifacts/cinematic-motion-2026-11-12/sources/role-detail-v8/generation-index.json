@@ -609,6 +609,54 @@
           "sha256": "b53a54ed6fafe660c3e1e70b60f78e11aa9061bb953109285926d15ead845b9c"
         }
       ]
+    },
+    {
+      "id": "virgin-document-base",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/virgin-document-base.png",
+      "outputSha256": "05751e53a305855eec1b7561c7660dbc54cccb831444eaa709a65d69090acab5",
+      "prompt": "prompts/virgin-document-base.txt",
+      "promptSha256": "e50c3e0c2a07cd2d16ecd3fc49dd0e52fdf062b960618944b9a006e31b788871",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/virgin.webp",
+          "sha256": "327c1b1f5fecc0288267efd5d75544a3aeac70710c3558e8aa8179364738fb6f"
+        }
+      ]
+    },
+    {
+      "id": "virgin-lily",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/virgin-lily.png",
+      "outputSha256": "37cd41ad47563265854def2434b4f28b8a4f01512d061aebd958e568a669cc77",
+      "prompt": "prompts/virgin-lily.txt",
+      "promptSha256": "8332683dec77005cf386ef7829aaff4fc68e35f189958ff02f77f894cf7acfbf",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/virgin.webp",
+          "sha256": "327c1b1f5fecc0288267efd5d75544a3aeac70710c3558e8aa8179364738fb6f"
+        }
+      ]
+    },
+    {
+      "id": "virgin-ribbon",
+      "tool": "built-in image_gen",
+      "transparentBackground": true,
+      "output": "originals/virgin-ribbon.png",
+      "outputSha256": "1d1f26183edfdfb799626b56dd2878f3c09f85b83ae60d2795c0d980f04bf304",
+      "prompt": "prompts/virgin-ribbon.txt",
+      "promptSha256": "70451849ad516f6ad10dee72b482e76b257a4d6994fe789b9c6aeaed4d387716",
+      "promptHashEncoding": "UTF-8, LF line endings",
+      "references": [
+        {
+          "file": "apps/web/public/art/effects/v3/virgin.webp",
+          "sha256": "327c1b1f5fecc0288267efd5d75544a3aeac70710c3558e8aa8179364738fb6f"
+        }
+      ]
     }
   ]
 }

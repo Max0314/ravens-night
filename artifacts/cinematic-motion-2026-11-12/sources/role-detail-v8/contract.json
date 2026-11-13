@@ -815,6 +815,103 @@
           ]
         }
       ]
+    },
+    "virgin": {
+      "lilyCentre": [
+        215,
+        205
+      ],
+      "stemAnchor": [
+        378,
+        186
+      ],
+      "stemTip": [
+        529,
+        200
+      ],
+      "petalTips": [
+        [
+          150,
+          102
+        ],
+        [
+          243,
+          95
+        ],
+        [
+          297,
+          193
+        ],
+        [
+          213,
+          275
+        ],
+        [
+          149,
+          267
+        ],
+        [
+          81,
+          190
+        ]
+      ],
+      "ribbonLoopTop": [
+        435,
+        190
+      ],
+      "ribbonTailTips": [
+        [
+          112,
+          400
+        ],
+        [
+          550,
+          390
+        ]
+      ],
+      "documentFixed": true,
+      "defaultZ": [
+        "virgin-document-base",
+        "virgin-lily",
+        "virgin-ribbon"
+      ],
+      "parts": [
+        {
+          "id": "virgin-document-base",
+          "targetRect": [
+            80,
+            200,
+            460,
+            265
+          ]
+        },
+        {
+          "id": "virgin-lily",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            620,
+            480
+          ],
+          "worldAnchor": [
+            215,
+            205
+          ],
+          "uniformScale": 0.24
+        },
+        {
+          "id": "virgin-ribbon",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            1300,
+            20
+          ],
+          "worldAnchor": [
+            435,
+            190
+          ],
+          "uniformScale": 0.25
+        }
+      ]
     }
   }
 }
