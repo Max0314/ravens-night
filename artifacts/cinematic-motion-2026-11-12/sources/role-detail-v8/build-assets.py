@@ -31,23 +31,55 @@ def measure(image):
     result = {'alphaAbove8Bounds': bounds(a, 8), 'alphaAbove128Bounds': bounds(a, 128)}
     result['opaqueVerticalSamples'] = {}
     for x in [100, 110, 135, 273, 300, 327, 465, 490, 499]:
-        ys = [y for y in range(500) if a.getpixel((x, y)) > 128]
+        ys = [y for y in range(image.height) if x < image.width and a.getpixel((x, y)) > 128]
         result['opaqueVerticalSamples'][str(x)] = [min(ys), max(ys)] if ys else None
     return result
 
 def save(image, row):
-    if 'prompt' in row and args.group == 'raven':
-        row['promptSha256'] = sha(ROOT / row['prompt'])
+    if 'prompt' in row and args.group in ['raven', 'coffin']:
+        row['promptSha256'] = hashlib.sha256((ROOT / row['prompt']).read_text(encoding='utf-8').replace('\r\n', '\n').encode('utf-8')).hexdigest()
+        row['promptHashEncoding'] = 'UTF-8, LF line endings'
     target = OUT / (row['id'] + '.webp')
     image.save(target, format='WEBP', lossless=True, method=6)
     images[row['id']] = image
     rows.append({**row, 'file': target.name, 'url': contract['runtimeRoot'] + target.name, 'width': image.width, 'height': image.height, 'bytes': target.stat().st_size, 'sha256': sha(target), 'hasAlpha': True, 'measured': measure(image)})
 
+def project(image, source_quad, target_quad, size=(600, 500)):
+    import numpy as np
+    matrix, vector = [], []
+    for (x, y), (u, v) in zip(target_quad, source_quad):
+        matrix.extend([[x, y, 1, 0, 0, 0, -u*x, -u*y], [0, 0, 0, x, y, 1, -v*x, -v*y]])
+        vector.extend([u, v])
+    coefficients = np.linalg.solve(np.array(matrix), np.array(vector)).tolist()
+    return image.transform(size, Image.Transform.PERSPECTIVE, coefficients, Image.Resampling.BICUBIC), coefficients
+
 for part in contract['groups'][args.group]['parts']:
     source = HERE / 'originals' / (part['id'] + '.png')
-    prompt = HERE / 'prompts' / (part['id'] + '.txt')
+    prompt = HERE / 'prompts' / part.get('promptFile', part['id'] + '.txt')
     original = Image.open(source).convert('RGBA')
     mode = part.get('processingMode')
+    if mode in ['project-plane', 'local-plane']:
+        visible = bounds(original.getchannel('A'), 8)
+        crop = (max(0, visible[0]-1), max(0, visible[1]-1), min(original.width, visible[2]+1), min(original.height, visible[3]+1))
+        source_quad = part.get('sourceQuad', [[crop[0],crop[1]],[crop[2],crop[1]],[crop[2],crop[3]],[crop[0],crop[3]]])
+        extra = {}
+        if mode == 'local-plane':
+            image = original.crop(crop).resize(tuple(part['localSize']), Image.Resampling.LANCZOS)
+            extra['localSize'] = part['localSize']
+        else:
+            image, coefficients = project(original, source_quad, part['targetQuad'])
+            extra.update({'sourceQuad': source_quad, 'targetQuad': part['targetQuad'], 'perspectiveOutputToSource': coefficients})
+            if part['id'] == 'coffin-oblique-lining':
+                from PIL import ImageChops, ImageFilter
+                shell_alpha = images['coffin-oblique-base'].getchannel('A')
+                region = shell_alpha.point(lambda value: 0 if value <= 8 else 255)
+                ImageDraw.floodfill(region, (300, 285), 128, thresh=0)
+                hole = region.point(lambda value: 255 if value == 128 else 0)
+                assert hole.getpixel((0,0)) == 0 and hole.getbbox(), 'shell must have enclosed clear cavity'
+                image.putalpha(ImageChops.multiply(image.getchannel('A'), hole.filter(ImageFilter.MaxFilter(3))))
+                extra['occlusionMask'] = 'Enclosed actual shell alpha<=8 cavity, expanded1px under rim; prevents lining spilling outside bevel corners. Painted cloth preserved.'
+        save(image, {'id': part['id'], 'group': args.group, 'source': str(source.relative_to(ROOT)).replace('\\', '/'), 'sourceSha256': sha(source), 'sourceSize': original.size, 'prompt': str(prompt.relative_to(ROOT)).replace('\\', '/'), 'sourceRect': crop, **extra, 'processing': 'Whole independently generated material, explicit plane normalization/projective placement only; natural painted bevel silhouette retained, no painted polygon replacement.'})
+        continue
     if mode == 'anchor-fit':
         sx, sy = part['sourceAnchor']
         wx, wy = part['worldAnchor']
@@ -159,6 +191,21 @@ if args.group == 'lens':
             qa.paste(panel.convert('RGB'), (column * 600, row * 520 + 20))
             draw.text((column * 600 + 12, row * 520 + 4), f'same evidence1.5x | C{cx},{cy} | offline only', fill='#ccb88b')
     qa.save(HERE / 'qa/lens-assembly.png')
+
+if args.group == 'coffin':
+    group = contract['groups']['coffin']
+    opened = Image.alpha_composite(images['coffin-oblique-lining'], images['coffin-oblique-base'])
+    lid = images['coffin-oblique-lid-front']
+    projected, _ = project(lid, [[0,0],[380,0],[380,200],[0,200]], group['lidClosedQuad'])
+    closed = Image.alpha_composite(opened, projected)
+    qa = Image.new('RGB', (1200, 1040), '#0b0e0d')
+    draw = ImageDraw.Draw(qa)
+    for column, (name, layer) in enumerate([('lid absent / lining behind shell', opened), ('lid front at closed quad', closed)]):
+        for row, background in enumerate(['#0b0e0d', '#797977']):
+            panel = Image.alpha_composite(Image.new('RGBA', (600,500), background), layer)
+            qa.paste(panel.convert('RGB'), (column*600,row*520+20))
+            draw.text((column*600+12,row*520+4), name+' / offline only', fill='#ccb88b')
+    qa.save(HERE / 'qa/coffin-assembly.png')
 
 if args.group == 'raven':
     composed = Image.new('RGBA', (600, 500))
