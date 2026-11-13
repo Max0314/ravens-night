@@ -228,7 +228,7 @@ if args.group == 'coffin':
             draw.text((column*600+12,row*520+4), name+' / offline only', fill='#ccb88b')
     qa.save(HERE / 'qa/coffin-assembly.png')
 
-if args.group in ['recluse', 'saint', 'feather', 'carriage', 'virgin']:
+if args.group in ['recluse', 'saint', 'feather', 'carriage', 'virgin', 'empath']:
     composed = Image.new('RGBA', (600,500))
     for name in contract['groups'][args.group]['defaultZ']:
         composed = Image.alpha_composite(composed, images[name])

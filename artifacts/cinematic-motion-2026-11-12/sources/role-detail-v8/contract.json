@@ -912,6 +912,83 @@
           "uniformScale": 0.25
         }
       ]
+    },
+    "empath": {
+      "gemCentres": [
+        [
+          261,
+          221
+        ],
+        [
+          380,
+          217
+        ]
+      ],
+      "gemInteriorRadii": [
+        [
+          20,
+          26
+        ],
+        [
+          20,
+          26
+        ]
+      ],
+      "hingeCentre": [
+        316,
+        222
+      ],
+      "chainBailCentre": [
+        395,
+        103
+      ],
+      "chainEndAnchors": [
+        [
+          388,
+          93
+        ],
+        [
+          406,
+          96
+        ]
+      ],
+      "chainForegroundControl": [
+        300,
+        348
+      ],
+      "baseFixed": true,
+      "defaultZ": [
+        "empath-heart-base",
+        "empath-chain"
+      ],
+      "parts": [
+        {
+          "id": "empath-heart-base",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            0,
+            0
+          ],
+          "worldAnchor": [
+            45,
+            60
+          ],
+          "uniformScale": 0.33
+        },
+        {
+          "id": "empath-chain",
+          "processingMode": "anchor-fit",
+          "sourceAnchor": [
+            0,
+            0
+          ],
+          "worldAnchor": [
+            45,
+            60
+          ],
+          "uniformScale": 0.33
+        }
+      ]
     }
   }
 }
