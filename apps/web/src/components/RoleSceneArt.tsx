@@ -18,7 +18,7 @@ export function RoleSceneArt({scene,elapsedMs,reducedMotion=false,imprint,readyA
  }else if(scene.kind==='OLD_DEMON_CONTINUATION'){
   const src=privateAssetUrl('imp-defeated');body=<svg className="layered-scene-art" viewBox="0 0 600 500" preserveAspectRatio="xMidYMid meet">{available([src])?<g transform={`translate(0 ${smooth(t,500,2500)*25})`}><image href={resolveAsset?.(src)??src} x={0} y={0} width={600} height={500} preserveAspectRatio="xMidYMid meet"/></g>:null}{!reducedMotion?Array.from({length:8},(_,i)=>{const p=smooth(t,500+i*100,2400+i*100);return <circle key={i} cx={300+Math.sin(p*5+i)*p*80} cy={350-p*280} r={2+(1-p)*5} fill="#b0472c" opacity={Math.sin(p*Math.PI)*.7}/>;}):null}</svg>;
  }else if(role==='butler')body=available(['/art/effects/v4/butler-bow.webp'])?<ButlerBow elapsedMs={t} reducedMotion={reducedMotion}/>:null;
- else if(role==='slayer')body=available(['/art/effects/v5/short-shotgun.webp','/art/effects/v3/glass-cloud.webp'])?<HuntingRifleScene elapsedMs={t} fireAt={1200} reduced={reducedMotion}/>:null;
+ else if(role==='slayer')body=available(['/art/effects/v6/birdhead-shotgun.webp','/art/effects/v3/glass-cloud.webp'])?<HuntingRifleScene elapsedMs={t} fireAt={1200} reduced={reducedMotion}/>:null;
  else if(role==='imp')body=demonReady?<DemonArt elapsedMs={t} reduced={reducedMotion}/>:null;
  else body=<LayeredSceneArt role={role} kind={scene.kind} elapsedMs={t} imprint={imprint} readyAssets={readyAssets} resolveAsset={resolveAsset} reducedMotion={reducedMotion}/>;
  return <div className={`role-scene-art role-scene-art--${role}${reducedMotion?' is-reduced':''}`} aria-hidden="true"><div className="role-scene-art__halo"/>{body}<div className="role-scene-art__floor"/></div>;

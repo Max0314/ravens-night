@@ -1,0 +1,33 @@
+[
+  {
+    "id": "birdhead-shotgun",
+    "file": "birdhead-shotgun.png",
+    "prompt": "Original ornamental nonfunctional antique double-barrel stage prop for gothic game. Side profile; short downward-curved walnut birds-head pistol handle, no shoulder stock; short thick barrels, engraved silver receiver, clear oval guard, detailed painted realistic walnut and steel. Transparent background, no people, scene, smoke or letters.",
+    "trim": true,
+    "references": [
+      "https://www.denix.es/en/catalogue/western-and-american-civil-war-1861-1899/pistols/1114/",
+      "https://www.wilson55.com/auction/lot/lot-38---deactivated-double-barrel-sawn-off-shotgun/?lot=146888&sd=1",
+      "https://repliquemangacine.fr/en/denix/coach-gun-1868-double-barrel-cut-off-shotgun/"
+    ],
+    "referenceUse": "External silhouette/grip reference only; original painted game art; no product photograph copied into runtime asset."
+  },
+  {
+    "id": "guillotine-frame",
+    "file": "guillotine-frame.png",
+    "prompt": "Broad near-square detailed gothic empty frame, 95% width/height, thick posts, wide transparent rail channel; lower stock opening enlarged25% around same center; no blade, victim, rope, blood or scenery; transparent background.",
+    "trim": false,
+    "alphaFloor": 80,
+    "clearCircle": {
+      "cx": 638,
+      "cy": 900,
+      "r": 110
+    },
+    "processingNote": "ImageGen produced pale semi-transparent pixels in the intended empty hole. Explicit circular alpha cut and low-alpha noise cleanup restore the transparent opening without changing the frame RGB or stretching it."
+  },
+  {
+    "id": "guillotine-blade",
+    "file": "guillotine-blade.png",
+    "prompt": "Broad shallow decorative steel guillotine blade under ornate dark oak carriage crossbar, two rings, wide steel plate, lower edge slopes down left. Realistic painted dark fantasy material, no people, blood, frame, rope or scenery. Transparent layer.",
+    "trim": true
+  }
+]

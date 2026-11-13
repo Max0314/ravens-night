@@ -10,8 +10,8 @@
 .result-blood{position:absolute;left:50%;top:40%;width:100%;height:100%;z-index:5;pointer-events:none;filter:drop-shadow(0 2px 2px #310000)}.result-blood>svg{position:absolute;left:0;top:0;width:125%;height:125%;fill:#a3131b;transform-origin:center;animation:none!important}.result-blood>i{position:absolute;left:0;top:0;border-radius:60% 30% 55% 40%;background:linear-gradient(#d63327,#64080b);animation:none!important}.event-stage.is-reduced .result-blood>i{display:none}
 
 /* One portrait canvas contains both rails and blade. No independently stretched images. */
-.guillotine-scene[data-testid]{width:auto;height:100%;max-width:100%;aspect-ratio:340/480;isolation:isolate}
-.guillotine-scene[data-testid]>.guillotine-mechanism{position:absolute;inset:0;width:100%;height:100%;z-index:2;overflow:visible}
+.guillotine-scene[data-testid]{width:100%;height:100%;max-width:100%;isolation:isolate;container-type:size}
+.guillotine-scene__canvas>.guillotine-mechanism{position:absolute;inset:0;width:100%;height:100%;z-index:2;overflow:visible}
 .guillotine-scene[data-testid] .guillotine-scene__person{top:var(--neck-top);left:var(--neck-left);width:var(--neck-size);transform:translate(-50%,0);z-index:1}
 .guillotine-scene[data-testid] .event-token{width:100%;aspect-ratio:auto;transition:none!important;animation:none!important}
 .guillotine-scene[data-testid] .event-token>.scene-person{padding:0;gap:2px}
@@ -22,3 +22,5 @@
 .event-stage--shot .event-token{transition:none;animation:none!important}
 .event-stage--shot .event-token--fallen{transform:translate(-50%,-42%) rotate(8deg)}
 .result-blood--stain{width:80%;height:75%;filter:none}
+
+.guillotine-scene__canvas{position:absolute;left:50%;top:50%;width:min(100cqw,100cqh);height:min(100cqw,100cqh);transform:translate(-50%,-50%);isolation:isolate}

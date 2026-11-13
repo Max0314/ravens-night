@@ -21,3 +21,8 @@
 
 2026-11-13 第三批修订：公开入夜/黎明使用独立缓升月亮/太阳（AtmosphericSky），背景v5/night-town与dawn-town已去预烘焙天体。胜利使用全屏town/atmosphere和独立meet主体；邪恶胜利恢复无恶魔烘焙的燃烧城镇，独立翅膀、透明火焰纹理、烟和32余烬。镇长使用无权杖底图加独立完整权杖，消除移动时底图空洞。透明绿雾原图保存在sources/nov13；构建将RGB约束深绿(.19G,.64G,.075G)，保留原alpha，黑/灰底PNG已核查无白边。PoisonVapour增加30枚由底部升至58%高度气泡，900ms开始显现；非compact为独立fixed全屏层。PrivateSceneStage的挂载由来源会话负责，条件为poisoner的IDENTITY/ACTION_SUBMITTED，并使用/art/effects/v5/poison-vapour.webp冻结readyKey；不表示能力成功。屏幕刀痕也独立fixed，中央道具保持原等比画布。
 本批所有生成素材使用built-in image_gen，生成prompt简述与尺寸/hash见sources/nov13/spec.json及v5/manifest.json；工程内路径均已落库，不依赖生成缓存。未执行浏览器、手机观感或听感验收。
+
+2026-11-13 第四批修订：用户要求短管枪连握柄重做、断头台继续加宽。v6/birdhead-shotgun为无肩托、短而下弯鸟头木柄，保留清晰扳机护圈、双管和精细机匣；外形参考Denix官方1114（非1115长托）、Wilson55失能双管手枪型与Réplique Manga Ciné P1114，仅参考外形，商品照片不进入游戏资源。来源链接与prompt见sources/nov13-v6/spec.json。v6断头台重新绘制成近方形宽结构，独立宽浅刀片；画布480×480、主体480×462.19，头像/颈孔直径81.34（上一稿44），与实际透明孔同一几何。源图孔部半透明杂色通过明确110源像素圆形alpha裁切和低alpha噪点清理恢复透明，未横向拉伸主体。所有头像、台、刀在同一按容器短边适配的方形canvas内，避免横/竖屏meet留白时HTML头像错位。运行SVG宽台审查PNG按方形输出。
+重建命令 `node scripts/build-cinematics-v6.mjs`；v5及旧素材均保留，本批未替换角色portrait、声音、公共结果或总时长。现有测试覆盖实际孔部alpha与头像几何、空台不落刀/不震动/无血；手机实际体验交用户人工验收。
+
+第四批独立复审修订：宽刀片行程250，保持公开resultAt；媒体用例按实际刀片alpha轮廓逐列验证斜刃已越过整孔底，关键帧更新。工作树node_modules为junction，pnpm脚本被UNSAFE_TASK_RUN_STATE_PATH拒绝；已执行同一package.json步骤的tsc --noEmit与vite build等价构建成功。该构建之后仅修订行程常量并通过对应媒体用例，未重复构建。
