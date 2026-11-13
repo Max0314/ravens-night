@@ -5,9 +5,10 @@ type Scope='public'|'private'|'ui'|'book';
 export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
 interface Playing {id:string;scope:Scope;at:number;sample:string;gain:GainNode;bell:boolean;end:number}
-let ctx:AudioContext|undefined,output:GainNode|undefined,unlockFlight:Promise<void>|undefined;
+let ctx:AudioContext|undefined,output:GainNode|undefined,unlockAttempt=0;
 let enabled=readPreference(),status='',semanticSeq=0;
 let previewAudio:{enabled:boolean;volume:number}|undefined;
+const bookOwners=new Set<object>();
 function previewPrivateAllowed(){return !!previewAudio||privateAudioAllowed();}
 export function effectsAudioVolume(){return previewAudio?.volume??.72;}
 export function setEffectsPreviewVolume(value:number){if(!previewAudio||!Number.isFinite(value))return;previewAudio.volume=Math.max(0,Math.min(1,value));if(output)output.gain.value=previewAudio.volume;}
@@ -28,11 +29,14 @@ export async function unlockEffectsAudio(){
  if(typeof window==='undefined')return;
  const Audio=window.AudioContext??(window as typeof window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
  if(!Audio){report('当前浏览器不支持演出音效');return;}ctx??=new Audio();
- if(ctx.state==='running'){report('');return;}if(unlockFlight)return unlockFlight;const audio=ctx;
- unlockFlight=(async()=>{try{await audio.resume();report(audio.state==='running'?'':'点击开启声音后重试');if(audio.state==='running')window.dispatchEvent(new Event('ravens-effects-unlocked'));}catch{report('声音尚未解锁，请再次点击开启');}})().finally(()=>{unlockFlight=undefined;});return unlockFlight;
+ if(ctx.state==='running'){report('');return;}const audio=ctx,attempt=++unlockAttempt;
+ // A new user gesture must call resume synchronously even if an earlier automatic request is pending.
+ try{await audio.resume();if(ctx!==audio||attempt!==unlockAttempt)return;report(audio.state==='running'?'':'点击开启声音后重试');if(audio.state==='running')window.dispatchEvent(new Event('ravens-effects-unlocked'));}
+ catch{if(ctx===audio&&attempt===unlockAttempt&&audio.state!=='running')report('声音尚未解锁，请再次点击开启');}
+
 }
 export async function enableEffectsAudio(value=true){if(previewAudio)previewAudio.enabled=value;else{enabled=value;try{localStorage.setItem('ravens_effects_audio',value?'on':'off');}catch{/* Tab preference remains. */}}window.dispatchEvent(new Event('ravens-effects-audio'));if(!value){silenceEffects();return;}await unlockEffectsAudio();}
-function allowed(scope:Scope){return effectsAudioEnabled()&&ctx?.state==='running'&&!document.hidden&&(scope!=='private'||previewPrivateAllowed());}
+function allowed(scope:Scope){return (scope==='book'&&!previewAudio?enabled||bookOwners.size>0:effectsAudioEnabled())&&ctx?.state==='running'&&!document.hidden&&(scope!=='private'||previewPrivateAllowed());}
 let activeLoads=0;const loadWaiters:Array<()=>void>=[];
 function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve();}return new Promise<void>(resolve=>loadWaiters.push(resolve));}
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
@@ -41,6 +45,13 @@ function load(sample:string):Promise<AudioBuffer>{
  const prefix=sample.match(/^(v[1345]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[1345]:/,'');
  const pending=(async()=>{await takeLoadSlot();try{const response=await fetch('/audio/effects/'+version+'/'+name+'.mp3');if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{buffers.delete(sample);sizes.delete(sample);report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
+/** Invoke directly in the book's user gesture; no global/private sound preference changes. */
+export function prepareBookAudio(owner:object):Promise<boolean>{
+ bookOwners.add(owner);const unlock=unlockEffectsAudio();
+ const media=ctx?Promise.allSettled(['paper-turn-1','paper-turn-2','paper-turn-3','paper-turn-4','paper-lift-1','paper-lift-2'].map(load)):Promise.resolve([]);
+ return Promise.all([unlock,media]).then(([,results])=>allowed('book')&&results.every(row=>row.status==='fulfilled'));
+}
+export function releaseBookAudio(owner:object){bookOwners.delete(owner);cancelSemantic('book');}
 function claim(key:string,at:number){if(played.has(key))return false;played.set(key,at);if(played.size>1200)played.delete(played.keys().next().value!);return true;}
 function stop(source:AudioBufferSourceNode,record:Playing,fade=40){const audio=ctx;if(audio){if(record.at>audio.currentTime){try{source.stop(audio.currentTime);}catch{}sources.delete(source);return;}try{record.gain.gain.setValueAtTime(record.gain.gain.value,audio.currentTime);record.gain.gain.linearRampToValueAtTime(0,audio.currentTime+fade/1000);source.stop(audio.currentTime+fade/1000);}catch{/* Ended. */}}sources.delete(source);}
 export function cancelEventAudio(id:string){epochs.set(id,(epochs.get(id)??0)+1);for(const [source,row]of sources)if(row.id===id)stop(source,row);for(const [key,time]of played)if(key.startsWith(id+':')&&time>(ctx?.currentTime??0))played.delete(key);}
@@ -70,7 +81,7 @@ export function playSemantic(cue:SemanticCue,options:{variant?:number;scope?:'ui
  if(cue==='press'||cue==='select'||cue==='success')return;
  const scope=options.scope??(cue.startsWith('paper-')?'book':'ui');if(!allowed(scope))return;if(scope==='private'){if(previousPrivateUi)cancelEventAudio(previousPrivateUi);}else cancelSemantic(scope);const variant=options.variant??semanticSeq;
  const sample=cue==='paper-turn'?'paper-turn-'+(1+variant%4):cue==='paper-lift'?'paper-lift-'+(1+variant%2):'ui-'+cue;
- const id=scope+':ui:'+(++semanticSeq);if(scope==='private')previousPrivateUi=id;sampleAt(id,cue,sample,0,scope,1,scope==='book'?.23:.16,0,200);
+ const id=scope+':ui:'+(++semanticSeq);if(scope==='private')previousPrivateUi=id;sampleAt(id,cue,sample,0,scope,1,scope==='book'?.65:.16,0,200);
 }
 let currentBell='';
 const publicRanges=new Map<string,{key:number|string;at:number;generation:number}>();

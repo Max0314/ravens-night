@@ -2,7 +2,7 @@
 import {afterEach,beforeEach,expect,test,vi} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
-const names=['shot','glass','impact','scream','poison','shield','butler','demon','good','evil','night-bell','dawn-bell','paper-turn-1','paper-turn-2','paper-turn-3','paper-turn-4','paper-lift-1','ui-press','ui-open','nomination','vote-stamp','guillotine-tension','guillotine-unlock','guillotine-blade','guillotine-impact','guillotine-wind','glass-hit','glass-shards','gun-cock','hurt-shot-1','hurt-shot-2','hurt-shot-3','hurt-night-1','hurt-night-2','hurt-night-3','blood-impact','bone-crack','role-baron','role-scarlet_woman','role-imp','role-monk','role-butler','wing-flap','wing-air','wing-root','slash-left','slash-right','poison-bottle','poison-bubbles','poison-cork','poison-pour','chef-chop-1','chef-chop-2','chef-chop-3','coffin-open','coffin-settle','cough-1','cough-2','cough-3','butler-voice'];
+const names=['shot','glass','impact','scream','poison','shield','butler','demon','good','evil','night-bell','dawn-bell','paper-turn-1','paper-turn-2','paper-turn-3','paper-turn-4','paper-lift-1','paper-lift-2','ui-press','ui-open','nomination','vote-stamp','guillotine-tension','guillotine-unlock','guillotine-blade','guillotine-impact','guillotine-wind','glass-hit','glass-shards','gun-cock','hurt-shot-1','hurt-shot-2','hurt-shot-3','hurt-night-1','hurt-night-2','hurt-night-3','blood-impact','bone-crack','role-baron','role-scarlet_woman','role-imp','role-monk','role-butler','wing-flap','wing-air','wing-root','slash-left','slash-right','poison-bottle','poison-bubbles','poison-cork','poison-pour','chef-chop-1','chef-chop-2','chef-chop-3','coffin-open','coffin-settle','cough-1','cough-2','cough-3','butler-voice'];
 const started:Array<{sample:number;at:number;offset:number;rate:number;stopped:boolean;stopAt?:number}>=[];
 class Param{value=0;setValueAtTime(){}linearRampToValueAtTime(){}exponentialRampToValueAtTime(){}}
 class Node{gain=new Param();frequency=new Param();playbackRate=new Param();buffer:{sample:number}|undefined;onended:(()=>void)|null=null;row:typeof started[number]|undefined;connect(){}disconnect(){}start(at:number,offset=0){this.row={sample:this.buffer?.sample??-1,at,offset,rate:this.playbackRate.value,stopped:false};started.push(this.row);}stop(at?:number){if(this.row){this.row.stopped=true;this.row.stopAt=at??0;}}}
@@ -160,4 +160,15 @@ test('four demon contacts use audible v5 stems, compensate decoded attack energy
 test('generic press/select/success are quiet while bell, material scene and book cues remain distinct',async()=>{
  audio.playSemantic('press');audio.playSemantic('select');audio.playSemantic('success');await flush();expect(started).toHaveLength(0);
  audio.playSemantic('paper-turn',{variant:0});audio.scheduleCue('retained-bell','NIGHT_FALLS',0,4);await flush();expect(started.some(s=>names[s.sample]==='paper-turn-1')).toBe(true);expect(started.filter(s=>names[s.sample]==='night-bell')).toHaveLength(3);
+});
+
+
+test('book gesture prepares paper despite the default effects master being off without enabling private sound',async()=>{
+ await audio.enableEffectsAudio(false);const owner={};expect(await audio.prepareBookAudio(owner)).toBe(true);expect(audio.effectsAudioEnabled()).toBe(false);expect(preferences.participationMode()).toBe('IN_PERSON');expect(localStorage.getItem('ravens_effects_audio')).toBe('off');
+ audio.playSemantic('paper-turn',{variant:0});await flush();expect(started.map(s=>names[s.sample])).toEqual(['paper-turn-1']);expect(gains.at(-2)?.gain.value).toBe(.65);audio.releaseBookAudio(owner);audio.playSemantic('paper-turn');await flush();expect(started).toHaveLength(1);
+ const leave=audio.beginEffectsPreview();const previewOwner={};expect(await audio.prepareBookAudio(previewOwner)).toBe(false);audio.releaseBookAudio(previewOwner);leave();
+});
+test('a new gesture retries resume synchronously while an older automatic request remains pending',async()=>{
+ context.state='suspended';let rejectOld:(error:Error)=>void=()=>{};const resume=vi.fn().mockImplementationOnce(()=>new Promise<void>((_resolve,reject)=>{rejectOld=reject;})).mockImplementationOnce(async()=>{context.state='running';});context.resume=resume;
+ const first=audio.unlockEffectsAudio(),second=audio.unlockEffectsAudio();expect(resume).toHaveBeenCalledTimes(2);await second;rejectOld(new Error('old automatic request'));await first;expect(audio.effectsAudioStatus()).toBe('');
 });

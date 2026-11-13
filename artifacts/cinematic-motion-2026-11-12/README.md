@@ -26,3 +26,4 @@
 重建命令 `node scripts/build-cinematics-v6.mjs`；v5及旧素材均保留，本批未替换角色portrait、声音、公共结果或总时长。现有测试覆盖实际孔部alpha与头像几何、空台不落刀/不震动/无血；手机实际体验交用户人工验收。
 
 第四批独立复审修订：宽刀片行程250，保持公开resultAt；媒体用例按实际刀片alpha轮廓逐列验证斜刃已越过整孔底，关键帧更新。工作树node_modules为junction，pnpm脚本被UNSAFE_TASK_RUN_STATE_PATH拒绝；已执行同一package.json步骤的tsc --noEmit与vite build等价构建成功。该构建之后仅修订行程常量并通过对应媒体用例，未重复构建。
+2026-11-13手机无声反馈追加：手册纸张声由书内开关授予局部许可，不再被默认关闭的演出总开关误拦截。`createBookAudio().prepare(feedback?: boolean): Promise<boolean>` 必须直接在声音开启/翻页手势内调用，先同步解锁并预热既有纸轨，再异步准备纹理；`silence`/`dispose`撤销该书许可与晚到反馈。不会开启私密动作音效或修改线上/线下/预览偏好；纸张仍用原轨，book范围增益从0.23调为0.65。共享解锁允许后续手势重新resume，不复用卡住的自动请求。此为代码与离线数值修复，不能替代手机可听验收。
