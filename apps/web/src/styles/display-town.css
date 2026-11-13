@@ -17,7 +17,7 @@ main.display::before{background:linear-gradient(180deg,#03080e60,transparent 38%
 .display .display__table .rn-seat__avatar,.display .display__table .rn-seat__portrait-anchor{width:var(--round-portrait);height:var(--round-portrait)}
 .display .display__table .rn-seat__initial{font-size:calc(var(--round-portrait)*.44)}
 .display .display__table .rn-seat__name{width:100%;max-width:100%;font-size:var(--display-name);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#eee4cc}
-.display .display__table .rn-seat__portrait-anchor>.rn-seat__number{left:calc(var(--round-portrait)*-.12);bottom:calc(100% + var(--round-portrait)*.06);min-width:calc(var(--display-mark)*1.2);height:calc(var(--display-mark)*1.2);padding:0 calc(var(--display-mark)*.15);font-size:var(--display-mark);line-height:1;background:#080f14;color:#ffe0a0}
+.display .display__table .rn-seat__portrait-anchor>.rn-seat__number{left:calc(var(--display-mark)*-1.35);bottom:calc(100% - var(--display-mark)*.8);min-width:calc(var(--display-mark)*1.2);height:calc(var(--display-mark)*1.2);padding:0 calc(var(--display-mark)*.15);font-size:var(--display-mark);line-height:1;background:#080f14;color:#ffe0a0}
 .display .display__table .rn-seat__nomination{top:0;right:0;transform:translate(40%,-110%);font-size:calc(var(--display-mark)*1.15);line-height:1.2;padding:0 calc(var(--display-mark)*.1)}
 .display .display__table .rn-seat__hand{top:calc(var(--display-mark)*1.3);right:calc(var(--round-portrait)*-.14);width:calc(var(--display-mark)*1.35);height:calc(var(--display-mark)*1.35);font-size:var(--display-mark);line-height:1.3}
 .display .display__table .rn-seat__ballot{right:calc(var(--round-portrait)*-.14);bottom:calc(var(--display-name)*1.4);width:calc(var(--display-mark)*1.1);height:calc(var(--display-mark)*1.1);font-size:calc(var(--display-mark)*.8);line-height:1.2}
@@ -58,6 +58,29 @@ main.display::before{background:linear-gradient(180deg,#03080e60,transparent 38%
 .display__performance .event-stage__body{min-height:0}
 .display__performance .effects-audio,.display__performance .event-notice{pointer-events:auto}
 .display__connection{position:absolute;left:50%;bottom:24%;transform:translateX(-50%);z-index:4;border-radius:6px;background:#171b16e8;padding:6px 12px;color:#dbc89f;font-size:var(--display-unit)}
+/* Public movies keep their composition and clock; television type scales with the canvas. */
+@media(min-width:1000px) and (min-height:650px){
+ .display .display__performance .event-stage__body{max-width:min(84vw,2400px)}
+ .display .display__performance .event-stage h1{font-size:calc(var(--display-unit)*2.6);line-height:1.2}
+ .display .display__performance .event-stage__eyebrow{font-size:calc(var(--display-unit)*.8)}
+ .display .display__performance .event-stage__theatre{height:42vh}
+ .display .display__performance .event-stage__result{max-width:70vw;font-size:var(--display-unit)}
+ .display .display__performance .event-stage__aftercare{font-size:calc(var(--display-unit)*.72)}
+ .display .display__performance .event-stage header,.display .display__performance .event-stage footer{font-size:calc(var(--display-unit)*.65)}
+ .display .display__performance .event-stage footer span{font-size:calc(var(--display-unit)*.6)}
+ .display .display__performance .event-stage footer button{font-size:calc(var(--display-unit)*.8);padding:calc(var(--display-unit)*.35) calc(var(--display-unit)*.7)}
+ .display .display__performance .dawn-reveal__portrait{width:16vh}
+ .display .display__performance .dawn-reveal--multiple .dawn-reveal__portrait{width:13vh}
+ .display .display__performance .dawn-reveal__person{max-width:none;gap:calc(var(--display-unit)*.3)}
+ .display .display__performance .dawn-reveal__person>strong,.display .display__performance .dawn-reveal__safe>strong{font-size:calc(var(--display-unit)*1.15)}
+ .display .display__performance .dawn-reveal__person>small,.display .display__performance .dawn-reveal__safe>small{font-size:calc(var(--display-unit)*.72)}
+ .display .display__performance .dawn-reveal__seat{font-size:calc(var(--display-unit)*.55);min-width:calc(var(--display-unit)*.95);height:calc(var(--display-unit)*.95)}
+ .display .display__performance .guillotine-scene__empty-label,.display .display__performance .guillotine-scene[data-testid] .scene-person strong{font-size:calc(var(--display-unit)*.8)}
+}
+@media(min-width:1800px){
+ main.display{--display-town-art:url('/art/display/v1/town-day-2560.webp')}
+ main.display--role_reveal,main.display--first_night,main.display--other_night{--display-town-art:url('/art/display/v1/town-night-2560.webp')}
+}
 @media(max-width:900px){
  .display .display__header{align-items:flex-start;font-size:calc(var(--display-unit)*.8);gap:8px}
  .display .display__header>div{flex-wrap:wrap;justify-content:flex-end;gap:6px}

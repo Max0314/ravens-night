@@ -1,6 +1,7 @@
 import {PublicTransitionQueue} from '../presentations/public-transitions.js';
 import {DawnReveal} from './DawnReveal.js';
 import {victoryCause,victoryCaption} from './victory-cause.js';
+import {prewarmPublicArt} from './public-art-assets.js';
 import {AtmosphericSky} from './AtmosphericSky.js';
 import {ArtImage} from './PremiumArt.js';
 import {FeedbackButton} from '@ravens/ui';
@@ -47,6 +48,14 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   const [hidden,setHidden]=useState(document.hidden);
   useEffect(()=>{const sync=()=>{setHidden(document.hidden);if(document.hidden)silenceEffects();};document.addEventListener("visibilitychange",sync);return()=>document.removeEventListener("visibilitychange",sync);},[]);
   const gameKey = game?.gameId ?? "legacy";
+  const publicArtKey=(game?.events??[]).filter(isCinematic).slice(-2).map(event=>`${event.id}:${event.kind}`).join('|');
+  useEffect(()=>{
+    // Only public kinds enter this bounded warmup; every outcome uses the same URL set.
+    const phase=game?.phase;
+    if(phase==='FIRST_NIGHT'||phase==='OTHER_NIGHT')void prewarmPublicArt('DAWN');
+    else if(phase==='ROLE_REVEAL'||phase==='DAY_DISCUSSION'||phase==='NOMINATION'||phase==='VOTING')void prewarmPublicArt('NIGHT_FALLS');
+    for(const event of (game?.events??[]).filter(isCinematic).slice(-2))void prewarmPublicArt(event.kind);
+  },[gameKey,game?.phase,publicArtKey]);
   const seen = useRef(loadCursor(gameKey));
   const seenKey = useRef(gameKey);
   if (seenKey.current !== gameKey) { seen.current = loadCursor(gameKey); seenKey.current = gameKey; }

@@ -20,3 +20,11 @@ test('stable media validates with ETag and returns no duplicate body without fre
  const same=await app.inject({url,headers:{'if-none-match':String(first.headers.etag)}});expect(same.statusCode).toBe(304);expect(same.body).toBe('');expect(same.headers['cache-control']).toBe(first.headers['cache-control']);
  await writeFile(join(directory,'art/effects/v9/mist.webp'),'changed-public-media');const changed=await app.inject({url,headers:{'if-none-match':String(first.headers.etag)}});expect(changed.statusCode).toBe(200);expect(changed.body).toBe('changed-public-media');
 });
+
+test('conditional missing-resource requests keep their actual HTML fallback uncached',async()=>{
+ const home=await app.inject('/');expect(home.headers.etag).toBeTruthy();
+ for(const url of ['/assets/missing-abcdefgh.js','/art/missing.webp']){
+  const response=await app.inject({url,headers:{'if-none-match':String(home.headers.etag)}});
+  expect(response.statusCode).toBe(304);expect(response.headers['cache-control']).toBe('no-store');
+ }
+});
