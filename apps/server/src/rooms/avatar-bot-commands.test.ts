@@ -55,7 +55,7 @@ test('one nomination follows the legal actor/target rules and same command id on
  const t=mixedTable(),runtime=new LiveRoomRuntime(undefined,{now:()=>now,presentation:false,botSecret});runtime.service.restore([t.service.snapshot(t.code)]);const v=runtime.service.privateView(t.code,t.host.token),context:RoomCommandContext={roomInstanceId:v.roomInstanceId,setupId:v.setupId,expectedCommandVersion:v.self.commandVersion,gameId:v.game!.gameId,contextId:v.contextId!};
  const receipt={code:t.code,id:randomUUID(),actor:t.host.token,fingerprint:'nominate-test',requireHost:true,context};
  const execute=()=>runtime.execute(s=>{s.validateControlCommand(t.code,t.host.token,context,t.service.find(t.code).botControl.version,true);return runBotCommand(s,t.code,t.host.token,'NOMINATE_ONCE',1);},receipt);
- const first=await execute();expect(first).toMatchObject({actorSeat:2,actorNickname:'人机·01',executedCount:1});expect(first.message).toContain('【玩家2-人机·01】');expect(await execute()).toEqual(first);expect(runtime.service.find(t.code).game!.events.filter(e=>e.kind==='NOMINATION')).toHaveLength(1);
+ const first=await execute();expect(first).toMatchObject({actorSeat:2,actorNickname:'人机·01',executedCount:1});expect(first.message).toContain('[人机·01]');expect(await execute()).toEqual(first);expect(runtime.service.find(t.code).game!.events.filter(e=>e.kind==='NOMINATION')).toHaveLength(1);
  expect(()=>runBotCommand(runtime.service,t.code,t.host.token,'NOMINATE_ONCE')).toThrow(/提名资格/);expect(()=>runBotCommand(runtime.service,t.code,t.host.token,'END_DAY')).toThrow(/完成当前表决/);await runtime.close();
 });
 
@@ -83,7 +83,7 @@ test.each([['washerwoman',false],['librarian',false],['investigator',false],['wa
  for(const p of players)s.completeTutorial(code,p.token);room.game!.storytellerSeed='structured-shown-fixture';for(const p of players)s.confirmRole(code,p.token);
  s.submitAction(code,players[4]!.token,[impaired?1:2]);s.submitAction(code,players[3]!.token,[2]);
  const own=s.privateView(code,players[0]!.token),entry=own.history.find(e=>e.candidateGroup)!;expect(entry).toBeDefined();const group=entry.candidateGroup!;
- expect(group.kind).toBe('ONE_OF');expect(group.seats).toHaveLength(2);expect(group.seats).toEqual(entry.targetSeats);expect(entry.text).toContain(`有一位是${group.roleName}`);for(const seat of group.seats)expect(entry.text).toContain(`【玩家${seat}-昵称${seat}】`);
+ expect(group.kind).toBe('ONE_OF');expect(group.seats).toHaveLength(2);expect(group.seats).toEqual(entry.targetSeats);expect(entry.text).toContain(`有一位是${group.roleName}`);for(const seat of group.seats)expect(entry.text).toContain(`[昵称${seat}]`);
  expect(s.privateView(code,players[1]!.token).history.some(e=>e.candidateGroup)).toBe(false);expect(JSON.stringify(group)).not.toMatch(/truthful|impaired|roleId|targetSeat|decoySeat/);
  const shown=JSON.stringify(group);for(const a of room.assignments.filter(a=>a.seat!==1)){a.roleId='imp';a.roleType='DEMON';a.alignment='EVIL';}expect(JSON.stringify(s.privateView(code,players[0]!.token).history.find(e=>e.candidateGroup)!.candidateGroup)).toBe(shown);
  const legacy=s.snapshot(code);for(const e of legacy.game!.privateHistory[1]!)delete e.candidateGroup;const restored=new RoomService({now:()=>now,presentation:false,botSecret});restored.restore([legacy]);expect(restored.privateView(code,players[0]!.token).history.some(e=>e.candidateGroup)).toBe(false);
