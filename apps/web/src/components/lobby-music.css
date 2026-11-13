@@ -1,3 +1,0 @@
-.lobby-music{position:fixed;z-index:180;left:max(10px,env(safe-area-inset-left));bottom:calc(82px + env(safe-area-inset-bottom));max-width:210px;display:grid;gap:4px}.lobby-music button{min-height:44px;padding:6px 11px;border:1px solid #b69b6255;border-radius:20px;background:#171b18ed;color:#cebb90;font-size:11px}.lobby-music small{max-width:180px;padding:6px 9px;border-radius:8px;background:#101511ed;color:#c0b393;font-size:10px;line-height:1.4}
-
-.opening-music-control.is-compact{display:inline-grid;flex:none;position:static;place-items:center}.opening-music-control.is-compact button{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid #b69b6255;border-radius:50%;background:#171b18ad;color:#cebb90;font-size:19px}

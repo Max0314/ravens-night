@@ -6,8 +6,9 @@ import type {RoomView} from "../api.js";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {experienceTiming, type ExperienceEvent } from "@ravens/contracts";
 import type { GameView } from "../api.js";
-import { effectsAudioEnabled, enableEffectsAudio, scheduleCue, schedulePrivateCue, cancelEventAudio, completeEventAudio, silenceEffects } from "./experience-audio.js";
+import { effectsAudioEnabled, scheduleCue, schedulePrivateCue, cancelEventAudio, completeEventAudio, silenceEffects } from "./experience-audio.js";
 import "../styles/experience.css";
+import {GlobalAudioButton} from './GlobalAudioButton.js';
 import {BloodSpray,ShotImpact,ExecutionGallows,PoisonArt,PoisonScreen,DemonScreen,ShieldArt,ButlerArt,DemonArt,Claw,VictoryArt} from './effects-art.js';
 import {privateAudioAllowed} from '../participation-audio.js';
 import '../styles/effects-v3.css';
@@ -138,7 +139,6 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
     try { sessionStorage.setItem(`ravens_events_${gameKey}`, JSON.stringify([...seen.current].slice(-150))); } catch { /* Deduplication still works in this tab. */ }
   }
   function skip() { silenceEffects(); if (active) { remember(active.id); setDismissed((all) => [...all, active.id]); } setPrivateScene(undefined); }
-  function toggleSound() { const next = !sound; setSound(next); void enableEffectsAudio(next); }
   const event = active;
   const showResult = Boolean(event?.outcome) && elapsed >= (event?experienceTiming(event.kind,event.timingVersion??1).resultOffset:0);
   const target = game?.seats.find((seat) => seat.seat === event?.targetSeat);
@@ -147,7 +147,6 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
   const emptyExecution=event?.kind==="EXECUTION"&&event.targetSeat===undefined;
   const title = event ? ({ SHOT: showResult ? event.outcome === "DEATH" ? "枪声之后，一盏灯熄灭" : "枪声散去，无人倒下" : `${playerLabel(event.actorSeat,actor?.nickname)} 举起了枪`, EXECUTION: showResult ? emptyExecution ? "今天无人被处决" : event.outcome === "DEATH" ? "处决已完成" : "处决结束，无人死亡" : "钟楼宣读判决", DAWN: showResult ? deaths.length ? "他们未能等到黎明" : "今夜，无人死亡" : "天亮了", NIGHT_FALLS: "夜幕降临", NOMINATION: "有人提出了指控", VOTE_RESULT: event.outcome === "TIED" ? "票数持平，处决席空置" : event.outcome === "ON_BLOCK" ? "处决席已有候选" : "这轮投票已经结束", GAME_OVER: !showResult ? "终章将至" : event.outcome === "GOOD" ? "晨光属于善良" : "暗夜属于邪恶", NOTICE: "钟楼来信" } as const)[event.kind] : "";
   return <>
-    <FeedbackButton className="effects-audio" type="button" aria-pressed={sound} onClick={toggleSound} title={sound ? "关闭演出音效" : "点击启用演出音效"}>{sound ? "♪ 音效开" : "♪ 音效关"}</FeedbackButton>
     {notice?<aside className="event-notice" role="status"><span className="event-notice__seal" aria-hidden="true">{notice.kind==='NOMINATION'?'⚖':'✓'}</span>{notice.kind==='NOMINATION'?<><ScenePerson game={game} seat={notice.actorSeat}/><span>提名</span><ScenePerson game={game} seat={notice.targetSeat}/></>:<span>{notice.message}</span>}<FeedbackButton type="button" aria-label="收起事件提示" onClick={()=>setDismissed(all=>[...all,notice.id])}>×</FeedbackButton></aside>:null}
     {event?.kind==='SHOT'?<><FractureLayer seed={event.id} elapsedMs={elapsed} impactAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced}/><GlassRefraction seed={event.id} elapsedMs={elapsed} impactAt={experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced}/></>:null}
     {event&&quiet?<aside className="phase-reading-notice" role="status"><span>{elapsed<0?event.kind==='DAWN'?'即将天亮':event.kind==='NIGHT_FALLS'?'即将入夜':'即将公布':title}</span><FeedbackButton type="button" onClick={skip}>知道了</FeedbackButton></aside>:null}
@@ -169,7 +168,7 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
         <p className="event-stage__result" aria-live="polite">{showResult || !["SHOT", "EXECUTION", "DAWN", "GAME_OVER"].includes(event.kind) ? event.message : event.kind === "SHOT" ? `枪口指向 ${playerLabel(event.targetSeat,target?.nickname)}` : event.kind === "EXECUTION" ? emptyExecution ? "晚风穿过刑架，等待判决公布。" : `${playerLabel(event.targetSeat,target?.nickname)} 走向钟楼` : event.kind === "GAME_OVER" ? "结局即将揭晓。" : "每个人都屏住呼吸，等待今夜的消息。"}</p>
         {showResult && deaths.length > 0 && ["DAWN", "SHOT", "EXECUTION"].includes(event.kind) && event.outcome !== "NO_DEATH" ? <small className="event-stage__aftercare">死亡不等于离场。你仍可讨论，并保留一枚幽灵票。身份继续保密。</small> : null}
       </div>
-      <footer><FeedbackButton type="button" onClick={toggleSound}>{sound ? "关闭音效" : "启用音效"}</FeedbackButton><span>{reduced ? "已尊重减少动态效果偏好" : "所有屏幕共享同一段钟声"}</span><FeedbackButton type="button" onClick={skip}>跳过演出</FeedbackButton></footer>
+      <footer>{!preview?<GlobalAudioButton/>:null}<span>{reduced ? "已尊重减少动态效果偏好" : "所有屏幕共享同一段钟声"}</span><FeedbackButton type="button" onClick={skip}>跳过演出</FeedbackButton></footer>
       <div className="event-stage__progress" style={{ transform: `scaleX(${Math.min(1, Math.max(0, 1 - elapsed / event.durationMs))})` }} />
     </section> : null}
     {visiblePrivate ? <section data-private-feedback="true" ref={privateRef} key={visiblePrivate.id} className={`private-ritual private-ritual--${visiblePrivate.kind.toLowerCase()}${event&&elapsed>=0?' private-ritual--compact':''}${staticMotion?' is-reduced':''}${frozen?' is-frozen':''}`} style={{'--private-duration':`${privateSceneDuration(visiblePrivate.kind)}ms`,'--scene-duration':`${privateSceneDuration(visiblePrivate.kind)}ms`,'--scene-delay':canSeek?'0ms':`${-privateElapsed}ms`} as CSSProperties} role="status" aria-label="仅你可见的行动回执"><FeedbackButton type="button" onClick={()=>setPrivateScene(undefined)}>收起 ×</FeedbackButton><p>仅你可见 · 行动已提交</p>{visiblePrivate.kind==='POISON'?<PoisonScreen/>:visiblePrivate.kind==='DEMON'?<DemonScreen/>:null}<div className="private-ritual__art" aria-hidden="true">{visiblePrivate.kind==='POISON'?<PoisonArt/>:visiblePrivate.kind==='PROTECT'?<ShieldArt/>:visiblePrivate.kind==='BUTLER'?<ButlerBow elapsedMs={privateElapsed} reducedMotion={reduced}/>:visiblePrivate.kind==='DEMON'?<DemonArt elapsedMs={privateElapsed} reduced={reduced}/>:<div className="private-sigil">{visiblePrivate.kind==='DIVINE'?'✧':'☾'}</div>}</div><h2>{({POISON:'毒液倾下',PROTECT:'守护之盾',BUTLER:'谨遵吩咐',DEMON:'暗翼掠过',DIVINE:'问询已提交',SEALED:'选择已封存'} as const)[visiblePrivate.kind]}</h2><div className="private-ritual__players">{visiblePrivate.targetSeats?.map(seat=><div className="private-target" key={seat}><ScenePerson game={game} seat={seat}/>{visiblePrivate.kind==='DEMON'?<Claw/>:null}</div>)}</div><strong>{visiblePrivate.target}</strong><small>选择已提交，实际结果以规则结算为准。</small></section> : null}

@@ -21,3 +21,5 @@
 2026-11-13用户澄清开场音乐范围：替代原大厅至全员身份确认截止。组件现提供`OpeningMusic`（兼容`LobbyMusic`）稳定挂载接口，支持跨首页/创建/加入/大厅/教学/身份确认/首夜保持同一M19音源与进度；首晨实际演出startsAt由App公开时钟驱动fadeOut，800ms降到0后暂停；ducked将前景期间音量平滑压到0.26而不中断。返回菜单或下一把可恢复原进度；不更改已认可的恶魔四刀或素材。此条记录组件交付，App范围接入/上线由来源会话统一记录。
 
 跨入口音源所有权补充：App根层只调用一次`useOpeningMusic`，页面通过44px内联`OpeningMusicControl`移动控制，保证首页→创建/加入→房间不重建播放器。旧`LobbyMusic`/`OpeningMusic`wrapper仅保留兼容。`fadeOut`、`ducked`驱动包络，公开首晨时间及入口挂载由来源App集成；没有修改Home/App或恶魔素材/时钟。
+
+2026-11-13最新统一声音约束：前述独立书声许可/音乐开关方向已被本条取代。唯一正式偏好`ravens_effects_audio`统管音乐/公开音效/翻页，无值默认on、显式off尊重；旧book/lobby值不再门控，纸张prepare也不能越过总关闭。根音乐hook与active/fadeOut/ducked保留，但持续层不自带控件；页面/手册统一使用44px`GlobalAudioButton`音符，原音乐长胶囊与悬浮音效长按钮移除。Global开关同点击栈resume→正式事件→HTMLAudio.play；预览临时设置与线下私密静音规则保留。音轨/盾/恶魔四刀素材与时钟均不变，App/Home/Guide接入由来源与手册会话完成。

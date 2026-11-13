@@ -163,12 +163,19 @@ test('generic press/select/success are quiet while bell, material scene and book
 });
 
 
-test('book gesture prepares paper despite the default effects master being off without enabling private sound',async()=>{
- await audio.enableEffectsAudio(false);const owner={};expect(await audio.prepareBookAudio(owner)).toBe(true);expect(audio.effectsAudioEnabled()).toBe(false);expect(preferences.participationMode()).toBe('IN_PERSON');expect(localStorage.getItem('ravens_effects_audio')).toBe('off');
- audio.playSemantic('paper-turn',{variant:0});await flush();expect(started.map(s=>names[s.sample])).toEqual(['paper-turn-1']);expect(gains.at(-2)?.gain.value).toBe(.65);audio.releaseBookAudio(owner);audio.playSemantic('paper-turn');await flush();expect(started).toHaveLength(1);
+test('the total switch gates paper owners without enabling in-person private sound or overriding preview',async()=>{
+ await audio.enableEffectsAudio(false);const owner={};expect(await audio.prepareBookAudio(owner)).toBe(false);audio.playSemantic('paper-turn',{variant:0});await flush();expect(started).toHaveLength(0);
+ await audio.enableEffectsAudio(true);expect(await audio.prepareBookAudio(owner)).toBe(true);expect(preferences.participationMode()).toBe('IN_PERSON');audio.playSemantic('paper-turn',{variant:0});await flush();expect(started.map(s=>names[s.sample])).toEqual(['paper-turn-1']);expect(gains.at(-2)?.gain.value).toBe(.65);
+ await audio.enableEffectsAudio(false);expect(started[0]?.stopped).toBe(true);expect(await audio.prepareBookAudio(owner)).toBe(false);audio.releaseBookAudio(owner);audio.playSemantic('paper-turn');await flush();expect(started).toHaveLength(1);
  const leave=audio.beginEffectsPreview();const previewOwner={};expect(await audio.prepareBookAudio(previewOwner)).toBe(false);audio.releaseBookAudio(previewOwner);leave();
 });
+
 test('a new gesture retries resume synchronously while an older automatic request remains pending',async()=>{
  context.state='suspended';let rejectOld:(error:Error)=>void=()=>{};const resume=vi.fn().mockImplementationOnce(()=>new Promise<void>((_resolve,reject)=>{rejectOld=reject;})).mockImplementationOnce(async()=>{context.state='running';});context.resume=resume;
  const first=audio.unlockEffectsAudio(),second=audio.unlockEffectsAudio();expect(resume).toHaveBeenCalledTimes(2);await second;rejectOld(new Error('old automatic request'));await first;expect(audio.effectsAudioStatus()).toBe('');
+});
+
+test('no total preference defaults on, explicit total off wins, and obsolete music/book preferences do not gate sound',async()=>{
+ vi.resetModules();localStorage.clear();localStorage.setItem('ravens_lobby_music','off');localStorage.setItem('ravens_book_audio','off');const fresh=await import('./experience-audio.js');expect(fresh.effectsAudioEnabled()).toBe(true);
+ localStorage.setItem('ravens_effects_audio','off');vi.resetModules();const muted=await import('./experience-audio.js');expect(muted.effectsAudioEnabled()).toBe(false);
 });

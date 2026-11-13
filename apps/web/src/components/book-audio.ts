@@ -1,6 +1,6 @@
 import {playSemantic,prepareBookAudio,releaseBookAudio} from './experience-audio.js';
 
-/** Local paper-sound permission shares the output bus, never enables game/private effects. */
+/** Paper preparation shares the total sound preference and output bus; it cannot enable sound. */
 export function createBookAudio(){
   let disposed=false,sequence=0,generation=0;const owner={};
   return {

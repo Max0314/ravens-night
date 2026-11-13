@@ -20,8 +20,10 @@ export function beginEffectsPreview(){
 }
 const buffers=new Map<string,Promise<AudioBuffer>>(),sizes=new Map<string,number>(),played=new Map<string,number>(),epochs=new Map<string,number>();
 const sources=new Map<AudioBufferSourceNode,Playing>();
-function readPreference(){try{return localStorage.getItem('ravens_effects_audio')==='on';}catch{return false;}}
+function readPreference(){try{return localStorage.getItem('ravens_effects_audio')!=='off';}catch{return true;}}
 function destination(audio:AudioContext){if(!output){output=audio.createGain();output.gain.value=effectsAudioVolume();if(typeof audio.createDynamicsCompressor==='function'){const limit=audio.createDynamicsCompressor();limit.threshold.value=-1;limit.knee.value=0;limit.ratio.value=20;limit.attack.value=.002;limit.release.value=.1;output.connect(limit);limit.connect(audio.destination);}else output.connect(audio.destination);}return output;}
+export const globalAudioEvent='ravens:global-audio';
+export function globalAudioEnabled(){return enabled;}
 export function effectsAudioEnabled(){return previewAudio?.enabled??enabled;}
 export function effectsAudioStatus(){return status;}
 function report(value:string){status=value;window.dispatchEvent(new Event('ravens:audio-status'));}
@@ -35,8 +37,17 @@ export async function unlockEffectsAudio(){
  catch{if(ctx===audio&&attempt===unlockAttempt&&audio.state!=='running')report('声音尚未解锁，请再次点击开启');}
 
 }
-export async function enableEffectsAudio(value=true){if(previewAudio)previewAudio.enabled=value;else{enabled=value;try{localStorage.setItem('ravens_effects_audio',value?'on':'off');}catch{/* Tab preference remains. */}}window.dispatchEvent(new Event('ravens-effects-audio'));if(!value){silenceEffects();return;}await unlockEffectsAudio();}
-function allowed(scope:Scope){return (scope==='book'&&!previewAudio?enabled||bookOwners.size>0:effectsAudioEnabled())&&ctx?.state==='running'&&!document.hidden&&(scope!=='private'||previewPrivateAllowed());}
+/** Starts both WebAudio and the music event in this call stack, before the first await. */
+export async function enableEffectsAudio(value=true){
+ if(previewAudio){previewAudio.enabled=value;window.dispatchEvent(new Event('ravens-effects-audio'));if(!value){silenceEffects();return;}await unlockEffectsAudio();return;}
+ enabled=value;try{localStorage.setItem('ravens_effects_audio',value?'on':'off');}catch{/* This tab keeps the total preference. */}
+ if(!value){bookOwners.clear();silenceEffects();}
+ const unlock=value?unlockEffectsAudio():Promise.resolve();
+ window.dispatchEvent(new CustomEvent(globalAudioEvent,{detail:{enabled:value}}));
+ window.dispatchEvent(new Event('ravens-effects-audio'));await unlock;
+}
+
+function allowed(scope:Scope){return effectsAudioEnabled()&&ctx?.state==='running'&&!document.hidden&&(scope!=='private'||previewPrivateAllowed());}
 let activeLoads=0;const loadWaiters:Array<()=>void>=[];
 function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve();}return new Promise<void>(resolve=>loadWaiters.push(resolve));}
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
@@ -47,9 +58,10 @@ function load(sample:string):Promise<AudioBuffer>{
 }
 /** Invoke directly in the book's user gesture; no global/private sound preference changes. */
 export function prepareBookAudio(owner:object):Promise<boolean>{
+ if(!effectsAudioEnabled())return Promise.resolve(false);
  bookOwners.add(owner);const unlock=unlockEffectsAudio();
  const media=ctx?Promise.allSettled(['paper-turn-1','paper-turn-2','paper-turn-3','paper-turn-4','paper-lift-1','paper-lift-2'].map(load)):Promise.resolve([]);
- return Promise.all([unlock,media]).then(([,results])=>allowed('book')&&results.every(row=>row.status==='fulfilled'));
+ return Promise.all([unlock,media]).then(([,results])=>bookOwners.has(owner)&&allowed('book')&&results.every(row=>row.status==='fulfilled'));
 }
 export function releaseBookAudio(owner:object){bookOwners.delete(owner);cancelSemantic('book');}
 function claim(key:string,at:number){if(played.has(key))return false;played.set(key,at);if(played.size>1200)played.delete(played.keys().next().value!);return true;}
