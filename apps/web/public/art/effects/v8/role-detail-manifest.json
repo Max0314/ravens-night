@@ -555,6 +555,213 @@
           "499": null
         }
       }
+    },
+    {
+      "id": "investigator-evidence",
+      "group": "lens",
+      "targetRect": [
+        55,
+        75,
+        490,
+        390
+      ],
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-evidence.png",
+      "sourceSha256": "6a3bbde4b8c1cb5ecc3d9b0f7af3c65acccc65e5dc40588b52376f0712768111",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "sourceRect": [
+        114,
+        166,
+        1259,
+        1096
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-evidence.txt",
+      "processing": "Only this independently generated part; explicit alpha bbox plus 1px source safety border; resample to agreed local material rect and place on the common 600x500 canvas. No triangle cut of a whole composite; no colour/alpha painting.",
+      "file": "investigator-evidence.webp",
+      "url": "/art/effects/v8/investigator-evidence.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 239168,
+      "sha256": "e50c9e015b043adc8eb173bff6e397819b156ae39bdacdad2737ce6b29db33e2",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          55,
+          76,
+          545,
+          465
+        ],
+        "alphaAbove128Bounds": [
+          56,
+          77,
+          544,
+          464
+        ],
+        "opaqueVerticalSamples": {
+          "100": [
+            77,
+            442
+          ],
+          "110": [
+            77,
+            445
+          ],
+          "135": [
+            77,
+            437
+          ],
+          "273": [
+            77,
+            443
+          ],
+          "300": [
+            77,
+            453
+          ],
+          "327": [
+            77,
+            443
+          ],
+          "465": [
+            77,
+            437
+          ],
+          "490": [
+            77,
+            445
+          ],
+          "499": [
+            77,
+            440
+          ]
+        }
+      }
+    },
+    {
+      "id": "investigator-magnifier",
+      "group": "lens",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-magnifier.png",
+      "sourceSha256": "f69f93ca360e8348255aa9b7e81659507455c97ccf3e68c46393a2cb03decf71",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-magnifier.txt",
+      "sourceHoleBoundsAlphaAtMost8": [
+        483,
+        269,
+        857,
+        649
+      ],
+      "affineOutputToSource": [
+        2.2,
+        0,
+        10.0,
+        0,
+        2.235294117647059,
+        0.7647058823529278
+      ],
+      "lensCentre": [
+        300,
+        205
+      ],
+      "nominalHoleRadius": 85,
+      "clearRadius82MaxAlpha": 0,
+      "measuredOuterCardinalRadiiAbove128": {
+        "left": 104,
+        "right": 104,
+        "top": 103,
+        "bottom": 101
+      },
+      "processing": "One affine calibrated from actual enclosed source hole. Normalize clear-hole bbox to radius85 so entire R82 is naturally alpha0; no alpha clearing/cut or baked lens contents. Original painted metal retained.",
+      "file": "investigator-magnifier.webp",
+      "url": "/art/effects/v8/investigator-magnifier.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 49756,
+      "sha256": "2a42ff472b23ec5da505d33f9658ba49107918529f5ae242ff5de3a925cc1b57",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          195,
+          101,
+          467,
+          416
+        ],
+        "alphaAbove128Bounds": [
+          196,
+          102,
+          466,
+          415
+        ],
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": [
+            106,
+            303
+          ],
+          "300": [
+            102,
+            306
+          ],
+          "327": [
+            105,
+            302
+          ],
+          "465": [
+            394,
+            402
+          ],
+          "490": null,
+          "499": null
+        }
+      }
+    },
+    {
+      "id": "investigator-lens-glint",
+      "group": "lens",
+      "source": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/originals/investigator-lens-glint.png",
+      "sourceSha256": "6d20370f578f986539e443a9b3da6c72cb924169e6828be2df6d2e745ff9e2b9",
+      "sourceSize": [
+        1374,
+        1145
+      ],
+      "prompt": "artifacts/cinematic-motion-2026-11-12/sources/role-detail-v8/prompts/investigator-lens-glint.txt",
+      "glassLocalScale": 0.9,
+      "maxAlpha": 55,
+      "centralRadius60MaxAlpha": 0,
+      "processing": "Resample whole generated canvas then scale0.9 around calibrated glass centre, apply declared0.22 opacity and clip to calibrated aperture only; no metal or filled glass disk.",
+      "file": "investigator-lens-glint.webp",
+      "url": "/art/effects/v8/investigator-lens-glint.webp",
+      "width": 600,
+      "height": 500,
+      "bytes": 1698,
+      "sha256": "5dc3023f5fdb80cd78b93e705a3ace3b2a7a4a0597c3d72ae544a5797fbb82bf",
+      "hasAlpha": true,
+      "measured": {
+        "alphaAbove8Bounds": [
+          221,
+          125,
+          357,
+          258
+        ],
+        "alphaAbove128Bounds": null,
+        "opaqueVerticalSamples": {
+          "100": null,
+          "110": null,
+          "135": null,
+          "273": null,
+          "300": null,
+          "327": null,
+          "465": null,
+          "490": null,
+          "499": null
+        }
+      }
     }
   ],
   "contracts": {
@@ -646,6 +853,50 @@
             330,
             200
           ]
+        }
+      ]
+    },
+    "lens": {
+      "centre": [
+        300,
+        205
+      ],
+      "requestedOuterRadius": 100,
+      "measuredHoleNormalizeRadius": 85,
+      "guaranteedClearRadius": 82,
+      "requestedHandleEnd": [
+        450,
+        415
+      ],
+      "evidenceTextureFocus": [
+        165,
+        245
+      ],
+      "defaultZ": [
+        "investigator-evidence",
+        "runtime-reprojected-same-evidence",
+        "investigator-lens-glint",
+        "investigator-magnifier"
+      ],
+      "parts": [
+        {
+          "id": "investigator-evidence",
+          "targetRect": [
+            55,
+            75,
+            490,
+            390
+          ]
+        },
+        {
+          "id": "investigator-magnifier",
+          "processingMode": "calibrate-transparent-hole"
+        },
+        {
+          "id": "investigator-lens-glint",
+          "processingMode": "whole-canvas-glint",
+          "glassLocalScale": 0.9,
+          "opacity": 0.22
         }
       ]
     }
