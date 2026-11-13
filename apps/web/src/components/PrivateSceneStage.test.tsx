@@ -61,3 +61,13 @@ test('failed layers stay absent for the playback and audio setting changes do no
 });
 
 test('identity summaries stay in the readable result panel and are never printed across a prop',()=>{const summary='每个夜晚，你可以选择一名玩家并获知其身份，此处仅为身份介绍。';const ui=render(<PrivateSceneContent scene={{...scene,kind:'IDENTITY',themeRoleId:'ravenkeeper',shown:{type:'IDENTITY',roleId:'ravenkeeper',summary}}} view={fixture()} elapsedMs={2400}/>);expect(ui.container.querySelector('.private-scene-result')).toHaveTextContent(summary);expect(ui.container.querySelector('.layered-scene-art')).not.toHaveTextContent(summary);expect(ui.container.querySelector('[data-projection]')).toBeNull();});
+
+
+test('identity playback waits for authoritative confirmation, including the last-player first-night transition',async()=>{
+ const view=fixture();const identity={version:1 as const,id:'identity',kind:'IDENTITY' as const,themeRoleId:'chef',shown:{type:'IDENTITY' as const,roleId:'chef',summary:'身份介绍'}};
+ view.history[0]!.presentation=identity;view.game!.phase='ROLE_REVEAL';view.roleConfirmed=false;view.presentations!.pending=[{historySeq:1,scene:identity}];
+ const props={view,code:'ABCDEF',reading:false,covered:false,onActivityChange:vi.fn(),onHandleTask:vi.fn()};const ui=render(<PrivateSceneStage {...props}/>);
+ act(()=>window.dispatchEvent(new CustomEvent('ravens:replay-private-scene',{detail:1})));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'查看'})).not.toBeInTheDocument();await advance(5000);expect(acknowledgePresentations).not.toHaveBeenCalled();
+ ui.rerender(<PrivateSceneStage {...props} view={{...view,revision:2,roleConfirmed:true,game:{...view.game!,phase:'FIRST_NIGHT'}}}/>);
+ expect(screen.getByRole('dialog')).toBeInTheDocument();await advance(3800);expect(acknowledgePresentations).toHaveBeenCalledTimes(1);
+});
