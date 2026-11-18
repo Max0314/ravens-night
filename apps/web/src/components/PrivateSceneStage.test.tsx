@@ -33,6 +33,17 @@ test('explicit skip ACKs only the art record, while privacy covering pauses with
  const props={view:fixture(),code:'ABCDEF',reading:false,covered:false,onActivityChange:vi.fn(),onHandleTask:vi.fn()};const ui=render(<PrivateSceneStage {...props}/>);expect(screen.getByRole('dialog')).toBeInTheDocument();ui.rerender(<PrivateSceneStage {...props} covered/>);await advance(6000);expect(acknowledgePresentations).not.toHaveBeenCalled();ui.rerender(<PrivateSceneStage {...props}/>);fireEvent.click(screen.getByRole('button',{name:'跳过本段 ×'}));expect(vi.mocked(acknowledgePresentations).mock.calls[0]![1].entries[0]!.disposition).toBe('SKIP');expect(props.onHandleTask).not.toHaveBeenCalled();
 });
 
+test('the role reference defers the scene inbox without losing the pending entry',async()=>{
+ const props={view:fixture(),code:'ABCDEF',reading:true,covered:false,onActivityChange:vi.fn(),onHandleTask:vi.fn()};
+ const ui=render(<PrivateSceneStage {...props} suppressInbox/>);
+ expect(screen.queryByRole('button',{name:'查看'})).toBeNull();
+ expect(screen.queryByRole('dialog')).toBeNull();
+ expect(acknowledgePresentations).not.toHaveBeenCalled();
+ ui.rerender(<PrivateSceneStage {...props}/>);
+ fireEvent.click(screen.getByRole('button',{name:'查看'}));
+ expect(screen.getByRole('dialog')).toBeVisible();
+});
+
 test('return-town pauses a full scene so the nomination and action shortcuts can reveal the board',async()=>{render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);expect(screen.getByRole('dialog')).toBeInTheDocument();act(()=>window.dispatchEvent(new Event('ravens:return-town')));expect(screen.queryByRole('dialog')).not.toBeInTheDocument();await advance(6000);expect(acknowledgePresentations).not.toHaveBeenCalled();expect(screen.getByRole('button',{name:'继续演出'})).toBeVisible();});
 
 test('a higher room sheet pauses the art clock and cannot mark unread information complete',async()=>{render(<PrivateSceneStage view={fixture()} code="ABCDEF" reading={false} covered={false} onActivityChange={vi.fn()} onHandleTask={vi.fn()}/>);await advance(500);const sheet=document.createElement('div');sheet.className='room-sheet-backdrop';await act(async()=>document.body.append(sheet));await advance(7000);expect(acknowledgePresentations).not.toHaveBeenCalled();await act(async()=>sheet.remove());await advance(3500);expect(acknowledgePresentations).toHaveBeenCalledTimes(1);});

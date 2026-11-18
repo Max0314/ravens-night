@@ -17,6 +17,8 @@ pnpm build
 
 ## 已保存的素材和编辑入口
 
+- [局内角色速查图标](artifacts/role-icons-2026-11-18/README.md)：从游戏导航「城镇」右侧的「角色表」打开四类共 22 条公开能力速查。22 枚图标的绘制源、PNG 原件、WebP 重建方式与 32px 灰度对照板均可在仓库查看。
+
 - [声音候选原件、说明与分析](artifacts/audio-candidates-2026-11-12/README.md)：55份完整编号文件，来源/许可与分析工具脚本均在目录中。移动试听副本位于`apps/web/public/audio-candidates/2026-11-12-v1/`；生成脚本`python scripts/build-audition-assets.py`，需FFmpeg/ffprobe。
 - [角色B版及选定稿](artifacts/character-production-b-2026-11-12/README.md)：投毒者、猩红女郎原件在approved；[间谍/处女修订原件](artifacts/character-production-b-revisions-2026-11-12/README.md)在originals。共用引用在`apps/web/src/role-art.ts`，旧A/B原图保留。
 - [送葬者/僧侣修订](artifacts/character-production-b-faces-2026-11-13/README.md)保存新面容与完整道具原件；[三类独立历史框](artifacts/independent-frames-2026-11-13/README.md)、[四类历史纹样框](artifacts/role-type-frames-2026-11-13/README.md)及[暗铜v3](artifacts/role-type-frames-v3-2026-11-13/README.md)保留。当前角色表小图统一使用[内嵌双线圆拱v4](artifacts/role-type-frames-v4-2026-11-13/README.md)，取消分类花纹；首页、本人身份及详情均不带该框，不用于公共玩家的隐藏角色识别。

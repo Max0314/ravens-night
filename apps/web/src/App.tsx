@@ -1,11 +1,13 @@
 import {clearInvitationUrl,selectRoomUrl,readInvitedRoomCode,readSession,saveSession,clearSession,clearSessionFor,readStoredRoom,storedRoomSessions,type StoredSession} from './room-session.js';
 export {readSession,saveSession} from './room-session.js';
 import {getRoomSummary,clearPendingJoin,isDefiniteJoinFailure,readPendingRoomSwitch,finishPendingRoomSwitch,retryPendingRoomSwitch,requestRoomSwitchTicket,switchRoom,type RoomSwitchTicket,type JoinResult} from './api.js';
-import {GuidePriorityBoundary,useGuidePriority} from "./components/guide-priority.js";
+import {GuidePriorityBoundary,useGuidePriority,type RoleReferenceClose} from "./components/guide-priority.js";
+import {RoleReferenceOverlay} from './components/RoleReferenceOverlay.js';
+import {afterRoleReferenceBack,discardRoleReferenceBackAction} from './use-back-layer.js';
 import {RoomSheet} from './components/RoomPage.js';
 import {playerLabel} from '@ravens/ui';
 import type {PlayerSelection} from './use-player-profile.js';
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
 import { ApiError, hasPendingCommand, setSixPlayerEvilCooperation, setRehearsalRole, retryPendingCommand, notifyStorageFailure, acknowledgeStartInfo, cancelNomination, castVote, completeTutorial, confirmRole, createRoom, readCreationIntent, finishCreationIntent, getAuthSession, getPrivateView as fetchPrivateView, getRoom as fetchRoom, resetAccountContext, joinRoom, leaveRoom, login, nominate, readyToEndDay, resetRoom, startRoom, submitGameAction, useDayAbility, setRoomReady, reorderRoomSeats, removeRoomPlayer, recoverRoom, resumeGame, finishDefense, type PrivateView, type RoomPlayMode, type RoomView } from "./api.js";
 import { GameScoreOwner } from "./components/GameScoreOwner.js";
 import {GlobalAudioButton} from "./components/GlobalAudioButton.js";
@@ -67,6 +69,13 @@ function RoleSafeGuide({mode,role,room,onClose}:{mode:GuideMode;role:PrivateView
   return useMemo(()=><GuideOverlay key={locked&&mode==='mine'?'opening-help':'guide'} suspended={suspended} mode={locked&&mode==='mine'?'tutorial':mode} {...(!locked&&role?{ownRole:role}:{})} onClose={onClose}/>,[locked,mode,role,onClose,suspended]);
 }
 
+function RoleReferenceLayer({onClose}:{onClose:()=>void}){
+  const {suspended}=useGuidePriority();
+  return <RoleReferenceOverlay suspended={suspended} onClose={onClose}/>;
+}
+
+type GuideRequest=GuideMode|{kind:'role-reference';scope:string};
+
 function RoomApp() {
   const invitedRoomCode = readInvitedRoomCode();
   const [screen, applyScreen] = useState<Screen>("LOADING");
@@ -102,21 +111,75 @@ function RoomApp() {
   }
   const getRoom=(...args:Parameters<typeof fetchRoom>)=>guard(fetchRoom(...args));
   const getPrivateView=(...args:Parameters<typeof fetchPrivateView>)=>guard(fetchPrivateView(...args));
-  const [guide, setGuide] = useState<GuideMode>();
-  useEffect(()=>{setGuide(undefined);},[room?.roomInstanceId,privateView?.game?.gameId,participantId]);
+  const [requestedGuide,setGuide]=useState<GuideRequest>();
+  const game=privateView?.game??room?.game;
+  const gameScope=JSON.stringify([snapshot.generation,room?.roomInstanceId??privateView?.roomInstanceId??room?.code,
+    room?.game?.gameId??privateView?.game?.gameId??room?.setupId??privateView?.setupId,participantId]);
+  const currentReferenceScope=useRef<string|undefined>(undefined);
+  currentReferenceScope.current=screen==='GAME'&&game?.phase!=='ABORTED'?gameScope:undefined;
+  const referenceTrigger=useRef<HTMLButtonElement|null>(null);
+  const referenceFocus=useRef<{scope:string;reason:'dismiss'|'scene-dismiss';trigger:HTMLButtonElement|null}>(null);
+  const guide=typeof requestedGuide==='string'?requestedGuide
+    :requestedGuide&&requestedGuide.scope===currentReferenceScope.current?'role-reference':undefined;
+  useEffect(()=>{setGuide(current=>typeof current==='string'?undefined:current);},[room?.roomInstanceId,privateView?.game?.gameId,participantId]);
+  useEffect(()=>{
+    if(typeof requestedGuide==='object'&&guide===undefined){
+      discardRoleReferenceBackAction();
+      referenceTrigger.current=null;
+      setGuide(undefined);
+    }
+  },[requestedGuide,guide]);
+
+  function openHandbook(mode:GuideMode){
+    setGuide(current=>typeof current==='object'?current:mode);
+  }
+
+  function openRoleReference(trigger:HTMLButtonElement){
+    afterRoleReferenceBack(()=>{
+      if(currentReferenceScope.current!==gameScope||renderGeneration!==generation.current||screenRef.current!=='GAME'
+        ||document.hidden||!trigger.isConnected||trigger.disabled||trigger.closest('[hidden],[inert]'))return;
+      referenceTrigger.current=trigger;
+      setGuide(current=>current??{kind:'role-reference',scope:gameScope});
+    });
+  }
+
+  function closeGuide(reason:RoleReferenceClose='discard'){
+    if(reason==='discard'){
+      discardRoleReferenceBackAction();
+      referenceFocus.current=null;
+    }
+    if(guide==='role-reference'){
+      discardRoleReferenceBackAction();
+      if(reason==='dismiss'||reason==='scene-dismiss'){
+        referenceFocus.current={scope:gameScope,reason,trigger:referenceTrigger.current};
+      }
+      referenceTrigger.current=null;
+    }
+    setGuide(undefined);
+  }
+
+  useLayoutEffect(()=>{
+    if(guide||!referenceFocus.current)return;
+    const {scope,reason,trigger}=referenceFocus.current;
+    referenceFocus.current=null;
+    if(scope!==currentReferenceScope.current||document.hidden)return;
+    const target=reason==='dismiss'&&trigger?.isConnected&&!trigger.disabled&&!trigger.closest('[hidden],[inert]')?trigger
+      :document.querySelector<HTMLElement>('.player-private:not([hidden]) .ending-page h1, .player-private:not([hidden]) [data-role-reference-town]');
+    if(target?.matches('h1'))target.tabIndex=-1;
+    target?.focus({preventScroll:true});
+  },[guide,gameScope]);
+  useEffect(()=>{
+    const discardQueuedReference=()=>{if(document.hidden)discardRoleReferenceBackAction();};
+    document.addEventListener('visibilitychange',discardQueuedReference);
+    return()=>document.removeEventListener('visibilitychange',discardQueuedReference);
+  },[]);
   const [connectionState, setConnectionState] = useState<ConnectionState>(() => navigator.onLine ? "ONLINE" : "OFFLINE");
   const [backNotice, setBackNotice] = useState(false);
-  const guideRef = useRef<GuideMode | undefined>(undefined);
-
-
   const isOrganizer = Boolean(room?.organizerId && participantId === room.organizerId);
   useEffect(()=>{if(!room||!participantId)return;const stored=readStoredRoom(room.code);if(stored&&stored.participantId===participantId&&(stored.isHost!==(room.organizerId===participantId)||stored.roomInstanceId!==room.roomInstanceId))saveSession({...stored,roomInstanceId:room.roomInstanceId,isHost:room.organizerId===participantId});},[room?.code,room?.roomInstanceId,room?.organizerId,participantId]);
 
   useEffect(() => { void initialize(); }, []);
   useEffect(() => { const unlock = () => { if (effectsAudioEnabled()) void unlockEffectsAudio(); }; document.addEventListener("pointerdown", unlock); return () => document.removeEventListener("pointerdown", unlock); }, []);
-  useEffect(() => { guideRef.current = guide; }, [guide]);
-
-
   useEffect(() => {
     const offline = () => setConnectionState("OFFLINE");
     const online = () => {
@@ -130,7 +193,12 @@ function RoomApp() {
   }, [room?.code]);
 
   useEffect(() => {
-    const back = (event: PopStateEvent) => { entryEpoch.current++;setBusy(false);const next=event.state?.ravensScreen ?? "HOME"; screenRef.current=next;applyScreen(next); };
+    const back = (event: PopStateEvent) => {
+      const next=event.state?.ravensScreen??"HOME";
+      // A dismissed overlay can return to the current screen entry while a command is in flight.
+      if(next===screenRef.current)return;
+      entryEpoch.current++;setBusy(false);screenRef.current=next;applyScreen(next);
+    };
     const account = () => {
       // The SDK also announces its initial identity. Only an actual namespace
       // change needs clearing here; account-context already reloads that case.
@@ -358,8 +426,18 @@ function RoomApp() {
   }
 
   const withStatus = (page: ReactNode) => <><GameScoreOwner screen={screen} room={room}/>{page}{readPendingRoomSwitch()&&!busy?<p className="session-status" role="status">换房结果待确认<button type="button" onClick={()=>void retrySwitch()}>重试原换房操作</button></p>:null}{entryBlocked?<p className="session-status" role="alert">{error}<button type="button" onClick={()=>void initialize()}>重试房间核对</button></p>:null}{storageNotice?<p className="session-status" role="status">浏览器未保存恢复资料，请勿关闭或刷新此页面。</p>:null}{upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
-  const roomTools=!guide&&room&&participantId&&room.game?.phase!=='ROLE_REVEAL'&&privateView?.game?.phase!=='ROLE_REVEAL'?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onHome={returnHome} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={setGuide}/>:null;
-  const withGuide = (page: ReactNode) => withStatus(<GuidePriorityBoundary key={`${screen==='GAME'?'game':'entry'}:${room?.roomInstanceId}:${room?.game?.gameId}:${participantId}`} enabled={screen==='GAME'} mode={guide} game={privateView?.game??room?.game} room={room} onClose={()=>setGuide(undefined)}>{page}{screen!=='HOME'?roomTools:null}{guide ? <div className={`guide-host${screen==="GAME"&&privateView?.game?.phase==="VOTING"?" has-ballot-notice":screen==="GAME"&&hasPrivateTownTask(privateView)?" has-private-action-notice":""}`}><RoleSafeGuide mode={guide} role={privateView?.role} room={room} onClose={() => setGuide(undefined)}/></div> : null}</GuidePriorityBoundary>);
+  const roomTools=!guide&&room&&participantId&&room.game?.phase!=='ROLE_REVEAL'&&privateView?.game?.phase!=='ROLE_REVEAL'?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onHome={returnHome} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={openHandbook}/>:null;
+  const withGuide = (page:ReactNode) => withStatus(
+    <GuidePriorityBoundary key={`${screen==='GAME'?'game':'entry'}:${gameScope}`} enabled={screen==='GAME'}
+      mode={guide} game={game} room={room} onClose={closeGuide}>
+      {page}
+      {screen!=='HOME'?roomTools:null}
+      {guide?<div className={`guide-host${screen==='GAME'&&privateView?.game?.phase==='VOTING'?' has-ballot-notice'
+        :screen==='GAME'&&hasPrivateTownTask(privateView)?' has-private-action-notice':''}`}>
+        {guide==='role-reference'?<RoleReferenceLayer onClose={()=>closeGuide('dismiss')}/>
+          :<RoleSafeGuide mode={guide} role={privateView?.role} room={room} onClose={closeGuide}/>}
+      </div>:null}
+    </GuidePriorityBoundary>);
 
   if (screen === "LOADING") return withStatus(<main className="app-loading" aria-label="正在进入钟楼"><span>☾</span>{connectionState === "OFFLINE" ? <button type="button" onClick={() => void initialize()}>重新连接钟楼</button> : null}</main>);
   if (screen === "LOGIN") return withStatus(<Login onSubmit={submitLogin} busy={busy} {...(error ? { error } : {})} />);
@@ -425,7 +503,7 @@ function RoomApp() {
 
   if (screen === "LOBBY" && room) return withGuide(<Lobby onSetCooperation={enabled=>void roomMutation(code=>setSixPlayerEvilCooperation(code,enabled))} rehearsal={privateView?.rehearsal} rolePending={hasPendingCommand(room.code)} onRetryRole={async()=>{setBusy(true);setError(undefined);try{await guard(retryPendingCommand(room.code));acceptPrivateView(await getPrivateView(room.code));setConnectionState('ONLINE');}catch(e){await handleSessionFailure(e);throw e;}finally{setBusy(false);}}} onChooseRole={async roleId=>{setBusy(true);setError(undefined);try{acceptPrivateView(await guard(setRehearsalRole(room.code,roleId)));setConnectionState('ONLINE');}catch(e){await handleSessionFailure(e);throw e;}finally{setBusy(false);}}} onRetryReorder={async()=>{await guard(retryPendingCommand(room.code));const next=await getRoom(room.code);setRoom(next);return next;}} onRemove={id=>void roomMutation(code=>removeRoomPlayer(code,id))} room={room} {...(participantId ? { participantId } : {})} onReady={(ready) => void roomMutation((code) => setRoomReady(code, ready))} onReorder={async ids=>{setBusy(true);setError(undefined);try{const next=await guard(reorderRoomSeats(room.code,ids));setRoom(next);return next;}catch(e){await handleSessionFailure(e);setError(e instanceof Error?e.message:'排序失败');throw e;}finally{setBusy(false);}}} onBegin={beginTutorial} onLeave={() => void exitRoom()} onTutorial={() => setGuide("tutorial")} onRoles={() => setGuide("roles")} canBegin={isOrganizer} busy={busy} {...(error ? { error } : {})} />);
   if (screen === "TUTORIAL") return withGuide(<Tutorial hideBack {...(room ? {completeCount:room.tutorialCompleteCount ?? 0,total:room.playerCount}:{})} onBack={returnHome} onDone={finishTutorial} busy={busy} {...(error ? { error } : {})} />);
-  if (screen === "GAME") return withGuide(<PlayerGame guideOpen={!!guide} onCloseGuide={()=>setGuide(undefined)} key={`${room?.roomInstanceId}:${room?.game?.gameId}:${participantId}`} {...(privateView ? { view: privateView } : {})} {...(room ? { roomCode: room.code } : {})} {...(room?.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {})} busy={busy} canRestart={privateView?.canRestart ?? false} {...(error ? { error } : {})} onBack={returnHome} onResumeGame={() => void runGameMutation(resumeGame)} onFinishDefense={() => void runGameMutation(finishDefense)} onLeave={() => void exitRoom()} onRefresh={async () => { if (room) { try { acceptPrivateView(await getPrivateView(room.code)); } catch (error) { await handleSessionFailure(error); throw error; } } }} onConfirmStartInfo={infoId=>void runGameMutation(code=>acknowledgeStartInfo(code,infoId))} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats))} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onCancelNomination={() => void runGameMutation(cancelNomination)} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(code => readyToEndDay(code, !privateView?.dayReady))} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={setGuide} />);
+  if (screen === "GAME") return withGuide(<PlayerGame guideOpen={!!guide} roleReferenceOpen={guide==='role-reference'} onOpenRoleReference={openRoleReference} onCloseGuide={closeGuide} key={gameScope} {...(privateView ? { view: privateView } : {})} {...(room ? { roomCode: room.code } : {})} {...(room?.voiceRoomUrl ? { voiceRoomUrl: room.voiceRoomUrl } : {})} busy={busy} canRestart={privateView?.canRestart ?? false} {...(error ? { error } : {})} onBack={returnHome} onResumeGame={() => void runGameMutation(resumeGame)} onFinishDefense={() => void runGameMutation(finishDefense)} onLeave={() => void exitRoom()} onRefresh={async () => { if (room) { try { acceptPrivateView(await getPrivateView(room.code)); } catch (error) { await handleSessionFailure(error); throw error; } } }} onConfirmStartInfo={infoId=>void runGameMutation(code=>acknowledgeStartInfo(code,infoId))} onConfirmRole={() => void runGameMutation(confirmRole)} onSubmitAction={(seats) => void runGameMutation((code) => submitGameAction(code, seats))} onNominate={(seat) => void runGameMutation((code) => nominate(code, seat))} onCancelNomination={() => void runGameMutation(cancelNomination)} onVote={(raised) => void runGameMutation((code) => castVote(code, raised))} onReady={() => void runGameMutation(code => readyToEndDay(code, !privateView?.dayReady))} onUseAbility={(seat) => void runGameMutation((code) => useDayAbility(code, seat))} onRestart={() => void restartGame()} onOpenGuide={openHandbook} />);
   if (screen === "DISPLAY") return withStatus(<Display key={`${room?.roomInstanceId}:${room?.code}`} code={room?.code ?? "------"} onBack={returnHome} onRoomClosed={handleRoomClosed} />);
   const stored = room ? readSession() : undefined;
   const guestSession=readSession(),guestCode=guestSession?.mode==='PLAYER'&&!guestSession.pendingJoin?guestSession.roomCode:undefined;

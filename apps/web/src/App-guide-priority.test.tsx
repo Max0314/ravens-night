@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
-import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {act,cleanup,fireEvent,render,screen,waitFor,within} from '@testing-library/react';
+import {beginnerRoles} from '@ravens/content';
 import {afterEach,beforeEach,expect,test,vi} from 'vitest';
 import {App,saveSession} from './App.js';
 import {getAccount,getAuthSession,getPrivateView,getRoom,type PrivateView,type RoomView} from './api.js';
@@ -31,4 +32,82 @@ test('App wiring yields on a published snapshot and a new game discards the old 
  const restarted=snapshot(3,'next');vi.mocked(getPrivateView).mockResolvedValue(restarted);act(()=>feed.receive!({type:'view',room:restarted.room!,privateView:restarted,serverNow:epoch}));await act(async()=>{});
  expect(screen.queryByRole('button',{name:'返回手册'})).toBeNull();expect(document.contains(book)).toBe(false);expect(screen.queryByRole('dialog',{name:'游戏帮助',hidden:true})).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'打开手册'}));expect(screen.getByRole('button',{name:'查看洗衣妇详情'})).toBeVisible();
+});
+
+test('the town shortcut shows the public catalogue and restores record and list focus',async()=>{
+ render(<App/>);
+ const nav=await screen.findByRole('navigation',{name:'游戏分区'});
+ expect(within(nav).getAllByRole('button').map(button=>button.textContent)).toEqual(['城镇','角色表','记录']);
+ fireEvent.click(within(nav).getByRole('button',{name:'记录'}));
+ const trigger=within(nav).getByRole('button',{name:'角色表'});
+ fireEvent.click(trigger);
+ const card=screen.getByRole('dialog',{name:'角色表'});
+ const rows=within(card).getAllByRole('listitem');
+ expect(rows).toHaveLength(22);
+ expect(within(card).getAllByRole('heading',{level:3}).map(heading=>heading.textContent)).toEqual(['镇民','外来者','爪牙','恶魔']);
+ for(const [index,role] of beginnerRoles.entries()){
+  expect(within(rows[index]!).getByRole('button',{name:role.name})).toHaveAccessibleDescription(role.summary);
+  expect(rows[index]!.querySelector('img')).toHaveAttribute('src',`/assets/ravens/role-icons-v1/${role.id}.webp`);
+ }
+ const missing=rows[0]!.querySelector('img')!;
+ fireEvent.error(missing);
+ expect(rows[0]!.querySelector('.role-reference__missing-icon')).not.toBeNull();
+ expect(rows[0]).toHaveTextContent(beginnerRoles[0]!.summary);
+ expect(card).not.toHaveTextContent('甲');
+ expect(document.querySelector('.player-private')).toHaveAttribute('inert');
+ const role=within(card).getByRole('button',{name:'管家'});
+ const list=card.querySelector<HTMLElement>('[data-role-reference-list]')!;
+ list.scrollTop=300;
+ fireEvent.click(role);
+ expect(within(card).getByRole('article',{name:/管家/})).toHaveTextContent('规则细节');
+ fireEvent.keyDown(window,{key:'Escape'});
+ expect(list.scrollTop).toBe(300);
+ expect(role).toHaveFocus();
+ fireEvent.click(within(card).getByRole('button',{name:'关闭角色表'}));
+ await waitFor(()=>expect(window.history.state?.ravensLayer).toBeUndefined());
+ expect(trigger).toHaveFocus();
+ expect(within(nav).getByRole('button',{name:'记录'})).toHaveAttribute('aria-pressed','true');
+});
+
+test('the same live reference resumes its detail after execution and discards on privacy cover',async()=>{
+ render(<App/>);
+ const nav=await screen.findByRole('navigation',{name:'游戏分区'});
+ fireEvent.click(within(nav).getByRole('button',{name:'角色表'}));
+ const card=await screen.findByRole('dialog',{name:'角色表'});
+ fireEvent.click(within(card).getByRole('button',{name:'共情者'}));
+ const detail=within(card).getByRole('article',{name:/共情者/});
+ detail.scrollTop=120;
+ const execution=snapshot(2,'g',true);
+ vi.mocked(getPrivateView).mockResolvedValue(execution);
+ await waitFor(()=>expect(feed.receive).toBeTypeOf('function'));
+ act(()=>feed.receive!({type:'view',room:execution.room!,privateView:execution,serverNow:epoch}));
+ expect(card).not.toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:'跳过演出'}));
+ fireEvent.click(screen.getByRole('button',{name:'返回角色表'}));
+ await waitFor(()=>expect(screen.getByRole('dialog',{name:'角色表'})).toBe(card));
+ expect(within(card).getByRole('article',{name:/共情者/})).toBe(detail);
+ expect(detail.scrollTop).toBe(120);
+ fireEvent(window,new Event('ravens:cover-private'));
+ expect(screen.queryByRole('dialog',{name:'角色表'})).toBeNull();
+ expect(screen.getByRole('button',{name:'显示私密内容'})).toBeVisible();
+ await waitFor(()=>expect(window.history.state?.ravensLayer).toBeUndefined());
+});
+
+test('after skipping a frozen execution the player can dismiss the saved reference and open it again',async()=>{
+ render(<App/>);
+ const nav=await screen.findByRole('navigation',{name:'游戏分区'});
+ const trigger=within(nav).getByRole('button',{name:'角色表'});
+ fireEvent.click(trigger);
+ const card=await screen.findByRole('dialog',{name:'角色表'});
+ const execution=snapshot(2,'g',true);
+ await waitFor(()=>expect(feed.receive).toBeTypeOf('function'));
+ act(()=>feed.receive!({type:'view',room:execution.room!,privateView:execution,serverNow:epoch}));
+ expect(card).not.toBeVisible();
+ fireEvent.click(screen.getByRole('button',{name:'跳过演出'}));
+ fireEvent.click(screen.getByRole('button',{name:'继续城镇'}));
+ await waitFor(()=>expect(trigger).toBeEnabled());
+ fireEvent.click(trigger);
+ expect(await screen.findByRole('dialog',{name:'角色表'})).not.toBe(card);
+ fireEvent.click(screen.getByRole('button',{name:'关闭角色表'}));
+ await waitFor(()=>expect(window.history.state?.ravensLayer).toBeUndefined());
 });

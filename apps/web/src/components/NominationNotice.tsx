@@ -10,7 +10,7 @@ import {RoomSheet} from './RoomPage.js';
 import './nomination-notice-layout.css';
 
 /** A public ballot companion while a player reads the handbook. Never reads role or butler data. */
-export function NominationNotice({active,view,busy,onVote,onDetails,error,onShoot}:{onShoot?:(seat:number)=>void;active:boolean;view:PrivateView;busy:boolean;onVote:(raised:boolean)=>void;onDetails:()=>void;error?:string|undefined}){
+export function NominationNotice({active,roleReference=false,view,busy,onVote,onDetails,error,onShoot}:{onShoot?:(seat:number)=>void;active:boolean;roleReference?:boolean;view:PrivateView;busy:boolean;onVote:(raised:boolean)=>void;onDetails:()=>void;error?:string|undefined}){
   const game=view.game,ballot=game?.nomination,ref=useRef<HTMLElement>(null);
   const now=useGameClock(game,view.room);
   const [collapsed,setCollapsed]=useState(false),[confirmation,setConfirmation]=useState<string>(),[shooting,setShooting]=useState(false),[target,setTarget]=useState<number>();
@@ -23,7 +23,7 @@ export function NominationNotice({active,view,busy,onVote,onDetails,error,onShoo
     const element=ref.current,root=document.documentElement;
     function measure(){
       const host=document.querySelector<HTMLElement>('.player-private:not([hidden]) .game-page--town'),record=host?.querySelector('.game-content--record');
-      const overlay=document.querySelector('.guide-backdrop,.room-sheet-backdrop,.player-wheel-backdrop');
+      const overlay=roleReference||document.querySelector('.guide-backdrop,.room-sheet-backdrop,.player-wheel-backdrop');
       const protectedRects=record&&!overlay?[...host!.querySelectorAll<HTMLElement>(':scope>.game-tabs,:scope>.room-action-bar')].map(node=>{geometry?.observe(node);return node.getBoundingClientRect();}).filter(rect=>rect.width>0&&rect.height>0):[];
       const top=protectedRects.length?Math.min(...protectedRects.map(rect=>rect.top)):undefined;
       const next=top===undefined?undefined:{bottom:Math.max(12,window.innerHeight-top+8),maxHeight:Math.max(44,top-(window.visualViewport?.offsetTop??0)-16)};
@@ -35,7 +35,7 @@ export function NominationNotice({active,view,busy,onVote,onDetails,error,onShoo
     const geometry=typeof ResizeObserver==='function'?new ResizeObserver(measure):undefined;
     geometry?.observe(element);measure();const changes=new MutationObserver(measure);changes.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden','inert']});window.addEventListener('resize',measure);window.visualViewport?.addEventListener('resize',measure);
     return()=>{geometry?.disconnect();changes.disconnect();window.removeEventListener('resize',measure);window.visualViewport?.removeEventListener('resize',measure);root.style.removeProperty('--nomination-notice-height');root.style.removeProperty('--nomination-record-padding');};
-  },[visible,collapsed,error]);
+  },[visible,collapsed,error,roleReference]);
   if(!visible||!game||!ballot)return null;
   const simultaneous=simultaneousBallotStatus(game,view.room,now);
   const ownSeat=view.participant.seat,mine=game.seats.find(p=>p.seat===ownSeat),locked=simultaneous?simultaneous.locked:ballot.countedSeats?.includes(ownSeat)===true;
@@ -46,7 +46,7 @@ export function NominationNotice({active,view,busy,onVote,onDetails,error,onShoo
   const total=simultaneous?.total??ballot.voterOrder?.length??ballot.votersRequired??game.seats.length;
   const status=locked?simultaneous?'已截止':`已锁票：${ballot.countedVotes?.[ownSeat]?'赞同':'未举手'}`:!submitted?'尚未选择':view.voteRaised?'你已举手':simultaneous?'已选择不举手':'你未举手';
   const vote=(raised:boolean)=>{if(disabled)return;if(raised&&!mine?.alive&&!view.voteRaised)setConfirmation(scope);else{setConfirmation(undefined);onVote(raised);}};
-  return createPortal(<><aside ref={ref} className={`nomination-notice${simultaneous?' nomination-notice--simultaneous':''}${collapsed?' is-collapsed':''}${dock?' nomination-notice--above-navigation':''}`} style={dock?{'--nomination-navigation-bottom':`${dock.bottom}px`,'--nomination-navigation-height':`${dock.maxHeight}px`} as CSSProperties:undefined} aria-label="提名提醒">
+  return createPortal(<><aside ref={ref} className={`nomination-notice${roleReference?' nomination-notice--role-reference':''}${simultaneous?' nomination-notice--simultaneous':''}${collapsed?' is-collapsed':''}${dock?' nomination-notice--above-navigation':''}`} style={dock?{'--nomination-navigation-bottom':`${dock.bottom}px`,'--nomination-navigation-height':`${dock.maxHeight}px`} as CSSProperties:undefined} aria-label="提名提醒">
     <div className="nomination-notice__heading"><FeedbackButton type="button" className="nomination-notice__subject" onClick={onDetails} aria-label={`查看提名：${playerLabel(ballot.nominatorSeat,nominator?.nickname)}提名${playerLabel(ballot.nomineeSeat,nominee?.nickname)}`}><Avatar id={`nomination-${ballot.nominatorSeat}`} name={nominator?.nickname??"玩家"} url={nominator?.avatar}/><strong>{playerLabel(ballot.nominatorSeat,nominator?.nickname)}</strong><span aria-hidden="true">→</span><Avatar id={`nomination-${ballot.nomineeSeat}`} name={nominee?.nickname??"玩家"} url={nominee?.avatar}/><strong>{playerLabel(ballot.nomineeSeat,nominee?.nickname)}</strong></FeedbackButton><FeedbackButton type="button" className="nomination-notice__collapse" aria-expanded={!collapsed} aria-label={collapsed?'展开提名提醒':'收起提名提醒'} onClick={()=>setCollapsed(v=>!v)}>{collapsed?'⌃':'⌄'}</FeedbackButton></div>
     <div className="nomination-notice__summary">{simultaneous?<strong className="ballot-countdown">{simultaneous.timeLabel}</strong>:null}<span>{simultaneous?<>当前 <b>{ballot.votesRaised}</b> 票 · {ballot.threshold}票达标</>:<>赞同 <b>{ballot.votesRaised}/{total}</b>{!collapsed?` · ${ballot.threshold}票达标`:''}</>}</span><span role="status">{status}</span>{simultaneous?<span>已选择 {ballot.votesReceived}/{total} 人</span>:null}</div>
     {!collapsed?<><div className="nomination-notice__controls"><small>{simultaneous?'截止前可改票':now<(ballot.defenseUntil??0)?`辩护剩余 ${Math.max(0,Math.ceil(((ballot.defenseUntil??0)-now)/1000))}秒`:ballot.currentVoterSeat?`正在计 ${playerLabel(ballot.currentVoterSeat,game.seats.find(p=>p.seat===ballot.currentVoterSeat)?.nickname)}`:'等待计票'}</small><FeedbackButton type="button" aria-pressed={submitted&&view.voteRaised===true} disabled={disabled} onClick={()=>vote(true)}>举手</FeedbackButton><FeedbackButton type="button" aria-pressed={submitted&&view.voteRaised===false} disabled={disabled} onClick={()=>vote(false)}>{simultaneous?'不举手':'放下'}</FeedbackButton></div><div className="nomination-notice__actions"><FeedbackButton type="button" onClick={onDetails}>返回城镇</FeedbackButton>{canShoot?<FeedbackButton type="button" disabled={busy||(game.presentationUntil??0)>now} onClick={event=>{event.currentTarget.focus({preventScroll:true});setTarget(undefined);setShooting(true);}}>公开宣称枪击</FeedbackButton>:null}</div>{error?<p className="nomination-notice__error" role="alert">{formatPlayerText(error)}</p>:null}</>:null}

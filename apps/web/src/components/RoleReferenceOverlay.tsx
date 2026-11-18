@@ -1,0 +1,155 @@
+import {beginnerRoles} from '@ravens/content';
+import {FeedbackButton,RolePortrait} from '@ravens/ui';
+import {useId,useLayoutEffect,useRef,useState} from 'react';
+import {rolePlayGuides,roleTypeNames} from '../guide-content.js';
+import {roleArt} from '../role-art.js';
+import {roleIconUrl} from '../role-icons.js';
+import {afterRoleReferenceBack,useBackLayer} from '../use-back-layer.js';
+import './role-reference.css';
+
+const groups=(['TOWNSFOLK','OUTSIDER','MINION','DEMON'] as const).map(type=>({
+  type,roles:beginnerRoles.filter(role=>role.type===type),
+}));
+
+function RoleIcon({id}:{id:string}){
+  const [failed,setFailed]=useState(false);
+  const url=roleIconUrl(id);
+  return <span className="role-reference__icon" aria-hidden="true">{url&&!failed
+    ? <img src={url} width="32" height="32" alt="" loading="lazy" decoding="async" onError={()=>setFailed(true)}/>
+    : <span className="role-reference__missing-icon"/>}</span>;
+}
+
+export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onClose:()=>void}){
+  const [selectedId,setSelectedId]=useState<string>();
+  const selected=beginnerRoles.find(role=>role.id===selectedId);
+  const id=useId(),titleId=`${id}-title`,detailId=`${id}-detail`;
+  const title=useRef<HTMLHeadingElement>(null),detailTitle=useRef<HTMLHeadingElement>(null);
+  const list=useRef<HTMLDivElement>(null),detailScroll=useRef<HTMLDivElement>(null);
+  const entry=useRef<HTMLButtonElement|null>(null),savedFocus=useRef<HTMLElement|null>(null);
+  const listPosition=useRef(0),returning=useRef(false);
+  const dialog=useRef<HTMLElement>(null);
+  const active=useRef(false),previousSelection=useRef<string|undefined>(undefined);
+  const visible=!suspended;
+  useBackLayer(visible,onClose,true);
+  useBackLayer(visible&&!!selected,returnToList,true);
+
+  function returnToList(){
+    returning.current=true;
+    setSelectedId(undefined);
+  }
+
+  useLayoutEffect(()=>{
+    active.current=visible;
+    if(!visible)return;
+    return ()=>{active.current=false;};
+  },[visible]);
+
+  useLayoutEffect(()=>{
+    if(!visible)return;
+    const selectionChanged=previousSelection.current!==selectedId;
+    previousSelection.current=selectedId;
+    if(returning.current){
+      returning.current=false;
+      if(list.current)list.current.scrollTop=listPosition.current;
+      const source=entry.current;
+      if(source?.isConnected){
+        const row=source.getBoundingClientRect(),viewport=list.current?.getBoundingClientRect();
+        if(viewport&&(row.top<viewport.top||row.bottom>viewport.bottom))source.scrollIntoView?.({block:'nearest'});
+        source.focus({preventScroll:true});
+      }else title.current?.focus({preventScroll:true});
+      return;
+    }
+    if(!selectionChanged&&savedFocus.current?.isConnected){
+      savedFocus.current.focus({preventScroll:true});
+    }else if(selected){
+      if(selectionChanged&&detailScroll.current)detailScroll.current.scrollTop=0;
+      detailTitle.current?.focus({preventScroll:true});
+    }else title.current?.focus({preventScroll:true});
+  },[visible,selectedId,selected]);
+
+  function select(roleId:string,source:HTMLButtonElement){
+    afterRoleReferenceBack(()=>{
+      if(!active.current||!source.isConnected||!list.current?.contains(source))return;
+      listPosition.current=list.current.scrollTop;
+      entry.current=source;
+      setSelectedId(current=>current??roleId);
+    });
+  }
+
+  function jump(type:typeof groups[number]['type']){
+    const heading=document.getElementById(`${id}-${type}`);
+    if(!heading||!list.current)return;
+    list.current.scrollTop+=heading.getBoundingClientRect().top-list.current.getBoundingClientRect().top;
+    heading.focus({preventScroll:true});
+  }
+
+  function onTab(event:KeyboardEvent){
+    if(event.key!=='Tab'||!active.current||document.activeElement?.closest('.room-sheet'))return;
+    const targets=[...dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled])')??[],
+      ...document.querySelectorAll<HTMLElement>('.nomination-notice button:not([disabled]),.private-action-notice button:not([disabled])')].filter(
+        target=>!target.closest('[hidden],[inert],[aria-hidden="true"]'));
+    const first=targets[0],last=targets.at(-1);
+    if(!first||!last)return;
+    const current=document.activeElement;
+    if(event.shiftKey&&(current===first||!targets.includes(current as HTMLElement))){
+      event.preventDefault();
+      last.focus();
+    }else if(!event.shiftKey&&(current===last||!targets.includes(current as HTMLElement))){
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  const tabHandler=useRef(onTab);tabHandler.current=onTab;
+  useLayoutEffect(()=>{
+    if(!visible)return;
+    const key=(event:KeyboardEvent)=>tabHandler.current(event);
+    window.addEventListener('keydown',key);
+    return()=>window.removeEventListener('keydown',key);
+  },[visible]);
+
+  const portrait=selected?roleArt(selected.id):undefined;
+  const mechanics=selected?rolePlayGuides[selected.id]?.mechanics:undefined;
+  return <div className={suspended?'guide-suspended':'guide-backdrop role-reference-backdrop'} hidden={suspended} inert={suspended}
+    aria-hidden={suspended||undefined}>
+    <section className="role-reference" ref={dialog} role="dialog" aria-labelledby={titleId}
+      onFocusCapture={event=>{if(event.target instanceof HTMLElement)savedFocus.current=event.target;}}>
+      <header className="role-reference__header">
+        <h2 ref={title} id={titleId} tabIndex={-1}>角色表</h2>
+        {selected?<FeedbackButton type="button" onClick={returnToList}>返回角色表</FeedbackButton>:null}
+        <FeedbackButton type="button" className="role-reference__close" aria-label="关闭角色表" onClick={onClose}>×</FeedbackButton>
+      </header>
+      <div className="role-reference__scroll" data-role-reference-list ref={list} hidden={!!selected} inert={!!selected}>
+        <nav aria-label="跳到角色分类" className="role-reference__jumps">
+          {groups.map(({type,roles})=><FeedbackButton type="button" key={type} onClick={()=>jump(type)}>
+            {roleTypeNames[type]}<small>{roles.length}</small>
+          </FeedbackButton>)}
+        </nav>
+        {groups.map(({type,roles})=><section key={type} aria-labelledby={`${id}-${type}`}>
+          <h3 data-public-role-type={type} id={`${id}-${type}`} tabIndex={-1}>{roleTypeNames[type]}</h3>
+          <ul>{roles.map(role=>{
+            const name=`${id}-${role.id}`;
+            return <li key={role.id}><FeedbackButton type="button" className="role-reference__row"
+              aria-labelledby={name} aria-describedby={`${name}-ability`}
+              onClick={event=>select(role.id,event.currentTarget)}>
+              <RoleIcon id={role.id}/>
+              <span>
+                <strong id={name}>{role.name}</strong>
+                <span className="role-reference__summary" id={`${name}-ability`}>{role.summary}</span>
+              </span>
+            </FeedbackButton></li>;
+          })}</ul>
+        </section>)}
+      </div>
+      {selected&&portrait?<article className="role-reference__scroll role-reference__detail" aria-labelledby={detailId} ref={detailScroll}>
+        <h3 id={detailId} ref={detailTitle} tabIndex={-1}>{selected.name}
+          <small data-public-role-type={selected.type}>{roleTypeNames[selected.type]}</small>
+        </h3>
+        <h4>能力</h4><p>{selected.summary}</p>
+        {mechanics?<><h4>规则细节</h4><p>{mechanics}</p></>:null}
+        <RolePortrait className="role-reference__portrait" label={`${selected.name}角色立绘`}
+          url={portrait.portraitUrl} srcSet={portrait.portraitSrcSet} sizes="(max-width: 480px) 90vw, 360px" position="50% 0%"/>
+      </article>:null}
+    </section>
+  </div>;
+}
