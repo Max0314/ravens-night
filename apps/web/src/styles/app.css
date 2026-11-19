@@ -86,7 +86,7 @@ a { color: inherit; }
 .form-panel form { display: grid; gap: 22px; }
 .form-row { display: grid; grid-template-columns: minmax(0,1fr) 150px; gap: 13px; }
 .form-panel label > small { color: #808b95; line-height: 1.55; }
-.form-panel input[aria-label="六位邀请码"] { font-family: var(--rn-mono); font-size: 1.5rem; letter-spacing: .29em; text-align: center; text-transform: uppercase; }
+.form-panel input[aria-label="房间邀请码"] { font-family: var(--rn-mono); font-size: 1.5rem; letter-spacing: .29em; text-align: center; text-transform: uppercase; }
 .form-panel--create { width: min(100%, 720px); }
 .mode-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .mode-choice button { min-height: 108px; padding: 15px; border: 1px solid var(--rn-border-soft); border-radius: 9px; background: rgba(255,255,255,.018); color: var(--rn-parchment); cursor: pointer; text-align: center; transition: border-color .18s ease, background .18s ease, transform .18s ease; }

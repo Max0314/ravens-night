@@ -10,6 +10,7 @@ Fribench正式环境以[统一部署记录](../docs/unified-deployment.md)为准
 
 - `APP_DOMAIN`：最终子域名。
 - `ACCESS_PASSWORD`：朋友进入站点时使用的访问口令。
+- `ROOM_CREATE_PASSCODE`：可选的房主开房口令。启用时清空 `ACCESS_PASSWORD`，让朋友只凭房间邀请码或邀请链接进入。口令仅在服务端环境配置。
 - `POSTGRES_PASSWORD`：数据库随机长密码。
 - `SESSION_SECRET`：至少 32 字节随机值。
 - `DATA_ENCRYPTION_KEY`：32 字节随机值的 Base64 编码。

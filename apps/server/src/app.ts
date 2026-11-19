@@ -25,16 +25,22 @@ type RoomRequest = { Params: { code: string; id?: string }; Body: Record<string,
 const string = { type: "string", maxLength: 500 };
 const tokenProperty = { token: { type: "string", maxLength: 256 }, organizerToken: { type: "string", maxLength: 256 } };
 function bodySchema(properties: Record<string, unknown>, required: string[] = []) { return { type: "object", properties: { ...tokenProperty, ...properties }, required, additionalProperties: false }; }
+const ROOM_CREATE_ACCESS_COOKIE = "ravens_room_create_access";
+const ROOM_CREATE_ACCESS_GRANT = "ravens:room-create-access:v1";
+const roomCreateAccessCookie = () => ({ ...cookieOptions("/"), maxAge: 400 * 24 * 60 * 60 });
 
-export function buildApp(options: { resolveAccount?:(header:string|undefined)=>Promise<Account|null>;accessPassword?: string; repository?: RoomRepository; now?: () => number; presentation?: boolean; timers?: boolean } = {}) {
+export function buildApp(options: { resolveAccount?:(header:string|undefined)=>Promise<Account|null>;accessPassword?: string; roomCreatePasscode?: string; repository?: RoomRepository; now?: () => number; presentation?: boolean; timers?: boolean } = {}) {
   if (process.env.NODE_ENV === "production" && (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32)) throw new Error("Production requires a SESSION_SECRET of at least 32 characters");
   if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL && !process.env.DATA_ENCRYPTION_KEY) throw new Error("Production persistence requires DATA_ENCRYPTION_KEY");
+  const accessPassword = options.accessPassword ?? process.env.ACCESS_PASSWORD;
+  const roomCreatePasscode = (options.roomCreatePasscode ?? process.env.ROOM_CREATE_PASSCODE)?.trim();
+  if (roomCreatePasscode && accessPassword) throw new Error("ROOM_CREATE_PASSCODE requires ACCESS_PASSWORD to be empty so guests can join");
+  if (roomCreatePasscode && roomCreatePasscode.length > 128) throw new Error("ROOM_CREATE_PASSCODE must be at most 128 characters");
   const app = Fastify({
     logger: process.env.NODE_ENV === "test" ? false : { redact: ["req.headers.cookie", "req.headers.authorization"], serializers: { req: (req) => ({ method: req.method, url: String(req.url).split("?")[0]!, remoteAddress: req.ip }) } },
     ajv: { customOptions: { coerceTypes: false, removeAdditional: false } },
     bodyLimit: 16_384,
   });
-  const accessPassword = options.accessPassword ?? process.env.ACCESS_PASSWORD;
   const repository = options.repository ?? (process.env.DATABASE_URL ? new PostgresRoomRepository(process.env.DATABASE_URL) : undefined);
   const sessionSecret = process.env.SESSION_SECRET ?? "development-only-session-secret-change-me";
   const runtime = new LiveRoomRuntime(repository, {botSecret:sessionSecret, ...(options.now ? { now: options.now } : {}), presentation: options.presentation ?? process.env.NODE_ENV !== "test" });
@@ -87,7 +93,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     const pathname = request.url.split("?")[0]!;
     const roomApi=/^\/api\/rooms(?:\/|$)/.test(pathname)||pathname==='/api/room-create-ticket';
     if(roomApi&&!request.headers.upgrade&&!(request.method==='GET'&&/^\/api\/rooms\/[^/]+\/summary$/.test(pathname))&&request.headers['x-ravens-protocol']!=='7')return reply.code(426).send({errorCode:'CLIENT_UPGRADE_REQUIRED',error:'游戏已更新，请刷新页面后继续',refreshRequired:true});
-    if (/\/auth\/login$|\/join$|\/recover$|\/switch-ticket$|\/presentations\/ack$/.test(pathname) && request.method === "POST") {
+    if (/\/auth\/login$|\/room-create-access$|\/join$|\/recover$|\/switch-ticket$|\/presentations\/ack$/.test(pathname) && request.method === "POST") {
       const key = `${request.ip}:${pathname.split("/").at(-1)}`;
       const current = attempts.get(key);
       const entry = current && current.reset > now() ? current : { count: 0, reset: now() + 60_000 };
@@ -174,6 +180,24 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       context: request.body as unknown as RoomCommandContext, ...(accountId ? { accountId } : {}) };
   }
   const creationRate=(key:string)=>{const old=attempts.get('create:'+key),entry=old&&old.reset>now()?old:{count:0,reset:now()+60000};entry.count++;attempts.set('create:'+key,entry);if(entry.count>10)throw new RoomError('CREATE_RATE_LIMIT','创建操作过于频繁，请稍后再试',429);};
+  const hasRoomCreateGrant = (request: FastifyRequest) =>
+    signedCookie(request, ROOM_CREATE_ACCESS_COOKIE) === ROOM_CREATE_ACCESS_GRANT;
+  app.get("/api/room-create-access", async (request, reply) => {
+    if (!roomCreatePasscode) return { status: "OPEN" };
+    if (!hasRoomCreateGrant(request)) return { status: "PASSCODE_REQUIRED" };
+    reply.setCookie(ROOM_CREATE_ACCESS_COOKIE, ROOM_CREATE_ACCESS_GRANT, roomCreateAccessCookie());
+    return { status: "GRANTED" };
+  });
+  app.post<{ Body: { passcode: string } }>("/api/room-create-access", {
+    schema: { body: bodySchema({ passcode: { type: "string", minLength: 1, maxLength: 128 } }, ["passcode"]) },
+  }, async (request, reply) => {
+    if (!roomCreatePasscode) return { status: "OPEN" };
+    if (!hasRoomCreateGrant(request) && !secureEqual(request.body.passcode.trim(), roomCreatePasscode)) {
+      throw new RoomError("ROOM_CREATE_PASSCODE_INVALID", "开房口令不正确，请核对后重试", 403);
+    }
+    reply.setCookie(ROOM_CREATE_ACCESS_COOKIE, ROOM_CREATE_ACCESS_GRANT, roomCreateAccessCookie());
+    return { status: "GRANTED" };
+  });
   app.get('/api/room-create-ticket',async(request,reply)=>{
     const account=accounts.get(request);let context=signedCookie(request,'ravens_create_context');if(!context){context=randomBytes(32).toString('base64url');reply.setCookie('ravens_create_context',context,{...cookieOptions('/'),sameSite:'lax'});}
     const kind=account?'ACCOUNT' as const:'GUEST' as const,owner=creationOwner(sessionSecret,kind,account?.sub??context);creationRate(owner);return issueCreationTicket(sessionSecret,kind,owner,now());
@@ -201,12 +225,19 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       }
       if(owner!==ticket.actorDigest||ticket.actorKind!==(account?'ACCOUNT':'GUEST'))throw new RoomError('CREATE_CONTEXT_CHANGED','创建身份已变化，请重新发起创建');
       if(ticket.expiresAt<=now())throw new RoomError('CREATE_TICKET_EXPIRED','创建凭据已过期，请重新创建',410);
+      if (roomCreatePasscode && !hasRoomCreateGrant(request)) {
+        throw new RoomError("ROOM_CREATE_ACCESS_REQUIRED", "请先输入开房口令", 403);
+      }
       creationRate(ticket.actorDigest);
       const created=rooms.create(request.body.playerCount,name,mode,voice,request.body.sixPlayerEvilCooperation===true),room=rooms.find(created.room.code),organizerToken=creationOrganizer(sessionSecret,key,room.roomInstanceId);room.organizerTokenHash=hashOpaqueToken(organizerToken);room.metadata={...room.metadata,creationKey:key};if(account)room.organizerAccountId=account.sub;
       rooms.putCreationRequest({key,actorDigest:ticket.actorDigest,fingerprint,payload:{actorKind:ticket.actorKind,code:room.code,roomInstanceId:room.roomInstanceId,createdAt:now()},expiresAt:now()+86400000});
       return{code:room.code,organizerToken,creationId:id};
     });
-    reply.setCookie('ravens_organizer',result.organizerToken,cookieOptions(roomPath(result.code)));if(guestContext)reply.setCookie('ravens_create_context',guestContext,{...cookieOptions('/'),sameSite:'lax'});return reply.code(201).send(result);
+    reply.setCookie('ravens_organizer',result.organizerToken,cookieOptions(roomPath(result.code)));if(guestContext)reply.setCookie('ravens_create_context',guestContext,{...cookieOptions('/'),sameSite:'lax'});
+    if (roomCreatePasscode && hasRoomCreateGrant(request)) {
+      reply.setCookie(ROOM_CREATE_ACCESS_COOKIE, ROOM_CREATE_ACCESS_GRANT, roomCreateAccessCookie());
+    }
+    return reply.code(201).send(result);
   });
   app.get<RoomRequest>('/api/rooms/:code/summary',async request=>{const room=runtime.service.find(request.params.code),roster=activePlayers(room),canJoin=room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);return{code:room.code,roomInstanceId:room.roomInstanceId,state:room.state,playerCount:room.playerCount,sixPlayerEvilCooperation:runtime.service.publicView(room.code).sixPlayerEvilCooperation,rulesSummary:runtime.service.publicView(room.code).rulesSummary,activeHumanCount:humans(room).length,botCount:bots(room).length,occupiedAvatars:[...new Set(roster.flatMap(p=>p.avatarSnapshot?[avatarSelectionUrl(p.avatarSnapshot)]:[]))],canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};});
   const expectedControlVersion={type:'integer',minimum:0};

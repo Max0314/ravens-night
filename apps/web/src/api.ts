@@ -148,6 +148,20 @@ export function previewGuest(code:string){return request<GuestPreview>(`/api/roo
 export function claimGuest(preview:GuestPreview){return request<{claimed:true;code:string;id:string}>(`/api/rooms/${preview.code}/account/guest-claim`,{method:'POST',body:JSON.stringify({previewToken:preview.previewToken,confirm:true})});}
 export function login(accessPassword: string) { return request<{ authorized: boolean }>("/api/auth/login", { method: "POST", body: JSON.stringify({ accessPassword }) }); }
 
+type RoomCreateAccess = { status: "OPEN" | "PASSCODE_REQUIRED" | "GRANTED" };
+export async function getRoomCreateAccess() {
+  const access = await request<RoomCreateAccess>("/api/room-create-access");
+  if (!["OPEN", "PASSCODE_REQUIRED", "GRANTED"].includes(access?.status)) {
+    throw new Error("暂时无法确认开房资格，请重试");
+  }
+  return access;
+}
+export function verifyRoomCreatePasscode(passcode: string) {
+  return request<RoomCreateAccess>("/api/room-create-access", {
+    method: "POST", body: JSON.stringify({ passcode }),
+  });
+}
+
 export function notifyStorageFailure(){window.dispatchEvent(new Event('ravens:storage-warning'));}
 export interface CreationIntent { sixPlayerEvilCooperation?:boolean;creationVersion?:2;avatar?:string|null;expectedProfileRevision?:number;commandId:string;createTicket:string;playerCount:number;organizerName:string;playMode?:RoomPlayMode;voiceRoomUrl?:string }
 const creationKey=()=>`ravens_creation:${roomSessionKey()}`;

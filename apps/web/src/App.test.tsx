@@ -24,7 +24,7 @@ test("the first screen gives an authorized newcomer one clear way to join", asyn
   expect(screen.getByRole("link", { name: "渝公网安备 50010502504754号" })).toHaveAttribute("href", "https://beian.mps.gov.cn/#/query/webSearch?code=50010502504754");
   fireEvent.click(screen.getByRole("button", { name: "加入房间" }));
   expect(screen.getByRole("heading", { name: "加入房间" })).toBeVisible();
-  expect(screen.getByLabelText("六位邀请码")).toHaveAttribute("inputMode", "text");
+  expect(screen.getByLabelText("房间邀请码")).toHaveAttribute("inputMode", "text");
 });
 
 test("the initial account notification cannot return a loaded home screen to the moon loader",async()=>{
@@ -123,7 +123,7 @@ test("a scanned invitation opens the join form with its room code filled in", as
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
   expect(await screen.findByRole("heading", { name: "加入房间" })).toBeVisible();
-  expect(screen.getByLabelText("六位邀请码")).toHaveValue("C8TME8");
+  expect(screen.getByLabelText("房间邀请码")).toHaveValue("C8TME8");
 });
 
 test("an unauthorized visitor sees the access-password login", async () => {

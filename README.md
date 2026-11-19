@@ -15,6 +15,8 @@ pnpm build
 
 前端开发：`pnpm --filter @ravens/web dev`。后端打包：`pnpm --filter @ravens/server build`，运行：`node apps/server/dist/index.cjs`，默认端口3000。按实际环境配置环境变量；使用PostgreSQL或Fribench账号时参考`.env.example`与统一部署记录，真实环境配置在各机器安全获取，不在Git中。检查使用`pnpm typecheck`，测试按改动选择现有Vitest用例；声音目录另有`node --test scripts/audio-audition*.test.mjs`。
 
+试卖模式在应用服务端设置 `ROOM_CREATE_PASSCODE`，并让 `ACCESS_PASSWORD` 为空。未设置开房口令时仍可直接创建。创建页可预览 5–12 人的基础角色构成。验码后本浏览器可继续开房，授权无业务到期时间、不限次数。换码后，新浏览器用新口令，已经取得的授权、房间和邀请链接仍然有效。浏览器凭据按 400 天保存并在访问创建页或开房时续存，实际保存时间取决于浏览器。凭据被清除、换浏览器，或服务端更换签名密钥后，需要重新验码。
+
 ## 已保存的素材和编辑入口
 
 - [局内角色速查图标](artifacts/role-icons-2026-11-18/README.md)：从游戏导航「城镇」右侧的「角色表」打开四类共 22 条公开能力速查。22 枚图标的绘制源、PNG 原件、WebP 重建方式与 32px 灰度对照板均可在仓库查看。
