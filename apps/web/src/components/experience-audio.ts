@@ -57,7 +57,7 @@ export const reportAudioStatus=report;
 export function getEffectsAudioContext(){return ctx;}
 export function effectsPreviewActive(){return !!previewAudio;}
 /** Poll by the isolated score owner. Loading/opening secret UI alone cannot duck anything. */
-export function scoreDuckingActive(){return !!(!previewAudio&&effectsAudioEnabled()&&effectsAudioVolume()>0&&ctx?.state==='running'&&!document.hidden&&[...sources.values()].some(s=>s.scope!=='ui'&&s.scope!=='book'&&s.at<=ctx!.currentTime&&s.end>ctx!.currentTime&&(s.scope!=='private'||privateAudioAllowed())));}
+export function scoreDuckingActive(){return !!(!previewAudio&&effectsAudioEnabled()&&effectsAudioVolume()>0&&ctx?.state==='running'&&!document.hidden&&[...sources.values()].some(s=>s.scope!=='ui'&&s.scope!=='book'&&!s.sample.startsWith('v10:control-')&&s.at<=ctx!.currentTime&&s.end>ctx!.currentTime&&(s.scope!=='private'||privateAudioAllowed())));}
 export async function unlockEffectsAudio(){
  if(typeof window==='undefined')return;
  const Audio=window.AudioContext??(window as typeof window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
@@ -84,7 +84,7 @@ function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve()
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
 function load(sample:string):Promise<AudioBuffer>{
  const old=buffers.get(sample);if(old){buffers.delete(sample);buffers.set(sample,old);return old;}
- const prefix=sample.match(/^(v[13456789]):/),version=prefix?.[1]??'v2',name=sample.replace(/^v[13456789]:/,'');
+ const prefix=sample.match(/^(v(?:[13456789]|10)):/),version=prefix?.[1]??'v2',name=prefix?sample.slice(prefix[0].length):sample;
  const candidate=/^candidate:(L02|L03|L04|A03)$/.exec(sample)?.[1],score=/^score:(M03|M22)$/.exec(sample)?.[1],ambient=/^ambient:(dawn-door)$/.exec(sample)?.[1],url=ambient?'/audio/ambience/v1/'+ambient+'.mp3':score?'/audio/music/v2/scene-'+score.toLowerCase()+'.mp3':candidate?'/audio-candidates/2026-11-12-v1/'+candidate+'.mp3':'/audio/effects/'+version+'/'+name+'.mp3';
  const pending=(async()=>{await takeLoadSlot();try{const response=await fetch(url);if(!response.ok)throw Error('missing audio');const data=await response.arrayBuffer();if(!ctx)throw Error('locked');const buffer=await ctx.decodeAudioData(data);sizes.set(sample,(buffer.length??0)*(buffer.numberOfChannels??1)*4);let bytes=[...sizes.values()].reduce((a,b)=>a+b,0);for(const [key]of buffers){if(bytes<=24*1024*1024)break;if(key===sample||!sizes.has(key)||[...sources.values()].some(s=>s.sample===key))continue;bytes-=sizes.get(key)??0;sizes.delete(key);buffers.delete(key);}return buffer;}finally{releaseLoadSlot();}})().catch(error=>{if(buffers.get(sample)===pending){buffers.delete(sample);sizes.delete(sample);}report('部分音效未加载，请检查连接后重试');throw error;});buffers.set(sample,pending);return pending;
 }
@@ -108,6 +108,16 @@ if(typeof window!=='undefined'){
  window.addEventListener('ravens:participation-audio',()=>{if(!previewPrivateAllowed())silenceEffects('private');});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)silenceEffects();});
  window.addEventListener('ravens:ui-feedback',event=>{const detail=(event as CustomEvent<SemanticCue|{cue:SemanticCue;scope:'ui'|'private'}>).detail,cue=typeof detail==='string'?detail:detail.cue;if(['press','select','open','close','success','error'].includes(cue))playSemantic(cue,{scope:typeof detail==='string'?'ui':detail.scope});});
+ // Raw buttons share the same short recording as FeedbackButton. Dedicated surfaces own their cues.
+ document.addEventListener('click',event=>{
+  if(!event.isTrusted||event.defaultPrevented)return;
+  const path=event.composedPath().filter((item):item is Element=>item instanceof Element);
+  const control=path.find(item=>item.matches('button,summary'));
+  if(!control||control.matches(':disabled,[aria-disabled="true"],[data-ui-feedback]'))return;
+  if(path.some(item=>item.matches('[inert],.detent-wheel,.effects-lab__controls'))||
+     control.matches('button')&&path.some(item=>item.matches('.guide-sheet')))return;
+  playSemantic(control.hasAttribute('aria-pressed')?'select':'press',{scope:path.some(item=>item.hasAttribute('data-private-feedback'))?'private':'ui'});
+ });
 }
 function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,rate=1,volume=.6,offset=0,lateWindow=100,bell=false,onStarted?:(buffer:AudioBuffer,when:number,source:AudioBufferSourceNode)=>void){
  const audio=ctx;if(!audio||!allowed(scope,sample)||delay<0)return;
@@ -121,24 +131,36 @@ function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,ra
 /** Call only after the owner has checked its generation, permission and clock. */
 function startBuffer(audio:AudioContext,buffer:AudioBuffer,id:string,sample:string,at:number,scope:Scope,rate=1,volume=.6,offset=0,bell=false){
   const group=(sample:string)=>sample.startsWith('score:')?'music':/^(v6:washer-whisper|hurt-|cough-|butler-voice)/.test(sample)?'voice':'material',kind=group(sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s.sample)===kind&&s.at<=at&&s.end>at);if(scope!=='nomination'&&own.length>=(scope==='ui'||scope==='book'||kind!=='material'?1:3))stop(own[0]![0],own[0]![1]);
-  if(!bell&&!sample.startsWith('ambient:')&&scope!=='ui'&&scope!=='book')for(const row of sources.values())if(row.bell){const duckAt=Math.max(at,audio.currentTime);row.gain.gain.setValueAtTime(row.gain.gain.value,duckAt);row.gain.gain.linearRampToValueAtTime(.035,duckAt+.04);row.gain.gain.linearRampToValueAtTime(.2,duckAt+.34);}
+  if(!bell&&!sample.startsWith('ambient:')&&!sample.startsWith('v10:control-')&&scope!=='ui'&&scope!=='book')for(const row of sources.values())if(row.bell){const duckAt=Math.max(at,audio.currentTime);row.gain.gain.setValueAtTime(row.gain.gain.value,duckAt);row.gain.gain.linearRampToValueAtTime(.035,duckAt+.04);row.gain.gain.linearRampToValueAtTime(.2,duckAt+.34);}
   const source=audio.createBufferSource(),gain=audio.createGain(),when=Math.max(audio.currentTime,at);source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(sampleDestination(audio,sample));source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};try{source.start(when,offset);}catch(error){source.disconnect();gain.disconnect();throw error;}sources.set(source,{id,scope,at:when,sample,gain,bell,end:when+(buffer.duration-offset)/rate});return{source,when};
 }
 const hash=(id:string)=>[...id].reduce((v,c)=>(Math.imul(v,31)+c.charCodeAt(0))>>>0,0);
-let previousPrivateUi='';
+const setupRatchets=['v10:setup-ratchet-1','v10:setup-ratchet-2','v10:setup-ratchet-3'] as const;
+const setupBuffers=new Map<string,AudioBuffer>();
+let setupWarmup:Promise<void>|undefined;
+export function prepareSetupDetents(){
+ if(!ctx||!effectsAudioEnabled()||setupWarmup||setupBuffers.size===setupRatchets.length)return;
+ setupWarmup=Promise.allSettled(setupRatchets.filter(sample=>!setupBuffers.has(sample)).map(async sample=>setupBuffers.set(sample,await load(sample))))
+  .then(()=>{setupWarmup=undefined;});
+}
 export function playSetupDetent(){
- const audio=ctx;if(!audio||audio.state!=='running'||!allowed('ui'))return;
- const at=audio.currentTime, spring=audio.createOscillator(), strike=audio.createGain();
- spring.type='triangle';spring.frequency.setValueAtTime(1250,at);spring.frequency.exponentialRampToValueAtTime(220,at+.032);
- strike.gain.setValueAtTime(.12,at);strike.gain.exponentialRampToValueAtTime(.001,at+.036);
- spring.connect(strike);strike.connect(destination(audio));spring.onended=()=>{spring.disconnect();strike.disconnect();};spring.start(at);spring.stop(at+.038);
+ const audio=ctx;if(!audio||!allowed('ui'))return;
+ const sequence=++semanticSeq;
+ const sample=setupRatchets[(sequence-1)%setupRatchets.length]!;
+ const ready=setupBuffers.has(sample)?sample:setupRatchets.find(key=>setupBuffers.has(key));
+ if(ready)startBuffer(audio,setupBuffers.get(ready)!,'ui:setup',ready,audio.currentTime,'ui',1,.95);
+ else prepareSetupDetents();
 }
 export function playSemantic(cue:SemanticCue,options:{variant?:number;scope?:'ui'|'book'|'private'}={}){
- // Generic acceptance sounds must not add a chime before a material scene.
- if(cue==='press'||cue==='select'||cue==='success')return;
- const scope=options.scope??(cue.startsWith('paper-')?'book':'ui');if(!allowed(scope))return;if(scope==='private'){if(previousPrivateUi)cancelEventAudio(previousPrivateUi);}else cancelSemantic(scope);const variant=options.variant??semanticSeq;
- const sample=cue==='paper-turn'?'paper-turn-'+(1+variant%4):cue==='paper-lift'?'paper-lift-'+(1+variant%2):'ui-'+cue;
- const id=scope+':ui:'+(++semanticSeq);if(scope==='private')previousPrivateUi=id;sampleAt(id,cue,sample,0,scope,1,scope==='book'?.65:.16,0,200);
+ if(cue==='success')return; // Accepted actions already have their own game cues.
+ const scope=options.scope??(cue.startsWith('paper-')?'book':'ui');
+ if(!allowed(scope)||effectsAudioVolume()===0)return;
+ const variant=options.variant??semanticSeq;
+ const sample=cue==='paper-turn'?'paper-turn-'+(1+variant%4):cue==='paper-lift'?'paper-lift-'+(1+variant%2)
+  :cue==='open'?'v10:control-open':cue==='close'||cue==='error'?'v10:control-close':'v10:control-tap';
+ const id=scope+':ui';
+ cancelEventAudio(id);
+ sampleAt(id,cue+':'+(++semanticSeq),sample,0,scope,1,scope==='book'?.65:cue==='press'||cue==='select'?.26:.31,0,scope==='book'?200:110);
 }
 let currentBell='';
 const publicRanges=new Map<string,{key:number|string;at:number;generation:number}>();

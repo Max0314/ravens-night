@@ -1,9 +1,10 @@
 import { canDealRole, compositionIssue, compositionKeys, distributionFor, isDefaultComposition } from '@ravens/content';
 import type { BaseComposition, RoomKind } from '@ravens/contracts';
 import { Button, FeedbackButton } from '@ravens/ui';
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { readCreationIntent, type RoomPlayMode } from '../api.js';
 import { DetentWheel } from '../components/DetentWheel.js';
+import { prepareSetupDetents } from '../components/experience-audio.js';
 import { ParticipationAudioChoice } from '../components/ParticipationAudioChoice.js';
 import { PlayerProfileEditor } from '../components/PlayerProfileEditor.js';
 import { OperationStatus, RoomPageShell } from '../components/RoomPage.js';
@@ -28,6 +29,12 @@ const categories = {
 } as const;
 
 export function Create({ onBack, onSubmit, kind = 'STANDARD', allowCustom=true, busy, error }: CreateProps) {
+  useEffect(()=>{
+    prepareSetupDetents();
+    window.addEventListener('ravens-effects-unlocked',prepareSetupDetents);
+    window.addEventListener('ravens-effects-audio',prepareSetupDetents);
+    return()=>{window.removeEventListener('ravens-effects-unlocked',prepareSetupDetents);window.removeEventListener('ravens-effects-audio',prepareSetupDetents);};
+  },[]);
   const saved = readCreationIntent();
   const frozen = saved ? {
     nickname:saved.organizerName,avatar:saved.avatar??null,
@@ -85,7 +92,7 @@ export function Create({ onBack, onSubmit, kind = 'STANDARD', allowCustom=true, 
           <header><strong>基础构成</strong>{allowCustom&&<button type="button" disabled={useStandard} onClick={()=>setDrafts(previous=>({...previous,[count]:distributionFor(count)}))}>恢复默认</button>}</header>
           <div className="create-room__slots">{compositionKeys.map(key=>{
             const item=categories[key];
-            return <div className="create-room__slot" key={`${count}:${key}`}>
+            return <div className={`create-room__slot create-room__slot--${key}`} key={`${count}:${key}`}>
               <span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={item.path}/></svg>{item.label}</span>
               {allowCustom?<DetentWheel vertical label={`${item.label}人数`} min={0} max={Math.min(count,item.max)} value={composition[key]} disabled={locked||Boolean(saved)}
                 onPreview={value=>setPreview(value===undefined?undefined:{key,value})}

@@ -10,7 +10,18 @@
 .compact-lobby>header .global-audio-button{font-size:20px;color:#dcc498;}
 .debug-profile-actions{display:grid;gap:6px;margin-top:12px;}
 .debug-profile-actions>button{min-height:44px;border:1px solid #ad905351;border-radius:8px;background:#2b2317;padding:7px 10px;text-align:left;}
+.debug-profile-actions{margin:0 0 12px;}
+.lobby-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px;}
+.lobby-preview button{min-height:46px;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #a98854a0;border-radius:7px;background:linear-gradient(145deg,#3a2d1b,#1d1710);color:#f0d69d;box-shadow:inset 0 0 0 2px #15120b73;font-size:14px;}
+.lobby-preview button>span{font-size:19px;color:#cfaa64;}
+.lobby-preview button:active:not(:disabled){background:#523f23;}
+.lobby-preview button:disabled{opacity:.55;}
+.lobby-preview small{grid-column:1/-1;color:#ccbb98;}
 .lobby-profile-sheet .room-sheet:has(.room-profile-form)>.room-sheet__body{display:block;overflow:auto;}
+.lobby-profile-sheet .room-sheet{
+  background:linear-gradient(105deg,#1e160fee,#1e160f55),linear-gradient(0deg,#110d09ed,transparent 75%),
+    #211810 url('/assets/ravens/room-counter-v1/settings-study.webp') 75% 0/auto 100% no-repeat;
+}
 .lobby-profile-sheet .room-profile-form,.lobby-profile-sheet .profile-fields{display:block;min-height:max-content;overflow:visible;}
 .lobby-primary__actions{display:flex;align-items:center;gap:8px;}
 .lobby-primary__start{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:center;}

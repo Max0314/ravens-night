@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="300" viewBox="0 0 240 300">
+  <title>Inset aged-brass arch</title>
+  <defs>
+    <linearGradient id="brass" x2=".9" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#9e855d"/>
+      <stop offset=".42" stop-color="#5d4c33"/>
+      <stop offset=".71" stop-color="#ad9163"/>
+      <stop offset="1" stop-color="#6a5536"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke-linejoin="round">
+    <path d="M7 120a113 113 0 0 1 226 0v161q0 12-12 12H19q-12 0-12-12Z" stroke="#19150e" stroke-opacity=".77" stroke-width="5"/>
+    <path d="M7 120a113 113 0 0 1 226 0v161q0 12-12 12H19q-12 0-12-12Z" stroke="url(#brass)" stroke-width="1.9"/>
+    <path d="M13 120a107 107 0 0 1 214 0v158q0 9-9 9H22q-9 0-9-9Z" stroke="#917951" stroke-opacity=".63" stroke-width="1.25"/>
+  </g>
+</svg>

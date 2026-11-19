@@ -1,13 +1,14 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runtimeEffectTitle } from './audio-preview-labels.mjs';
 
 const publicRoot = fileURLToPath(new URL('./public/', import.meta.url));
 const read = path => JSON.parse(readFileSync(path, 'utf8'));
 const href = path => '/' + relative(publicRoot, path).split(sep).join('/');
 const unique = values => [...new Set(values.filter(value => typeof value === 'string' && value.startsWith('https://')))];
 const allFiles = path => readdirSync(path, { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? allFiles(join(path, entry.name)) : [join(path, entry.name)]);
-const runtimeCategory = file => /^(ui-|paper-)/.test(file) ? '按钮与翻页' : /^(role-|coffin|washer|raven|crystal|investigator|cup-|flower-|cloak-|empath-|carriage-|envelope-|scepter|mayor|soldier)/.test(file) ? '角色' : /bell|nomination|vote|door/.test(file) ? '提示与环境' : '动作';
+const runtimeCategory = file => /^(ui-|paper-|control-|setup-ratchet)/.test(file) ? '界面与翻页' : /^(role-|coffin|washer|raven|crystal|investigator|cup-|flower-|cloak-|empath-|carriage-|envelope-|scepter|mayor|soldier)/.test(file) ? '角色' : /bell|nomination|vote|door/.test(file) ? '提示与环境' : '动作';
 
 export function buildAudioPreviewCatalog() {
   const paths = ['audio','audio-candidates'].flatMap(dir => allFiles(join(publicRoot, dir)));
@@ -31,9 +32,10 @@ export function buildAudioPreviewCatalog() {
       const media = join(dirname(path), item.file);
       const group = href(media).startsWith('/audio/music/') ? 'music' : 'effects';
       const id = item.id ?? basename(media,'.mp3');
-      const used = group==='music'||href(media).includes('/ambience/')||!['v1','v3'].includes(version)||id==='shield';
+      const dormant = version==='v2' && ['ui-press','ui-select','ui-close','ui-error','slash-left','slash-right'].includes(id);
+      const used = group==='music'||href(media).includes('/ambience/')||!dormant&&!['v1','v3'].includes(version)||id==='shield';
       const sharedSources=Array.isArray(manifest.sources)?manifest.sources.filter(value=>typeof value==='object').flatMap(value=>[value.page,value.sourcePage]):[];
-      verifyTrack({url:href(media), id, title:labels.get(id)??item.originalTitle??item.name??id,
+      verifyTrack({url:href(media), id, title:labels.get(id)??item.originalTitle??item.name??runtimeEffectTitle(id)??id,
         group, channel:group, label:`${used?'已用':'历史'} · ${version}`, detail:group==='effects'?runtimeCategory(id):'背景与主题',
         author:item.author,license:item.license??manifest.license,licenseUrl:item.licenseUrl??item.license_url,
         sources:unique([...(item.sourcePages??[]),item.sourcePage,...(item.sources??[]),item.source,...sharedSources]),

@@ -9,6 +9,7 @@ class Node{gain=new Param();frequency=new Param();playbackRate=new Param();buffe
 const gains:Node[]=[];
 let context:Context;
 class Context{state='running';currentTime=10;sampleRate=48000;destination={};constructor(){context=this;}async resume(){}createGain(){const node=new Node();gains.push(node);return node;}createBufferSource(){return new Node();}createOscillator(){return new Node();}async decodeAudioData(data:ArrayBuffer){return{sample:new Uint8Array(data)[0],duration:({shield:1.7,'slash-left':.42,'slash-right':.42,'wing-flap':.45,'wing-air':.65,'wing-root':.35,'butler-voice':.768,'role-butler':2.6,'night-bell':9,'dawn-bell':10.5,'poison-pour':.6541,'poison-cork':.2362,'chef-chop-1':.21,'chef-chop-2':.21,'chef-chop-3':.21,'washer-dip':.5,'washer-scrub':.72,'washer-drops':1.2,'washer-whisper':1.6,'crystal-resonance':2.7,'crystal-shiver':1.25,'investigator-lens':.8,'investigator-evidence':.4,'envelope-seal':.22,'envelope-flap':.6,'envelope-draw':.7,'raven-short-call':.6,'raven-wing-open':.42,'raven-wing-fold':.48,'raven-feathers':1.150454,'coffin-hinge':1.06,'coffin-settle':.6,'scepter-contact':.340658,'soldier-shield':.8,'cloak-unfold':1.1,'cloak-hem':.55,'cup-sway-left':.47,'cup-sway-right':.47,'empath-pulse':.22,'mayor-document':.6,'flower-ribbon':.42,'scene-m03':4,'scene-m22':4,'lamp-chain':2.65,'small-flame':2.65,'carriage-roll':.5,'carriage-stop':.28,'carriage-hinge':.55,'contract-seal-1':.2,'contract-seal-2':.2,'contract-unroll-1':.7,'contract-unroll-2':.7,'dawn-door':1.8,'L03':16} as Record<string,number>)[names[new Uint8Array(data)[0]!]!]??3};}createBuffer(){return{getChannelData:()=>new Float32Array(100)};}}
+names.push('control-tap','control-open','control-close','setup-ratchet-1','setup-ratchet-2','setup-ratchet-3');
 let audio:typeof import('./experience-audio.js'),preferences:typeof import('../participation-audio.js');
 async function flush(){for(let i=0;i<20;i++)await Promise.resolve();}
 beforeEach(async()=>{vi.resetModules();localStorage.clear();started.length=0;gains.length=0;vi.stubGlobal('AudioContext',Context);vi.stubGlobal('fetch',vi.fn(async(url:string)=>({ok:true,arrayBuffer:async()=>new Uint8Array([(()=>{const sample=names.indexOf(url.split('/').at(-1)!.replace('.mp3',''));if(sample<0)throw Error('Unmodelled audio '+url);return sample;})()]).buffer})));audio=await import('./experience-audio.js');preferences=await import('../participation-audio.js');await audio.enableEffectsAudio(true);await flush();});
@@ -50,7 +51,7 @@ test.each([1,2,3,4] as const)('empty execution v%s keeps only wind; no release, 
 test('pause immediately cancels a cue that was due less than 40ms in the future',async()=>{audio.scheduleCue('near-future','SHOT',825,4);await flush();const future=started.filter(s=>s.at>10);expect(future.length).toBeGreaterThan(0);audio.cancelEventAudio('near-future');expect(future.every(s=>s.stopped&&s.stopAt===10)).toBe(true);});
 test('a former Baron inherits with cape material instead of disclosing old prop audio',async()=>{preferences.setParticipationMode('ONLINE');audio.scheduleRoleCue({version:1,id:'succession',kind:'ROLE_CHANGE',themeRoleId:'baron',shown:{type:'NEW_ROLE',roleId:'imp'}},0);await flush();expect(started.some(s=>s.sample===names.indexOf('cloak-unfold'))).toBe(true);expect(started.some(s=>s.sample===names.indexOf('role-baron'))).toBe(false);});
 
-test('in-person mode suppresses private menu feedback while public menu foley remains available',async()=>{audio.playSemantic('open',{scope:'private'});await flush();expect(started).toHaveLength(0);audio.playSemantic('open',{scope:'ui'});await flush();expect(started.some(s=>s.sample===names.indexOf('ui-open'))).toBe(true);preferences.setParticipationMode('ONLINE');const count=started.length;audio.playSemantic('open',{scope:'private'});await flush();expect(started.length).toBe(count+1);});
+test('in-person mode suppresses private menu feedback while public recorded foley remains available',async()=>{audio.playSemantic('open',{scope:'private'});await flush();expect(started).toHaveLength(0);audio.playSemantic('open',{scope:'ui'});await flush();expect(started.some(s=>names[s.sample]==='control-open')).toBe(true);expect(fetch).toHaveBeenCalledWith('/audio/effects/v10/control-open.mp3');preferences.setParticipationMode('ONLINE');const count=started.length;audio.playSemantic('open',{scope:'private'});await flush();expect(started.length).toBe(count+1);});
 
 const submitted=(role:string)=>({version:1 as const,id:'submit-'+role,kind:'ACTION_SUBMITTED' as const,themeRoleId:role,shown:{type:'TARGET_SUBMITTED' as const,action:role==='monk'?'PROTECT' as const:'KILL' as const,seats:[2]}});
 test('monk action restores the exact accepted v1 shield and its metal transient lands at 700ms',async()=>{
@@ -157,8 +158,9 @@ test('four demon contacts use audible v5 stems, compensate decoded attack energy
  expect(fetch).toHaveBeenCalledWith('/audio/effects/v5/slash-left.mp3');expect(fetch).toHaveBeenCalledWith('/audio/effects/v5/slash-right.mp3');expect(started.some(s=>names[s.sample]?.startsWith('hurt-'))).toBe(false);
  const manifest=JSON.parse(readFileSync(resolve('apps/web/public/audio/effects/v5/manifest.json'),'utf8'));expect(manifest.files.map((f:{contactOffsetMs:number})=>f.contactOffsetMs)).toEqual([85,85]);
 });
-test('generic press/select/success are quiet while bell, material scene and book cues remain distinct',async()=>{
- audio.playSemantic('press');audio.playSemantic('select');audio.playSemantic('success');await flush();expect(started).toHaveLength(0);
+test('buttons use real foley while accepted game actions keep their own cues',async()=>{
+ audio.playSemantic('press');await flush();expect(started.map(s=>names[s.sample])).toEqual(['control-tap']);
+ audio.playSemantic('success');await flush();expect(started).toHaveLength(1);
  audio.playSemantic('paper-turn',{variant:0});audio.scheduleCue('retained-bell','NIGHT_FALLS',0,4);await flush();expect(started.some(s=>names[s.sample]==='paper-turn-1')).toBe(true);expect(started.filter(s=>names[s.sample]==='night-bell')).toHaveLength(3);
 });
 
@@ -167,7 +169,7 @@ test('the total switch gates paper owners without enabling in-person private sou
  await audio.enableEffectsAudio(false);const owner={};expect(await audio.prepareBookAudio(owner)).toBe(false);audio.playSemantic('paper-turn',{variant:0});await flush();expect(started).toHaveLength(0);
  await audio.enableEffectsAudio(true);expect(await audio.prepareBookAudio(owner)).toBe(true);expect(preferences.participationMode()).toBe('IN_PERSON');audio.playSemantic('paper-turn',{variant:0});await flush();expect(started.map(s=>names[s.sample])).toEqual(['paper-turn-1']);expect(gains.at(-2)?.gain.value).toBe(.65);
  await audio.enableEffectsAudio(false);expect(started[0]?.stopped).toBe(true);expect(await audio.prepareBookAudio(owner)).toBe(false);audio.releaseBookAudio(owner);audio.playSemantic('paper-turn');await flush();expect(started).toHaveLength(1);
- const leave=audio.beginEffectsPreview();const previewOwner={};expect(await audio.prepareBookAudio(previewOwner)).toBe(false);audio.releaseBookAudio(previewOwner);leave();
+ const leave=audio.beginEffectsPreview();const previewOwner={};expect(await audio.prepareBookAudio(previewOwner)).toBe(true);expect(audio.globalAudioEnabled()).toBe(false);audio.releaseBookAudio(previewOwner);leave();
 });
 
 test('a new gesture retries resume synchronously while an older automatic request remains pending',async()=>{

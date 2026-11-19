@@ -49,13 +49,14 @@ test('role reference stays readable on the player viewport and does not interrup
   const navigation=page.getByRole('navigation',{name:'游戏分区'});
   const entry=navigation.getByRole('button',{name:'角色表'});
   const card=page.getByRole('dialog',{name:'角色表'});
+  const categories=card.getByRole('navigation',{name:'角色分类'});
   const close=card.getByRole('button',{name:'关闭角色表'});
   const role=card.getByRole('button',{name:'小恶魔'});
   await expect(navigation.getByRole('button')).toHaveText(['城镇','角色表','记录']);
   const navBox=await entry.boundingBox();
   expect(navBox?.x).toBeGreaterThan((await navigation.getByRole('button',{name:'城镇'}).boundingBox())!.x);
   await entry.click();
-  await expect(card.getByRole('listitem')).toHaveCount(22);
+  await expect(card.getByRole('listitem')).toHaveCount(13);
   await expect(card).not.toContainText('私密描述');
   await expect.poll(()=>card.locator('img').first().evaluate((image:HTMLImageElement)=>image.naturalWidth)).toBe(96);
   await page.screenshot({path:'outputs/ui-qa/role-reference-390.png'});
@@ -64,17 +65,38 @@ test('role reference stays readable on the player viewport and does not interrup
     await expect(close).toBeInViewport();
     await expect.poll(async()=> (await card.boundingBox())!.width).toBeLessThanOrEqual(Math.min(680,width!));
     expect(await card.evaluate(element=>element.scrollWidth)).toBeLessThanOrEqual((await card.boundingBox())!.width+1);
-    await role.scrollIntoViewIfNeeded();
+    for(const [type,count] of [['外来者',4],['爪牙',4],['恶魔',1]] as const){
+      await categories.getByRole('button',{name:type}).click();
+      await expect(card.getByRole('listitem')).toHaveCount(count);
+      for(const button of await categories.getByRole('button').all())await expect(button).toBeInViewport();
+    }
     await expect(role).toBeInViewport();
     expect(await page.evaluate(()=>window.scrollY)).toBe(0);
   }
   await role.click();
-  await expect(card.getByRole('article')).toContainText('规则细节');
+  const detail=card.getByRole('article');
+  await expect(detail).toContainText('规则细节');
+  const portrait=detail.getByRole('img',{name:'小恶魔角色立绘'});
+  await expect(portrait).toBeInViewport();
+  expect((await portrait.boundingBox())!.y).toBeLessThan((await detail.getByText('能力',{exact:true}).boundingBox())!.y);
   await page.evaluate(()=>history.back());
   await expect(role).toBeFocused();
   await page.evaluate(()=>history.back());
   await expect(card).toBeHidden();
   await expect(entry).toBeFocused();
+
+  await page.setViewportSize({width:375,height:667});
+  await page.getByRole('button',{name:'查看我的角色立绘'}).click();
+  const ownRole=page.getByRole('dialog',{name:'我的角色立绘'});
+  await expect(ownRole.getByRole('img',{name:'士兵立绘'})).toBeInViewport({ratio:1});
+  await ownRole.getByRole('button',{name:'收起我的角色立绘'}).click();
+  await page.getByRole('button',{name:'声音设置'}).click();
+  const settings=page.getByRole('dialog',{name:'声音设置'});
+  await expect(settings.getByRole('slider',{name:'音乐音量'})).toBeInViewport({ratio:1});
+  await expect(settings.getByRole('slider',{name:'音效音量'})).toBeInViewport({ratio:1});
+  expect(await settings.evaluate(element=>getComputedStyle(element).backgroundImage)).toContain('settings-study.webp');
+  await page.screenshot({path:'outputs/ui-qa/role-reference-audio-375.png'});
+  await settings.getByRole('button',{name:'关闭声音设置'}).click();
 
   await page.setViewportSize({width:568,height:320});
   await entry.click();
@@ -98,7 +120,7 @@ test('role reference stays readable on the player viewport and does not interrup
   await card.getByRole('button',{name:'洗衣妇'}).click();
   await close.click();
   await entry.click();
-  await expect(card.getByRole('listitem')).toHaveCount(22);
+  await expect(card.getByRole('listitem')).toHaveCount(13);
   await expect(notice.getByRole('button',{name:'举手',exact:true})).toBeDisabled();
   finishVote();
   await expect(notice).toContainText('你已举手');

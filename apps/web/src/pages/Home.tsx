@@ -21,8 +21,16 @@ export function Home({onCreate,onJoin,onTutorial,onRoles,activeRoom,activeMode,o
   const roomKey=activeRoom?[activeRoom.roomInstanceId??activeRoom.code,activeRoom.code,activeRoom.state,activeMode??'PLAYER'].join(':'):undefined;
   const leaveOpen=!!roomKey&&leaveTarget===roomKey&&canLeave&&!!onLeave;
   useEffect(()=>{setLeaveTarget(undefined);leaveConfirmed.current=false;},[roomKey]);
+  function tapTitle(){
+    const now=performance.now(),tap=titleTaps.current;
+    tap.count=now-tap.at<=520?tap.count+1:1;
+    tap.at=now;
+    if(tap.count===3){tap.count=0;onToggleDebug?.();}
+  }
   return <main className="home home--compact">
-    <header className="home-header"><div className="home-brand"><span aria-hidden="true">☾</span><div><h1><button type="button" className="home-title-preview" title="快速三击切换调试模式" onClick={()=>{const now=performance.now(),tap=titleTaps.current;tap.count=now-tap.at<=450?tap.count+1:1;tap.at=now;if(tap.count===3){tap.count=0;onToggleDebug?.();}}}>鸦钟夜话</button></h1><small>{debugMode?'RAVENS AT MIDNIGHT · 调试模式':'RAVENS AT MIDNIGHT'}</small></div></div><div className="home-header-tools">{audioControl}<AccountPanel disabled={accessBusy===true} onResume={onAccountResume??(()=>undefined)} {...(guestCode?{guestCode}:{})} {...(accountTools?{tools:accountTools}:{})}/></div></header>
+    <header className="home-header"><div className="home-brand"><h1><button type="button" className="home-title-preview" title="快速三击切换调试模式" onClick={tapTitle}>
+      <span className="home-title-preview__moon" aria-hidden="true">☾</span><span>鸦钟夜话<small aria-hidden="true">{debugMode?'调试模式':'RAVENS AT MIDNIGHT'}</small></span>
+    </button></h1></div><div className="home-header-tools">{audioControl}<AccountPanel disabled={accessBusy===true} onResume={onAccountResume??(()=>undefined)} {...(guestCode?{guestCode}:{})} {...(accountTools?{tools:accountTools}:{})}/></div></header>
     <HomePortrait/>
     <section className="home-controls" aria-label="游戏入口">
       {activeRoom&&canLeave&&onLeave?<FeedbackButton className="home-leave-room" type="button" aria-label="离开房间" disabled={busy} onClick={()=>{if(!busy){leaveConfirmed.current=false;setLeaveTarget(roomKey);}}}><span>离开</span><span>房间</span></FeedbackButton>:null}

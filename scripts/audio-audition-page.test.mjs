@@ -15,5 +15,8 @@ test('audition catalog covers the runtime and candidate directories with unique 
   assert.ok(groups.candidate.length>=55);
   assert.ok(groups.effects.length+groups.music.length>=132);
   assert.ok(groups.candidate.some(track=>track.id==='M22'&&track.channel==='music'&&track.sources.length>0));
+  assert.equal(catalog.filter(track=>track.channel==='music').length,18);
+  assert.ok(groups.effects.some(track=>track.id==='control-tap'&&track.license==='CC0 1.0'));
+  assert.equal(groups.effects.filter(track=>track.id.startsWith('setup-ratchet-')&&track.license==='CC BY 4.0').length,3);
   assert.ok(groups.effects.some(track=>track.id==='paper-turn-4'&&track.url.includes('/v2/')));
 });

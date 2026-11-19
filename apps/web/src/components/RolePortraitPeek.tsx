@@ -1,10 +1,11 @@
-import {useEffect,useRef,type CSSProperties} from 'react';
+import {useEffect,useRef} from 'react';
 import {createPortal} from 'react-dom';
+import {FeedbackButton,RolePortrait} from '@ravens/ui';
 import {useBackLayer} from '../use-back-layer.js';
 import {roleArt} from '../role-art.js';
 import './role-portrait-peek.css';
 
-/** Only the owner's perceived role id enters this borderless view. */
+/** Only the owner's perceived role id enters this view. */
 export function RolePortraitPeek({roleId,name,onClose}:{roleId:string;name:string;onClose:()=>void}){
  const button=useRef<HTMLButtonElement>(null),art=roleArt(roleId);
  useBackLayer(true,onClose);
@@ -20,5 +21,11 @@ export function RolePortraitPeek({roleId,name,onClose}:{roleId:string;name:strin
   return()=>{observer.disconnect();document.removeEventListener('keydown',trap);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('ravens:cover-private',conceal);window.removeEventListener('ravens:return-town',conceal);if(previous?.isConnected&&!document.hidden&&!hasOverlay()&&!previous.closest('[hidden],[inert]'))previous.focus({preventScroll:true});};
  },[onClose]);
  if(document.hidden)return null;
- return createPortal(<section className="role-portrait-peek" data-private-feedback="true" data-town-reading="true" role="dialog" aria-modal="false" aria-label="我的角色立绘"><button ref={button} type="button" className="role-portrait-peek__surface" aria-label="收起我的角色立绘" onClick={onClose}><span className="role-portrait-peek__glow" aria-hidden="true"/><img className="role-portrait-peek__image" src={art.portraitUrl} alt={`${name}立绘`} draggable={false} style={{objectPosition:art.portraitPosition} as CSSProperties}/></button></section>,document.body);
+ return createPortal(<section className="role-portrait-peek" data-private-feedback="true" data-town-reading="true" role="dialog" aria-modal="false" aria-label="我的角色立绘">
+  <FeedbackButton ref={button} feedback="close" type="button" className="role-portrait-peek__surface" aria-label="收起我的角色立绘" onClick={onClose}>
+   <span className="role-portrait-peek__frame">
+    <RolePortrait className="role-portrait-peek__image" url={art.portraitUrl} srcSet={art.portraitSrcSet} sizes="(max-width: 640px) 90vw, 520px" label={`${name}立绘`} position={art.portraitPosition}/>
+   </span>
+  </FeedbackButton>
+ </section>,document.body);
 }

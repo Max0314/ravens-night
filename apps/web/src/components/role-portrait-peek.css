@@ -1,8 +1,19 @@
 .role-portrait-peek{position:fixed;inset:var(--viewport-top,0px) 0 auto;height:var(--viewport-height,100dvh);z-index:160;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 50% 43%,#29261de8,#04080bf5 76%);animation:role-peek-in 200ms ease-out both}
 .role-portrait-peek>.role-portrait-peek__surface{position:absolute;inset:0;display:grid;grid-template:minmax(0,1fr)/minmax(0,1fr);place-items:center;width:100%;height:100%;min-height:44px;padding:max(20px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));border:0;border-radius:0;background:none;box-shadow:none;cursor:pointer;touch-action:manipulation}
-.role-portrait-peek__glow{position:absolute;inset:12%;background:radial-gradient(ellipse,#c8ab6140,transparent 68%);filter:blur(24px);pointer-events:none}
-.role-portrait-peek__surface>.role-portrait-peek__image{position:relative;display:block;width:auto;height:auto;max-width:min(100%,720px);max-height:100%;min-height:0;object-fit:contain;border:0;border-radius:0;box-shadow:none;filter:drop-shadow(0 18px 35px #0008);-webkit-mask-image:linear-gradient(transparent,#000 6%,#000 82%,transparent);mask-image:linear-gradient(transparent,#000 6%,#000 82%,transparent);animation:role-peek-unfold 240ms cubic-bezier(.2,.7,.2,1) both}
+.role-portrait-peek__frame{
+  position:relative;display:block;isolation:isolate;overflow:hidden;
+  width:min(100%,520px,calc(var(--viewport-height,100dvh) * .62));aspect-ratio:3/4;
+  padding:6px;border:1px solid #826338;border-radius:18px 18px 10px 10px;
+  background:linear-gradient(120deg,#3f301d,#14100c 36%,#2c2115 80%,#85633d);
+  box-shadow:0 18px 40px #000c,0 0 0 3px #0e0c09;
+  animation:role-peek-unfold 240ms cubic-bezier(.2,.7,.2,1) both;
+}
+.role-portrait-peek__frame::after{
+  position:absolute;inset:10px;border:1px solid #c3a26b77;border-radius:9px 9px 4px 4px;
+  box-shadow:0 0 0 1px #160f0cbc,inset 0 0 18px #100d08a6;pointer-events:none;content:"";
+}
+.role-portrait-peek__image{display:block;width:100%;height:100%;object-fit:cover;border-radius:11px 11px 4px 4px}
 .role-portrait-peek__surface:focus-visible{outline:1px solid #c5af7255;outline-offset:-8px}
 @keyframes role-peek-in{from{opacity:0}to{opacity:1}}
 @keyframes role-peek-unfold{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(prefers-reduced-motion:reduce){.role-portrait-peek,.role-portrait-peek__surface>.role-portrait-peek__image{animation:none}}
+@media(prefers-reduced-motion:reduce){.role-portrait-peek,.role-portrait-peek__frame{animation:none}}

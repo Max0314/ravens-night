@@ -1,5 +1,6 @@
 import { useEffect,useLayoutEffect,useRef,useState } from 'react';
 import { createPortal } from 'react-dom';
+import { FeedbackButton } from '@ravens/ui';
 import { RoomSheet } from './RoomPage.js';
 import { audioPreferencesEvent,setAudioChannelEnabled,setAudioChannelVolume,type AudioChannel } from './audio-preferences.js';
 import { audioControlEnabled,audioSettingsPreferences,globalAudioEvent,enableEffectsAudio,effectsPreviewActive,setPreviewChannel,unlockEffectsAudio } from './experience-audio.js';
@@ -35,16 +36,19 @@ export function AudioSettings({display=false,privateControls=false,asNote=false,
     if(enabled)unlock();
   }
   function setVolume(name:AudioChannel,volume:number){if(state.preview)setPreviewChannel(name,{volume});else setAudioChannelVolume(name,volume);}
-  return <><button ref={trigger} data-global-audio-control className={asNote?`global-audio-button ${className}`:`audio-settings-entry ${className}`} type="button" aria-label="声音设置" aria-haspopup="dialog" aria-expanded={open} onClick={()=>{unlock();setOpen(true);}}>{asNote?<span aria-hidden="true">{state.master&&!quiet?'♪':'♩'}</span>:'声音设置'}</button>
+  return <><FeedbackButton ref={trigger} feedback="open" data-global-audio-control className={asNote?`global-audio-button ${className}`:`audio-settings-entry ${className}`} type="button" aria-label="声音设置" aria-haspopup="dialog" aria-expanded={open} onClick={()=>{unlock();setOpen(true);}}>{asNote?<span aria-hidden="true">{state.master&&!quiet?'♪':'♩'}</span>:'声音设置'}</FeedbackButton>
     {open&&createPortal(<RoomSheet title="声音设置" className="audio-settings-host" onClose={()=>setOpen(false)}><section className={`audio-settings${display?' audio-settings--display':''}`} aria-label={state.preview?'仅本次预览的声音':'本设备声音设置'}>
-      <div className={`audio-settings__master${state.master?'':' is-muted'}`}><span>{state.master?(quiet?'音乐和音效均静音':'声音总开关'):'总静音已开启'}</span><button data-audio-settings-control type="button" onClick={()=>{const next=!audioControlEnabled();void enableEffectsAudio(next);if(next)onEnable?.();}}>{state.master?'开启总静音':'解除总静音'}</button></div>
+      <div className={`audio-settings__master${state.master?'':' is-muted'}`}><span>{state.master?(quiet?'音乐和音效均静音':'总静音'):'总静音已开启'}</span><button data-audio-settings-control type="button" onClick={()=>{const next=!audioControlEnabled();void enableEffectsAudio(next);if(next)onEnable?.();}}>{state.master?'开启总静音':'解除总静音'}</button></div>
       {(['music','effects'] as const).map(name=>{
         const channel=state.prefs[name],label=name==='music'?'音乐':'音效';
-        return <fieldset key={name} className="audio-settings__channel"><legend>{label}</legend><div className="audio-settings__row"><span>{name==='music'?'背景音乐':'演出、翻页与提示'}</span><button data-audio-settings-control type="button" role="switch" aria-label={`${label}开关`} aria-checked={channel.enabled} onClick={()=>toggle(name)}>{channel.enabled?'开启':'关闭'}</button></div>
-          <label className="audio-settings__volume"><span>{label}音量<output>{Math.round(channel.volume*100)}%</output></span><input data-audio-settings-control type="range" aria-label={`${label}音量`} min={0} max={100} step={1} value={Math.round(channel.volume*100)} onPointerDown={unlock} onKeyDown={unlock} onChange={event=>setVolume(name,Number(event.target.value)/100)}/></label></fieldset>;
+        const value=Math.round(channel.volume*100);
+        return <div key={name} className="audio-settings__channel" role="group" aria-label={label}>
+          <div className="audio-settings__row"><span>{label}</span><output>{value}%</output><button data-audio-settings-control type="button" role="switch" aria-label={`${label}开关`} aria-checked={channel.enabled} onClick={()=>toggle(name)}>{channel.enabled?'开启':'关闭'}</button></div>
+          <input className="audio-settings__volume" data-audio-settings-control type="range" aria-label={`${label}音量`} min={0} max={100} step={1} value={value} onPointerDown={unlock} onKeyDown={unlock} onChange={event=>setVolume(name,Number(event.target.value)/100)}/>
+        </div>;
       })}
       {privateControls&&!state.preview&&<div className="audio-settings__row"><span>私密操作音效</span><button type="button" role="switch" aria-label="私密操作音效" aria-checked={state.privateSound} onClick={()=>{setParticipationMode(state.privateSound?'IN_PERSON':'ONLINE');if(!state.privateSound)unlock();}}>{state.privateSound?'开启':'关闭'}</button></div>}
-      <p className="audio-settings__note">{state.preview?'仅在本次预览中生效。':display?'仅保存于这台投屏设备。':'设置保存在本设备。'}</p>
+      <footer className="audio-settings__note"><span>{state.preview?'仅影响本次预览。':display?'仅保存于这台投屏设备。':'保存在本设备。'}</span><a href="/audio/effects/v10/credits.html" target="_blank" rel="noopener noreferrer">界面音效来源</a></footer>
     </section></RoomSheet>,document.body)}
   </>;
 }

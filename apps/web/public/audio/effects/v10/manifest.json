@@ -1,0 +1,77 @@
+{
+  "version": 10,
+  "files": [
+    {
+      "id": "setup-ratchet-1",
+      "file": "setup-ratchet-1.mp3",
+      "name": "棘轮螺丝刀 · 齿扣 1",
+      "author": "InspectorJ (www.jshaw.co.uk)",
+      "license": "CC BY 4.0",
+      "sourcePage": "https://freesound.org/people/InspectorJ/sounds/393490/",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "processing": "Edited from Screwdriver, Ratchet, C.wav (public HQ preview). Mono, bandpass, tail fade, peak at -4 dBFS before encoding.",
+      "sourcePeakWindowSeconds": 0.36,
+      "sha256": "5aa90e1e774b84dc9012b1ae1118fb47017e65c33d92ad74276f0af3ef0778e2"
+    },
+    {
+      "id": "setup-ratchet-2",
+      "file": "setup-ratchet-2.mp3",
+      "name": "棘轮螺丝刀 · 齿扣 2",
+      "author": "InspectorJ (www.jshaw.co.uk)",
+      "license": "CC BY 4.0",
+      "sourcePage": "https://freesound.org/people/InspectorJ/sounds/393490/",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "processing": "Edited from Screwdriver, Ratchet, C.wav (public HQ preview). Mono, bandpass, tail fade, peak at -4 dBFS before encoding.",
+      "sourcePeakWindowSeconds": 0.48,
+      "sha256": "90ff47383b2f1274b527d11be6c99eaf3cb40835c08b1f27d776124515c1cc3e"
+    },
+    {
+      "id": "setup-ratchet-3",
+      "file": "setup-ratchet-3.mp3",
+      "name": "棘轮螺丝刀 · 齿扣 3",
+      "author": "InspectorJ (www.jshaw.co.uk)",
+      "license": "CC BY 4.0",
+      "sourcePage": "https://freesound.org/people/InspectorJ/sounds/393490/",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "processing": "Edited from Screwdriver, Ratchet, C.wav (public HQ preview). Mono, bandpass, tail fade, peak at -4 dBFS before encoding.",
+      "sourcePeakWindowSeconds": 1.01,
+      "sha256": "6b9dfce55c06db1ca53bb3e861eb844fb55268ad50737fdaec5fb205d580e4bf"
+    },
+    {
+      "id": "control-tap",
+      "file": "control-tap.mp3",
+      "name": "面板轻触",
+      "author": "Joseph SARDIN",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourcePage": "https://bigsoundbank.com/macbook-trackpad-simple-click-s1740.html",
+      "processing": "Trimmed recorded transient, mono, bandpass, edge fades, peak at -6 dBFS before encoding.",
+      "sourcePeakWindowSeconds": 0.098,
+      "sha256": "46cee0c45f3c6a2c39dc09c1da3abd73967c10be5ab2e51efbe53118b02d15e2"
+    },
+    {
+      "id": "control-open",
+      "file": "control-open.mp3",
+      "name": "打开面板",
+      "author": "DavidGreck",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourcePage": "https://bigsoundbank.com/switch-5-s0321.html",
+      "processing": "Trimmed recorded transient, mono, bandpass, edge fades, peak at -6 dBFS before encoding.",
+      "sourcePeakWindowSeconds": 0.294,
+      "sha256": "2007a81d5d3f73a37200c6568bd29b77a9d3c69f6c2e0e8d18db00842d85be1f"
+    },
+    {
+      "id": "control-close",
+      "file": "control-close.mp3",
+      "name": "合上面板",
+      "author": "DavidGreck",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourcePage": "https://bigsoundbank.com/switch-5-s0321.html",
+      "processing": "Trimmed recorded transient, mono, bandpass, edge fades, peak at -6 dBFS before encoding.",
+      "sourcePeakWindowSeconds": 1.78,
+      "sha256": "4869b3b05e982f6234710f7fc78111e3a21639a90a89f3e634b99e2cf9aa71cc"
+    }
+  ]
+}

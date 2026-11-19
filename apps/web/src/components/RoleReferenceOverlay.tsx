@@ -20,8 +20,10 @@ function RoleIcon({id}:{id:string}){
 }
 
 export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onClose:()=>void}){
+  const [category,setCategory]=useState<typeof groups[number]['type']>('TOWNSFOLK');
   const [selectedId,setSelectedId]=useState<string>();
   const selected=beginnerRoles.find(role=>role.id===selectedId);
+  const visibleRoles=groups.find(group=>group.type===category)!.roles;
   const id=useId(),titleId=`${id}-title`,detailId=`${id}-detail`;
   const title=useRef<HTMLHeadingElement>(null),detailTitle=useRef<HTMLHeadingElement>(null);
   const list=useRef<HTMLDivElement>(null),detailScroll=useRef<HTMLDivElement>(null);
@@ -53,8 +55,6 @@ export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onCl
       if(list.current)list.current.scrollTop=listPosition.current;
       const source=entry.current;
       if(source?.isConnected){
-        const row=source.getBoundingClientRect(),viewport=list.current?.getBoundingClientRect();
-        if(viewport&&(row.top<viewport.top||row.bottom>viewport.bottom))source.scrollIntoView?.({block:'nearest'});
         source.focus({preventScroll:true});
       }else title.current?.focus({preventScroll:true});
       return;
@@ -76,11 +76,10 @@ export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onCl
     });
   }
 
-  function jump(type:typeof groups[number]['type']){
-    const heading=document.getElementById(`${id}-${type}`);
-    if(!heading||!list.current)return;
-    list.current.scrollTop+=heading.getBoundingClientRect().top-list.current.getBoundingClientRect().top;
-    heading.focus({preventScroll:true});
+  function switchCategory(type:typeof category){
+    if(type===category)return;
+    if(list.current)list.current.scrollTop=0;
+    setCategory(type);
   }
 
   function onTab(event:KeyboardEvent){
@@ -119,15 +118,15 @@ export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onCl
         {selected?<FeedbackButton type="button" onClick={returnToList}>返回角色表</FeedbackButton>:null}
         <FeedbackButton type="button" className="role-reference__close" aria-label="关闭角色表" onClick={onClose}>×</FeedbackButton>
       </header>
-      <div className="role-reference__scroll" data-role-reference-list ref={list} hidden={!!selected} inert={!!selected}>
-        <nav aria-label="跳到角色分类" className="role-reference__jumps">
-          {groups.map(({type,roles})=><FeedbackButton type="button" key={type} onClick={()=>jump(type)}>
+      <nav aria-label="角色分类" className="role-reference__jumps" hidden={!!selected}>
+          {groups.map(({type,roles})=><FeedbackButton type="button" key={type} feedback="select"
+            aria-label={roleTypeNames[type]} aria-pressed={category===type} data-public-role-type={type}
+            onClick={()=>switchCategory(type)}>
             {roleTypeNames[type]}<small>{roles.length}</small>
           </FeedbackButton>)}
-        </nav>
-        {groups.map(({type,roles})=><section key={type} aria-labelledby={`${id}-${type}`}>
-          <h3 data-public-role-type={type} id={`${id}-${type}`} tabIndex={-1}>{roleTypeNames[type]}</h3>
-          <ul>{roles.map(role=>{
+      </nav>
+      <div className="role-reference__scroll" data-role-reference-list ref={list} hidden={!!selected} inert={!!selected}>
+          <ul aria-label={roleTypeNames[category]}>{visibleRoles.map(role=>{
             const name=`${id}-${role.id}`;
             return <li key={role.id}><FeedbackButton type="button" className="role-reference__row"
               aria-labelledby={name} aria-describedby={`${name}-ability`}
@@ -139,16 +138,19 @@ export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onCl
               </span>
             </FeedbackButton></li>;
           })}</ul>
-        </section>)}
       </div>
       {selected&&portrait?<article className="role-reference__scroll role-reference__detail" aria-labelledby={detailId} ref={detailScroll}>
-        <h3 id={detailId} ref={detailTitle} tabIndex={-1}>{selected.name}
-          <small data-public-role-type={selected.type}>{roleTypeNames[selected.type]}</small>
-        </h3>
-        <h4>能力</h4><p>{selected.summary}</p>
-        {mechanics?<><h4>规则细节</h4><p>{mechanics}</p></>:null}
-        <RolePortrait className="role-reference__portrait" label={`${selected.name}角色立绘`}
-          url={portrait.portraitUrl} srcSet={portrait.portraitSrcSet} sizes="(max-width: 480px) 90vw, 360px" position="50% 0%"/>
+        <div className="role-reference__plate">
+          <RolePortrait className="role-reference__portrait" label={`${selected.name}角色立绘`}
+            url={portrait.portraitUrl} srcSet={portrait.portraitSrcSet} sizes="(max-width: 700px) 96vw, 680px" position={portrait.portraitPosition}/>
+          <h3 id={detailId} ref={detailTitle} tabIndex={-1}>{selected.name}
+            <small data-public-role-type={selected.type}>{roleTypeNames[selected.type]}</small>
+          </h3>
+        </div>
+        <div className="role-reference__copy">
+          <h4>能力</h4><p>{selected.summary}</p>
+          {mechanics?<><h4>规则细节</h4><p>{mechanics}</p></>:null}
+        </div>
       </article>:null}
     </section>
   </div>;

@@ -42,24 +42,35 @@ test('the town shortcut shows the public catalogue and restores record and list 
  const trigger=within(nav).getByRole('button',{name:'角色表'});
  fireEvent.click(trigger);
  const card=screen.getByRole('dialog',{name:'角色表'});
- const rows=within(card).getAllByRole('listitem');
- expect(rows).toHaveLength(22);
- expect(within(card).getAllByRole('heading',{level:3}).map(heading=>heading.textContent)).toEqual(['镇民','外来者','爪牙','恶魔']);
- for(const [index,role] of beginnerRoles.entries()){
-  expect(within(rows[index]!).getByRole('button',{name:role.name})).toHaveAccessibleDescription(role.summary);
-  expect(rows[index]!.querySelector('img')).toHaveAttribute('src',`/assets/ravens/role-icons-v1/${role.id}.webp`);
+ const categories=within(card).getByRole('navigation',{name:'角色分类'});
+ const list=card.querySelector<HTMLElement>('[data-role-reference-list]')!;
+ for(const [type,label] of [['TOWNSFOLK','镇民'],['OUTSIDER','外来者'],['MINION','爪牙'],['DEMON','恶魔']] as const){
+  const category=within(categories).getByRole('button',{name:label});
+  fireEvent.click(category);
+  expect(category).toHaveAttribute('aria-pressed','true');
+  expect(within(categories).getAllByRole('button')).toHaveLength(4);
+  expect(list).not.toContainElement(categories);
+  const roles=beginnerRoles.filter(role=>role.type===type),rows=within(card).getAllByRole('listitem');
+  expect(rows).toHaveLength(roles.length);
+  for(const [index,role] of roles.entries()){
+   expect(within(rows[index]!).getByRole('button',{name:role.name})).toHaveAccessibleDescription(role.summary);
+   expect(rows[index]!.querySelector('img')).toHaveAttribute('src',`/assets/ravens/role-icons-v1/${role.id}.webp`);
+  }
  }
+ fireEvent.click(within(categories).getByRole('button',{name:'镇民'}));
+ const rows=within(card).getAllByRole('listitem');
  const missing=rows[0]!.querySelector('img')!;
  fireEvent.error(missing);
  expect(rows[0]!.querySelector('.role-reference__missing-icon')).not.toBeNull();
  expect(rows[0]).toHaveTextContent(beginnerRoles[0]!.summary);
  expect(card).not.toHaveTextContent('甲');
  expect(document.querySelector('.player-private')).toHaveAttribute('inert');
- const role=within(card).getByRole('button',{name:'管家'});
- const list=card.querySelector<HTMLElement>('[data-role-reference-list]')!;
+ const role=within(card).getByRole('button',{name:'僧侣'});
  list.scrollTop=300;
  fireEvent.click(role);
- expect(within(card).getByRole('article',{name:/管家/})).toHaveTextContent('规则细节');
+ const detail=within(card).getByRole('article',{name:/僧侣/});
+ expect(detail).toHaveTextContent('规则细节');
+ expect(within(detail).getByRole('img',{name:'僧侣角色立绘'}).compareDocumentPosition(within(detail).getByText('能力'))&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
  fireEvent.keyDown(window,{key:'Escape'});
  expect(list.scrollTop).toBe(300);
  expect(role).toHaveFocus();

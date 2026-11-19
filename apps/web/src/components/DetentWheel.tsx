@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
 import { playSetupDetent } from './experience-audio.js';
 
 type Drag = { id: number; x: number; y: number; origin: number; locked: boolean; last: number; at: number; speed: number; distance: number; index: number };
@@ -18,7 +18,7 @@ export function DetentWheel({ value, min, max, label, onChange, vertical = false
   const shown = live ?? value;
   const sound = () => {
     const now = performance.now();
-    if (now - lastSound.current < 45) return;
+    if (now - lastSound.current < 39) return;
     lastSound.current = now;
     playSetupDetent();
   };
@@ -106,7 +106,7 @@ export function DetentWheel({ value, min, max, label, onChange, vertical = false
     if (event.key === 'Home' || event.key === 'End') { event.preventDefault(); change(event.key === 'Home' ? min : max); }
   };
   return <div className={`detent-wheel ${vertical ? 'detent-wheel--vertical' : 'detent-wheel--horizontal'}${tracking ? ' is-tracking' : ''}`}>
-    {!vertical && <span className="detent-wheel__gear" aria-hidden="true" style={{ transform: `rotate(${(shown - min) * 28}deg)` }}>⚙</span>}
+    {!vertical && <><span className="detent-wheel__gear" aria-hidden="true" style={{ '--wheel-angle': `${(shown - min) * 29}deg` } as CSSProperties}/><span className="detent-wheel__steam" aria-hidden="true"/></>}
     <button type="button" aria-label={`${label}减少`} disabled={disabled||value===min} onClick={() => change(value - 1)}>{vertical ? '−' : '‹'}</button>
     <div ref={ref} className="detent-wheel__numbers" role="spinbutton" tabIndex={disabled?-1:0} aria-disabled={disabled} aria-label={label} aria-valuemin={min} aria-valuemax={max} aria-valuenow={Math.round(shown)}
       onKeyDown={keydown} onPointerDown={event => {
@@ -117,7 +117,7 @@ export function DetentWheel({ value, min, max, label, onChange, vertical = false
       {Array.from({length:max-min+1},(_,index)=>index+min).map(item=>{
         const offset=(item-shown)*step*(vertical?-1:1);
         return <span key={item} aria-hidden="true" className="detent-wheel__digit" onClick={() => {if (!suppressClick.current) change(item);}}
-          style={{transform:`translate(${vertical?0:offset}px, ${vertical?offset:0}px) scale(${1-Math.min(1,Math.abs(shown-item))*.22})`,opacity:1-Math.min(1,Math.abs(shown-item))*.58}}>{item}</span>;
+          style={{transform:`translate(${vertical?0:offset}px, ${vertical?offset:0}px) scale(${1-Math.min(1,Math.abs(shown-item))*.23})`,opacity:1-Math.min(1,Math.abs(shown-item))*.55}}>{String(item).split('').map((digit,index)=><span className="detent-wheel__glyph" key={index} style={{backgroundPosition:`${(Number(digit)%5)*25}% ${Number(digit)<5?0:100}%`}}/>)}</span>;
       })}
     </div>
     <button type="button" aria-label={`${label}增加`} disabled={disabled||value===max} onClick={() => change(value + 1)}>{vertical ? '+' : '›'}</button>

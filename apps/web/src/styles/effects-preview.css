@@ -21,6 +21,7 @@
 .effects-lab .effects-lab__header,.effects-lab.is-playing .effects-lab__header {display:flex;position:relative;z-index:750;min-height:55px;gap:6px;background:#16130e;}
 .effects-lab .event-stage,.effects-lab .private-scene-dialog.effects-lab-private{z-index:110;}
 .effects-lab .effects-lab__header nav,.effects-lab__filters {display:flex;flex-wrap:wrap;gap:4px;}
+.effects-lab .effects-lab__header nav{margin-inline-start:auto}
 .effects-lab__header button:not(.global-audio-button),.effects-lab__filters button,.effects-lab__unlock,.audition-transport button {min-height:44px;padding:4px 9px;font:inherit;color:#e1c58b;border:1px solid transparent;border-radius:7px;background:none;}
 .effects-lab__header button[aria-pressed=true],.effects-lab__filters button[aria-pressed=true] {background:#c8a26026;border-color:#a98e4e6f;color:#f2dbab;}
 .effects-lab__filters {margin:8px 0;font-size:13px;}

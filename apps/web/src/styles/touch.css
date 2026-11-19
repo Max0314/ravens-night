@@ -118,10 +118,11 @@ img,a{-webkit-user-drag:none;}
 .guide-sheet__header>.guide-header-actions{gap:4px;letter-spacing:0;}
 .guide-header-actions button{min-width:44px;min-height:44px;border:0;background:none;color:#bcb19a;cursor:pointer;}
 .guide-header-actions button[aria-pressed=false]{opacity:.5;}
-.account-dialog{max-height:calc(var(--viewport-height,100dvh) - 32px);padding:0;display:flex;flex-direction:column;overflow:hidden;}
+.account-dialog{max-height:calc(var(--viewport-height,100dvh) - 32px);padding:0;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(105deg,#17100ce0,#1a120a3b),linear-gradient(0deg,#15100ceb,transparent 80%),#1c140f url('/assets/ravens/room-counter-v1/settings-study.webp') 75% 0/auto 100% no-repeat;}
 .account-dialog>header{flex:none;margin:0;padding:16px 20px 12px;border-bottom:1px solid #a98b4c26;}
 .account-dialog__body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:16px 20px;}
-.account-dialog__footer{flex:none;padding:12px 20px;background:#13130f;border-top:1px solid #a98b4c33;}
+.account-dialog__footer{flex:none;padding:12px 20px;background:#17110beb;border-top:1px solid #a98b4c33;}
+.account-dialog input{background:#130e0be6;color:#f1dfbd}
 .account-dialog__footer>[role]{font-size:12px;line-height:1.5;margin:6px 0 0;max-height:54px;overflow:auto;}
 .account-dialog__footer>[role]:empty{display:none;}
 .account-dialog__footer .account-security{padding-top:6px;}
