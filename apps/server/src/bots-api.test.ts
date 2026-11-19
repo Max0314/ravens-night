@@ -9,6 +9,12 @@ const protocol={'x-ravens-protocol':'7'};
 function appFixture(repository?:RoomRepository){const app=buildApp({timers:false,presentation:true,...(repository?{repository}:{})});apps.push(app);return app;}
 function cookies(response:{headers:Record<string,unknown>}){const raw=response.headers['set-cookie'];return(Array.isArray(raw)?raw:[String(raw)]).map((value:string)=>value.split(';')[0]).join('; ');}
 async function create(app:ReturnType<typeof buildApp>){const ticket=await app.inject({url:'/api/room-create-ticket',headers:protocol}),cookie=cookies(ticket),id=randomUUID(),payload={playerCount:5,organizerName:'Host',createTicket:ticket.json().createTicket};const response=await app.inject({method:'POST',url:'/api/rooms',headers:{...protocol,cookie,'x-command-id':id},payload});expect(response.statusCode).toBe(201);return{code:response.json().code as string,payload,cookie,id};}
+async function createDebug(app:ReturnType<typeof buildApp>){
+ const ticket=await app.inject({url:'/api/room-create-ticket',headers:protocol});
+ const created=await app.inject({method:'POST',url:'/api/rooms',headers:{...protocol,cookie:cookies(ticket),'x-command-id':randomUUID()},payload:{creationVersion:3,roomKind:'DEBUG_SOLO',hostAvatar:null,playerCount:5,organizerName:'Host',createTicket:ticket.json().createTicket}});
+ expect(created.statusCode).toBe(201);
+ return {code:created.json().code as string,host:{cookie:cookies(created)}};
+}
 async function join(app:ReturnType<typeof buildApp>,code:string,nickname='Host'){const ticket=(await app.inject({url:`/api/rooms/${code}/join-ticket?mode=PLAYER`,headers:protocol})).json().joinTicket;const response=await app.inject({method:'POST',url:`/api/rooms/${code}/join`,headers:protocol,payload:{nickname,mode:'PLAYER',joinTicket:ticket}});expect(response.statusCode).toBe(201);return{cookie:cookies(response),token:response.json().token as string};}
 async function intent(app:ReturnType<typeof buildApp>,code:string,cookie:string,extra:object={}){const me=(await app.inject({url:`/api/rooms/${code}/me`,headers:{...protocol,cookie}})).json();return{roomInstanceId:me.roomInstanceId,setupId:me.setupId,expectedCommandVersion:me.self.commandVersion,expectedControlVersion:me.room.botControl.version,...(me.game?{gameId:me.game.gameId,contextId:me.contextId,...(me.game.nomination?{ballotId:me.game.nomination.ballotId}:{})}:{}),...extra};}
 async function control(app:ReturnType<typeof buildApp>,code:string,cookie:string,path:string,extra:object={}){return app.inject({method:'POST',url:`/api/rooms/${code}/${path}`,headers:{...protocol,cookie,'x-command-id':randomUUID()},payload:await intent(app,code,cookie,extra)});}
@@ -30,14 +36,17 @@ test('control retries are receipt-first and external bot credentials never expos
  const mine=(await app.inject({url:`/api/rooms/${code}/me`,headers:{...protocol,cookie:host.cookie}})).json();expect(mine.room.participants).toHaveLength(5);expect(mine.room.botControl.pending).toBeUndefined();expect(JSON.stringify(mine)).not.toContain('knownTeamSeats');
 });
 test('manual control advances an unpublished night transition without ordinary presentation/context checks',async()=>{
- const app=appFixture(),{code}=await create(app),host=await join(app,code);
- expect((await control(app,code,host.cookie,'bots',{fill:true})).statusCode).toBe(200);
+ const app=appFixture(),{code,host}=await createDebug(app);
+ expect((await control(app,code,host.cookie,'rehearsal/role',{roleId:'poisoner'})).statusCode).toBe(200);
  expect((await control(app,code,host.cookie,'rehearsal/clock',{mode:'MANUAL'})).statusCode).toBe(200);
- for(let i=0;i<4;i++)expect((await control(app,code,host.cookie,'bots/step')).json().controlResult.status).toBe('APPLIED');
  async function ordinary(path:string,extra:object={}){const body=await intent(app,code,host.cookie,extra);delete (body as Partial<typeof body>).expectedControlVersion;return app.inject({method:'POST',url:`/api/rooms/${code}/${path}`,headers:{...protocol,cookie:host.cookie,'x-command-id':randomUUID()},payload:body});}
- expect((await ordinary('start',{tutorialMode:'SKIP',markHostReady:true})).statusCode).toBe(200);expect((await ordinary('role/confirm')).statusCode).toBe(200);
+ expect((await ordinary('start',{tutorialMode:'SKIP',markHostReady:true})).statusCode).toBe(200);
+ for(let index=0;index<2;index++)expect((await control(app,code,host.cookie,'rehearsal/advance')).json().controlResult.status).toBe('ADVANCED');
+ const confirmed=await ordinary('role/confirm');expect(confirmed.statusCode,confirmed.body).toBe(200);
  for(let i=0;i<4;i++)expect((await control(app,code,host.cookie,'bots/step')).json().controlResult.status).toBe('APPLIED');
- const advance=await control(app,code,host.cookie,'rehearsal/advance');expect(advance.statusCode).toBe(200);expect(advance.json().controlResult.status).toBe('ADVANCED');expect(advance.json().game.phase).toBe('FIRST_NIGHT');
+ let advance=await control(app,code,host.cookie,'rehearsal/advance');expect(advance.statusCode).toBe(200);expect(advance.json().controlResult.status).toBe('ADVANCED');
+ if(advance.json().game.phase==='ROLE_REVEAL')advance=await control(app,code,host.cookie,'rehearsal/advance');
+ expect(advance.json().game.phase).toBe('FIRST_NIGHT');
 });
 test('a second human disables rehearsal; protocol 2 writes and reads require refresh',async()=>{
  const app=appFixture(),{code}=await create(app),host=await join(app,code);await join(app,code,'Second');await control(app,code,host.cookie,'bots',{fill:true});
@@ -60,7 +69,7 @@ test('all bot controls accept the trusted account host and still reject logged-o
  async function joinAccount(account:string){const headers={...protocol,cookie:`fixture=${account}`},joinTicket=(await app.inject({url:`/api/rooms/${code}/join-ticket?mode=PLAYER`,headers})).json().joinTicket;const joined=await app.inject({method:'POST',url:`/api/rooms/${code}/join`,headers,payload:{nickname:account,mode:'PLAYER',joinTicket}});expect(joined.statusCode).toBe(201);return cookies(joined);}
  const memberCookie=await joinAccount('owner'),ownerCookie=`fixture=owner; ${memberCookie}`;
  expect((await control(app,code,ownerCookie,'bots',{fill:true})).json().controlResult.added).toBe(4);
- expect((await control(app,code,ownerCookie,'rehearsal/role',{roleId:'drunk'})).json().rehearsal.selectedRoleId).toBe('drunk');
+ expect((await control(app,code,ownerCookie,'rehearsal/role',{roleId:'drunk'})).json().errorCode).toBe('REHEARSAL_UNAVAILABLE');
  expect((await control(app,code,ownerCookie,'bots/control',{mode:'PAUSED'})).statusCode).toBe(200);
  expect((await control(app,code,ownerCookie,'rehearsal/clock',{mode:'MANUAL'})).json().room.timeline.mode).toBe('MANUAL');
  expect((await control(app,code,ownerCookie,'bots/step')).json().controlResult.status).toBe('APPLIED');
@@ -82,13 +91,13 @@ test('auto nomination opt-in is host-only, versioned, persistent in views and re
 });
 
 
-test('test identity writes are receipt-idempotent, versioned and lose eligibility atomically when a second human joins',async()=>{
- const app=appFixture(),{code}=await create(app),host=await join(app,code);expect((await control(app,code,host.cookie,'rehearsal/role',{roleId:'spy'})).statusCode).toBe(409);await control(app,code,host.cookie,'bots',{fill:true});
+test('debug identity writes are receipt-idempotent, versioned and room privacy survives selecting',async()=>{
+ const app=appFixture(),{code,host}=await createDebug(app);
  const payload=await intent(app,code,host.cookie,{roleId:'spy'}),headers={...protocol,cookie:host.cookie,'x-command-id':randomUUID()},request={method:'POST' as const,url:`/api/rooms/${code}/rehearsal/role`,headers,payload};
- const first=await app.inject(request);expect(first.statusCode).toBe(200);expect(first.json().rehearsal).toEqual({eligible:true,canChooseRole:true,selectedRoleId:'spy'});const version=first.json().room.botControl.version;const again=await app.inject(request);expect(again.statusCode).toBe(200);expect(again.json().room.botControl.version).toBe(version);
- expect((await app.inject({...request,headers:{...headers,'x-command-id':randomUUID()}})).statusCode).toBe(409);expect((await control(app,code,host.cookie,'rehearsal/role',{roleId:'not-a-role'})).statusCode).toBe(400);
+ const first=await app.inject(request);expect(first.statusCode).toBe(200);expect(first.json().rehearsal).toEqual({eligible:true,canChooseRole:true,selectedRoleId:'spy'});
+ const version=first.json().room.botControl.version;expect((await app.inject(request)).json().room.botControl.version).toBe(version);
+ expect((await app.inject({...request,headers:{...headers,'x-command-id':randomUUID()}})).statusCode).toBe(409);
+ expect((await control(app,code,host.cookie,'rehearsal/role',{roleId:'not-a-role'})).statusCode).toBe(400);
  expect((await control(app,code,host.cookie,'rehearsal/role',{roleId:null})).json().rehearsal.selectedRoleId).toBeUndefined();
- const body=await intent(app,code,host.cookie,{roleId:'imp'}),ticket=(await app.inject({url:`/api/rooms/${code}/join-ticket?mode=PLAYER`,headers:protocol})).json().joinTicket;
- const [choice,joined]=await Promise.all([app.inject({method:'POST',url:`/api/rooms/${code}/rehearsal/role`,headers:{...protocol,cookie:host.cookie,'x-command-id':randomUUID()},payload:body}),app.inject({method:'POST',url:`/api/rooms/${code}/join`,headers:protocol,payload:{nickname:'Second',mode:'PLAYER',joinTicket:ticket}})]);
- expect([200,409]).toContain(choice.statusCode);expect([201,409]).toContain(joined.statusCode);if(joined.statusCode===409){expect(choice.statusCode).toBe(200);await join(app,code,'Second');}const mine=(await app.inject({url:`/api/rooms/${code}/me`,headers:{...protocol,cookie:host.cookie}})).json();expect(mine.rehearsal).toEqual({eligible:false,canChooseRole:false});expect((await control(app,code,host.cookie,'rehearsal/role',{roleId:'spy'})).statusCode).toBe(409);
+ expect((await app.inject({url:`/api/rooms/${code}/join-ticket?mode=PLAYER`,headers:protocol})).json().errorCode).toBe('DEBUG_ROOM_PRIVATE');
 });

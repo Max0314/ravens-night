@@ -1,4 +1,4 @@
-.audio-settings{display:grid;gap:14px;min-width:0;color:#dbc9a0}
+.audio-settings-host.room-sheet-backdrop{z-index:1200}.audio-settings{display:grid;gap:14px;min-width:0;color:#dbc9a0}
 .room-sheet:has(>.room-sheet__body>.audio-settings)>header>button{min-width:44px;min-height:44px}
 .audio-settings-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px}
 .audio-settings-entry>span{font-size:11px;color:#a99a76}

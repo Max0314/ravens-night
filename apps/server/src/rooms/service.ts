@@ -6,6 +6,8 @@ import {
   resolveSpecialWin,
   roleById,
   setupGameRoles,
+  canDealRole,
+  compositionIssue,
   type RoleAssignment,
   grimoireCandidates, trueGrimoire, type Grimoire,
 } from "@ravens/game-engine";
@@ -22,7 +24,7 @@ import type { Account } from '../auth/account.js';
 import { profileView, validateProfile, type AccountProfile } from '../auth/game-profile.js';
 
 import {activePlayers,humans,bots,newBotControl,botToken,gameNow,setTimeline,invalidateBots,exitIneligibleRehearsal,upgradeBotRoom,MAX_BOTS,type BotControl} from './bot-types.js';
-import type {RoomTimeline,ControlResult} from '@ravens/contracts';
+import type {RoomTimeline,ControlResult,RoomSetupOptions} from '@ravens/contracts';
 import {avatarChoices,avatarIdentity,trustedAvatar} from '../auth/avatar.js';
 import type {CreationRequest} from './creation.js';
 import { experienceTiming,isNonBlockingExperience } from '@ravens/contracts';
@@ -57,7 +59,8 @@ export interface RoomResult {releasedWallAt:number;hadBots:boolean;rehearsalUsed
 export interface RoomRecord {
   rehearsalRole?:{participantId:string;roleId:string};
   lastResult?: RoomResult;
-  schemaVersion: 4|5;
+  schemaVersion: 4|5|6;
+  setupOptions?: RoomSetupOptions;
   timeline:RoomTimeline;
   botControl:BotControl;
   lastHumanActivityAt:number;
@@ -80,6 +83,14 @@ export interface RoomRecord {
   gameNumber: number;
   revision: number;
   game?: GameRuntime;
+}
+
+export function isDebugRoom(room: Pick<RoomRecord, "setupOptions">) {
+  return room.setupOptions?.kind === "DEBUG_SOLO";
+}
+
+export function debugRoomPrivate() {
+  return new RoomError("DEBUG_ROOM_PRIVATE", "这是单人调试房，无法加入", 403);
 }
 
 type RuntimePhase = "ROLE_REVEAL" | "FIRST_NIGHT" | "DAY_DISCUSSION" | "NOMINATION" | "VOTING" | "OTHER_NIGHT" | "GAME_OVER" | "ABORTED";
@@ -200,19 +211,23 @@ export class RoomService {
     this.#presentation = options.presentation ?? true;
   }
 
-  create(playerCount: number, organizerName: string, playMode: RoomPlayMode = "IN_PERSON", voiceRoomUrl?: string, sixPlayerEvilCooperation=false): { room: RoomRecord; organizerToken: string } {
+  create(playerCount: number, organizerName: string, playMode: RoomPlayMode = "IN_PERSON", voiceRoomUrl?: string, sixPlayerEvilCooperation=false, setupOptions?: RoomSetupOptions): { room: RoomRecord; organizerToken: string } {
     if (!Number.isInteger(playerCount) || playerCount < 5 || playerCount > 12) {
       throw new Error("Player count must be between 5 and 12");
     }
     if (!["IN_PERSON", "REMOTE", "HYBRID"].includes(playMode)) throw new Error("Unknown play mode");
     if(typeof sixPlayerEvilCooperation!=='boolean'||sixPlayerEvilCooperation&&playerCount!==6)throw new RoomError('INVALID_RULES','邪恶协作仅适用于6人房间',400);
+    if (setupOptions?.baseComposition && compositionIssue(playerCount, setupOptions.baseComposition)) {
+      throw new RoomError("INVALID_COMPOSITION", "基础构成无法发牌，请检查四类人数", 400);
+    }
     const normalizedVoiceRoomUrl = voiceRoomUrl?.trim();
     if (normalizedVoiceRoomUrl && !isSafeExternalUrl(normalizedVoiceRoomUrl)) throw new Error("Voice link must use http or https");
     let code = createRoomCode();
     while (this.#rooms.has(code)) code = createRoomCode();
     const organizerToken = createOpaqueToken();
     const room: RoomRecord = {
-      schemaVersion: 5, timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true,...(sixPlayerEvilCooperation?{sixPlayerEvilCooperation:true}:{})},roomInstanceId: randomUUID(), setupId: randomUUID(),
+      schemaVersion: setupOptions ? 6 : 5, ...(setupOptions ? { setupOptions: structuredClone(setupOptions) } : {}),
+      timeline:{mode:"WALL",offsetMs:0,epoch:0},botControl:newBotControl(),lastHumanActivityAt:this.#now(),metadata:{pendingFirstJoin:true,...(sixPlayerEvilCooperation?{sixPlayerEvilCooperation:true}:{})},roomInstanceId: randomUUID(), setupId: randomUUID(),
       id: randomUUID(),
       code,
       organizerName: organizerName.trim().slice(0, 24) || "组织者",
@@ -233,6 +248,19 @@ export class RoomService {
 
   join(codeInput: string, nicknameInput: string, mode: ParticipantMode, requestedAvatar?:string): { participant: ParticipantRecord; token: string } {
     const room = this.find(codeInput);
+    if (isDebugRoom(room)) throw debugRoomPrivate();
+    return this.addParticipant(room, nicknameInput, mode, requestedAvatar);
+  }
+
+  initializeDebugHost(code: string, name: string, avatar?: string) {
+    const room = this.find(code);
+    if (!isDebugRoom(room) || room.participants.length) throw debugRoomPrivate();
+    const joined = this.addParticipant(room, name, "PLAYER", avatar);
+    this.updateBotRoster(room, { fill: true });
+    return joined;
+  }
+
+  private addParticipant(room: RoomRecord, nicknameInput: string, mode: ParticipantMode, requestedAvatar?: string): {participant: ParticipantRecord; token: string} {
     if (mode !== "PLAYER" && mode !== "DISPLAY") throw new Error("Unknown participant mode");
     if (mode === "PLAYER" && room.state !== "LOBBY") throw new Error("Game already started");
     const nickname = nicknameInput.trim().slice(0, 24);
@@ -274,6 +302,7 @@ export class RoomService {
 
   leave(codeInput: string, playerToken: string): { roomDestroyed: boolean; organizerChanged: boolean } {
     const room = this.find(codeInput);
+    if (isDebugRoom(room)) throw new RoomError("DEBUG_EXIT_REQUIRED", "请在单人调试大厅退出调试模式");
     const participantIndex = room.participants.findIndex((candidate) => candidate.tokenHash === hashOpaqueToken(playerToken));
     if (participantIndex < 0) throw new Error("Player authorization failed");
     const participant = room.participants[participantIndex]!;
@@ -309,6 +338,18 @@ export class RoomService {
     return { roomDestroyed: false, organizerChanged };
   }
 
+  exitDebugRoom(code: string, token: string, context: RoomCommandContext, accountId?: string) {
+    const room = this.find(code);
+    this.self(code, token, accountId);
+    if (context.roomInstanceId !== room.roomInstanceId) throw new RoomError("ROOM_INSTANCE_CHANGED", "原房间已变化");
+    this.requireHost(room, token);
+    if (!isDebugRoom(room)) throw new RoomError("NOT_DEBUG_ROOM", "这不是单人调试房");
+    if (room.state !== "LOBBY") throw new RoomError("GAME_IN_PROGRESS", "回到大厅后才能退出调试模式");
+    this.validateCommand(code, token, context, "ROOM", accountId);
+    this.#rooms.delete(room.code);
+    return { roomDestroyed: true, organizerChanged: false };
+  }
+
   creationRequests(){return structuredClone([...this.#creations.values()]);}
   restoreCreationRequests(values:CreationRequest[]){this.#creations.clear();for(const value of values)this.#creations.set(value.key,structuredClone(value));}
   creationRequest(key:string){return this.#creations.get(key);}
@@ -328,6 +369,10 @@ export class RoomService {
   }
   changeBots(code:string,token:string,request:{count?:number;fill?:boolean;clear?:boolean}):ControlResult{
     const room=this.find(code);this.requireHost(room,token);if(room.state!=='LOBBY')throw new RoomError('GAME_IN_PROGRESS','请回到大厅后调整人机');
+    if (isDebugRoom(room)) throw new RoomError("DEBUG_ROSTER_FIXED", "调试房会自动补齐人机");
+    return this.updateBotRoster(room, request);
+  }
+  private updateBotRoster(room: RoomRecord, request: {count?:number;fill?:boolean;clear?:boolean}): ControlResult {
     if([request.count!==undefined,request.fill===true,request.clear===true].filter(Boolean).length!==1)throw new RoomError('INVALID_REQUEST','请选择一种人机操作',400);
     const current=bots(room),vacancies=room.playerCount-activePlayers(room).length;
     const count=request.fill?vacancies:request.count??0;
@@ -358,7 +403,11 @@ export class RoomService {
     const room=this.find(code),host=this.requireHost(room,token);
     if(room.state!=='LOBBY')throw new RoomError('GAME_IN_PROGRESS','请回到大厅后选择测试身份');
     if(!this.rehearsalEligible(room))throw new RoomError('REHEARSAL_UNAVAILABLE','仅一名真人与人机游玩时可选择测试身份');
+    if (!isDebugRoom(room) && (roleId !== null || !room.rehearsalRole)) throw new RoomError("REHEARSAL_UNAVAILABLE", "仅单人调试房可以指定角色");
     if(roleId!==null&&!ROLE_CATALOG.some(role=>role.id===roleId))throw new RoomError('INVALID_ROLE','请选择有效角色或随机身份',400);
+    if (roleId !== null && !canDealRole(room.playerCount, roleId, room.setupOptions?.baseComposition)) {
+      throw new RoomError("ROLE_NOT_IN_COMPOSITION", "当前构成无法发到这个角色", 400);
+    }
     if((room.rehearsalRole?.roleId??null)===roleId&&(!room.rehearsalRole||room.rehearsalRole.participantId===host.id))return{status:'UNCHANGED'};
     if(roleId===null)delete room.rehearsalRole;else room.rehearsalRole={participantId:host.id,roleId};
     this.invalidateSetup(room);this.changed(room);return{status:'APPLIED'};
@@ -385,6 +434,7 @@ export class RoomService {
 
   /** Only the validated switch capability may close a live room, staged with the target join. */
   closeForSwitch(code:string,instance:string,hostId:string,hostHash:string,accountId?:string):void{
+    if (isDebugRoom(this.find(code))) throw debugRoomPrivate();
     const room=this.find(code);
     if(room.roomInstanceId!==instance)throw new RoomError("ROOM_INSTANCE_CHANGED","原房间已变化，请重新确认");
     const host=room.participants.find(p=>p.id===hostId&&!p.left&&p.mode==="PLAYER"&&p.controller==="HUMAN");
@@ -503,7 +553,7 @@ export class RoomService {
     }
     exitIneligibleRehearsal(room,this.#now());this.clearIneligibleRehearsalRole(room);invalidateBots(room);
     room.setupId = randomUUID();
-    for (const player of room.participants) player.ready = false;
+    for (const player of room.participants) player.ready = isDebugRoom(room) && player.controller === "BOT";
   }
 
   setSixPlayerEvilCooperation(code:string,token:string,enabled:boolean):void{
@@ -535,6 +585,7 @@ export class RoomService {
   removeParticipant(code: string, token: string, id: string, cancelTutorial = false): void {
     const room = this.find(code);
     const host = this.requireHost(room, token);
+    if (isDebugRoom(room)) throw new RoomError("DEBUG_ROSTER_FIXED", "调试房会自动补齐人机");
     if (id === host.id) throw new RoomError("CANNOT_REMOVE_HOST", "房主请使用离开房间");
     const target = room.participants.find(p => p.id === id && !p.left && p.mode === "PLAYER");
     if (!target) throw new RoomError("SEAT_REMOVED", "该玩家已不在房间");
@@ -607,14 +658,14 @@ export class RoomService {
   restore(snapshots: RoomRecord[]): void {
     for (const snapshot of snapshots) {
       const code = normalizeRoomCode(snapshot.code);
-      if (![undefined, 1, 2, 3, 4,5].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
+      if (![undefined, 1, 2, 3, 4, 5, 6].includes(snapshot.schemaVersion)) throw new Error("Unsupported room snapshot schema");
       if (snapshot.playerCount < 5 || snapshot.playerCount > 12 || !Array.isArray(snapshot.participants)) throw new Error(`Room ${code}: invalid roster snapshot`);
       for(const enabled of [snapshot.metadata?.sixPlayerEvilCooperation,snapshot.game?.sixPlayerEvilCooperation])if(enabled!==undefined&&(typeof enabled!=='boolean'||enabled&&snapshot.playerCount!==6))throw new Error(`Room ${code}: invalid six-player rules`);
       if(snapshot.game?.openingNightVersion!==undefined&&snapshot.game.openingNightVersion!==1||snapshot.metadata?.openingNightRulesVersion!==undefined&&snapshot.metadata.openingNightRulesVersion!==1)throw new Error(`Room ${code}: unsupported opening night version`);
-      if(![2,3,4,5].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
+      if(![2,3,4,5,6].includes(snapshot.schemaVersion))validateLegacyRoom(snapshot);
       if(snapshot.game&&snapshot.game.presentationVersion!==undefined&&![1,2,3,4].includes(snapshot.game.presentationVersion))throw new Error("Unsupported presentation version");
       const game = snapshot.game ? this.restoreGame(snapshot.game, `legacy-game-${snapshot.gameNumber ?? 0}:${randomUUID()}`, snapshot.timeline ? gameNow(snapshot,this.#now()) : this.#now()) : undefined;
-      if (game && (![3,4,5].includes(snapshot.schemaVersion)||!game.publicProjection)) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
+      if (game && (![3,4,5,6].includes(snapshot.schemaVersion)||!game.publicProjection)) migratePresentation(game, snapshot.playerCount, this.#now(), !this.#presentation);
       migrateReceipts(snapshot);
 
       snapshot.roomInstanceId ??= randomUUID();
@@ -624,14 +675,33 @@ export class RoomService {
         ?? snapshot.participants.find((participant) => participant.mode === "PLAYER" && participant.seat === 1)?.id;
       const restored=structuredClone({ ...snapshot, playMode: snapshot.playMode ?? "IN_PERSON", lastActivityAt: snapshot.lastActivityAt ?? new Date(this.#now()).toISOString(), ...(organizerParticipantId ? { organizerParticipantId } : {}), ...(game ? { game } : {}), code, gameNumber: snapshot.gameNumber ?? 0, revision: snapshot.revision || 1 });
       upgradeBotRoom(restored,this.#now());
+      const setup = restored.setupOptions;
+      if ((snapshot.schemaVersion === 6) !== Boolean(setup) ||
+        (setup && (setup.version !== 1 || !["STANDARD", "DEBUG_SOLO"].includes(setup.kind) ||
+          (setup.kind === "STANDARD" && !setup.baseComposition) ||
+          (setup.baseComposition && compositionIssue(restored.playerCount, setup.baseComposition))))) {
+        throw new Error(`Room ${code}: invalid snapshot schema or setup options`);
+      }
+      if(setup){
+        const occupied=activePlayers(restored);
+        if(new Set(occupied.map(p=>p.id)).size!==occupied.length||new Set(occupied.map(p=>p.seat)).size!==occupied.length||occupied.some(p=>!Number.isInteger(p.seat)||p.seat!<1||p.seat!>restored.playerCount))throw new Error(`Room ${code}: invalid setup seats`);
+      }
+      if (isDebugRoom(restored) && (restored.participants.length !== restored.playerCount ||
+        humans(restored).length !== 1 || this.organizer(restored)?.id !== humans(restored)[0]?.id ||
+        bots(restored).length !== restored.playerCount - 1 ||
+        new Set(restored.participants.map(p => p.seat)).size !== restored.playerCount ||
+        restored.participants.some(p => p.left || p.mode !== "PLAYER" || !Number.isInteger(p.seat) || p.seat! < 1 || p.seat! > restored.playerCount ||
+          (restored.state === "LOBBY" && p.controller === "BOT" && !p.ready)))) {
+        throw new Error(`Room ${code}: invalid solo debug roster`);
+      }
       if(restored.rehearsalRole!==undefined&&(!restored.rehearsalRole||typeof restored.rehearsalRole!=="object"||typeof restored.rehearsalRole.participantId!=="string"||!restored.rehearsalRole.participantId||!ROLE_CATALOG.some(role=>role.id===restored.rehearsalRole!.roleId)))throw new Error(`Room ${code}: invalid rehearsal role`);
       this.clearIneligibleRehearsalRole(restored);
-      if(![4,5].includes(snapshot.schemaVersion)){
+      if(![4,5,6].includes(snapshot.schemaVersion)){
         restored.schemaVersion=4;
         if(restored.game){restored.game.presentationVersion=1;restored.game.startInfo={mode:'LEGACY',stage:restored.game.phase==='ABORTED'?'CANCELLED':'COMPLETE',entries:{}};for(const e of restored.game.events)e.timingVersion??=1;}
       }
-      if(snapshot.schemaVersion!==5)this.migratePrivatePresentations(restored);
-      restored.schemaVersion=5;
+      if(![5,6].includes(snapshot.schemaVersion))this.migratePrivatePresentations(restored);
+      restored.schemaVersion=snapshot.schemaVersion===6?6:5;
       this.validatePrivatePresentations(restored);
       validateStartInfo(restored);this.#rooms.set(code,restored);
       this.captureResult(this.#rooms.get(code)!, this.gameNow(this.#rooms.get(code)!));
@@ -664,6 +734,7 @@ export class RoomService {
     const cooperation=room.game?room.game.sixPlayerEvilCooperation===true:room.metadata?.sixPlayerEvilCooperation===true;
     return {
       code: room.code,
+      ...(room.setupOptions ? { roomKind: room.setupOptions.kind, ...(room.setupOptions.baseComposition ? {baseComposition: room.setupOptions.baseComposition} : {}) } : {}),
       timeline:{mode:room.timeline.mode,epoch:room.timeline.epoch},botControl:this.botControlView(room),activeHumanCount:humans(room).length,botCount:bots(room).length,
       protocolVersion: 7 as const, roomInstanceId: room.roomInstanceId, setupId: room.setupId,
       revision: room.revision, serverNow: this.#now(),
@@ -695,7 +766,7 @@ export class RoomService {
     room.gameNumber = (room.gameNumber ?? 0) + 1;
     this.clearIneligibleRehearsalRole(room);
     const forced=room.rehearsalRole?{seat:host.seat!,roleId:room.rehearsalRole.roleId}:undefined;
-    room.assignments = setupGameRoles(room.playerCount, `${room.id}:${room.code}:game-${room.gameNumber}`,forced);
+    room.assignments = setupGameRoles(room.playerCount, `${room.id}:${room.code}:game-${room.gameNumber}`,forced,room.setupOptions?.baseComposition);
     room.state = "TUTORIAL";
     if (tutorialMode === "SKIP") {
       for (const player of players) player.tutorialComplete = true;
@@ -718,7 +789,7 @@ export class RoomService {
     delete room.game;room.timeline={mode:"WALL",offsetMs:0,epoch:room.timeline.epoch+1};room.botControl.memory={};
     if (room.metadata) delete room.metadata.social;
     this.invalidateSetup(room);
-    for (const participant of room.participants) { participant.tutorialComplete = false; participant.ready = false; }
+    for (const participant of room.participants) participant.tutorialComplete = false;
     this.changed(room);
   }
 
@@ -1341,8 +1412,8 @@ export class RoomService {
       presentations:{version:1 as const,pending:pending.slice(0,32),hasMore:pending.length>32},
       self: { participantId: participant.id, mode: participant.mode, commandVersion: participant.commandVersion },
       ...(game ? { contextId: game.publicProjection?.contextId ?? game.contextId } : {}),
-      rehearsal:{eligible:this.rehearsalEligible(room),canChooseRole:room.state==='LOBBY'&&this.organizer(room)?.id===participant.id&&this.rehearsalEligible(room),...(room.rehearsalRole?.participantId===participant.id&&this.rehearsalEligible(room)?{selectedRoleId:room.rehearsalRole.roleId}:{})},
-      canManageBots:this.organizer(room)?.id===participant.id&&room.state==='LOBBY',
+      rehearsal:{eligible:this.rehearsalEligible(room),canChooseRole:isDebugRoom(room)&&room.state==='LOBBY'&&this.organizer(room)?.id===participant.id&&this.rehearsalEligible(room),...(room.rehearsalRole?.participantId===participant.id&&this.rehearsalEligible(room)?{selectedRoleId:room.rehearsalRole.roleId}:{})},
+      canManageBots:!isDebugRoom(room)&&this.organizer(room)?.id===participant.id&&room.state==='LOBBY',
       canStepBots:this.organizer(room)?.id===participant.id&&room.botControl.mode==='PAUSED'&&bots(room).length>0,
       canFreezeRehearsal:this.organizer(room)?.id===participant.id&&humans(room).length===1&&bots(room).length>0&&['LOBBY','TUTORIAL','RUNNING'].includes(this.publicView(codeInput).state),
       canAdvanceRehearsal:this.organizer(room)?.id===participant.id&&room.timeline.mode==='MANUAL',
@@ -1392,7 +1463,7 @@ export class RoomService {
     const game: GameRuntime = {
       openingNightVersion:1,presentationVersion:4,presentationSeen:{},roleNotifications:[],startInfo:createStartInfo(room,seed),
       ...(room.playerCount===6&&room.metadata?.sixPlayerEvilCooperation===true?{sixPlayerEvilCooperation:true}:{}),
-      hadBots:bots(room).length>0,rehearsalUsed:room.timeline.mode==="MANUAL"||!!room.rehearsalRole,
+      hadBots:bots(room).length>0,rehearsalUsed:isDebugRoom(room)||room.timeline.mode==="MANUAL"||!!room.rehearsalRole,
       contextId: randomUUID(),
       gameId: `${randomUUID()}:game-${room.gameNumber}`, storytellerSeed: seed, presentationUntil: 0, phaseDeadlineAt: this.gameNow(room) + 180_000, decisions: [], claimDayBySeat: {},
       phase: "ROLE_REVEAL", day: 0,

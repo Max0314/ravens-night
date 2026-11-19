@@ -14,15 +14,15 @@ afterEach(()=>{cleanup();vi.clearAllMocks();});
 beforeEach(()=>{vi.mocked(readCreationIntent).mockReturnValue(undefined);vi.mocked(getRoomCreateAccess).mockResolvedValue({status:'OPEN'});});
 test('six-player creation defaults off, clears on another count and transmits the selected option',async()=>{
  const submit=vi.fn(),ui=render(<Create onBack={()=>{}} onSubmit={submit} busy={false}/>);
- expect(screen.queryByLabelText('6人局邪恶协作')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'6人'}));expect(screen.getByLabelText('6人局邪恶协作')).not.toBeChecked();
- fireEvent.click(screen.getByLabelText('6人局邪恶协作'));fireEvent.click(screen.getByRole('button',{name:'7人'}));fireEvent.click(screen.getByRole('button',{name:'6人'}));expect(screen.getByLabelText('6人局邪恶协作')).not.toBeChecked();
+ expect(screen.queryByLabelText('6人局邪恶协作')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'玩家人数减少'}));expect(screen.getByLabelText('6人局邪恶协作')).not.toBeChecked();
+ fireEvent.click(screen.getByLabelText('6人局邪恶协作'));fireEvent.click(screen.getByRole('button',{name:'玩家人数增加'}));fireEvent.click(screen.getByRole('button',{name:'玩家人数减少'}));expect(screen.getByLabelText('6人局邪恶协作')).not.toBeChecked();
  await waitFor(()=>expect(screen.getByRole('button',{name:'创建房间'})).toBeEnabled());
- fireEvent.click(screen.getByLabelText('6人局邪恶协作'));await act(async()=>fireEvent.submit(ui.container.querySelector('form')!));expect(submit).toHaveBeenCalledWith('皮卡丘',6,'IN_PERSON',undefined,{nickname:'皮卡丘',avatar:null},true);
+ fireEvent.click(screen.getByLabelText('6人局邪恶协作'));await act(async()=>fireEvent.submit(ui.container.querySelector('form')!));expect(submit).toHaveBeenCalledWith('皮卡丘',6,'IN_PERSON',undefined,{nickname:'皮卡丘',avatar:null},true,{kind:'STANDARD'});
 });
 test('a pending creation freezes and resends its original cooperation choice',async()=>{
- vi.mocked(readCreationIntent).mockReturnValue({creationVersion:2,playerCount:6,organizerName:'皮卡丘',commandId:'pending',createTicket:'ticket',sixPlayerEvilCooperation:true});
+ vi.mocked(readCreationIntent).mockReturnValue({creationVersion:2,playerCount:6,organizerName:'皮卡丘',commandId:'pending',createTicket:'ticket',avatar:null,sixPlayerEvilCooperation:true});
  const submit=vi.fn(),ui=render(<Create onBack={()=>{}} onSubmit={submit} busy={false}/>);expect(screen.getByLabelText('6人局邪恶协作')).toBeChecked();expect(screen.getByLabelText('6人局邪恶协作')).toBeDisabled();
- await act(async()=>fireEvent.submit(ui.container.querySelector('form')!));expect(submit).toHaveBeenLastCalledWith('皮卡丘',6,'IN_PERSON',undefined,{nickname:'皮卡丘',avatar:null},true);
+ await act(async()=>fireEvent.submit(ui.container.querySelector('form')!));expect(submit).toHaveBeenLastCalledWith('皮卡丘',6,'IN_PERSON',undefined,{nickname:'皮卡丘',avatar:null},true,{kind:'STANDARD'});
 });
 test('lobby changes wait for public server state and non-host or started rooms are read-only',async()=>{
  const room:RoomView={code:'SIX123',state:'LOBBY',playerCount:6,participants:[],sixPlayerEvilCooperation:false},change=vi.fn();

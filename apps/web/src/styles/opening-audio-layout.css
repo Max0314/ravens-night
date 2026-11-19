@@ -6,6 +6,12 @@
 .room-page__header.room-page__header--with-menu{padding-right:56px;}
 .room-page__heading{flex:1;min-width:0;}
 .room-page__audio{flex:none;display:flex;align-items:center;}
+.compact-lobby>header{padding-right:56px;}
+.compact-lobby>header .global-audio-button{font-size:20px;color:#dcc498;}
+.debug-profile-actions{display:grid;gap:6px;margin-top:12px;}
+.debug-profile-actions>button{min-height:44px;border:1px solid #ad905351;border-radius:8px;background:#2b2317;padding:7px 10px;text-align:left;}
+.lobby-profile-sheet .room-sheet:has(.room-profile-form)>.room-sheet__body{display:block;overflow:auto;}
+.lobby-profile-sheet .room-profile-form,.lobby-profile-sheet .profile-fields{display:block;min-height:max-content;overflow:visible;}
 .lobby-primary__actions{display:flex;align-items:center;gap:8px;}
 .lobby-primary__start{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:center;}
 .lobby-primary__start>.rn-button{width:100%;}

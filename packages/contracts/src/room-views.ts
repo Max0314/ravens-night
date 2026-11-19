@@ -27,7 +27,19 @@ export interface GameView {
   winner?: "GOOD" | "EVIL";
   winReason?: string;
 }
-export interface RoomView extends Partial<RoomProtocolView> { sixPlayerEvilCooperation?:boolean;botControl?:BotControlView;timeline?:Pick<RoomTimeline,"mode"|"epoch">;activeHumanCount?:number;botCount?:number; code: string; state: string; playerCount: number; playMode?: RoomPlayMode; voiceRoomUrl?: string; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView; rulesSummary?: string; hostClaimAt?: number; tutorialCompleteCount?: number }
+export interface BaseComposition {
+  townsfolk: number;
+  outsider: number;
+  minion: number;
+  demon: number;
+}
+export type RoomKind = "STANDARD" | "DEBUG_SOLO";
+export interface RoomSetupOptions {
+  version: 1;
+  kind: RoomKind;
+  baseComposition?: BaseComposition;
+}
+export interface RoomView extends Partial<RoomProtocolView> { roomKind?:RoomKind;baseComposition?:BaseComposition;sixPlayerEvilCooperation?:boolean;botControl?:BotControlView;timeline?:Pick<RoomTimeline,"mode"|"epoch">;activeHumanCount?:number;botCount?:number; code: string; state: string; playerCount: number; playMode?: RoomPlayMode; voiceRoomUrl?: string; organizerId?: string; organizerName?: string; participants: RoomParticipant[]; game?: GameView; rulesSummary?: string; hostClaimAt?: number; tutorialCompleteCount?: number }
 export type PrivateHistoryPhase = GameView["phase"] | "HISTORY";
 export type PrivateHistoryKind = "IDENTITY" | "ACTION" | "INFORMATION" | "ROLE_CHANGE" | "NOTICE";
 export interface PrivateHistoryEntry {

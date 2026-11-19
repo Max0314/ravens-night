@@ -1,11 +1,19 @@
-import {test,afterEach} from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import {createRequire} from 'node:module';
-const require=createRequire(new URL('../apps/web/package.json',import.meta.url)),{JSDOM}=require('jsdom'),base=new URL('../apps/web/public/audio-candidates/2026-11-12-v1/',import.meta.url);
-const original={document:globalThis.document,window:globalThis.window,fetch:globalThis.fetch,Option:globalThis.Option};let dom;
-afterEach(()=>{dom?.window.close();Object.assign(globalThis,original);});
-async function setup(){dom=new JSDOM(await readFile(new URL('index.html',base),'utf8'),{url:'https://clocktower.fribench.cn/audio-candidates/2026-11-12-v1/'});Object.assign(globalThis,{document:dom.window.document,window:dom.window,Option:dom.window.Option,fetch:async()=>({ok:true,json:async()=>JSON.parse(await readFile(new URL('catalog.json',base),'utf8'))})});const audio=document.getElementById('audio');let paused=true;Object.defineProperty(audio,'paused',{get:()=>paused});audio.pause=()=>{paused=true;audio.dispatchEvent(new dom.window.Event('pause'));};audio.load=()=>{};audio.play=async()=>{paused=false;audio.dispatchEvent(new dom.window.Event('play'));};await import(new URL('page.js?test='+Math.random(),base));return audio;}
-test('choosing voice shows all eight entries and does not prefetch media',async()=>{const audio=await setup();assert.equal(audio.hasAttribute('src'),false);const kind=document.getElementById('kind');kind.value='voice';kind.dispatchEvent(new dom.window.Event('change'));assert.equal(document.getElementById('recommended').checked,false);assert.equal(document.querySelectorAll('article').length,8);assert.equal(document.querySelectorAll('audio').length,1);});
-test('search finds non-recommended IDs and returning all categories exposes all 55',async()=>{await setup();const search=document.getElementById('search');search.value='V08';search.dispatchEvent(new dom.window.Event('input'));assert.equal(document.querySelector('article').dataset.id,'V08');assert.equal(document.querySelectorAll('article').length,1);search.value='';search.dispatchEvent(new dom.window.Event('input'));assert.equal(document.querySelectorAll('article').length,55);});
-test('actual page buttons play the selected source and hidden documents pause it',async()=>{const audio=await setup();document.querySelector('.track').click();assert.equal(audio.paused,false);assert.match(audio.src,/M22\.mp3$/);Object.defineProperty(document,'hidden',{value:true,configurable:true});document.dispatchEvent(new dom.window.Event('visibilitychange'));assert.equal(audio.paused,true);assert.match(document.getElementById('now').textContent,/M22/);});
+import { readFile } from 'node:fs/promises';
+import { buildAudioPreviewCatalog } from '../apps/web/audio-preview-catalog.mjs';
+
+test('the old audition page redirects through the game and contains no standalone player', async () => {
+  const html=await readFile(new URL('../apps/web/public/audio-candidates/2026-11-12-v1/index.html',import.meta.url),'utf8');
+  assert.match(html,/url=\/\?preview=effects&amp;tab=audio/);
+  assert.doesNotMatch(html,/<(?:audio|script)\b/);
+});
+
+test('audition catalog covers the runtime and candidate directories with unique URLs', () => {
+  const catalog=buildAudioPreviewCatalog(),groups=Object.groupBy(catalog,track=>track.group);
+  assert.equal(new Set(catalog.map(track=>track.url)).size,catalog.length);
+  assert.ok(groups.candidate.length>=55);
+  assert.ok(groups.effects.length+groups.music.length>=132);
+  assert.ok(groups.candidate.some(track=>track.id==='M22'&&track.channel==='music'&&track.sources.length>0));
+  assert.ok(groups.effects.some(track=>track.id==='paper-turn-4'&&track.url.includes('/v2/')));
+});

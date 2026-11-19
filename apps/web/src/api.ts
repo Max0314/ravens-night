@@ -17,7 +17,7 @@ interface Intent { onCommitted?: (() => void) | undefined; url: string; init: Re
 const unsentVotes = new Map<string, Intent>();
 const pending = new Map<string, Intent>();
 const contextKey = (code: string, mode = currentRoomMode()) => `${code.toUpperCase()}:${mode}`;
-export function resetAccountContext(){accountGeneration++; resetRoomAudioDeliveries(); contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear(); joinIntents.clear();joinFlights.clear();switchMemory=undefined;switchFlight=undefined;switchPreparation=undefined; creationIntent=undefined; creationFlights.clear();}
+export function resetAccountContext(){accountGeneration++; resetRoomAudioDeliveries(); contexts.clear(); tails.clear(); pending.clear(); unsentVotes.clear(); joinTickets.clear(); joinIntents.clear();joinFlights.clear();switchMemory=undefined;switchFlight=undefined;switchPreparation=undefined; creationIntents.clear(); creationFlights.clear();}
 export function observeRoomView(code: string, incoming: ContextView, mode = currentRoomMode(),audioObservation?:RoomAudioObservation) {
   observeRoomAudioDelivery(code,incoming,mode,audioObservation);
   const key = contextKey(code, mode), previous = contexts.get(key);
@@ -81,7 +81,7 @@ async function dispatchIntent<T>(key: string, intent: Intent): Promise<T> {
     const committed=intent.onCommitted;intent.onCommitted=undefined;committed?.();
     return result;
   } catch (error) {
-    if (intent.init.method === "DELETE" && intent.url.endsWith("/leave") && error instanceof ApiError && (error.status === 404 || (error.status === 403 && error.errorCode === "SEAT_REMOVED"))) {
+    if (intent.init.method === "DELETE" && intent.url.endsWith("/leave") && error instanceof ApiError && (error.status === 404 || (intent.body.intent !== 'EXIT_DEBUG' && error.status === 403 && error.errorCode === "SEAT_REMOVED"))) {
       if (pending.get(key) === intent) pending.delete(key);
       return { left: true, roomDestroyed: error.status === 404, organizerChanged: false, self: null } as T;
     }
@@ -148,7 +148,7 @@ export function previewGuest(code:string){return request<GuestPreview>(`/api/roo
 export function claimGuest(preview:GuestPreview){return request<{claimed:true;code:string;id:string}>(`/api/rooms/${preview.code}/account/guest-claim`,{method:'POST',body:JSON.stringify({previewToken:preview.previewToken,confirm:true})});}
 export function login(accessPassword: string) { return request<{ authorized: boolean }>("/api/auth/login", { method: "POST", body: JSON.stringify({ accessPassword }) }); }
 
-type RoomCreateAccess = { status: "OPEN" | "PASSCODE_REQUIRED" | "GRANTED" };
+type RoomCreateAccess = { status: "OPEN" | "PASSCODE_REQUIRED" | "GRANTED"; via?: 'ACCOUNT'|'OPEN'|'PASSCODE'; saved?:boolean; creationV3?:boolean };
 export async function getRoomCreateAccess() {
   const access = await request<RoomCreateAccess>("/api/room-create-access");
   if (!["OPEN", "PASSCODE_REQUIRED", "GRANTED"].includes(access?.status)) {
@@ -161,29 +161,66 @@ export function verifyRoomCreatePasscode(passcode: string) {
     method: "POST", body: JSON.stringify({ passcode }),
   });
 }
+export const getSavedRoomPasscode = () => request<{status:'MISSING'|'CURRENT'|'ROTATED'}>('/api/room-create-access/saved');
+export const revealSavedRoomPasscode = () => request<{status:'CURRENT'|'ROTATED';passcode:string}>('/api/room-create-access/saved',{method:'POST',body:JSON.stringify({intent:'REVEAL'})});
 
 export function notifyStorageFailure(){window.dispatchEvent(new Event('ravens:storage-warning'));}
-export interface CreationIntent { sixPlayerEvilCooperation?:boolean;creationVersion?:2;avatar?:string|null;expectedProfileRevision?:number;commandId:string;createTicket:string;playerCount:number;organizerName:string;playMode?:RoomPlayMode;voiceRoomUrl?:string }
+type RoomKind=import('@ravens/contracts').RoomKind;
+type BaseComposition=import('@ravens/contracts').BaseComposition;
+type CreationOptions={kind:RoomKind;baseComposition?:BaseComposition};
+export interface CreationIntent { sixPlayerEvilCooperation?:boolean;creationVersion?:2|3;roomKind?:RoomKind;baseComposition?:BaseComposition;avatar?:string|null;expectedProfileRevision?:number;commandId:string;createTicket:string;playerCount:number;organizerName:string;playMode?:RoomPlayMode;voiceRoomUrl?:string }
+export type CreatedRoom={code:string;creationId?:string;organizerToken?:string;roomKind?:'STANDARD';roomInstanceId?:string}|{code:string;creationId:string;roomKind:'DEBUG_SOLO';roomInstanceId:string;participantId:string};
 const creationKey=()=>`ravens_creation:${roomSessionKey()}`;
-let creationIntent:CreationIntent|undefined;
-const creationFlights=new Map<string,{fingerprint:string;promise:Promise<{code:string;organizerToken:string}>}>();
-export function readCreationIntent():CreationIntent|undefined {try{return creationIntent??=JSON.parse(sessionStorage.getItem(creationKey())??'null')??undefined;}catch{return creationIntent;}}
-export function finishCreationIntent(){creationIntent=undefined;try{sessionStorage.removeItem(creationKey());}catch{}}
-function creationWire(intent:CreationIntent){const{commandId,avatar,expectedProfileRevision,...wire}=intent;return wire;}
-export function createRoom(playerCount:number,organizerName:string,playMode:RoomPlayMode='IN_PERSON',voiceRoomUrl?:string,profile?:PlayerSelection,sixPlayerEvilCooperation=false){
+const durablePrefix=()=>`ravens:debug-create:v1:${roomSessionKey()}:`;
+const creationIntents=new Map<string,CreationIntent>();
+const creationFlights=new Map<string,{fingerprint:string;promise:Promise<CreatedRoom>}>();
+export function readCreationIntent():CreationIntent|undefined {const key=creationKey();try{return creationIntents.get(key)??JSON.parse(sessionStorage.getItem(key)??'null')??undefined;}catch{return creationIntents.get(key);}}
+export function readDurableCreations(){
+  const pending:{intent:CreationIntent;sentAt:number}[]=[];
+  try {
+    const prefix=durablePrefix();
+    for(const key of Object.keys(localStorage).filter(key=>key.startsWith(prefix))) {
+      try {
+        const value=JSON.parse(localStorage.getItem(key)??'null') as typeof pending[number];
+        if(value?.intent?.roomKind==='DEBUG_SOLO'&&value.intent.creationVersion===3&&key===prefix+value.intent.commandId&&value.sentAt>Date.now()-86400000)pending.push(value);
+        else localStorage.removeItem(key);
+      } catch { localStorage.removeItem(key); }
+    }
+  } catch { /* The active tab can still retry from memory. */ }
+  return pending.sort((a,b)=>b.sentAt-a.sentAt);
+}
+export function resumeCreationIntent(intent:CreationIntent){creationIntents.set(creationKey(),intent);}
+export function finishCreationIntent(removeDurable=true){
+  const intent=readCreationIntent();creationIntents.delete(creationKey());
+  try{sessionStorage.removeItem(creationKey());if(removeDurable&&intent?.roomKind==='DEBUG_SOLO')localStorage.removeItem(durablePrefix()+intent.commandId);}catch{}
+}
+function creationWire(intent:CreationIntent){const{commandId,avatar,expectedProfileRevision,...wire}=intent;return {...wire,...(intent.roomKind==='DEBUG_SOLO'?{hostAvatar:avatar??null,...(expectedProfileRevision===undefined?{}:{expectedProfileRevision})}:{})};}
+export function createRoom(playerCount:number,organizerName:string,playMode:RoomPlayMode='IN_PERSON',voiceRoomUrl?:string,profile?:PlayerSelection,sixPlayerEvilCooperation=false,options?:CreationOptions){
   const previous=readCreationIntent(),key=creationKey();
-  const values=previous&&!previous.creationVersion?{playerCount,organizerName:organizerName.trim(),playMode,...(playMode!=='IN_PERSON'&&voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{})}:{creationVersion:2 as const,playerCount,organizerName:organizerName.trim(),...(voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{}),...(profile?{avatar:profile.avatar,...(profile.expectedProfileRevision!==undefined?{expectedProfileRevision:profile.expectedProfileRevision}:{})}:{}),...(sixPlayerEvilCooperation?{sixPlayerEvilCooperation:true}:{})};
+  const base={playerCount,organizerName:organizerName.trim()},selected=profile?{avatar:profile.avatar,...(profile.expectedProfileRevision!==undefined?{expectedProfileRevision:profile.expectedProfileRevision}:{})}:{},rule=sixPlayerEvilCooperation?{sixPlayerEvilCooperation:true}:{};
+  const v3=previous?previous.creationVersion===3:options?.kind==='DEBUG_SOLO'||Boolean(options?.baseComposition);
+  const values=v3?{creationVersion:3 as const,...base,roomKind:options?.kind??previous?.roomKind??'STANDARD',...(options?.baseComposition?{baseComposition:options.baseComposition}:{}),...selected,...rule}:previous&&!previous.creationVersion?{...base,playMode,...(playMode!=='IN_PERSON'&&voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{})}:{creationVersion:2 as const,...base,...(voiceRoomUrl?.trim()?{voiceRoomUrl:voiceRoomUrl.trim()}:{}),...selected,...rule};
   const fingerprint=JSON.stringify(values),current=creationFlights.get(key);
   if(current)return current.fingerprint===fingerprint?current.promise:Promise.reject(new ApiError('正在创建房间，请等待原操作结果',409,'CREATION_PENDING'));
   if(previous){const{commandId,createTicket,...old}=previous;if(JSON.stringify(old)!==fingerprint)return Promise.reject(new ApiError('上次创建结果待确认，请继续原操作',409,'CREATION_PENDING'));}
-  const flight={fingerprint,promise:undefined as unknown as Promise<{code:string;organizerToken:string}>};
-  flight.promise=(async()=>{let intent=previous;if(!intent){const{createTicket}=await request<{createTicket:string}>('/api/room-create-ticket');intent={commandId:crypto.randomUUID(),createTicket,...values};creationIntent=intent;try{sessionStorage.setItem(key,JSON.stringify(intent));}catch{notifyStorageFailure();}}
-    try{return await request<{code:string;organizerToken:string}>('/api/rooms',{method:'POST',headers:{'x-command-id':intent.commandId},body:JSON.stringify(creationWire(intent))});}
-    catch(error){if(error instanceof ApiError&&error.status<500&&error.status!==429)finishCreationIntent();throw error;}
+  const flight={fingerprint,promise:undefined as unknown as Promise<CreatedRoom>};
+  flight.promise=(async()=>{
+    if(v3&&!(await getRoomCreateAccess()).creationV3)throw new ApiError('服务更新中，请稍后刷新',503,'CREATE_VERSION_UNAVAILABLE');
+    if(key!==creationKey())throw new ApiError('账号已变化，请重试',409,'STALE_RESPONSE');
+    let intent=previous;
+    if(!intent){
+      const{createTicket}=await request<{createTicket:string}>('/api/room-create-ticket');
+      if(key!==creationKey())throw new ApiError('账号已变化，请重试',409,'STALE_RESPONSE');
+      intent={commandId:crypto.randomUUID(),createTicket,...values};creationIntents.set(key,intent);
+      try{sessionStorage.setItem(key,JSON.stringify(intent));}catch{notifyStorageFailure();}
+      if(intent.roomKind==='DEBUG_SOLO')try{localStorage.setItem(durablePrefix()+intent.commandId,JSON.stringify({intent,sentAt:Date.now()}));}catch{notifyStorageFailure();}
+    }
+    try{return await request<CreatedRoom>('/api/rooms',{method:'POST',headers:{'x-command-id':intent.commandId},body:JSON.stringify(creationWire(intent))});}
+    catch(error){if(key===creationKey()&&error instanceof ApiError&&error.status<500&&error.status!==429)finishCreationIntent();throw error;}
   })().finally(()=>{if(creationFlights.get(key)===flight)creationFlights.delete(key);});creationFlights.set(key,flight);return flight.promise;
 }
-export interface RoomSummary {sixPlayerEvilCooperation?:boolean;code?:string;roomInstanceId:string;state:RoomView['state'];canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number;playerCount?:number;occupiedAvatars:string[]}
-export function getRoomSummary(code:string){return request<RoomSummary>(`/api/rooms/${encodeURIComponent(code)}/summary`);}
+export interface RoomSummary {roomKind?:RoomKind;baseComposition?:BaseComposition;sixPlayerEvilCooperation?:boolean;code?:string;roomInstanceId:string;state:RoomView['state'];canJoin:boolean;willReplaceBot:boolean;botCount:number;activeHumanCount:number;playerCount?:number;occupiedAvatars:string[]}
+export function getRoomSummary(code:string,mode?:'DISPLAY'){return request<RoomSummary>(`/api/rooms/${encodeURIComponent(code)}/summary${mode?'?mode=DISPLAY':''}`);}
 export function manageBots(code:string,intent:{count?:number;fill?:boolean;clear?:boolean}){return request<PrivateView>(`/api/rooms/${code}/bots`,{method:"POST",body:JSON.stringify(intent)});}
 export function controlBots(code:string,intent:{autoNominate?:boolean;mode?:"RUNNING"|"PAUSED";pace?:"NORMAL"|"SLOW"}){return request<PrivateView>(`/api/rooms/${code}/bots/control`,{method:"POST",body:JSON.stringify(intent)});}
 export function runBotCommand(code:string,command:import('@ravens/contracts').BotTestCommand,targetSeat?:number){return request<PrivateView>(`/api/rooms/${code}/bots/command`,{method:'POST',body:JSON.stringify({command,...(targetSeat!==undefined?{targetSeat}:{})})});}
@@ -269,7 +306,7 @@ export function retryPendingRoomSwitch():Promise<JoinResult>{
   switchFlight=flight;return flight;
 }
 
-export function leaveRoom(code: string) { return request<{ left: true; roomDestroyed: boolean; organizerChanged: boolean }>(`/api/rooms/${code}/leave`, { method: "DELETE", body: "{}" }); }
+export function leaveRoom(code: string, debug = false) { return request<{ left: true; roomDestroyed: boolean; organizerChanged: boolean }>(`/api/rooms/${code}/leave`, { method: "DELETE", body: JSON.stringify(debug?{intent:'EXIT_DEBUG'}:{}) }); }
 
 export function getRoom(code: string, mode?: "PLAYER" | "DISPLAY") { return request<RoomView>(`/api/rooms/${code}`, mode ? { headers: { "x-room-mode": mode } } : undefined); }
 export function setSixPlayerEvilCooperation(code:string,enabled:boolean){return request<RoomView>(`/api/rooms/${code}/rules`,{method:'POST',body:JSON.stringify({sixPlayerEvilCooperation:enabled})});}

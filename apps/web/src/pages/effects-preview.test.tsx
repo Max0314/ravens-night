@@ -37,7 +37,7 @@ test('a deferred audio unlock cannot revive a skipped public event',async()=>{
  vi.useFakeTimers();vi.setSystemTime(epoch);let finish:()=>void=()=>{};const start=vi.fn();
  class Audio{state='suspended';currentTime=0;destination={};resume(){return new Promise<void>(resolve=>{finish=()=>{this.state='running';resolve();};});}async decodeAudioData(){return{duration:1};}createGain(){return{gain:{value:0},connect(){}};}createBufferSource(){return{buffer:undefined,playbackRate:{value:1},connect(){},disconnect(){},start,stop(){}};}}
  vi.stubGlobal('AudioContext',Audio);vi.stubGlobal('fetch',vi.fn(async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)})));
- await audio.enableEffectsAudio(false);render(<><GlobalAudioButton/><EventStage game={view([event('SHOT')])}/></>);fireEvent.click(screen.getByRole('button',{name:'开启声音'}));fireEvent.click(screen.getByRole('button',{name:'跳过演出'}));await act(async()=>{finish();for(let i=0;i<8;i++)await Promise.resolve();});expect(start).not.toHaveBeenCalled();
+ await audio.enableEffectsAudio(false);render(<><GlobalAudioButton/><EventStage game={view([event('SHOT')])}/></>);fireEvent.click(screen.getByRole('button',{name:'声音设置'}));fireEvent.click(screen.getByRole('button',{name:'解除总静音'}));fireEvent.click(screen.getByRole('button',{name:'跳过演出'}));await act(async()=>{finish();for(let i=0;i<8;i++)await Promise.resolve();});expect(start).not.toHaveBeenCalled();
 });
 
 test('private preview seek uses future-only audio, then an ordinary pause resumes its current stem',async()=>{vi.useFakeTimers();const cue=vi.spyOn(audio,'scheduleRoleCue');render(<EffectsPreview/>);fireEvent.click(screen.getByRole('button',{name:/管家认主/}));await act(async()=>{for(let i=0;i<8;i++)await Promise.resolve();});expect(cue.mock.calls.at(-1)?.[2]?.mode).toBe('START');fireEvent.click(screen.getByRole('button',{name:'暂停'}));fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'1500'}});fireEvent.click(screen.getByRole('button',{name:'继续'}));expect(cue.mock.calls.at(-1)?.[2]?.mode).toBe('SEEK');fireEvent.click(screen.getByRole('button',{name:'暂停'}));fireEvent.click(screen.getByRole('button',{name:'继续'}));expect(cue.mock.calls.at(-1)?.[2]?.mode).toBe('RESUME');});
@@ -46,22 +46,25 @@ test('private preview freezes its anchor while hidden and resumes from the same 
 
 
 test('lab keeps sound controls during playback and only shows the current production version',async()=>{
- vi.useFakeTimers();const setVolume=vi.spyOn(audio,'setEffectsPreviewVolume');const ui=render(<EffectsPreview/>);
+ vi.useFakeTimers();const setVolume=vi.spyOn(audio,'setPreviewChannel');const ui=render(<EffectsPreview/>);
  expect(screen.queryByRole('combobox',{name:'演出版本'})).toBeNull();expect(screen.queryByText('参与方式')).toBeNull();
- const sound=screen.getByRole('group',{name:'预览声音设置'});fireEvent.change(within(sound).getByRole('slider'),{target:{value:'24'}});expect(setVolume).toHaveBeenCalledWith(.24);expect(within(sound).getByText('24%')).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:/恶魔攻击/}));await act(async()=>{for(let i=0;i<8;i++)await Promise.resolve();});expect(screen.getByRole('group',{name:'预览声音设置'})).toBe(sound);expect(within(sound).getByRole('button',{name:'开启预览声音'})).toBeVisible();
- fireEvent.click(screen.getByRole('button',{name:'返回目录'}));expect(screen.getByRole('group',{name:'预览声音设置'})).toBe(sound);ui.unmount();
+ fireEvent.click(screen.getByRole('button',{name:'声音设置'}));
+ fireEvent.change(screen.getByRole('slider',{name:'音效音量'}),{target:{value:'24'}});expect(setVolume).toHaveBeenCalledWith('effects',{volume:.24});
+ fireEvent.click(screen.getByRole('button',{name:'关闭声音设置'}));
+ fireEvent.click(screen.getByRole('button',{name:/恶魔攻击/}));await act(async()=>{for(let i=0;i<8;i++)await Promise.resolve();});
+ fireEvent.click(screen.getByRole('button',{name:'声音设置'}));expect(screen.getByRole('slider',{name:'音效音量'})).toHaveValue('24');
+ fireEvent.click(screen.getByRole('button',{name:'关闭声音设置'}));fireEvent.click(screen.getByRole('button',{name:'返回目录'}));ui.unmount();
 });
 
 
 test('nomination preview keeps the full three selected tracks on its local timeline',async()=>{
- vi.useFakeTimers();render(<EffectsPreview/>);
+ vi.useFakeTimers();render(<EffectsPreview/>);fireEvent.click(screen.getByRole('button',{name:'通用'}));
  for(const [name,duration]of [[/公开提名/,16000],[/投票 · 最高票/,20000],[/投票 · 平票/,15000]] as const){fireEvent.click(screen.getByRole('button',{name}));await act(async()=>{for(let i=0;i<12;i++)await Promise.resolve();});expect(screen.getByRole('slider',{name:'演出进度'})).toHaveAttribute('max',String(duration));fireEvent.change(screen.getByRole('slider',{name:'演出进度'}),{target:{value:'8000'}});expect(screen.getByRole('slider',{name:'演出进度'})).toHaveValue('8000');fireEvent.click(screen.getByRole('button',{name:'返回目录'}));}
 });
 
 
 test('nomination prewarm stays frozen across hide/show until its full track is ready',async()=>{
- vi.useFakeTimers();Object.defineProperty(document,'hidden',{configurable:true,value:false});let finish:()=>void=()=>{};const ready=new Promise<void>(resolve=>{finish=resolve;});vi.spyOn(audio,'prepareNominationAudio').mockReturnValue(ready);render(<EffectsPreview/>);fireEvent.click(screen.getByRole('button',{name:/公开提名/}));
+ vi.useFakeTimers();Object.defineProperty(document,'hidden',{configurable:true,value:false});let finish:()=>void=()=>{};const ready=new Promise<void>(resolve=>{finish=resolve;});vi.spyOn(audio,'prepareNominationAudio').mockReturnValue(ready);render(<EffectsPreview/>);fireEvent.click(screen.getByRole('button',{name:'通用'}));fireEvent.click(screen.getByRole('button',{name:/公开提名/}));
  Object.defineProperty(document,'hidden',{configurable:true,value:true});act(()=>document.dispatchEvent(new Event('visibilitychange')));act(()=>vi.advanceTimersByTime(1000));Object.defineProperty(document,'hidden',{configurable:true,value:false});act(()=>document.dispatchEvent(new Event('visibilitychange')));act(()=>vi.advanceTimersByTime(1500));expect(screen.getByRole('slider',{name:'演出进度'})).toHaveValue('0');
  await act(async()=>{finish();for(let i=0;i<10;i++)await Promise.resolve();});act(()=>vi.advanceTimersByTime(500));expect(Number(screen.getByRole('slider',{name:'演出进度'}).getAttribute('value'))).toBeGreaterThan(0);expect(Number(screen.getByRole('slider',{name:'演出进度'}).getAttribute('value'))).toBeLessThan(1000);
 });

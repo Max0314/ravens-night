@@ -35,7 +35,8 @@ export function validateStartInfo(room:RoomRecord) {
   }
   const i=s.initial;
   const seat=(v:number)=>Number.isInteger(v)&&v>=1&&v<=room.playerCount;
-  if(room.playerCount<7&&!cooperation||!i||!seat(i.demonSeat)||!Array.isArray(i.minionSeats)||i.minionSeats.length!==(room.playerCount<10?1:2)||i.minionSeats.some(v=>!seat(v)||v===i.demonSeat)||new Set(i.minionSeats).size!==i.minionSeats.length||!Array.isArray(i.excludedBluffRoleIds)||i.excludedBluffRoleIds.some(id=>!ROLE_CATALOG.some(r=>r.id===id)))fail();
+  const minionCount=room.setupOptions?.baseComposition?.minion??(room.playerCount<10?1:2);
+  if(room.playerCount<7&&!cooperation||!i||!seat(i.demonSeat)||!Array.isArray(i.minionSeats)||i.minionSeats.length!==minionCount||i.minionSeats.some(v=>!seat(v)||v===i.demonSeat)||new Set(i.minionSeats).size!==i.minionSeats.length||!Array.isArray(i.excludedBluffRoleIds)||i.excludedBluffRoleIds.some(id=>!ROLE_CATALOG.some(r=>r.id===id)))fail();
   const all=[i!.demonSeat,...i!.minionSeats], ids=new Set<string>();
   if(Object.keys(s.entries).length!==all.length)fail();
   for(const own of all){

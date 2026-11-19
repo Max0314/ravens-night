@@ -5,11 +5,11 @@ import {Home} from './Home.js';
 vi.mock('../components/AccountPanel.js',()=>({AccountPanel:()=>null}));
 vi.mock('../components/HomePortrait.js',()=>({HomePortrait:()=>null}));
 afterEach(()=>{cleanup();vi.restoreAllMocks();});
-test('title opens the lab only after three fast taps and resets after a long gap',()=>{
- let now=1000;vi.spyOn(performance,'now').mockImplementation(()=>now);
- render(<Home onCreate={()=>{}} onJoin={()=>{}} onTutorial={()=>{}} onRoles={()=>{}}/>);
- const link=screen.getByRole('link',{name:'鸦钟夜话'}),results:boolean[]=[];
- const observe=(event:MouseEvent)=>{results.push(event.defaultPrevented);event.preventDefault();};document.addEventListener('click',observe);
- fireEvent.click(link);now+=100;fireEvent.click(link);now+=600;fireEvent.click(link);now+=100;fireEvent.click(link);now+=100;fireEvent.click(link);
- expect(results).toEqual([true,true,true,true,false]);expect(link.getAttribute('href')).toBe('/?preview=effects');document.removeEventListener('click',observe);
+test('the title toggles debug mode after three quick taps and resets after a longer gap',()=>{
+ let now=1000;vi.spyOn(performance,'now').mockImplementation(()=>now);const toggle=vi.fn();
+ render(<Home onCreate={()=>{}} onJoin={()=>{}} onTutorial={()=>{}} onRoles={()=>{}} onToggleDebug={toggle}/>);
+ const title=screen.getByRole('button',{name:'鸦钟夜话'});
+ fireEvent.click(title);now+=100;fireEvent.click(title);now+=600;fireEvent.click(title);
+ expect(toggle).not.toHaveBeenCalled();now+=100;fireEvent.click(title);now+=100;fireEvent.click(title);
+ expect(toggle).toHaveBeenCalledTimes(1);
 });

@@ -7,11 +7,13 @@ import Fastify, { type FastifyRequest } from "fastify";
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import {accountClient,type Account} from './auth/account.js';
 import {hashOpaqueToken} from './auth/session.js';
-import { RoomService, type ParticipantMode, type RoomPlayMode } from "./rooms/service.js";
+import { RoomService, debugRoomPrivate, isDebugRoom, type RoomRecord, type ParticipantMode, type RoomPlayMode } from "./rooms/service.js";
+import { compositionIssue, compositionKeys, isDefaultComposition } from '@ravens/game-engine';
+import { sealSavedPasscode, openSavedPasscode } from './auth/room-create-passcode.js';
 import { PostgresRoomRepository } from "./db/room-repository.js";
 import { LiveRoomRuntime, PersistenceUnavailableError, type RoomRepository } from "./game/live-runtime.js";
 import { createRecovery, inviteWhisper, leaveWhisper, member, recoverMembership, respondWhisper, sendWhisper, socialView } from "./rooms/social.js";
-import { roomCommandProperties, roomCommandRequired, type RoomCommandContext,type ControlResult,type PresentationAckRequest } from "@ravens/contracts";
+import { roomCommandProperties, roomCommandRequired, type RoomCommandContext,type ControlResult,type PresentationAckRequest,type BaseComposition,type RoomKind } from "@ravens/contracts";
 import { RoomError, PUBLICATION_TICK_MS } from "./rooms/errors.js";
 import { issueJoinTicket, validateJoinTicket, parseJoinTicket, assertJoinCapacity, revokeJoinTicket } from "./rooms/join-ticket.js";
 import { profileView } from './auth/game-profile.js';
@@ -28,6 +30,11 @@ function bodySchema(properties: Record<string, unknown>, required: string[] = []
 const ROOM_CREATE_ACCESS_COOKIE = "ravens_room_create_access";
 const ROOM_CREATE_ACCESS_GRANT = "ravens:room-create-access:v1";
 const roomCreateAccessCookie = () => ({ ...cookieOptions("/"), maxAge: 400 * 24 * 60 * 60 });
+const SAVED_PASSCODE_COOKIE = 'ravens_room_saved_passcode';
+const savedPasscodePath = '/api/room-create-access/saved';
+const savedPasscodeCookie = () => ({ ...roomCreateAccessCookie(), path: savedPasscodePath });
+type CreateBody = {playerCount:number;organizerName:string;creationVersion?:2|3;playMode?:RoomPlayMode;voiceRoomUrl?:string;sixPlayerEvilCooperation?:boolean;createTicket:string;roomKind?:RoomKind;baseComposition?:BaseComposition;hostAvatar?:string|null;expectedProfileRevision?:number};
+const compositionProperty = {type:'object',additionalProperties:false,required:[...compositionKeys],properties:Object.fromEntries(compositionKeys.map(key=>[key,{type:'integer',minimum:0,maximum:12}]))};
 
 export function buildApp(options: { resolveAccount?:(header:string|undefined)=>Promise<Account|null>;accessPassword?: string; roomCreatePasscode?: string; repository?: RoomRepository; now?: () => number; presentation?: boolean; timers?: boolean } = {}) {
   if (process.env.NODE_ENV === "production" && (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32)) throw new Error("Production requires a SESSION_SECRET of at least 32 characters");
@@ -57,6 +64,14 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   };
   function participantToken(request:FastifyRequest,fallback?:string,mode?:ParticipantMode){const token=optionalToken(request,mode)??fallback;if(!token)throw Error('Player session is missing');return assertToken(request,token);}
   function organizerCredential(request:FastifyRequest,fallback?:string){return assertToken(request,signedCookie(request,'ravens_player')??signedCookie(request,'ravens_organizer')??fallback??'');}
+  function requireOrdinary(room: RoomRecord) { if (isDebugRoom(room)) throw debugRoomPrivate(); }
+  function requireDebugOwner(request: FastifyRequest, room: RoomRecord) {
+    if (!isDebugRoom(room)) return;
+    if (request.headers['x-room-mode']==='DISPLAY'||(request.query as {mode?:string}|undefined)?.mode==='DISPLAY') throw debugRoomPrivate();
+    const token = signedCookie(request, 'ravens_player');
+    const host = room.participants.find(p => !p.left && p.id === room.organizerParticipantId);
+    if (!token || !host || host.tokenHash !== hashOpaqueToken(token) || (host.accountId && host.accountId !== accounts.get(request)?.sub)) throw debugRoomPrivate();
+  }
   void app.register(cookie, { secret: process.env.SESSION_SECRET ?? "development-only-session-secret-change-me" });
   void app.register(websocket, { options: { maxPayload: 1024 } });
   if (process.env.STATIC_DIR) void app.register(fastifyStatic, { root: process.env.STATIC_DIR, wildcard: false });
@@ -93,7 +108,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     const pathname = request.url.split("?")[0]!;
     const roomApi=/^\/api\/rooms(?:\/|$)/.test(pathname)||pathname==='/api/room-create-ticket';
     if(roomApi&&!request.headers.upgrade&&!(request.method==='GET'&&/^\/api\/rooms\/[^/]+\/summary$/.test(pathname))&&request.headers['x-ravens-protocol']!=='7')return reply.code(426).send({errorCode:'CLIENT_UPGRADE_REQUIRED',error:'游戏已更新，请刷新页面后继续',refreshRequired:true});
-    if (/\/auth\/login$|\/room-create-access$|\/join$|\/recover$|\/switch-ticket$|\/presentations\/ack$/.test(pathname) && request.method === "POST") {
+    if (/\/auth\/login$|\/room-create-access(?:\/saved)?$|\/join$|\/recover$|\/switch-ticket$|\/presentations\/ack$/.test(pathname) && request.method === "POST") {
       const key = `${request.ip}:${pathname.split("/").at(-1)}`;
       const current = attempts.get(key);
       const entry = current && current.reset > now() ? current : { count: 0, reset: now() + 60_000 };
@@ -136,6 +151,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   });
   const signPreview=(sub:string,payload:string)=>createHmac('sha256',accountKey).update(JSON.stringify(['guest-claim',sub,payload])).digest('hex');
   app.post<RoomRequest>('/api/rooms/:code/account/guest-preview',{schema:{body:bodySchema({})}},async(request,reply)=>{
+    requireOrdinary(runtime.service.find(request.params.code));
     const account=accounts.get(request);if(!account)return reply.code(401).send({error:'请先登录账号'});
     if(runtime.service.accountClaim(account.sub))throw Error('本账号在鸦钟夜话的游客认领机会已使用');
     if(runtime.service.accountRooms(account.sub).length)throw Error('账号已有房间，不能覆盖');
@@ -145,6 +161,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     return{previewToken:payload+'.'+signPreview(account.sub,payload),code:room.code,nickname:participant.nickname,seat:participant.seat,consumesOpportunity:false,self:runtime.service.self(room.code,token)};
   });
   app.post<RoomRequest>('/api/rooms/:code/account/guest-claim',{schema:{body:bodySchema({previewToken:{type:'string',maxLength:2000},confirm:{const:true}},['previewToken','confirm'])}},async(request,reply)=>{
+    requireOrdinary(runtime.service.find(request.params.code));
     const account=accounts.get(request);if(!account)return reply.code(401).send({error:'请先登录账号'});
     const raw=request.body.previewToken as string,[payload,signature,...extra]=raw.split('.');
     if(!payload||!signature||extra.length||!secureEqual(signPreview(account.sub,payload),signature))throw Error('预览无效，请重新预览');
@@ -166,6 +183,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     return { authorized: true };
   });
   app.get<RoomRequest>("/api/rooms/:code/result", async request => {
+    requireDebugOwner(request, runtime.service.find(request.params.code));
     const token = participantToken(request, request.query.token);
     const self = runtime.service.self(request.params.code, token, accounts.get(request)?.sub);
     return { result: runtime.service.find(request.params.code).lastResult ?? null, self };
@@ -183,63 +201,113 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   const hasRoomCreateGrant = (request: FastifyRequest) =>
     signedCookie(request, ROOM_CREATE_ACCESS_COOKIE) === ROOM_CREATE_ACCESS_GRANT;
   app.get("/api/room-create-access", async (request, reply) => {
-    if (!roomCreatePasscode) return { status: "OPEN" };
-    if (!hasRoomCreateGrant(request)) return { status: "PASSCODE_REQUIRED" };
+    if (accounts.get(request)) return { status: 'GRANTED', via: 'ACCOUNT', creationV3: true };
+    if (!roomCreatePasscode) return { status: 'OPEN', via: 'OPEN', creationV3: true };
+    if (!hasRoomCreateGrant(request)) return { status: 'PASSCODE_REQUIRED', creationV3: true };
     reply.setCookie(ROOM_CREATE_ACCESS_COOKIE, ROOM_CREATE_ACCESS_GRANT, roomCreateAccessCookie());
-    return { status: "GRANTED" };
+    return { status: 'GRANTED', via: 'PASSCODE', creationV3: true };
   });
   app.post<{ Body: { passcode: string } }>("/api/room-create-access", {
     schema: { body: bodySchema({ passcode: { type: "string", minLength: 1, maxLength: 128 } }, ["passcode"]) },
   }, async (request, reply) => {
-    if (!roomCreatePasscode) return { status: "OPEN" };
-    if (!hasRoomCreateGrant(request) && !secureEqual(request.body.passcode.trim(), roomCreatePasscode)) {
+    if (accounts.get(request)) return { status: 'GRANTED', via: 'ACCOUNT', saved: false, creationV3: true };
+    if (!roomCreatePasscode) return { status: 'OPEN', via: 'OPEN', saved: false, creationV3: true };
+    const passcode = request.body.passcode.trim();
+    if (!secureEqual(passcode, roomCreatePasscode)) {
       throw new RoomError("ROOM_CREATE_PASSCODE_INVALID", "开房口令不正确，请核对后重试", 403);
     }
     reply.setCookie(ROOM_CREATE_ACCESS_COOKIE, ROOM_CREATE_ACCESS_GRANT, roomCreateAccessCookie());
-    return { status: "GRANTED" };
+    reply.setCookie(SAVED_PASSCODE_COOKIE, sealSavedPasscode(sessionSecret, passcode), savedPasscodeCookie());
+    return { status: 'GRANTED', via: 'PASSCODE', saved: true, creationV3: true };
+  });
+  function getSavedPasscode(request: FastifyRequest) {
+    if (accounts.get(request) || !roomCreatePasscode || !hasRoomCreateGrant(request)) throw new RoomError('SAVED_PASSCODE_FORBIDDEN', '没有可查看的游客口令', 403);
+    const passcode = openSavedPasscode(sessionSecret, signedCookie(request, SAVED_PASSCODE_COOKIE));
+    const status = !passcode ? 'MISSING' : secureEqual(passcode, roomCreatePasscode) ? 'CURRENT' : 'ROTATED';
+    return { status, passcode };
+  }
+  app.get(savedPasscodePath, async request => ({ status: getSavedPasscode(request).status }));
+  app.post(savedPasscodePath, { schema: { body: bodySchema({ intent: { const: 'REVEAL' } }, ['intent']) } }, async (request, reply) => {
+    const { status, passcode } = getSavedPasscode(request);
+    if (!passcode) throw new RoomError('SAVED_PASSCODE_UNAVAILABLE', '本浏览器没有保存口令', 404);
+    reply.setCookie(SAVED_PASSCODE_COOKIE, sealSavedPasscode(sessionSecret, passcode), savedPasscodeCookie());
+    reply.setCookie(ROOM_CREATE_ACCESS_COOKIE, ROOM_CREATE_ACCESS_GRANT, roomCreateAccessCookie());
+    return { status, passcode };
   });
   app.get('/api/room-create-ticket',async(request,reply)=>{
     const account=accounts.get(request);let context=signedCookie(request,'ravens_create_context');if(!context){context=randomBytes(32).toString('base64url');reply.setCookie('ravens_create_context',context,{...cookieOptions('/'),sameSite:'lax'});}
     const kind=account?'ACCOUNT' as const:'GUEST' as const,owner=creationOwner(sessionSecret,kind,account?.sub??context);creationRate(owner);return issueCreationTicket(sessionSecret,kind,owner,now());
   });
-  app.post<{Body:{playerCount:number;organizerName:string;creationVersion?:2;playMode?:RoomPlayMode;voiceRoomUrl?:string;sixPlayerEvilCooperation?:boolean;createTicket:string}}>('/api/rooms',{schema:{body:bodySchema({sixPlayerEvilCooperation:{type:'boolean'},creationVersion:{const:2},playerCount:{type:'integer',minimum:5,maximum:12},organizerName:{type:'string',minLength:1,maxLength:24},playMode:{enum:['IN_PERSON','REMOTE','HYBRID']},voiceRoomUrl:{type:'string',maxLength:2048},createTicket:{type:'string',maxLength:2000}},['playerCount','organizerName','createTicket'])}},async(request,reply)=>{
+  app.post<{Body:CreateBody}>('/api/rooms',{schema:{body:bodySchema({sixPlayerEvilCooperation:{type:'boolean'},creationVersion:{enum:[2,3]},playerCount:{type:'integer',minimum:5,maximum:12},organizerName:{type:'string',minLength:1,maxLength:24},playMode:{enum:['IN_PERSON','REMOTE','HYBRID']},voiceRoomUrl:{type:'string',maxLength:2048},createTicket:{type:'string',maxLength:2000},roomKind:{enum:['STANDARD','DEBUG_SOLO']},baseComposition:compositionProperty,hostAvatar:{anyOf:[{type:'string',maxLength:200},{type:'null'}]},expectedProfileRevision:{type:'integer',minimum:0}},['playerCount','organizerName','createTicket'])}},async(request,reply)=>{
     const ticket=parseCreationTicket(sessionSecret,request.body.createTicket),id=request.headers['x-command-id'];if(typeof id!=='string'||!/^[-a-f0-9]{36}$/i.test(id))throw new RoomError('COMMAND_ID_REQUIRED','缺少创建操作编号',400);
     const account=accounts.get(request),guestContext=signedCookie(request,'ravens_create_context'),key=creationKey(sessionSecret,ticket.actorDigest,id);
     const name=request.body.organizerName.trim(),mode=request.body.playMode??'IN_PERSON',voice=request.body.creationVersion===2?request.body.voiceRoomUrl?.trim()||undefined:mode==='IN_PERSON'?undefined:request.body.voiceRoomUrl?.trim()||undefined;
     if(request.body.creationVersion===2&&request.body.playMode!==undefined)throw new RoomError('INVALID_REQUEST','统一创建不接受房间模式',400);
+    const {creationVersion,baseComposition,hostAvatar,expectedProfileRevision,roomKind,playerCount}=request.body;
+    const v3=creationVersion===3,debug=roomKind==='DEBUG_SOLO';
+    if (v3 ? !roomKind || request.body.playMode!==undefined || request.body.voiceRoomUrl!==undefined || (debug ? hostAvatar===undefined : hostAvatar!==undefined || expectedProfileRevision!==undefined) : roomKind!==undefined || baseComposition!==undefined || hostAvatar!==undefined || expectedProfileRevision!==undefined) throw new RoomError('INVALID_REQUEST','开房参数不符合当前版本',400);
+    if(baseComposition && compositionIssue(playerCount,baseComposition))throw new RoomError('INVALID_COMPOSITION','基础构成无法发牌，请调整人数',400);
+    const custom=baseComposition&&!isDefaultComposition(playerCount,baseComposition)?baseComposition:undefined;
     if(!name||/[\u0000-\u001f\u007f]/.test(name))throw new RoomError('INVALID_REQUEST','昵称请输入1至24个字符',400);
     if(request.body.sixPlayerEvilCooperation===true&&request.body.playerCount!==6)throw new RoomError('INVALID_RULES','邪恶协作仅适用于6人房间',400);
-    const creationValues=request.body.creationVersion===2?[2,request.body.playerCount,name,voice??null]:[request.body.playerCount,name,mode,voice??null];
+    const creationValues=v3?[3,playerCount,name,roomKind,custom?compositionKeys.map(key=>custom[key]):null,hostAvatar??null,expectedProfileRevision??null]:creationVersion===2?[2,playerCount,name,voice??null]:[playerCount,name,mode,voice??null];
     if(request.body.sixPlayerEvilCooperation===true)creationValues.push('six-player-evil-cooperation-v1');
     const fingerprint=createHash('sha256').update(JSON.stringify(creationValues)).digest('hex');
     const result=await runtime.execute(rooms=>{
       const prior=rooms.creationRequest(key),owner=ticket.actorKind==='ACCOUNT'?account?creationOwner(sessionSecret,'ACCOUNT',account.sub):undefined:guestContext?creationOwner(sessionSecret,'GUEST',guestContext):undefined;
-      if(ticket.actorKind==='ACCOUNT'&&owner!==ticket.actorDigest)throw new RoomError('CREATION_OWNER_CHANGED','登录身份已变化，请重新创建',403);
+      if((v3||ticket.actorKind==='ACCOUNT')&&(owner!==ticket.actorDigest||(v3&&ticket.actorKind!==(account?'ACCOUNT':'GUEST'))))throw new RoomError('CREATION_OWNER_CHANGED','创建身份已变化，请重新创建',403);
+      function outcome(room:RoomRecord,hostParticipantId?:string){
+        if(!hostParticipantId)return {body:{code:room.code,organizerToken:creationOrganizer(sessionSecret,key,room.roomInstanceId),creationId:id,...(v3?{roomKind,roomInstanceId:room.roomInstanceId}:{})}};
+        const host=room.participants.find(p=>!p.left&&p.id===hostParticipantId&&p.id===room.organizerParticipantId);
+        const token=account?accountToken(account.sub,room.code,hostParticipantId):creationOrganizer(sessionSecret,key,room.roomInstanceId);
+        if(!host||host.accountId!==account?.sub||host.tokenHash!==hashOpaqueToken(token))throw debugRoomPrivate();
+        return {body:{code:room.code,roomInstanceId:room.roomInstanceId,creationId:id,roomKind:'DEBUG_SOLO' as const,participantId:hostParticipantId},token};
+      }
       if(prior){
         if(prior.payload.actorKind!==ticket.actorKind||prior.actorDigest!==ticket.actorDigest)throw new RoomError('CREATION_OWNER_CHANGED','创建身份已变化',403);
         if(prior.fingerprint!==fingerprint)throw new RoomError('CREATION_ID_REUSED','同一创建操作不能修改参数');
         if(prior.expiresAt<=now())throw new RoomError('CREATE_TICKET_EXPIRED','创建恢复凭据已过期',410);
         let room;try{room=rooms.find(prior.payload.code);}catch{throw new RoomError('CREATED_ROOM_GONE','原房间已结束，请重新创建',410);}
         if(room.roomInstanceId!==prior.payload.roomInstanceId)throw new RoomError('CREATED_ROOM_GONE','原房间已结束',410);
-        return{code:room.code,organizerToken:creationOrganizer(sessionSecret,key,room.roomInstanceId),creationId:id};
+        return outcome(room,prior.payload.hostParticipantId);
       }
       if(owner!==ticket.actorDigest||ticket.actorKind!==(account?'ACCOUNT':'GUEST'))throw new RoomError('CREATE_CONTEXT_CHANGED','创建身份已变化，请重新发起创建');
       if(ticket.expiresAt<=now())throw new RoomError('CREATE_TICKET_EXPIRED','创建凭据已过期，请重新创建',410);
-      if (roomCreatePasscode && !hasRoomCreateGrant(request)) {
+      if (roomCreatePasscode && !account && !hasRoomCreateGrant(request)) {
         throw new RoomError("ROOM_CREATE_ACCESS_REQUIRED", "请先输入开房口令", 403);
       }
       creationRate(ticket.actorDigest);
-      const created=rooms.create(request.body.playerCount,name,mode,voice,request.body.sixPlayerEvilCooperation===true),room=rooms.find(created.room.code),organizerToken=creationOrganizer(sessionSecret,key,room.roomInstanceId);room.organizerTokenHash=hashOpaqueToken(organizerToken);room.metadata={...room.metadata,creationKey:key};if(account)room.organizerAccountId=account.sub;
-      rooms.putCreationRequest({key,actorDigest:ticket.actorDigest,fingerprint,payload:{actorKind:ticket.actorKind,code:room.code,roomInstanceId:room.roomInstanceId,createdAt:now()},expiresAt:now()+86400000});
-      return{code:room.code,organizerToken,creationId:id};
+      const profile=debug&&account?profileView(account,rooms.accountProfile(account.sub)):undefined;
+      if(profile && (profile.revision!==expectedProfileRevision || (profile.nickname&&profile.nickname!==name) || profile.avatar!==hostAvatar))throw new RoomError('PROFILE_STALE','资料已更新，请确认后继续创建',409,false,{joinTicketConsumed:false,profile});
+      const avatar=profile?.avatar??(hostAvatar?trustedAvatar(hostAvatar):undefined);
+      if(debug&&!account&&(expectedProfileRevision!==undefined||hostAvatar&&!avatar))throw new RoomError('INVALID_PROFILE','请选择可用头像',400);
+      const setup=custom||debug?{version:1 as const,kind:roomKind!,...(custom?{baseComposition:custom}:{})}:undefined;
+      const created=rooms.create(playerCount,name,mode,voice,request.body.sixPlayerEvilCooperation===true,setup),room=rooms.find(created.room.code);
+      const organizerToken=creationOrganizer(sessionSecret,key,room.roomInstanceId);
+      room.organizerTokenHash=hashOpaqueToken(organizerToken);room.metadata={...room.metadata,creationKey:key};if(account)room.organizerAccountId=account.sub;
+      const host=debug?rooms.initializeDebugHost(room.code,name,avatar??undefined):undefined;
+      if(host){
+        if(account){const participant=rooms.bindAccount(room.code,host.token,account.sub,accountToken(account.sub,room.code,host.participant.id));rooms.syncAccountProfile(room,participant,account);}
+        else{const participant=room.participants.find(p=>p.id===host.participant.id)!;participant.tokenHash=hashOpaqueToken(organizerToken);room.organizerTokenHash=participant.tokenHash;}
+      }
+      rooms.putCreationRequest({key,actorDigest:ticket.actorDigest,fingerprint,payload:{actorKind:ticket.actorKind,code:room.code,roomInstanceId:room.roomInstanceId,createdAt:now(),...(v3?{creationVersion:3,roomKind}:{}),...(host?{hostParticipantId:host.participant.id}:{})},expiresAt:now()+86400000});
+      return outcome(room,host?.participant.id);
     });
-    reply.setCookie('ravens_organizer',result.organizerToken,cookieOptions(roomPath(result.code)));if(guestContext)reply.setCookie('ravens_create_context',guestContext,{...cookieOptions('/'),sameSite:'lax'});
-    if (roomCreatePasscode && hasRoomCreateGrant(request)) {
+    if(result.token)reply.setCookie('ravens_player',result.token,cookieOptions(roomPath(result.body.code)));
+    else if('organizerToken' in result.body&&result.body.organizerToken)reply.setCookie('ravens_organizer',result.body.organizerToken,cookieOptions(roomPath(result.body.code)));
+    if(guestContext)reply.setCookie('ravens_create_context',guestContext,{...cookieOptions('/'),sameSite:'lax'});
+    if (roomCreatePasscode && !account && hasRoomCreateGrant(request)) {
       reply.setCookie(ROOM_CREATE_ACCESS_COOKIE, ROOM_CREATE_ACCESS_GRANT, roomCreateAccessCookie());
     }
-    return reply.code(201).send(result);
+    return reply.code(201).send(result.body);
   });
-  app.get<RoomRequest>('/api/rooms/:code/summary',async request=>{const room=runtime.service.find(request.params.code),roster=activePlayers(room),canJoin=room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);return{code:room.code,roomInstanceId:room.roomInstanceId,state:room.state,playerCount:room.playerCount,sixPlayerEvilCooperation:runtime.service.publicView(room.code).sixPlayerEvilCooperation,rulesSummary:runtime.service.publicView(room.code).rulesSummary,activeHumanCount:humans(room).length,botCount:bots(room).length,occupiedAvatars:[...new Set(roster.flatMap(p=>p.avatarSnapshot?[avatarSelectionUrl(p.avatarSnapshot)]:[]))],canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};});
+  app.get<RoomRequest>('/api/rooms/:code/summary', async request => {
+    const room=runtime.service.find(request.params.code);
+    requireDebugOwner(request,room);
+    const roster=activePlayers(room), view=runtime.service.publicView(room.code);
+    const canJoin=!isDebugRoom(room)&&room.state==='LOBBY'&&(roster.length<room.playerCount||bots(room).length>0);
+    return {code:room.code,roomInstanceId:room.roomInstanceId,state:room.state,playerCount:room.playerCount,roomKind:view.roomKind,baseComposition:view.baseComposition,sixPlayerEvilCooperation:view.sixPlayerEvilCooperation,rulesSummary:view.rulesSummary,activeHumanCount:humans(room).length,botCount:bots(room).length,occupiedAvatars:[...new Set(roster.flatMap(p=>p.avatarSnapshot?[avatarSelectionUrl(p.avatarSnapshot)]:[]))],canJoin,willReplaceBot:canJoin&&roster.length===room.playerCount};
+  });
   const expectedControlVersion={type:'integer',minimum:0};
   function control(path:string,properties:Record<string,unknown>,required:string[],bindGame:boolean,apply:(rooms:RoomService,code:string,token:string,body:Record<string,unknown>)=>ControlResult){
     app.post<RoomRequest>(`/api/rooms/:code/${path}`,{schema:{body:bodySchema({...roomCommandProperties,expectedControlVersion,...properties},[...roomCommandRequired,'expectedControlVersion',...required])}},async request=>{
@@ -258,16 +326,20 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   app.get<RoomRequest>("/api/rooms/:code/join-ticket", async request => {
     const mode = request.query.mode;
     if (mode !== "PLAYER" && mode !== "DISPLAY") throw new RoomError("INVALID_MODE", "请选择玩家或大屏", 400);
-    return issueJoinTicket(runtime.service.find(request.params.code), mode, now(), sessionSecret);
+    const room=runtime.service.find(request.params.code);
+    requireOrdinary(room);
+    return issueJoinTicket(room, mode, now(), sessionSecret);
   });
   app.post<RoomRequest>('/api/rooms/:code/switch-ticket',{schema:{body:bodySchema({sourceRoomInstanceId:{type:'string',minLength:1,maxLength:100},targetCode:{type:'string',pattern:'^[A-Z2-9]{6}$'},targetRoomInstanceId:{type:'string',minLength:1,maxLength:100}},['sourceRoomInstanceId','targetCode','targetRoomInstanceId'])}},async request=>{
     const token=participantToken(request,undefined,'PLAYER'),account=accounts.get(request);
     const source=runtime.service.find(request.params.code);
+    requireOrdinary(source);
     runtime.service.self(source.code,token,account?.sub);
     if(source.roomInstanceId!==request.body.sourceRoomInstanceId)throw new RoomError('ROOM_INSTANCE_CHANGED','原房间已变化，请重新确认');
     const host=runtime.service.assertHost(source.code,token);
     if(host.mode!=='PLAYER'||host.controller!=='HUMAN')throw new RoomError('HOST_REQUIRED','只有当前玩家房主可以关闭旧房间',403);
     const target=runtime.service.find(request.body.targetCode as string);
+    requireOrdinary(target);
     if(target.code===source.code)throw new RoomError('SAME_ROOM','已经在这个房间，无需换房',400);
     if(target.roomInstanceId!==request.body.targetRoomInstanceId)throw new RoomError('ROOM_INSTANCE_CHANGED','目标房间已变化，请重新打开邀请');
     return issueSwitchTicket(sessionSecret,source,host,target,account?.sub,now());
@@ -276,6 +348,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     const mode = request.body.mode as ParticipantMode;
     const result = await runtime.execute((rooms) => {
       const account = accounts.get(request), room = rooms.find(request.params.code);
+      requireOrdinary(room);
       const rawSwitch=request.body.switchTicket as string|undefined;
       if(rawSwitch&&mode!=='PLAYER')throw new RoomError('INVALID_MODE','换房关闭只适用于手机玩家',400);
       const transfer=rawSwitch?parseSwitchTicket(sessionSecret,rawSwitch):undefined;
@@ -371,9 +444,17 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     if(result.closedRoomCode){reply.clearCookie('ravens_player',{path:roomPath(result.closedRoomCode)});reply.clearCookie('ravens_organizer',{path:roomPath(result.closedRoomCode)});}
     return reply.code(201).send({ id: result.participant.id, nickname: result.participant.nickname, mode, ...(result.participant.seat ? { seat: result.participant.seat } : {}), token: result.token,...(result.closedRoomCode?{closedRoomCode:result.closedRoomCode}:{}), self: runtime.service.self(request.params.code, result.token, accounts.get(request)?.sub) });
   });
-  app.delete<RoomRequest>("/api/rooms/:code/leave", { schema: { body: bodySchema(roomCommandProperties, roomCommandRequired) } }, async (request, reply) => {
+  app.delete<RoomRequest>("/api/rooms/:code/leave", { schema: { body: bodySchema({...roomCommandProperties,intent:{const:'EXIT_DEBUG'}}, roomCommandRequired) } }, async (request, reply) => {
+    requireDebugOwner(request,runtime.service.find(request.params.code));
     const token = participantToken(request, request.body?.token as string | undefined);
     const participant = member(runtime.service.find(request.params.code), token);
+    if(request.body.intent==='EXIT_DEBUG') {
+      const command=receipt(request,token);
+      const result=await runtime.execute(rooms=>rooms.exitDebugRoom(request.params.code,token,command.context,command.accountId));
+      reply.clearCookie('ravens_player',{path:roomPath(request.params.code)});
+      reply.clearCookie('ravens_organizer',{path:roomPath(request.params.code)});
+      return {left:true,...result,self:null};
+    }
     const result = await runtime.execute((rooms) => {
       rooms.validateCommand(request.params.code, token, request.body as unknown as RoomCommandContext, "ROOM", accounts.get(request)?.sub);
       return rooms.leave(request.params.code, token);
@@ -383,6 +464,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     return { left: true, ...result, self: null };
   });
   app.get<RoomRequest>("/api/rooms/:code", async (request) => {
+    requireDebugOwner(request, runtime.service.find(request.params.code));
     const token = optionalToken(request);
     if (token) {
       assertToken(request,token);
@@ -396,6 +478,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     return runtime.service.publicView(request.params.code);
   });
   app.get<RoomRequest>("/api/rooms/:code/me", async (request) => {
+    requireDebugOwner(request, runtime.service.find(request.params.code));
     const token = participantToken(request, request.query.token, "PLAYER");
     member(runtime.service.find(request.params.code), token, "PLAYER");
     try { await runtime.execute((rooms) => rooms.pulse(request.params.code, token, now())); }
@@ -456,8 +539,9 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   command("whispers/:id/respond", { accept: { type: "boolean" } }, ["accept"], (rooms, code, token, body, request) => respondWhisper(rooms.find(code), token, request.params.id!, body.accept as boolean));
   command("whispers/leave", {}, [], (rooms, code, token) => leaveWhisper(rooms.find(code), token));
   command("whispers/:id/messages", { text: { ...string, minLength: 1 } }, ["text"], (rooms, code, token, body, request) => sendWhisper(rooms.find(code), token, request.params.id!, body.text as string));
-  command("recovery", {}, [], (rooms, code, token) => createRecovery(rooms.find(code), token, now()), "result");
+  command("recovery", {}, [], (rooms, code, token) => {const room=rooms.find(code);requireOrdinary(room);return createRecovery(room,token,now());}, "result");
   app.post<RoomRequest>("/api/rooms/:code/recover", { schema: { body: bodySchema({ recoveryCode: { type: "string", minLength: 20, maxLength: 128 } }, ["recoveryCode"]) } }, async (request, reply) => {
+    requireOrdinary(runtime.service.find(request.params.code));
     const commandId = request.headers["x-command-id"];
     const retryId = typeof commandId === "string" && /^[\w-]{8,128}$/.test(commandId) ? commandId : undefined;
     const result = await runtime.execute((rooms) => recoverMembership(rooms, request.params.code, request.body.recoveryCode as string, retryId,accounts.get(request)?.sub,now()));
@@ -470,7 +554,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
       if(request.query.protocol!=="7"){socket.close(1008,"Client upgrade required");return;}
       const mode = request.query.mode === "DISPLAY" ? "DISPLAY" : "PLAYER";
       let token: string;
-      try { token = participantToken(request, undefined, mode); member(runtime.service.find(request.params.code), token, mode); }
+      try { const room=runtime.service.find(request.params.code);requireDebugOwner(request,room);token = participantToken(request, undefined, mode); member(room, token, mode); }
       catch { socket.close(1008, "Session unavailable"); return; }
       const publish = async () => {
         if (socket.readyState !== 1) return;

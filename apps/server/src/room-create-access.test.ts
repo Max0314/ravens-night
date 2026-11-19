@@ -1,12 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, expect, test } from "vitest";
 import { buildApp } from "./app.js";
+import type { Account } from './auth/account.js';
 
 const apps: ReturnType<typeof buildApp>[] = [];
 const protocol = { "x-ravens-protocol": "7" };
 const accessUrl = "/api/room-create-access";
 function fixture(passcode: string) {
-  const app = buildApp({ roomCreatePasscode: passcode, accessPassword: "", resolveAccount: async () => null, timers: false });
+  const account:Account = {sub:'opening-test-account',name:'账号房主'};
+  const app = buildApp({ roomCreatePasscode: passcode, accessPassword: "", resolveAccount: async cookie => cookie?.includes('sso=fixture')?account:null, timers: false });
   apps.push(app);
   return app;
 }
@@ -16,28 +18,28 @@ function cookies(response: { cookies: { name: string; value: string }[] }) {
   return response.cookies.map(({ name, value }) => `${name}=${encodeURIComponent(value)}`).join("; ");
 }
 
-async function createIntent(app: ReturnType<typeof buildApp>, grant?: string) {
+async function createIntent(app: ReturnType<typeof buildApp>, grant?: string, setup:Record<string,unknown>={}) {
   const ticket = await app.inject({ url: "/api/room-create-ticket", headers: { ...protocol, cookie: grant ?? "" } });
   expect(ticket.statusCode).toBe(200);
   const context = cookies(ticket);
   const commandId = randomUUID();
   const payload = { playerCount: 5, organizerName: "房主", createTicket: ticket.json().createTicket };
-  return (access = grant) => app.inject({
-    method: "POST", url: "/api/rooms", payload,
+  return (access = grant, changes:Record<string,unknown>={}) => app.inject({
+    method: "POST", url: "/api/rooms", payload:{...payload,...setup,...changes},
     headers: { ...protocol, cookie: [context, access].filter(Boolean).join("; "), "x-command-id": commandId },
   });
 }
 
 test("new rooms require a verified browser when configured, while a committed creation still recovers without a grant", async () => {
   const app = fixture("fixture-opening-code");
-  expect((await app.inject({ url: accessUrl })).json()).toEqual({ status: "PASSCODE_REQUIRED" });
+  expect((await app.inject({ url: accessUrl })).json()).toMatchObject({ status: "PASSCODE_REQUIRED",creationV3:true });
   const create = await createIntent(app);
   expect((await create()).json()).toMatchObject({ errorCode: "ROOM_CREATE_ACCESS_REQUIRED" });
   const invalid = await app.inject({ method: "POST", url: accessUrl, payload: { passcode: "wrong" } });
   expect(invalid.json().errorCode).toBe("ROOM_CREATE_PASSCODE_INVALID");
   expect(invalid.cookies).toHaveLength(0);
   const granted = await app.inject({ method: "POST", url: accessUrl, payload: { passcode: " fixture-opening-code " } });
-  expect(granted.json()).toEqual({ status: "GRANTED" });
+  expect(granted.json()).toMatchObject({ status: "GRANTED",via:'PASSCODE',saved:true });
   expect(granted.cookies[0]).toMatchObject({ httpOnly: true, path: "/", maxAge: 400 * 24 * 60 * 60 });
   expect(granted.cookies[0]?.value).not.toContain("fixture-opening-code");
   const created = await create(cookies(granted));
@@ -89,4 +91,48 @@ test("the unconfigured service continues to allow new rooms without a code", asy
   expect((await app.inject({ url: accessUrl })).json().status).toBe("OPEN");
   const create = await createIntent(app);
   expect((await create()).statusCode).toBe(201);
+});
+
+test('only a verified guest can reveal their own entered code; account can open without a grant', async () => {
+  const app=fixture('saved-fixture');
+  const grant=await app.inject({method:'POST',url:accessUrl,payload:{passcode:' saved-fixture '}});
+  const cookie=cookies(grant),saved=accessUrl+'/saved';
+  expect(grant.cookies[1]).toMatchObject({httpOnly:true,path:saved,sameSite:'Strict'});
+  expect(grant.cookies[1]?.value).not.toContain('saved-fixture');
+  expect((await app.inject({url:saved,headers:{cookie}})).json()).toEqual({status:'CURRENT'});
+  const reveal=await app.inject({method:'POST',url:saved,payload:{intent:'REVEAL'},headers:{cookie}});
+  expect(reveal.headers['cache-control']).toBe('no-store');
+  expect(reveal.json()).toEqual({status:'CURRENT',passcode:'saved-fixture'});
+  expect((await app.inject({method:'POST',url:accessUrl,payload:{passcode:'wrong'},headers:{cookie}})).statusCode).toBe(403);
+  expect((await app.inject({url:saved,headers:{cookie:'sso=fixture; '+cookie}})).statusCode).toBe(403);
+  const account=await app.inject({url:accessUrl,headers:{cookie:'sso=fixture'}});
+  expect(account.json()).toMatchObject({status:'GRANTED',via:'ACCOUNT'});expect(account.cookies).toHaveLength(0);
+  const create=await createIntent(app,'sso=fixture');
+  expect((await create()).statusCode).toBe(201);
+  const rotated=fixture('different-fixture');
+  expect((await rotated.inject({url:saved,headers:{cookie}})).json()).toEqual({status:'ROTATED'});
+});
+
+test('v3 guest debug atomically creates a closed roster and replays only for the same browser identity', async () => {
+  const app=fixture('debug-fixture');
+  const grant=await app.inject({method:'POST',url:accessUrl,payload:{passcode:'debug-fixture'}});
+  const create=await createIntent(app,cookies(grant),{creationVersion:3,roomKind:'DEBUG_SOLO',hostAvatar:null,playerCount:7,baseComposition:{townsfolk:4,outsider:0,minion:2,demon:1}});
+  const created=await create();
+  expect(created.statusCode).toBe(201);
+  const body=created.json();
+  expect(body).toMatchObject({roomKind:'DEBUG_SOLO',participantId:expect.any(String),roomInstanceId:expect.any(String)});
+  expect(body).not.toHaveProperty('organizerToken');
+  const origin=`/api/rooms/${body.code}`,headers={...protocol,cookie:cookies(created)};
+  const mine=await app.inject({url:`${origin}/me`,headers});
+  expect(mine.statusCode).toBe(200);
+  expect(mine.json()).toMatchObject({canManageBots:false,rehearsal:{canChooseRole:true},room:{activeHumanCount:1,botCount:6}});
+  expect(mine.json().room.participants.filter((p:{controller:string;ready:boolean})=>p.controller==='BOT'&&p.ready)).toHaveLength(6);
+  for(const [path,header] of [['/summary',protocol],['?mode=DISPLAY',headers],['/result',protocol],['/join-ticket?mode=PLAYER',headers]] as const){
+    const denied=await app.inject({url:origin+path,headers:header});
+    expect(denied.json().errorCode).toBe('DEBUG_ROOM_PRIVATE');
+  }
+  const replay=await create('');
+  expect(replay.statusCode).toBe(201);expect(replay.json()).toEqual(body);
+  expect((await create('sso=fixture')).json().errorCode).toBe('CREATION_OWNER_CHANGED');
+  expect((await create('',{baseComposition:{townsfolk:5,outsider:0,minion:1,demon:1}})).json().errorCode).toBe('CREATION_ID_REUSED');
 });

@@ -7,34 +7,49 @@ import {roleAudioV8 as remainingLead} from './role-audio-v8.js';
 import {roleAudioV9 as finalLead} from './role-audio-v9.js';
 import {roleMusicCues} from './role-score.js';
 import {dawnAudio} from './dawn-audio.js';
-import {audioPreferences,audioPreferencesEvent} from './audio-preferences.js';
+import {audioPreferences,audioPreferencesEvent,parseAudioPreferences,type AudioPreferences,type AudioChannel} from './audio-preferences.js';
 import type {RoomAudioDelivery} from '../room-audio-delivery.js';
 type Scope='public'|'private'|'ui'|'book'|'nomination'|'ballot';
 export interface AudioPlayback {rate?:number;outcome?:string|undefined;resultVisible?:boolean;resume?:boolean;mode?:'START'|'RESUME'|'SEEK';paused?:boolean;seekKey?:number|string;playbackId?:string}
 export type SemanticCue='press'|'select'|'open'|'close'|'success'|'error'|'paper-lift'|'paper-turn';
 interface Playing {id:string;scope:Scope;at:number;sample:string;gain:GainNode;bell:boolean;end:number}
-let ctx:AudioContext|undefined,output:GainNode|undefined,unlockAttempt=0;
+let ctx:AudioContext|undefined,output:GainNode|undefined,previewMusic:GainNode|undefined,unlockAttempt=0;
 let enabled=readPreference(),status='',semanticSeq=0;
-let previewAudio:{enabled:boolean;volume:number}|undefined;
+let previewAudio:{enabled:boolean;prefs:AudioPreferences}|undefined;
 const bookOwners=new Set<object>(),nominationOwners=new Set<object>();
 function previewPrivateAllowed(){return !!previewAudio||privateAudioAllowed();}
-export function effectsAudioVolume(){return previewAudio?.volume??audioPreferences().effects.volume;}
-export function setEffectsPreviewVolume(value:number){if(!previewAudio||!Number.isFinite(value))return;previewAudio.volume=Math.max(0,Math.min(1,value));if(output)output.gain.value=previewAudio.volume;}
+export function effectsAudioVolume(){return previewAudio?.prefs.effects.volume??audioPreferences().effects.volume;}
+export function audioSettingsPreferences(){return previewAudio?.prefs??audioPreferences();}
+export function setPreviewChannel(name:AudioChannel,patch:Partial<AudioPreferences[AudioChannel]>){
+ if(!previewAudio)return;
+ previewAudio.prefs={...previewAudio.prefs,[name]:{...previewAudio.prefs[name],...patch}};
+ if(output)output.gain.value=effectsAudioVolume();
+ if(previewMusic)previewMusic.gain.value=previewAudio.prefs.music.volume;
+ if(patch.enabled===false)for(const [source,row] of sources)if((name==='music')===row.sample.startsWith('score:'))stop(source,row);
+ window.dispatchEvent(new Event('ravens:preview-settings'));
+ if(patch.enabled!==undefined)window.dispatchEvent(new Event('ravens-effects-audio'));
+}
+export function setEffectsPreviewVolume(volume:number){if(Number.isFinite(volume))setPreviewChannel('effects',{volume:Math.max(0,Math.min(1,volume))});}
 /** The lab auditions private cues without changing the room's participation mode or master preference. */
 export function beginEffectsPreview(){
- silenceEffects();previewAudio={enabled:false,volume:.72};if(output)output.gain.value=.72;
+ silenceEffects();previewAudio={enabled:true,prefs:parseAudioPreferences(null)};if(output)output.gain.value=.72;
  window.dispatchEvent(new Event('ravens-effects-audio'));
- return()=>{silenceEffects();previewAudio=undefined;if(output)output.gain.value=effectsAudioVolume();window.dispatchEvent(new Event('ravens-effects-audio'));};
+ return()=>{silenceEffects();previewAudio=undefined;previewMusic?.disconnect();previewMusic=undefined;if(output)output.gain.value=effectsAudioVolume();window.dispatchEvent(new Event('ravens-effects-audio'));};
 }
 const buffers=new Map<string,Promise<AudioBuffer>>(),sizes=new Map<string,number>(),played=new Map<string,number>(),epochs=new Map<string,number>();
 const sources=new Map<AudioBufferSourceNode,Playing>();
 function readPreference(){try{return localStorage.getItem('ravens_effects_audio')!=='off';}catch{return true;}}
 function destination(audio:AudioContext){if(!output){output=audio.createGain();output.gain.value=effectsAudioVolume();if(typeof audio.createDynamicsCompressor==='function'){const limit=audio.createDynamicsCompressor();limit.threshold.value=-1;limit.knee.value=0;limit.ratio.value=20;limit.attack.value=.002;limit.release.value=.1;output.connect(limit);limit.connect(audio.destination);}else output.connect(audio.destination);}return output;}
+function sampleDestination(audio:AudioContext,sample:string){
+ if(!previewAudio||!sample.startsWith('score:'))return destination(audio);
+ if(!previewMusic){previewMusic=audio.createGain();previewMusic.gain.value=previewAudio.prefs.music.volume;previewMusic.connect(audio.destination);}
+ return previewMusic;
+}
 export const globalAudioEvent='ravens:global-audio';
 export function globalAudioEnabled(){return enabled;}
 export function audioControlEnabled(){return previewAudio?.enabled??enabled;}
-export function audioChannelsSilent(){if(previewAudio)return previewAudio.volume===0;const p=audioPreferences();return(!p.music.enabled||p.music.volume===0)&&(!p.effects.enabled||p.effects.volume===0);}
-export function effectsAudioEnabled(){return previewAudio?.enabled??(enabled&&audioPreferences().effects.enabled);}
+export function audioChannelsSilent(){const p=audioSettingsPreferences();return(!p.music.enabled||p.music.volume===0)&&(!p.effects.enabled||p.effects.volume===0);}
+export function effectsAudioEnabled(){return audioControlEnabled()&&audioSettingsPreferences().effects.enabled;}
 export function effectsAudioStatus(){return status;}
 function report(value:string){status=value;window.dispatchEvent(new Event('ravens:audio-status'));}
 export const reportAudioStatus=report;
@@ -63,7 +78,7 @@ export async function enableEffectsAudio(value=true){
  window.dispatchEvent(new Event('ravens-effects-audio'));await unlock;
 }
 
-function allowed(scope:Scope){return effectsAudioEnabled()&&ctx?.state==='running'&&!document.hidden&&(scope!=='private'||previewPrivateAllowed());}
+function allowed(scope:Scope,sample=''){return (previewAudio&&sample.startsWith('score:')?previewAudio.enabled&&previewAudio.prefs.music.enabled:effectsAudioEnabled())&&ctx?.state==='running'&&!document.hidden&&(scope!=='private'||previewPrivateAllowed());}
 let activeLoads=0;const loadWaiters:Array<()=>void>=[];
 function takeLoadSlot(){if(activeLoads<4){activeLoads++;return Promise.resolve();}return new Promise<void>(resolve=>loadWaiters.push(resolve));}
 function releaseLoadSlot(){const next=loadWaiters.shift();if(next)next();else activeLoads--;}
@@ -95,11 +110,11 @@ if(typeof window!=='undefined'){
  window.addEventListener('ravens:ui-feedback',event=>{const detail=(event as CustomEvent<SemanticCue|{cue:SemanticCue;scope:'ui'|'private'}>).detail,cue=typeof detail==='string'?detail:detail.cue;if(['press','select','open','close','success','error'].includes(cue))playSemantic(cue,{scope:typeof detail==='string'?'ui':detail.scope});});
 }
 function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,rate=1,volume=.6,offset=0,lateWindow=100,bell=false,onStarted?:(buffer:AudioBuffer,when:number,source:AudioBufferSourceNode)=>void){
- const audio=ctx;if(!audio||!allowed(scope)||delay<0)return;
+ const audio=ctx;if(!audio||!allowed(scope,sample)||delay<0)return;
  if(!epochs.has(id))epochs.set(id,0);const epoch=epochs.get(id),at=audio.currentTime+delay/1000;
  if(!claim(id+':'+cue,at))return;
  void load(sample).then(buffer=>{
-  if(ctx!==audio||epochs.get(id)!==epoch||!allowed(scope)||(audio.currentTime-at)*1000>lateWindow||offset>=buffer.duration)return;
+  if(ctx!==audio||epochs.get(id)!==epoch||!allowed(scope,sample)||(audio.currentTime-at)*1000>lateWindow||offset>=buffer.duration)return;
   const {source,when}=startBuffer(audio,buffer,id,sample,at,scope,rate,volume,offset,bell);onStarted?.(buffer,when,source);
  }).catch(()=>{/* Missing media never blocks interaction. */});
 }
@@ -107,10 +122,17 @@ function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,ra
 function startBuffer(audio:AudioContext,buffer:AudioBuffer,id:string,sample:string,at:number,scope:Scope,rate=1,volume=.6,offset=0,bell=false){
   const group=(sample:string)=>sample.startsWith('score:')?'music':/^(v6:washer-whisper|hurt-|cough-|butler-voice)/.test(sample)?'voice':'material',kind=group(sample);const own=[...sources].filter(([,s])=>s.scope===scope&&!s.bell&&group(s.sample)===kind&&s.at<=at&&s.end>at);if(scope!=='nomination'&&own.length>=(scope==='ui'||scope==='book'||kind!=='material'?1:3))stop(own[0]![0],own[0]![1]);
   if(!bell&&!sample.startsWith('ambient:')&&scope!=='ui'&&scope!=='book')for(const row of sources.values())if(row.bell){const duckAt=Math.max(at,audio.currentTime);row.gain.gain.setValueAtTime(row.gain.gain.value,duckAt);row.gain.gain.linearRampToValueAtTime(.035,duckAt+.04);row.gain.gain.linearRampToValueAtTime(.2,duckAt+.34);}
-  const source=audio.createBufferSource(),gain=audio.createGain(),when=Math.max(audio.currentTime,at);source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(destination(audio));source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};try{source.start(when,offset);}catch(error){source.disconnect();gain.disconnect();throw error;}sources.set(source,{id,scope,at:when,sample,gain,bell,end:when+(buffer.duration-offset)/rate});return{source,when};
+  const source=audio.createBufferSource(),gain=audio.createGain(),when=Math.max(audio.currentTime,at);source.buffer=buffer;source.playbackRate.value=rate;gain.gain.value=volume;source.connect(gain);gain.connect(sampleDestination(audio,sample));source.onended=()=>{sources.delete(source);source.disconnect();gain.disconnect();};try{source.start(when,offset);}catch(error){source.disconnect();gain.disconnect();throw error;}sources.set(source,{id,scope,at:when,sample,gain,bell,end:when+(buffer.duration-offset)/rate});return{source,when};
 }
 const hash=(id:string)=>[...id].reduce((v,c)=>(Math.imul(v,31)+c.charCodeAt(0))>>>0,0);
 let previousPrivateUi='';
+export function playSetupDetent(){
+ const audio=ctx;if(!audio||audio.state!=='running'||!allowed('ui'))return;
+ const at=audio.currentTime, spring=audio.createOscillator(), strike=audio.createGain();
+ spring.type='triangle';spring.frequency.setValueAtTime(1250,at);spring.frequency.exponentialRampToValueAtTime(220,at+.032);
+ strike.gain.setValueAtTime(.12,at);strike.gain.exponentialRampToValueAtTime(.001,at+.036);
+ spring.connect(strike);strike.connect(destination(audio));spring.onended=()=>{spring.disconnect();strike.disconnect();};spring.start(at);spring.stop(at+.038);
+}
 export function playSemantic(cue:SemanticCue,options:{variant?:number;scope?:'ui'|'book'|'private'}={}){
  // Generic acceptance sounds must not add a chime before a material scene.
  if(cue==='press'||cue==='select'||cue==='success')return;
@@ -197,7 +219,7 @@ export function roleAudioCues(scene:PrivateSceneDescriptor):RoleAudioCue[]{
 }
 /** Prepare private media before its local art clock starts. Public timelines never wait. */
 export async function prepareRoleAudio(scene:PrivateSceneDescriptor):Promise<void>{
- if(!effectsAudioEnabled()||!ctx||!previewPrivateAllowed())return;
+ if(!ctx||!previewPrivateAllowed()||!effectsAudioEnabled()&&!(previewAudio?.enabled&&previewAudio.prefs.music.enabled))return;
  let timer:ReturnType<typeof setTimeout>|undefined;
  await Promise.race([Promise.allSettled([...roleAudioCues(scene),...roleMusicCues(scene)].map(([,sample])=>load(sample))),new Promise<void>(resolve=>{timer=setTimeout(()=>{report('声音加载较慢，本段先继续；可在记录中重播');resolve();},6000);})]);
  clearTimeout(timer);

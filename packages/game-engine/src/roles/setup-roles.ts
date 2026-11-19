@@ -1,5 +1,6 @@
 import { shuffled } from "../rng.js";
-import { distributionFor } from "../setup.js";
+import { compositionKeys, distributionFor } from "../setup.js";
+import type { BaseComposition } from "@ravens/contracts";
 import type { Alignment, RoleType } from "../types.js";
 import { roleById, rolesByType } from "./catalog.js";
 
@@ -17,13 +18,49 @@ function takeRoleIds(type: RoleType, count: number, seed: string, required?:stri
   return roles;
 }
 
-export function setupGameRoles(playerCount: number, seed: string, forced?:{seat:number;roleId:string}): RoleAssignment[] {
-  const base = distributionFor(playerCount);
+function legalMinions(base: BaseComposition, forcedRoleId?: string): string[][] {
+  const pool = rolesByType("MINION").map(role => role.id);
+  const forced = forcedRoleId ? roleById(forcedRoleId) : undefined;
+  const subsets = base.minion === 1 ? pool.map(id => [id]) :
+    pool.flatMap((id, index) => pool.slice(index + 1).map(other => [id, other]));
+  return subsets.filter(ids => {
+    const shift = ids.includes("baron") ? 2 : 0;
+    const townsfolk = base.townsfolk - shift, outsider = base.outsider + shift;
+    if (townsfolk < 1 || townsfolk > rolesByType("TOWNSFOLK").length || outsider > rolesByType("OUTSIDER").length) return false;
+    if (forced?.type === "MINION") return ids.includes(forced.id);
+    if (forced?.type === "OUTSIDER") return outsider > 0;
+    return true;
+  });
+}
+
+export function compositionIssue(playerCount: number, base: BaseComposition) {
+  if (compositionKeys.some(key => !Number.isInteger(base?.[key])) ||
+    base.townsfolk < 1 || base.townsfolk > playerCount || base.outsider < 0 || base.outsider > 4 ||
+    base.minion < 1 || base.minion > 2 || base.demon !== 1) return "COUNT_OUT_OF_RANGE" as const;
+  if (compositionKeys.reduce((sum, key) => sum + base[key], 0) !== playerCount) return "COUNT_MISMATCH" as const;
+  if (!legalMinions(base).length) return "NO_LEGAL_DEAL" as const;
+}
+
+export function canDealRole(playerCount: number, roleId: string, base = distributionFor(playerCount)): boolean {
+  return !compositionIssue(playerCount, base) && legalMinions(base, roleId).length > 0;
+}
+
+export function setupGameRoles(playerCount: number, seed: string, forced?:{seat:number;roleId:string}, custom?: BaseComposition): RoleAssignment[] {
+  const base = custom ?? distributionFor(playerCount);
   if(forced&&(!Number.isInteger(forced.seat)||forced.seat<1||forced.seat>playerCount))throw new Error("Invalid forced seat");
   const forcedRole=forced?roleById(forced.roleId):undefined;
   // A forced Outsider must still belong to a legal bag; a Baron supplies the slots when needed.
   const requiredMinion=forcedRole?.type==="MINION"?forcedRole.id:forcedRole?.type==="OUTSIDER"&&base.outsider===0?"baron":undefined;
-  const minions = takeRoleIds("MINION", base.minion, seed,requiredMinion);
+  let minions: string[];
+  if (custom) {
+    const problem = compositionIssue(playerCount, custom);
+    if (problem) throw new Error(problem);
+    const candidate = shuffled(legalMinions(base, forced?.roleId), `${seed}:custom-minions`)[0];
+    if (!candidate) throw new Error("NO_LEGAL_DEAL");
+    minions = candidate;
+  } else {
+    minions = takeRoleIds("MINION", base.minion, seed, requiredMinion);
+  }
   const hasBaron = minions.includes("baron");
   const outsiderCount = base.outsider + (hasBaron ? 2 : 0);
   const townsfolkCount = base.townsfolk - (hasBaron ? 2 : 0);

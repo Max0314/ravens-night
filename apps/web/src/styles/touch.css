@@ -11,8 +11,8 @@ input,textarea,select{color-scheme:dark;}
 input,textarea,[contenteditable="true"]{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default;touch-action:manipulation;}
 .app-viewport [contenteditable="true"] *{-webkit-user-select:text!important;user-select:text!important;}
 img,a{-webkit-user-drag:none;}
-.app-viewport>.app-loading{height:100%;min-height:0;}
-.app-viewport>.center-page,.app-viewport>.login-page{height:100%;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:calc(64px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom));}
+:is(.app-viewport,.room-content-host)>.app-loading{height:100%;min-height:0;}
+:is(.app-viewport,.room-content-host)>:is(.center-page,.login-page){height:100%;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:calc(64px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom));}
 .center-page>.form-panel,.center-page>.tutorial__panel,.login-page>.login-panel{max-height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;flex-shrink:1;}
 .center-page.tutorial{gap:8px;}.tutorial>.tutorial__progress,.tutorial>p{flex:none;margin:0;}.tutorial__panel{width:min(100%,560px);align-content:start;}.tutorial__actions{position:sticky;bottom:0;background:#101620e8;padding-top:8px;}
 .login-page>.login-panel{margin:0;}.login-page__art{pointer-events:none;}

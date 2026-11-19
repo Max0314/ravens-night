@@ -1,7 +1,7 @@
 import {createHmac,randomBytes,timingSafeEqual} from 'node:crypto';
 import {RoomError} from './errors.js';
 export interface CreationTicket {version:1;nonce:string;actorKind:'ACCOUNT'|'GUEST';actorDigest:string;issuedAt:number;expiresAt:number}
-export interface CreationRequest {key:string;actorDigest:string;fingerprint:string;payload:{actorKind:'ACCOUNT'|'GUEST';code:string;roomInstanceId:string;createdAt:number};expiresAt:number}
+export interface CreationRequest {key:string;actorDigest:string;fingerprint:string;payload:{actorKind:'ACCOUNT'|'GUEST';code:string;roomInstanceId:string;createdAt:number;creationVersion?:3;roomKind?:import('@ravens/contracts').RoomKind;hostParticipantId?:string};expiresAt:number}
 const mac=(secret:string,parts:unknown[])=>createHmac('sha256',secret).update(JSON.stringify(parts)).digest('base64url');
 export const creationOwner=(secret:string,kind:CreationTicket['actorKind'],value:string)=>mac(secret,['rvn:create-owner:v1',kind,value]);
 export const creationKey=(secret:string,owner:string,id:string)=>mac(secret,['rvn:create-key:v1',owner,id]);
