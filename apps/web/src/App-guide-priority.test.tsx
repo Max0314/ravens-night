@@ -41,7 +41,7 @@ test('the town shortcut shows the public catalogue and restores record and list 
  fireEvent.click(within(nav).getByRole('button',{name:'记录'}));
  const trigger=within(nav).getByRole('button',{name:'角色表'});
  fireEvent.click(trigger);
- const card=screen.getByRole('dialog',{name:'角色表'});
+ const card=screen.getByRole('region',{name:'角色表'});
  const categories=within(card).getByRole('navigation',{name:'角色分类'});
  const list=card.querySelector<HTMLElement>('[data-role-reference-list]')!;
  for(const [type,label] of [['TOWNSFOLK','镇民'],['OUTSIDER','外来者'],['MINION','爪牙'],['DEMON','恶魔']] as const){
@@ -64,7 +64,9 @@ test('the town shortcut shows the public catalogue and restores record and list 
  expect(rows[0]!.querySelector('.role-reference__missing-icon')).not.toBeNull();
  expect(rows[0]).toHaveTextContent(beginnerRoles[0]!.summary);
  expect(card).not.toHaveTextContent('甲');
- expect(document.querySelector('.player-private')).toHaveAttribute('inert');
+ expect(within(nav).getByRole('button',{name:'城镇'})).toBeEnabled();
+ expect(within(nav).getByRole('button',{name:'记录'})).toBeEnabled();
+ expect(trigger).toHaveAttribute('aria-pressed','true');
  const role=within(card).getByRole('button',{name:'僧侣'});
  list.scrollTop=300;
  fireEvent.click(role);
@@ -74,9 +76,10 @@ test('the town shortcut shows the public catalogue and restores record and list 
  fireEvent.keyDown(window,{key:'Escape'});
  expect(list.scrollTop).toBe(300);
  expect(role).toHaveFocus();
- fireEvent.click(within(card).getByRole('button',{name:'关闭角色表'}));
+ const record=within(nav).getByRole('button',{name:'记录'});
+ record.focus();fireEvent.click(record);
  await waitFor(()=>expect(window.history.state?.ravensLayer).toBeUndefined());
- expect(trigger).toHaveFocus();
+ expect(record).toHaveFocus();
  expect(within(nav).getByRole('button',{name:'记录'})).toHaveAttribute('aria-pressed','true');
 });
 
@@ -84,7 +87,7 @@ test('the same live reference resumes its detail after execution and discards on
  render(<App/>);
  const nav=await screen.findByRole('navigation',{name:'游戏分区'});
  fireEvent.click(within(nav).getByRole('button',{name:'角色表'}));
- const card=await screen.findByRole('dialog',{name:'角色表'});
+ const card=await screen.findByRole('region',{name:'角色表'});
  fireEvent.click(within(card).getByRole('button',{name:'共情者'}));
  const detail=within(card).getByRole('article',{name:/共情者/});
  detail.scrollTop=120;
@@ -95,11 +98,11 @@ test('the same live reference resumes its detail after execution and discards on
  expect(card).not.toBeVisible();
  fireEvent.click(screen.getByRole('button',{name:'跳过演出'}));
  fireEvent.click(screen.getByRole('button',{name:'返回角色表'}));
- await waitFor(()=>expect(screen.getByRole('dialog',{name:'角色表'})).toBe(card));
+ await waitFor(()=>expect(screen.getByRole('region',{name:'角色表'})).toBe(card));
  expect(within(card).getByRole('article',{name:/共情者/})).toBe(detail);
  expect(detail.scrollTop).toBe(120);
  fireEvent(window,new Event('ravens:cover-private'));
- expect(screen.queryByRole('dialog',{name:'角色表'})).toBeNull();
+ expect(screen.queryByRole('region',{name:'角色表'})).toBeNull();
  expect(screen.getByRole('button',{name:'显示私密内容'})).toBeVisible();
  await waitFor(()=>expect(window.history.state?.ravensLayer).toBeUndefined());
 });
@@ -109,7 +112,7 @@ test('after skipping a frozen execution the player can dismiss the saved referen
  const nav=await screen.findByRole('navigation',{name:'游戏分区'});
  const trigger=within(nav).getByRole('button',{name:'角色表'});
  fireEvent.click(trigger);
- const card=await screen.findByRole('dialog',{name:'角色表'});
+ const card=await screen.findByRole('region',{name:'角色表'});
  const execution=snapshot(2,'g',true);
  await waitFor(()=>expect(feed.receive).toBeTypeOf('function'));
  act(()=>feed.receive!({type:'view',room:execution.room!,privateView:execution,serverNow:epoch}));
@@ -118,7 +121,7 @@ test('after skipping a frozen execution the player can dismiss the saved referen
  fireEvent.click(screen.getByRole('button',{name:'继续城镇'}));
  await waitFor(()=>expect(trigger).toBeEnabled());
  fireEvent.click(trigger);
- expect(await screen.findByRole('dialog',{name:'角色表'})).not.toBe(card);
- fireEvent.click(screen.getByRole('button',{name:'关闭角色表'}));
+ expect(await screen.findByRole('region',{name:'角色表'})).not.toBe(card);
+ fireEvent.click(within(nav).getByRole('button',{name:'城镇'}));
  await waitFor(()=>expect(window.history.state?.ravensLayer).toBeUndefined());
 });

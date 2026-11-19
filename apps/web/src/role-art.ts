@@ -2,7 +2,7 @@ import {beginnerRoles} from '@ravens/content';
 
 interface FrameArt {frameUrl?:string;frameThumbnailUrl?:string;frameSrcSet?:string}
 interface RoleArt extends FrameArt {portraitUrl:string;thumbnailUrl:string;portraitSrcSet?:string;portraitPosition:string}
-const FRAME_URL='/assets/ravens/role-type-frames-v5/arch.svg';
+const FRAME_URL='/assets/ravens/role-type-frames-v4/arch.svg';
 const PUBLIC_ROLE_TYPES=new Map(beginnerRoles.map(role=>[role.id,role.type]));
 export function roleFrame(type:string):FrameArt{
   if(!['TOWNSFOLK','OUTSIDER','MINION','DEMON'].includes(type))return {};

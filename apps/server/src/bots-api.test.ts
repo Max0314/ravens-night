@@ -48,6 +48,22 @@ test('manual control advances an unpublished night transition without ordinary p
  if(advance.json().game.phase==='ROLE_REVEAL')advance=await control(app,code,host.cookie,'rehearsal/advance');
  expect(advance.json().game.phase).toBe('FIRST_NIGHT');
 });
+test('the owner can leave and close an active solo room through ordinary leave',async()=>{
+ const app=appFixture(),{code,host}=await createDebug(app);
+ const start=await intent(app,code,host.cookie,{tutorialMode:'SKIP',markHostReady:true});
+ delete (start as Partial<typeof start>).expectedControlVersion;
+ const begun=await app.inject({method:'POST',url:`/api/rooms/${code}/start`,headers:{...protocol,cookie:host.cookie,'x-command-id':randomUUID()},payload:start});
+ expect(begun.statusCode,begun.body).toBe(200);
+ const payload=await intent(app,code,host.cookie);
+ delete (payload as Partial<typeof payload>).expectedControlVersion;
+ const request={method:'DELETE' as const,url:`/api/rooms/${code}/leave`,headers:{...protocol,cookie:host.cookie,'x-command-id':randomUUID()},payload};
+ const outsider=await app.inject({...request,headers:{...protocol,'x-command-id':randomUUID()}});
+ expect(outsider.statusCode).toBe(403);
+ const result=await app.inject(request);
+ expect(result.statusCode,result.body).toBe(200);
+ expect(result.json()).toMatchObject({left:true,roomDestroyed:true});
+ expect((await app.inject({url:`/api/rooms/${code}/summary`,headers:protocol})).statusCode).toBe(404);
+});
 test('a second human disables rehearsal; protocol 2 writes and reads require refresh',async()=>{
  const app=appFixture(),{code}=await create(app),host=await join(app,code);await join(app,code,'Second');await control(app,code,host.cookie,'bots',{fill:true});
  expect((await control(app,code,host.cookie,'rehearsal/clock',{mode:'MANUAL'})).statusCode).toBe(409);

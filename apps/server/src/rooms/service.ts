@@ -302,10 +302,14 @@ export class RoomService {
 
   leave(codeInput: string, playerToken: string): { roomDestroyed: boolean; organizerChanged: boolean } {
     const room = this.find(codeInput);
-    if (isDebugRoom(room)) throw new RoomError("DEBUG_EXIT_REQUIRED", "请在单人调试大厅退出调试模式");
     const participantIndex = room.participants.findIndex((candidate) => candidate.tokenHash === hashOpaqueToken(playerToken));
     if (participantIndex < 0) throw new Error("Player authorization failed");
     const participant = room.participants[participantIndex]!;
+    if (isDebugRoom(room)) {
+      this.requireHost(room,playerToken);
+      this.#rooms.delete(room.code);
+      return {roomDestroyed:true,organizerChanged:false};
+    }
     if (participant.mode === "PLAYER" && room.game && this.gameNow(room) < room.game.presentationUntil) throw new RoomError("PRESENTATION_PENDING", "演出正在进行，请稍后操作");
     if (participant.mode === "PLAYER" && !["LOBBY", "GAME_OVER", "ABORTED"].includes(this.publicView(codeInput).state)) throw new RoomError("GAME_IN_PROGRESS", "本局仍在进行，可先返回首页，或请房主中止本局");
 
@@ -495,7 +499,7 @@ export class RoomService {
     this.changed(room);return participant;
   }
   claimAccount(code:string,token:string,sub:string,previewHash:string,newToken:string){
-    if(this.#claims.has(sub))throw Error('本账号在鸦钟夜话的游客认领机会已使用');
+    if(this.#claims.has(sub))throw Error('本账号在血染钟楼的游客认领机会已使用');
     const room=this.find(code),participant=room.participants.find(value=>!value.left&&value.tokenHash===hashOpaqueToken(token));
     if(!participant||participant.accountId||participant.mode!=='PLAYER')throw Error('没有可认领的游客座位');
     if(this.accountRooms(sub).length)throw Error('账号已有房间，不能覆盖');

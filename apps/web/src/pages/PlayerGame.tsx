@@ -4,6 +4,7 @@ import {canAutoPlayPrivateScene} from '../presentations/private-scenes.js';
 import {FeedbackButton} from '@ravens/ui';
 import {playerLabel,formatPlayerText} from '@ravens/ui';
 import {RolePortraitPeek} from '../components/RolePortraitPeek.js';
+import {RoleReferenceOverlay} from '../components/RoleReferenceOverlay.js';
 import {GlobalAudioButton} from '../components/GlobalAudioButton.js';
 import {VillageRecords} from '../components/VillageRecords.js';
 import {rolePlayGuides} from '../guide-content.js';
@@ -38,6 +39,7 @@ interface PlayerGameProps {
   onOpenRoleReference?:(trigger:HTMLButtonElement)=>void;
   referenceEntryBlocked?:boolean;
   referenceTaskFocus?:boolean;
+  onNoticeDock?:(node:HTMLDivElement|null)=>void;
   drafts?: WhisperDrafts;
   setDrafts?: Dispatch<SetStateAction<WhisperDrafts>>;
   showBallot?: number;
@@ -77,6 +79,7 @@ export function PlayerGame(props: PlayerGameProps) {
   const privateSceneComplete=useCallback((id:string)=>setCompletedPrivateScenes(ids=>ids.includes(id)?ids:[...ids,id]),[]);
   const [showBallot, setShowBallot] = useState(0);
   const [referenceTaskFocus,setReferenceTaskFocus]=useState(false);
+  const [noticeDock,setNoticeDock]=useState<HTMLDivElement|null>(null);
   const [reading,setReading]=useState(false),[taskDisplayed,setTaskDisplayed]=useState(false),[overlayOpen,setOverlayOpen]=useState(false),[publicReading,setPublicReading]=useState(false),[noticeReading,setNoticeReading]=useState(false),[noticeBlocked,setNoticeBlocked]=useState(false);
   useEffect(()=>{const sync=()=>{setNoticeReading(!!document.querySelector('.guide-backdrop,.game-content--record'));setNoticeBlocked(!!document.querySelector('.room-sheet,.player-wheel-backdrop,.event-stage,.private-scene-dialog,.private-ritual,.role-portrait-peek'));setPublicReading(!!document.querySelector('.guide-backdrop,.game-content--record,[data-town-reading="true"]')||[...document.querySelectorAll('.room-sheet,.player-wheel-backdrop')].some(node=>!node.closest('.town-role-confirm,.audio-settings-host')));setOverlayOpen(!!document.querySelector('.guide-backdrop:not(.role-reference-backdrop),[role="dialog"]:not(.role-reference,.audio-settings-host *),[role="alertdialog"]'));setReading(!!document.querySelector('.guide-backdrop,.room-sheet,.player-wheel-backdrop,.game-content--record,[data-town-reading="true"]'));setTaskDisplayed(!!document.querySelector('.town-role-confirm'));};sync();const observer=new MutationObserver(sync);observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class","data-town-reading"]});return()=>observer.disconnect();},[]);
   const [covered, setCovered] = useState(false);
@@ -88,6 +91,7 @@ export function PlayerGame(props: PlayerGameProps) {
   const publicTransition=publicScene?.kind==='NIGHT_FALLS'||publicScene?.kind==='DAWN';
   const referenceVisible=props.roleReferenceOpen===true&&!guidePriority.suspended&&!covered;
   const guideReading=props.roleReferenceOpen?referenceVisible:props.guideOpen===true;
+  const inlineDock=referenceVisible||noticeReading&&!guideReading?noticeDock:undefined;
   const publicReadingNow=!guidePriority.criticalActive&&(guideReading||publicReading);
   const publicPlaying=publicStageOpen||!!publicScene&&(openingNight||!publicTransition||!privateSceneOpen&&!privatePending)&&!publicReadingNow;
   const [syncing, setSyncing] = useState(false);
@@ -124,16 +128,16 @@ export function PlayerGame(props: PlayerGameProps) {
     {props.view&&covered?<PublicBallot view={props.view} busy={props.busy||syncing} onVote={props.onVote}
       onDetails={()=>{if(!covered)setShowBallot(n=>n+1);}}/>:null}
     {props.view?<NominationNotice active={!covered&&(!props.roleReferenceOpen||!guidePriority.criticalActive)
-        &&(guideReading||reading||privateSceneOpen)} roleReference={referenceVisible}
+        &&(guideReading||reading||privateSceneOpen)} roleReference={referenceVisible} dockElement={inlineDock}
       view={props.view} busy={props.busy||syncing} onVote={props.onVote} onShoot={props.onUseAbility}
       error={props.error} onDetails={returnToTown}/>:null}
-    <PrivateActionNotice active={(guideReading||noticeReading)&&!noticeBlocked&&!privateSceneOpen&&!publicPlaying
+    <PrivateActionNotice dockElement={inlineDock} active={(guideReading||noticeReading)&&!noticeBlocked&&!privateSceneOpen&&!publicPlaying
       &&!covered&&!syncing&&!props.busy&&!document.hidden&&!guidePriority.suspended} view={props.view} onReturn={returnToTown}/>
-    <div className="player-private" hidden={covered} inert={covered||referenceVisible}>
+    <div className="player-private" hidden={covered} inert={covered}>
       <PlayerGameContent {...props} guideOpen={guideReading} audioBlocked={overlayOpen||privateSceneOpen||publicPlaying}
         referenceEntryBlocked={syncing||overlayOpen||privateSceneOpen||publicStageOpen||openingNight}
         privatePeekBlocked={syncing||privateSceneOpen||publicPlaying||openingNight} privateVisible={!covered}
-        drafts={drafts} setDrafts={setDrafts} showBallot={showBallot} referenceTaskFocus={referenceTaskFocus} busy={props.busy||syncing}/>
+        drafts={drafts} setDrafts={setDrafts} showBallot={showBallot} referenceTaskFocus={referenceTaskFocus} onNoticeDock={setNoticeDock} busy={props.busy||syncing}/>
     </div>
     {syncing?<p role="status" className="session-status">正在同步当前轮次…</p>:null}
     {props.view?.game?<><FeedbackButton className="privacy-toggle" type="button" onClick={coverPrivate}>遮住私密内容</FeedbackButton>
@@ -146,23 +150,25 @@ export function PlayerGame(props: PlayerGameProps) {
         {...(props.onConfirmStartInfo?{onConfirmStartInfo:props.onConfirmStartInfo}:{})} onHandleTask={returnToTown}/>:null}</>:null}
     {covered?<section className="privacy-curtain player-wait-scene" aria-label="私密内容已遮住">
       <div className="player-wait-scene__content"><span className="player-wait-scene__seal" aria-hidden="true">☾</span>
-        <p className="player-wait-scene__eyebrow">鸦夜 · 暂歇</p><h1>私密内容已遮住</h1>
+        <p className="player-wait-scene__eyebrow">暂歇</p><h1>私密内容已遮住</h1>
         <p>准备好后，继续你的城镇之夜。</p><Button onClick={()=>setCovered(false)}>显示私密内容</Button></div>
     </section>:null}
   </div>;
 }
 
-function PlayerGameContent({ privateVisible=true, guideOpen=false, privatePeekBlocked=false, audioBlocked=false, roleReferenceOpen=false, onOpenRoleReference, referenceEntryBlocked=false, referenceTaskFocus=false, drafts, setDrafts, showBallot, view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onCancelNomination, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide, roomCode, voiceRoomUrl, onLeave, onRefresh, onResumeGame, onFinishDefense }: PlayerGameProps) {
+function PlayerGameContent({ privateVisible=true, guideOpen=false, privatePeekBlocked=false, audioBlocked=false, roleReferenceOpen=false, onOpenRoleReference, onCloseGuide, referenceEntryBlocked=false, referenceTaskFocus=false, onNoticeDock, drafts, setDrafts, showBallot, view, busy, error, onBack, onConfirmRole, onSubmitAction, onNominate, onCancelNomination, onVote, onReady, onUseAbility, onRestart, canRestart, onOpenGuide, roomCode, voiceRoomUrl, onLeave, onRefresh, onResumeGame, onFinishDefense }: PlayerGameProps) {
   const [selected, setSelected] = useState<number[]>([]);
   const [tab, setTab] = useState<"TOWN" | "RECORD">("TOWN");
+  const showRoleReference=roleReferenceOpen&&guideOpen&&privateVisible;
+  const fullGuideOpen=guideOpen&&!roleReferenceOpen;
   const [socialOpen,setSocialOpen]=useState(false),[roleOpen,setRoleOpen]=useState(true),[adviceOpen,setAdviceOpen]=useState(false),[voteOpen,setVoteOpen]=useState(false),[reviewOpen,setReviewOpen]=useState(false);
   const [pauseOpen,setPauseOpen]=useState(false);
   const [readSeq,setReadSeq]=useState(0);
   const [peekScope,setPeekScope]=useState<string>();
   const closePeek=useCallback(()=>setPeekScope(undefined),[]);
   const currentPeekScope=JSON.stringify([view?.roomInstanceId,view?.game?.gameId,view?.participant.id,view?.role?.roleId]);
-  const peekVisible=privateVisible&&!guideOpen&&!privatePeekBlocked&&!document.hidden&&peekScope===currentPeekScope;
-  useEffect(()=>{if(!privateVisible||guideOpen||privatePeekBlocked||peekScope!==currentPeekScope)closePeek();},[privateVisible,guideOpen,privatePeekBlocked,currentPeekScope]);
+  const peekVisible=privateVisible&&!fullGuideOpen&&!privatePeekBlocked&&!document.hidden&&peekScope===currentPeekScope;
+  useEffect(()=>{if(!privateVisible||fullGuideOpen||privatePeekBlocked||peekScope!==currentPeekScope)closePeek();},[privateVisible,fullGuideOpen,privatePeekBlocked,currentPeekScope]);
   const game=view?.game,action=view?.action,now=useGameClock(game,view?.room);
   const content=useRef<HTMLDivElement>(null),positions=useRef<Record<string,number>>({});
   const townButton=useRef<HTMLButtonElement>(null),townFocusHandled=useRef(0);
@@ -181,8 +187,15 @@ function PlayerGameContent({ privateVisible=true, guideOpen=false, privatePeekBl
   useEffect(()=>{if(view?.roleConfirmed)setRoleOpen(false);},[view?.roleConfirmed]);
   useEffect(()=>{if(!privateVisible){setSocialOpen(false);setAdviceOpen(false);setVoteOpen(false);setReviewOpen(false);}},[privateVisible]);
   useEffect(()=>{if(showBallot){setTab("TOWN");setPauseOpen(false);setAdviceOpen(false);setSocialOpen(false);setVoteOpen(false);setRoleOpen(true);}},[showBallot]);
-  function changeTab(next:typeof tab){closePeek();if(next!==tab)playSemantic('select');positions.current[tab]=content.current?.scrollTop??0;setTab(next);if(next==="RECORD")setReadSeq(view?.history.at(-1)?.seq??0);}
-  useLayoutEffect(()=>{if(content.current)content.current.scrollTop=positions.current[tab]??0;},[tab,game?.gameId]);
+  function changeTab(next:typeof tab){
+    closePeek();
+    if(roleReferenceOpen)onCloseGuide?.('town-action');
+    if(next!==tab||showRoleReference)playSemantic('select');
+    if(!showRoleReference)positions.current[tab]=content.current?.scrollTop??0;
+    setTab(next);
+    if(next==="RECORD")setReadSeq(view?.history.at(-1)?.seq??0);
+  }
+  useLayoutEffect(()=>{if(!showRoleReference&&content.current)content.current.scrollTop=positions.current[tab]??0;},[tab,showRoleReference,game?.gameId]);
   useEffect(()=>{positions.current={};if(content.current)content.current.scrollTop=0;},[game?.gameId,view?.participant.id]);
   useEffect(()=>{const reset=()=>setSelected([]);window.addEventListener("online",reset);return()=>window.removeEventListener("online",reset);},[]);
   useEffect(()=>{if(!game?.pauseReason)setPauseOpen(false);},[game?.pauseReason]);
@@ -205,24 +218,29 @@ function PlayerGameContent({ privateVisible=true, guideOpen=false, privatePeekBl
   const hasDrafts=Object.values(drafts??{}).some(d=>d.text);
   const nightConfirm=selecting?<div className="town-night-confirm"><div aria-live="polite">{validSelection.length?validSelection.map(seat=><FeedbackButton type="button" key={seat} disabled={disabled} onClick={()=>setSelected(s=>s.filter(n=>n!==seat))}><Avatar id={String(seat)} name={game.seats.find(p=>p.seat===seat)?.nickname??"玩家"} url={game.seats.find(p=>p.seat===seat)?.avatar}/><span>{playerLabel(seat,game.seats.find(p=>p.seat===seat)?.nickname)}</span><b aria-hidden="true">×</b></FeedbackButton>):<span>点击圆桌头像选择目标</span>}</div><Button data-role-reference-action disabled={disabled||validSelection.length!==action.maxTargets} onClick={()=>onSubmitAction(validSelection)}>{busy?'正在提交…':`确认选择（${validSelection.length}/${action.maxTargets}）`}</Button></div>:null;
   const showReferenceEntry=!!onOpenRoleReference&&game.phase!=='ROLE_REVEAL';
-  const blockReferenceEntry=referenceEntryBlocked||guideOpen||roleReferenceOpen||peekVisible||socialOpen||adviceOpen||pauseOpen||voteOpen;
+  const blockReferenceEntry=referenceEntryBlocked||!showRoleReference&&guideOpen||peekVisible||socialOpen||adviceOpen||pauseOpen||voteOpen;
   return <main data-private-feedback={['ROLE_REVEAL','FIRST_NIGHT','OTHER_NIGHT'].includes(game.phase)?'true':undefined} className={`game-page game-page--${isNight||game.phase==="ROLE_REVEAL"?"night":"day"} game-page--town${game.phase==='ROLE_REVEAL'?' game-page--identity':''}`}>
-    <GameHeader soundVisible={game.phase!=='ROLE_REVEAL'&&privateVisible&&!guideOpen&&!audioBlocked&&!privatePeekBlocked&&!peekVisible&&!socialOpen&&!adviceOpen&&!pauseOpen&&!voteOpen} peekDisabled={!privateVisible||guideOpen||privatePeekBlocked} peekOpen={peekVisible} onPeek={()=>setPeekScope(currentPeekScope)} phase={phaseNames[game.phase]??game.phase} day={game.day} role={role.name} category={role.alignment==='GOOD'?(role.type==='TOWNSFOLK'?'镇民':role.type==='OUTSIDER'?'外来者':undefined):undefined} alive={game.aliveCount} tools={<>{game.pauseReason?<FeedbackButton type="button" className="game-pause-entry" onClick={()=>setPauseOpen(true)} aria-label="等待超时">等待</FeedbackButton>:null}{voiceRoomUrl||view.voiceRoomUrl?<a className="game-voice-entry" aria-label="语音频道" href={voiceRoomUrl??view.voiceRoomUrl} target="_blank" rel="noopener noreferrer">↗</a>:null}</>}/>
+    <GameHeader soundVisible={game.phase!=='ROLE_REVEAL'&&privateVisible&&!fullGuideOpen&&!audioBlocked&&!privatePeekBlocked&&!peekVisible&&!socialOpen&&!adviceOpen&&!pauseOpen&&!voteOpen} peekDisabled={!privateVisible||fullGuideOpen||privatePeekBlocked} peekOpen={peekVisible} onPeek={()=>setPeekScope(currentPeekScope)} phase={phaseNames[game.phase]??game.phase} day={game.day} role={role.name} category={role.alignment==='GOOD'?(role.type==='TOWNSFOLK'?'镇民':role.type==='OUTSIDER'?'外来者':undefined):undefined} alive={game.aliveCount} tools={<>{game.pauseReason?<FeedbackButton type="button" className="game-pause-entry" onClick={()=>setPauseOpen(true)} aria-label="等待超时">等待</FeedbackButton>:null}{voiceRoomUrl||view.voiceRoomUrl?<a className="game-voice-entry" aria-label="语音频道" href={voiceRoomUrl??view.voiceRoomUrl} target="_blank" rel="noopener noreferrer">↗</a>:null}</>}/>
     <nav className={`game-tabs${showReferenceEntry?' game-tabs--role-reference':''}`} aria-label="游戏分区">
       <FeedbackButton type="button" ref={townButton} data-role-reference-town feedback="none"
-        className={tab==='TOWN'?'is-active':''} aria-pressed={tab==='TOWN'} onClick={()=>changeTab('TOWN')}>
+        className={!showRoleReference&&tab==='TOWN'?'is-active':''} aria-pressed={!showRoleReference&&tab==='TOWN'} onClick={()=>changeTab('TOWN')}>
         城镇{pendingInvites||selecting||pendingInfo?<small className="invite-badge">{pendingInvites||'待办'}</small>:null}
       </FeedbackButton>
-      {showReferenceEntry?<FeedbackButton type="button" className="role-reference-entry" aria-haspopup="dialog"
-        aria-expanded={roleReferenceOpen&&guideOpen} disabled={blockReferenceEntry}
-        onClick={event=>{if(privateVisible&&!blockReferenceEntry)onOpenRoleReference?.(event.currentTarget);}}>角色表</FeedbackButton>:null}
-      <FeedbackButton type="button" feedback="none" className={tab==='RECORD'?'is-active':''}
-        aria-pressed={tab==='RECORD'} onClick={()=>changeTab('RECORD')}>
+      {showReferenceEntry?<FeedbackButton type="button" feedback="select" className={`role-reference-entry${showRoleReference?' is-active':''}`}
+        aria-pressed={showRoleReference} disabled={blockReferenceEntry}
+        onClick={event=>{
+          if(!privateVisible||blockReferenceEntry||roleReferenceOpen)return;
+          positions.current[tab]=content.current?.scrollTop??0;
+          onOpenRoleReference?.(event.currentTarget);
+        }}>角色表</FeedbackButton>:null}
+      <FeedbackButton type="button" feedback="none" className={!showRoleReference&&tab==='RECORD'?'is-active':''}
+        aria-pressed={!showRoleReference&&tab==='RECORD'} onClick={()=>changeTab('RECORD')}>
         记录{view.history.some(e=>e.seq>readSeq&&e.kind==='INFORMATION')?<small className="invite-badge">新</small>:null}
       </FeedbackButton>
     </nav>
-    {peekVisible?<RolePortraitPeek roleId={role.roleId} name={role.name} onClose={closePeek}/>:null}
-    <div className={`game-content${tab==='TOWN'?' game-content--town':' game-content--record'}`} ref={content}>
+    {peekVisible?<RolePortraitPeek roleId={role.roleId} name={role.name} onClose={closePeek} onAdvice={()=>{closePeek();setAdviceOpen(true);}}/>:null}
+    {roleReferenceOpen?<RoleReferenceOverlay suspended={!showRoleReference} onClose={()=>onCloseGuide?.('dismiss')}/>:null}
+    <div className={`game-content${tab==='TOWN'?' game-content--town':' game-content--record'}`} ref={content} hidden={showRoleReference} inert={showRoleReference}>
       {tab==='TOWN'?<>
         {selecting?<TownNightPrompt active={!disabled&&!audioBlocked&&!privatePeekBlocked&&!guideOpen&&privateVisible&&!submitted} scope={`${selectionScope}:${action.prompt}`}><span>仅你可见</span><strong>{selecting?formatPlayerText(action.prompt):pendingInfo?'请先确认首夜信息':submitted?'已提交，等待其他玩家':'等待夜间行动'}</strong>{game.phase==='FIRST_NIGHT'&&view.startInfo?<FeedbackButton type="button" onClick={openStartInfo}>查看首夜信息</FeedbackButton>:null}</TownNightPrompt>:null}
 
@@ -236,10 +254,11 @@ function PlayerGameContent({ privateVisible=true, guideOpen=false, privatePeekBl
         </section></RoomSheet>:null}
       </>:<><Clues history={view.history} messages={view.messages} seats={game.seats}/><VillageRecords events={publicEventsAt(game.events,now)} seats={game.seats}/><GameGuideLinks onOpen={onOpenGuide}/></>}
     </div>
-    <RoomActionBar>
+    <div className="game-reading-notices" ref={onNoticeDock}/>
+    {!showRoleReference||error?<RoomActionBar>
       {tab==='RECORD'&&(selecting||pendingInfo||game.phase==='ROLE_REVEAL'&&!view.roleConfirmed)?<Button onClick={()=>{changeTab('TOWN');setRoleOpen(true);if(pendingInfo)openStartInfo();}}>返回城镇处理待办</Button>:tab==='TOWN'&&selecting?null:['DAY_DISCUSSION','NOMINATION'].includes(game.phase)&&(view.canEndDay??alive)?<Button variant="quiet" onClick={onReady} disabled={disabled}>{view.dayReady?'撤回同意':'同意结束今天'}（{game.readyCount}/{game.aliveCount}）</Button>:null}
       {error?<p className="form-error" role="alert">{error}</p>:null}
-    </RoomActionBar>
+    </RoomActionBar>:null}
     {privateVisible&&pauseOpen&&game.pauseReason?<RoomSheet title="本阶段等待" onClose={()=>setPauseOpen(false)} actions={onResumeGame?<Button disabled={busy} onClick={onResumeGame}>延长等待</Button>:undefined}><p role="status">{formatPlayerText(game.pauseReason)}</p>{error?<p role="alert">{error}</p>:null}</RoomSheet>:null}
     {roomCode&&privateVisible?<SocialRoom open={socialOpen} onClose={()=>setSocialOpen(false)} code={roomCode} view={view} drafts={drafts??{}} setDrafts={setDrafts!} onRefresh={onRefresh??(()=>undefined)}/>:null}
     {privateVisible&&tab==='TOWN'&&game.phase==='ROLE_REVEAL'&&roleOpen?<div className="town-role-confirm"><RoomSheet hideClose title="身份确认" onClose={()=>setRoleOpen(false)} actions={<><Button onClick={onConfirmRole} disabled={busy||view.roleConfirmed}>{view.roleConfirmed?'已确认，等待其他玩家':busy?'正在提交…':'确认身份'}</Button>{error?<p role="alert">{error}</p>:null}</>}><RoleCard name={role.name} alignment={`${role.alignment==='GOOD'?'善良':'邪恶'} · ${role.type==='TOWNSFOLK'?'镇民':role.type==='OUTSIDER'?'外来者':role.type==='MINION'?'爪牙':'恶魔'}`} ability={role.summary} {...roleArt(role.roleId)}/><FeedbackButton type="button" className="role-advice-trigger" onClick={()=>setAdviceOpen(true)}>游玩建议</FeedbackButton></RoomSheet></div>:null}
@@ -265,16 +284,16 @@ export function hasPrivateTownTask(view?:PrivateView){
   if(view?.game?.phase==='ROLE_REVEAL'&&(view.game.presentationUntil??0)>(view.game.serverNow??Date.now()))return false;
   return !!view&&((['FIRST_NIGHT','OTHER_NIGHT'].includes(view.game?.phase??'')&&(view.action?.kind==='SELECT_ONE'||view.action?.kind==='SELECT_TWO'))||(view.game?.phase==='FIRST_NIGHT'&&!!view.startInfo&&!view.startInfo.acknowledged)||(view.game?.phase==='ROLE_REVEAL'&&!view.roleConfirmed));
 }
-function PrivateActionNotice({active,view,onReturn}:{active:boolean;view?:PrivateView|undefined;onReturn:()=>void}){
+function PrivateActionNotice({active,dockElement,view,onReturn}:{active:boolean;dockElement?:HTMLElement|null|undefined;view?:PrivateView|undefined;onReturn:()=>void}){
   if(!active||!hasPrivateTownTask(view))return null;
-  return createPortal(<aside className="private-action-notice" aria-label="我的行动提醒"><span>仅你可见 · 有待完成的行动</span><FeedbackButton type="button" onClick={onReturn}>返回城镇</FeedbackButton></aside>,document.body);
+  return createPortal(<aside className="private-action-notice" aria-label="我的行动提醒"><span>仅你可见 · 有待完成的行动</span><FeedbackButton type="button" onClick={onReturn}>返回城镇</FeedbackButton></aside>,dockElement??document.body);
 }
 
 function GameHeader({soundVisible,phase,day,role,category,alive,tools,peekOpen,onPeek,peekDisabled}:{soundVisible:boolean;peekDisabled:boolean;peekOpen:boolean;onPeek:()=>void;phase:string;day:number;role:string;category?:string|undefined;alive:number;tools:React.ReactNode}){return <header className="game-header"><div className="game-header__phase"><strong>{phase}</strong><span><b>第{day||1}天</b><small aria-label={`${alive}人存活`}>存 {alive}</small></span></div>{soundVisible?<GlobalAudioButton className="game-header__sound" privateControls/>:null}<FeedbackButton type="button" className="role-chip" aria-label="查看我的角色立绘" aria-haspopup="dialog" aria-expanded={peekOpen} disabled={peekDisabled} onClick={onPeek}><span className="role-chip__name">{role}</span>{category?<small className="role-chip__category">{category}</small>:null}</FeedbackButton>{tools}</header>;}
 
 
 function GameGuideLinks({ onOpen }: { onOpen: (mode: GuideMode) => void }) {
-  return <div className="game-guide-links"><FeedbackButton type="button" onClick={() => onOpen("mine")}>我的角色</FeedbackButton><FeedbackButton type="button" onClick={() => onOpen("tutorial")}>教程</FeedbackButton><FeedbackButton type="button" onClick={() => onOpen("roles")}>角色表</FeedbackButton></div>;
+  return <div className="game-guide-links"><FeedbackButton type="button" onClick={() => onOpen("mine")}>我的角色</FeedbackButton><FeedbackButton type="button" onClick={() => onOpen("tutorial")}>教程</FeedbackButton></div>;
 }
 
 function Waiting({ title, detail, compact = false }: { title: string; detail: string; compact?: boolean }) { return <section className={`${compact ? "inline-waiting" : "night-page"} player-wait-scene`}><Panel className="night-action player-wait-scene__content"><span className="player-wait-scene__seal" aria-hidden="true">☾</span><p className="player-wait-scene__eyebrow">鸦夜 · 静候</p><h1>{title}</h1><p>{detail}</p><div className="waiting-orbit" aria-hidden="true"><span /></div></Panel></section>; }

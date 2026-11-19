@@ -10,8 +10,8 @@ export function PortraitsPreview() {
   const [selected, setSelected] = useState<string>();
   const roles = beginnerRoles.filter((role) => group === "ALL" || role.type === group);
   return <main className="portrait-gallery">
-    <header className="portrait-gallery__nav"><a href="/">☾ 鸦钟夜话</a><a href="?preview=effects">钟楼演出 ↗</a></header>
-    <section className="portrait-gallery__intro"><p>RAVENS AT MIDNIGHT · THE TOWNSPEOPLE</p><h1>22 个角色<br />与能力说明</h1><div>点击角色，查看能力、规则和游玩建议。</div><span>角色图鉴</span></section>
+    <header className="portrait-gallery__nav"><a href="/">☾ 血染钟楼</a><a href="?preview=effects">钟楼演出 ↗</a></header>
+    <section className="portrait-gallery__intro"><p>BLOOD ON THE CLOCKTOWER · THE TOWNSPEOPLE</p><h1>22 个角色<br />与能力说明</h1><div>点击角色，查看能力、规则和游玩建议。</div><span>角色图鉴</span></section>
     <nav className="portrait-gallery__filters" aria-label="人物类别">{groups.map((item) => <button key={item.id} type="button" aria-pressed={item.id === group} onClick={() => setGroup(item.id)}>{item.label}</button>)}<small>{roles.length} 位人物</small></nav>
     <div className="portrait-gallery__grid">{roles.map((role) => {
       const art = roleArt(role.id);

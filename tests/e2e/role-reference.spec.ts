@@ -48,9 +48,9 @@ test('role reference stays readable on the player viewport and does not interrup
   await page.goto('/');
   const navigation=page.getByRole('navigation',{name:'游戏分区'});
   const entry=navigation.getByRole('button',{name:'角色表'});
-  const card=page.getByRole('dialog',{name:'角色表'});
+  const card=page.getByRole('region',{name:'角色表'});
   const categories=card.getByRole('navigation',{name:'角色分类'});
-  const close=card.getByRole('button',{name:'关闭角色表'});
+  const town=navigation.getByRole('button',{name:'城镇'}),record=navigation.getByRole('button',{name:'记录'});
   const role=card.getByRole('button',{name:'小恶魔'});
   await expect(navigation.getByRole('button')).toHaveText(['城镇','角色表','记录']);
   const navBox=await entry.boundingBox();
@@ -62,8 +62,13 @@ test('role reference stays readable on the player viewport and does not interrup
   await page.screenshot({path:'outputs/ui-qa/role-reference-390.png'});
   for(const [width,height] of [[320,568],[568,320],[1280,800]]){
     await page.setViewportSize({width:width!,height:height!});
-    await expect(close).toBeInViewport();
-    await expect.poll(async()=> (await card.boundingBox())!.width).toBeLessThanOrEqual(Math.min(680,width!));
+    await expect(town).toBeInViewport();
+    await expect(record).toBeInViewport();
+    await expect.poll(async()=>{
+      const panel=(await card.boundingBox())!,bar=(await navigation.boundingBox())!;
+      return panel.y+panel.height<=bar.y+1||bar.x+bar.width<=panel.x+1;
+    }).toBe(true);
+    await expect.poll(async()=> (await card.boundingBox())!.width).toBeLessThanOrEqual(width!);
     expect(await card.evaluate(element=>element.scrollWidth)).toBeLessThanOrEqual((await card.boundingBox())!.width+1);
     for(const [type,count] of [['外来者',4],['爪牙',4],['恶魔',1]] as const){
       await categories.getByRole('button',{name:type}).click();
@@ -89,7 +94,12 @@ test('role reference stays readable on the player viewport and does not interrup
   await page.getByRole('button',{name:'查看我的角色立绘'}).click();
   const ownRole=page.getByRole('dialog',{name:'我的角色立绘'});
   await expect(ownRole.getByRole('img',{name:'士兵立绘'})).toBeInViewport({ratio:1});
-  await ownRole.getByRole('button',{name:'收起我的角色立绘'}).click();
+  const advice=ownRole.getByRole('button',{name:'查看游玩建议'});
+  await expect(advice).toBeInViewport({ratio:1});
+  await advice.click();
+  const adviceSheet=page.getByRole('dialog',{name:'士兵 · 游玩建议'});
+  await expect(adviceSheet.getByText('怎么玩')).toBeVisible();
+  await adviceSheet.getByRole('button',{name:'关闭士兵 · 游玩建议'}).click();
   await page.getByRole('button',{name:'声音设置'}).click();
   const settings=page.getByRole('dialog',{name:'声音设置'});
   await expect(settings.getByRole('slider',{name:'音乐音量'})).toBeInViewport({ratio:1});
@@ -105,8 +115,11 @@ test('role reference stays readable on the player viewport and does not interrup
   pushView!();
   const notice=page.getByRole('complementary',{name:'提名提醒'});
   await expect(notice).toBeVisible();
-  await expect.poll(async()=> (await card.boundingBox())!.y+(await card.boundingBox())!.height).toBeLessThanOrEqual((await notice.boundingBox())!.y);
-  await expect.poll(async()=> (await card.boundingBox())!.height).toBeGreaterThanOrEqual(136);
+  await expect.poll(async()=>{
+    const notification=(await notice.boundingBox())!,bar=(await navigation.boundingBox())!;
+    return notification.y+notification.height<=bar.y+1||bar.x+bar.width<=notification.x+1;
+  }).toBe(true);
+  await expect.poll(async()=> (await card.boundingBox())!.height).toBeGreaterThanOrEqual(120);
   await expect(card.getByRole('button',{name:'洗衣妇'})).toBeInViewport({ratio:0.6});
   await notice.getByRole('button',{name:'举手',exact:true}).click();
   const confirmation=page.getByRole('alertdialog',{name:'使用鬼票'});
@@ -118,7 +131,9 @@ test('role reference stays readable on the player viewport and does not interrup
   await confirmation.getByRole('button',{name:'确认使用鬼票'}).click();
   await expect.poll(()=>voteReceived).toBe(true);
   await card.getByRole('button',{name:'洗衣妇'}).click();
-  await close.click();
+  await record.click();
+  await expect(record).toHaveAttribute('aria-pressed','true');
+  await expect(card).toBeHidden();
   await entry.click();
   await expect(card.getByRole('listitem')).toHaveCount(13);
   await expect(notice.getByRole('button',{name:'举手',exact:true})).toBeDisabled();

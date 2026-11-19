@@ -83,7 +83,7 @@ test('Fribench login and account management return to a validated room invitatio
 });
 
 
-test('carousel navigation and entry nodes survive room states while only the permitted leave control is shown',async()=>{
+test('carousel navigation and entry nodes survive room states while the persistent leave control explains running-room restrictions',async()=>{
   vi.mocked(getAccount).mockResolvedValue({signedIn:false,rooms:[],guestClaimAvailable:false});
   const resume=vi.fn(),leave=vi.fn(),handlers={onJoin:vi.fn(),onCreate:vi.fn(),onTutorial:vi.fn(),onRoles:vi.fn()},room={code:'ABCDEF',state:'LOBBY',playerCount:6,participants:[]};
   const ui=render(<Home {...handlers}/>),art=screen.getByLabelText('左右滑动切换角色'),counter=screen.getByLabelText('角色序号'),counterText=counter.textContent,navigation=counter.parentElement!,join=screen.getByRole('button',{name:'加入房间'}),entryGrid=join.parentElement!;
@@ -91,7 +91,8 @@ test('carousel navigation and entry nodes survive room states while only the per
     ui.rerender(<Home {...handlers} activeRoom={{...room,state}} onResume={resume} onLeave={leave}/>);
     expect(screen.getByLabelText('左右滑动切换角色')).toBe(art);expect(screen.getByLabelText('角色序号')).toBe(counter);expect(counter.textContent).toBe(counterText);
     expect(navigation).toContainElement(screen.getByRole('button',{name:'上一位角色'}));expect(navigation).toContainElement(screen.getByRole('button',{name:'下一位角色'}));expect(screen.queryByText('已保留房间')).not.toBeInTheDocument();expect(screen.queryByText('ABCDEF')).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'继续当前房间'})).toBe(join);
-    const leaveButton=screen.queryByRole('button',{name:'离开房间'});expect(leaveButton!==null).toBe(['LOBBY','GAME_OVER','ABORTED'].includes(state));if(leaveButton){expect(leaveButton.parentElement).toBe(entryGrid.parentElement);expect(entryGrid).not.toContainElement(leaveButton);expect(navigation).not.toContainElement(leaveButton);}
+    const leaveButton=screen.getByRole('button',{name:'离开房间'});expect(leaveButton.parentElement).toBe(entryGrid.parentElement);expect(entryGrid).not.toContainElement(leaveButton);expect(navigation).not.toContainElement(leaveButton);
+    if(state==='RUNNING'){fireEvent.click(leaveButton);expect(screen.getByRole('alertdialog',{name:'离开房间'})).toHaveTextContent('对局结束或中止后即可离开');expect(screen.queryByRole('button',{name:'确认离开'})).not.toBeInTheDocument();fireEvent.click(screen.getByRole('button',{name:'知道了'}));}
   }
   fireEvent.click(screen.getByRole('button',{name:'继续当前房间'}));expect(resume).toHaveBeenCalledOnce();expect(leave).not.toHaveBeenCalled();
   ui.rerender(<Home {...handlers} activeRoom={{...room,state:'RUNNING'}} activeMode="DISPLAY" onResume={resume} onLeave={leave} busy/>);expect(screen.getByRole('button',{name:'离开房间'})).toBeDisabled();expect(screen.getByRole('button',{name:'继续当前房间'})).toBeDisabled();

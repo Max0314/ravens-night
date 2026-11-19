@@ -180,7 +180,7 @@ export function EventStage({ game, receipt, preview = false, room, reading=false
       {event.kind==="GAME_OVER"&&showResult&&(event.outcome==="GOOD"||event.outcome==="EVIL")?<VictoryArt winner={event.outcome} elapsedMs={elapsed-experienceTiming(event.kind,event.timingVersion??1).resultOffset} reduced={reduced} cause={victoryCause(game?.winReason)}/>:null}
       {event.kind==='DAWN'||event.kind==='NIGHT_FALLS'?<AtmosphericSky phase={event.kind} elapsedMs={elapsed} durationMs={event.durationMs} reduced={reduced}/>:null}
       <div className="event-stage__grain" aria-hidden="true" /><div className="event-stage__halo" aria-hidden="true" />
-      <header><span>RAVENS AT MIDNIGHT</span><span>{preview ? "演出预览" : "全员公开事件"}</span></header>
+      <header><span>BLOOD ON THE CLOCKTOWER</span><span>{preview ? "演出预览" : "全员公开事件"}</span></header>
       <div className="event-stage__body">
         <p className="event-stage__eyebrow">{virgin?<span className="event-stage__virgin-trigger"><Avatar id={String(virgin.seat)} name={virgin.nickname} url={virgin.avatar} loading="eager"/>{playerLabel(virgin.seat,virgin.nickname)} · 处女能力触发</span>:event.kind === "DAWN" ? `第 ${event.day ?? game?.day ?? 1} 天 · 黎明` : event.kind === "SHOT" ? "猎魔人 · 公开宣称" : event.kind === "EXECUTION" ? "城镇公决" : "钟声回响"}</p>
         <h1>{elapsed<0?"即将开始":title}</h1>

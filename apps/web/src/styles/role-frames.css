@@ -1,4 +1,4 @@
 /* The role index uses a shared inset arch, independently of the owner's in-game portrait. */
 .guide-sheet .role-browser .role-index__frame{max-width:128px;border:0;border-radius:0;background:none;overflow:visible;box-shadow:none}
 .guide-sheet .role-index__portrait.rn-portrait-frame{width:100%;height:auto;aspect-ratio:4/5;background:none;filter:none}
-.guide-sheet .role-index__portrait.rn-portrait-frame .rn-portrait-frame__image{left:0;top:0;width:100%;height:100%;border-radius:50% 50% 6% 6% / 40% 40% 4.8% 4.8%;box-shadow:0 4px 12px #08060377}
+.guide-sheet .role-index__portrait.rn-portrait-frame .rn-portrait-frame__image{left:0;top:0;width:100%;height:100%;border-radius:50% 50% 6.666667% 6.666667% / 37.5% 37.5% 5% 5%}

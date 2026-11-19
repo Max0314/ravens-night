@@ -1,5 +1,9 @@
 /* Scoped styles out-rank the shared room theme without changing unrelated sheets. */
 .room-sheet-backdrop:has(.room-tools-refined)>.room-sheet{height:min(760px,100%);width:min(100%,480px);background:linear-gradient(145deg,#15140fe8,#070a08ee);border-color:#ac8d4644;backdrop-filter:blur(14px);border-radius:18px;box-shadow:0 24px 70px #0009}
+.room-tools-host--playing:has(.room-tools-refined)>.room-sheet{
+  background:linear-gradient(95deg,#1a130dea,#1a130d48),linear-gradient(0deg,#110e0aed,transparent 75%),
+    #211810 url('/assets/ravens/room-counter-v1/settings-study.webp') 79% 0/auto 100% no-repeat;
+}
 .room-sheet-backdrop:has(.room-tools-refined)>.room-sheet>header{flex:none;padding:12px 16px;background:#080b0899;border-color:#a28a4926}
 .room-sheet-backdrop:has(.room-tools-refined)>.room-sheet>.room-sheet__body{flex:1;min-height:0;overflow:auto;padding:8px 14px 14px;overscroll-behavior:contain}
 .room-sheet-backdrop:has(.room-tools-refined)>.room-sheet>.room-action-bar{flex:none;padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid #ad8e4929;background:#080b08c9}

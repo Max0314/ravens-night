@@ -19,7 +19,7 @@ afterEach(() => { cleanup(); sessionStorage.clear(); localStorage.clear(); windo
 test("the first screen gives an authorized newcomer one clear way to join", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  expect(await screen.findByRole("heading", { name: "鸦钟夜话" })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: "血染钟楼" })).toBeVisible();
   expect(screen.getByRole("link", { name: "渝ICP备2026016967号-1" })).toHaveAttribute("href", "https://beian.miit.gov.cn/");
   expect(screen.getByRole("link", { name: "渝公网安备 50010502504754号" })).toHaveAttribute("href", "https://beian.mps.gov.cn/#/query/webSearch?code=50010502504754");
   fireEvent.click(screen.getByRole("button", { name: "加入房间" }));
@@ -29,9 +29,9 @@ test("the first screen gives an authorized newcomer one clear way to join", asyn
 
 test("the initial account notification cannot return a loaded home screen to the moon loader",async()=>{
   vi.stubGlobal("fetch",vi.fn(async(url:string)=>({ok:true,json:async()=>url==="/api/auth/session"?{authorized:true}:{signedIn:false,rooms:[]}})));
-  render(<App/>);await screen.findByRole("heading",{name:"鸦钟夜话"});
+  render(<App/>);await screen.findByRole("heading",{name:"血染钟楼"});
   fireEvent(window,new CustomEvent("fribench:account-change",{detail:{authenticated:false,accountKey:null}}));
-  expect(screen.getByRole("heading",{name:"鸦钟夜话"})).toBeVisible();
+  expect(screen.getByRole("heading",{name:"血染钟楼"})).toBeVisible();
   expect(screen.queryByLabelText("正在进入钟楼")).not.toBeInTheDocument();
 });
 
@@ -40,13 +40,13 @@ test("an unchanged account notification during initial requests still finishes e
   vi.stubGlobal("fetch",vi.fn(async(url:string)=>url==="/api/auth/session"?new Promise(resolve=>{finish=resolve;}):{ok:true,json:async()=>({signedIn:false,rooms:[]})}));
   render(<App/>);fireEvent(window,new CustomEvent("fribench:account-change",{detail:{authenticated:false,accountKey:null}}));
   finish({ok:true,json:async()=>({authorized:true})});
-  expect(await screen.findByRole("heading",{name:"鸦钟夜话"})).toBeVisible();
+  expect(await screen.findByRole("heading",{name:"血染钟楼"})).toBeVisible();
 });
 
 test("the home screen exposes an interactive tutorial and the complete role compendium", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  await screen.findByRole("heading", { name: "鸦钟夜话" });
+  await screen.findByRole("heading", { name: "血染钟楼" });
   fireEvent.click(screen.getByRole("button", { name: "查看教程" }));
   expect(screen.getByRole("dialog", { name: "游戏帮助" })).toBeVisible();
   expect(screen.getByRole("heading", { name: "阵营与胜负" })).toBeVisible();
@@ -98,7 +98,7 @@ test("evil first-night intelligence prominently shows teammate names and seat nu
 test("joining from a television has a distinct public-display choice", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ authorized: true }) }));
   render(<App />);
-  await screen.findByRole("heading", { name: "鸦钟夜话" });
+  await screen.findByRole("heading", { name: "血染钟楼" });
   fireEvent.click(screen.getByRole("button", { name: "加入房间" }));
   fireEvent.click(screen.getByRole("button", { name: /使用公共大屏/ }));
   expect(screen.queryByLabelText("你的昵称")).not.toBeInTheDocument();

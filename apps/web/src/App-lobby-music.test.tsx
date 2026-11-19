@@ -3,10 +3,10 @@ import '@testing-library/jest-dom/vitest';
 import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,expect,test,vi} from 'vitest';
 import {App,saveSession} from './App.js';
-import {getAccount,getRoomSummary,getAuthSession,getRoom,getPrivateView,resetAccountContext,type PrivateView,type RoomView} from './api.js';
+import {getAccount,getRoomSummary,getAuthSession,getRoom,getPrivateView,getRoomCreateAccess,resetAccountContext,type PrivateView,type RoomView} from './api.js';
 const feed=vi.hoisted(()=>({receive:undefined as undefined|((packet:{room:RoomView;privateView:PrivateView})=>void)}));
 const scoreSound=vi.hoisted(()=>({context:undefined as unknown as AudioContext}));
-vi.mock('./api.js',async original=>({...await original<object>(),getAccount:vi.fn(),getRoomSummary:vi.fn(),getAuthSession:vi.fn(),getRoom:vi.fn(),getPrivateView:vi.fn()}));
+vi.mock('./api.js',async original=>({...await original<object>(),getAccount:vi.fn(),getRoomSummary:vi.fn(),getAuthSession:vi.fn(),getRoom:vi.fn(),getPrivateView:vi.fn(),getRoomCreateAccess:vi.fn()}));
 vi.mock('./room-live.js',()=>({connectRoomFeed:(_code:string,_mode:string,receive:typeof feed.receive)=>{feed.receive=receive;return()=>{};}}));
 vi.mock('./components/RoomTools.js',()=>({RoomTools:()=>null}));
 vi.mock('./components/experience-audio.js',async original=>({...await original<object>(),getEffectsAudioContext:()=>scoreSound.context,unlockEffectsAudio:vi.fn(async()=>{})}));
@@ -30,7 +30,7 @@ test('an already open private handbook cannot reveal a role through the opening-
 test('M19 survives role confirmation and first night, then crossfades to M15 at the published first dawn',async()=>{
  const initial=fixture('ROLE_REVEAL',false,1);vi.mocked(getRoom).mockResolvedValue(initial.room);vi.mocked(getPrivateView).mockResolvedValue(initial.privateView);
  saveSession({roomCode:'ABCDEF',mode:'PLAYER',participantId:'me'});window.history.replaceState({},'','/?room=ABCDEF');render(<App/>);
- await screen.findByRole('heading',{name:'身份确认'});expect(screen.queryByRole('button',{name:'房间菜单'})).toBeNull();expect(screen.queryByRole('button',{name:'关闭声音'})).toBeNull();await waitFor(()=>expect(tracks[0]?.paused).toBe(false));const track=tracks[0]!;expect(track.src).toContain('/lobby-m19.mp3');track.currentTime=43;
+ await screen.findByRole('heading',{name:'身份确认'});expect(screen.queryByRole('button',{name:'房间菜单'})).toBeNull();expect(screen.queryByRole('button',{name:'声音设置'})).toBeNull();await waitFor(()=>expect(tracks[0]?.paused).toBe(false));const track=tracks[0]!;expect(track.src).toContain('/lobby-m19.mp3');track.currentTime=43;
  const mine=fixture('ROLE_REVEAL',true,2);vi.mocked(getRoom).mockResolvedValue(mine.room);vi.mocked(getPrivateView).mockResolvedValue(mine.privateView);
  await act(async()=>feed.receive?.(mine));expect(screen.queryByRole('button',{name:'房间菜单'})).toBeNull();expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);
  const night=fixture('FIRST_NIGHT',true,3);vi.mocked(getRoom).mockResolvedValue(night.room);vi.mocked(getPrivateView).mockResolvedValue(night.privateView);
@@ -45,9 +45,13 @@ test('M19 survives role confirmation and first night, then crossfades to M15 at 
 });
 
 test('home, create and join reuse one music owner and one compact global header control',async()=>{
- render(<App/>);await screen.findByRole('heading',{name:'鸦钟夜话'});await waitFor(()=>expect(tracks[0]?.paused).toBe(false));const track=tracks[0]!;track.currentTime=28;
- expect(screen.getAllByRole('button',{name:/关闭声音/})).toHaveLength(1);
- fireEvent.click(screen.getByRole('button',{name:'创建房间'}));await screen.findByRole('heading',{name:'创建房间'});expect(screen.getByRole('button',{name:'关闭声音'}).closest('.room-page__header')).not.toBeNull();expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);expect(track.currentTime).toBe(28);
- fireEvent.click(screen.getByRole('button',{name:'返回首页'}));await screen.findByRole('heading',{name:'鸦钟夜话'});
- fireEvent.click(screen.getByRole('button',{name:'加入房间'}));await screen.findByRole('heading',{name:'加入房间'});expect(screen.getByRole('button',{name:'关闭声音'}).closest('.room-page__header')).not.toBeNull();expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);expect(track.currentTime).toBe(28);
+ vi.mocked(getRoomCreateAccess).mockResolvedValue({status:'OPEN',creationV3:true});
+ render(<App/>);await screen.findByRole('heading',{name:'血染钟楼'});await waitFor(()=>expect(tracks[0]?.paused).toBe(false));const track=tracks[0]!;track.currentTime=28;
+ expect(screen.getAllByRole('button',{name:'声音设置'})).toHaveLength(1);
+ fireEvent.click(screen.getByRole('button',{name:'声音设置'}));
+ for(const channel of ['音乐开关','音效开关'])expect(screen.getByRole('switch',{name:channel})).toHaveAttribute('aria-checked','true');
+ fireEvent.click(screen.getByRole('button',{name:'关闭声音设置'}));
+ fireEvent.click(screen.getByRole('button',{name:'创建房间'}));await screen.findByRole('heading',{name:'创建房间'});expect(screen.getByRole('button',{name:'声音设置'}).closest('.room-page__header')).not.toBeNull();expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);expect(track.currentTime).toBe(28);
+ fireEvent.click(screen.getByRole('button',{name:'返回首页'}));await screen.findByRole('heading',{name:'血染钟楼'});
+ fireEvent.click(screen.getByRole('button',{name:'加入房间'}));await screen.findByRole('heading',{name:'加入房间'});expect(screen.getByRole('button',{name:'声音设置'}).closest('.room-page__header')).not.toBeNull();expect(tracks).toHaveLength(1);expect(track.paused).toBe(false);expect(track.currentTime).toBe(28);
 });

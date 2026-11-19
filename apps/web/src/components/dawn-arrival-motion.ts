@@ -20,4 +20,13 @@ export const dawnWindowRegions=[
  {x:576,y:390,width:22,height:16,sample:{x:595,y:401}},
 ] as const;
 
-export function dawnArrivalPose(elapsedMs:number,durationMs:number,reduced=false){const d=Math.max(1,durationMs),t=Math.max(0,elapsedMs),warm=reduced?1:smooth(t,0,d*.88),fog=reduced?0:1-smooth(t,d*.12,d*.86);return{warm,fog,fogX:reduced?0:-18*(1-fog),fogY:reduced?0:-12*(1-fog),windowsOff:dawnWindowRegions.map((_,index)=>{const stagger=index/(dawnWindowRegions.length-1);return reduced?1:smooth(t,d*(.15+.42*stagger),d*(.28+.42*stagger));})};}
+export function dawnArrivalPose(elapsedMs:number,durationMs:number,reduced=false){
+ const d=Math.max(1,durationMs),t=Math.max(0,elapsedMs);
+ const warm=reduced?1:smooth(t,d*.04,d*.84),fog=reduced?0:1-smooth(t,d*.15,d*.94);
+ const windowsOff=dawnWindowRegions.map(({x},index)=>{
+  const distance=Math.abs(x-438)/438;
+  const start=.24+distance*.29+(index%3)*.027;
+  return reduced?1:smooth(t,d*start,d*(start+.30));
+ });
+ return {warm,fog,fogX:-18*(1-fog)*(reduced?0:1),fogY:-12*(1-fog)*(reduced?0:1),windowsOff};
+}

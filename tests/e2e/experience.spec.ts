@@ -62,7 +62,7 @@ async function settleNight(players: Client[], code: string): Promise<PrivateView
 async function display(browser: Browser, code: string): Promise<Client> {
   const screen = await client(browser, "公共大屏", { width: 1440, height: 900 });
   await post(screen, code, "join", { nickname: "公共大屏", mode: "DISPLAY" }); await open(screen, code, "DISPLAY");
-  await expect(screen.page.getByText(`鸦钟夜话 · ${code}`, { exact: true })).toBeVisible(); return screen;
+  await expect(screen.page.getByText(`血染钟楼 · ${code}`, { exact: true })).toBeVisible(); return screen;
 }
 
 test("six phones and a TV complete a game with real presentation locks, then restart", async ({ browser }) => {

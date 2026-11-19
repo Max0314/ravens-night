@@ -2,7 +2,6 @@ import {clearInvitationUrl,selectRoomUrl,readInvitedRoomCode,readSession,saveSes
 export {readSession,saveSession} from './room-session.js';
 import {getRoomSummary,clearPendingJoin,isDefiniteJoinFailure,readPendingRoomSwitch,finishPendingRoomSwitch,retryPendingRoomSwitch,requestRoomSwitchTicket,switchRoom,type RoomSwitchTicket,type JoinResult} from './api.js';
 import {GuidePriorityBoundary,useGuidePriority,type RoleReferenceClose} from "./components/guide-priority.js";
-import {RoleReferenceOverlay} from './components/RoleReferenceOverlay.js';
 import {afterRoleReferenceBack,discardRoleReferenceBackAction} from './use-back-layer.js';
 import {RoomSheet} from './components/RoomPage.js';
 import { OpeningPasscode } from './components/OpeningPasscode.js';
@@ -70,11 +69,6 @@ function RoleSafeGuide({mode,role,room,onClose}:{mode:GuideMode;role:PrivateView
   const now=useGameClock(room?.game,room),game=room?.game;
   const locked=game?.phase==='ROLE_REVEAL'&&now<(game.presentationUntil??0);
   return useMemo(()=><GuideOverlay key={locked&&mode==='mine'?'opening-help':'guide'} suspended={suspended} mode={locked&&mode==='mine'?'tutorial':mode} {...(!locked&&role?{ownRole:role}:{})} onClose={onClose}/>,[locked,mode,role,onClose,suspended]);
-}
-
-function RoleReferenceLayer({onClose}:{onClose:()=>void}){
-  const {suspended}=useGuidePriority();
-  return <RoleReferenceOverlay suspended={suspended} onClose={onClose}/>;
 }
 
 type GuideRequest=GuideMode|{kind:'role-reference';scope:string};
@@ -184,7 +178,7 @@ function RoomApp() {
   },[requestedGuide,guide]);
 
   function openHandbook(mode:GuideMode){
-    setGuide(current=>typeof current==='object'?current:mode);
+    setGuide(mode);
   }
 
   function openRoleReference(trigger:HTMLButtonElement){
@@ -616,16 +610,15 @@ function RoomApp() {
     {pendingCreations.length>1&&screen==='HOME'&&<RoomSheet title="继续核对开房" handoff onClose={()=>setPendingCreations([])}><div className="pending-debug-creations">{pendingCreations.map(({intent,sentAt})=><button type="button" key={intent.commandId} onClick={()=>{flushSync(()=>setPendingCreations([]));afterRoleReferenceBack(()=>void resumeCreation(intent));}}>{intent.playerCount} 人 · {new Date(sentAt).toLocaleString()}</button>)}</div></RoomSheet>}
     {activePreview&&<Suspense fallback={<div className="debug-mode-toast" role="status">正在打开演示</div>}><EffectsPreview onClose={()=>{setPreviewOpen(false);setPreviewSuspended(false);requestAnimationFrame(()=>document.querySelector<HTMLElement>(`[data-debug-preview="${previewTab}"]`)?.focus({preventScroll:true}));}} allowed={previewAllowed} initialTab={previewTab}/></Suspense>}
     {readPendingRoomSwitch()&&!busy?<p className="session-status" role="status">换房结果待确认<button type="button" onClick={()=>void retrySwitch()}>重试原换房操作</button></p>:null}{entryBlocked?<p className="session-status" role="alert">{error}<button type="button" onClick={()=>void initialize()}>重试房间核对</button></p>:null}{storageNotice?<p className="session-status" role="status">浏览器未保存恢复资料，请勿关闭或刷新此页面。</p>:null}{upgrade?<p className="session-status" role="alert">游戏已更新<button type="button" onClick={()=>window.location.reload()}>刷新页面</button></p>:null}{connectionState === "OFFLINE" ? <p className="session-status session-status--offline" role="status">网络已断开：本局状态保存在服务器，恢复网络后会自动同步</p> : null}{connectionState === "RECONNECTING" ? <p className="session-status" role="status">网络已恢复，正在同步当前局面…</p> : null}{backNotice ? <p className="session-status session-status--back" role="status">已阻止误退出，游戏仍在进行；稍后重新打开也会恢复原座位</p> : null}</>;
-  const roomTools=!guide&&room&&participantId&&room.game?.phase!=='ROLE_REVEAL'&&privateView?.game?.phase!=='ROLE_REVEAL'?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onHome={returnHome} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={openHandbook}/>:null;
+  const roomTools=(!guide||guide==='role-reference')&&room&&participantId&&room.game?.phase!=='ROLE_REVEAL'&&privateView?.game?.phase!=='ROLE_REVEAL'?<RoomTools key={`${room.roomInstanceId}:${participantId}`} room={room} participantId={participantId} {...(privateView?{view:privateView}:{})} onChanged={refreshCurrentRoom} onHome={returnHome} onLeft={()=>{if(renderGeneration===generation.current)handleRoomClosed();}} onGuide={openHandbook}/>:null;
   const withGuide = (page:ReactNode) => withStatus(
     <GuidePriorityBoundary key={screen==='GAME'?gameScope:JSON.stringify(['entry',generation.current,room?.roomInstanceId??room?.code,participantId])} enabled={screen==='GAME'}
       mode={guide} game={game} room={room} onClose={closeGuide}>
       {page}
       {screen!=='HOME'?roomTools:null}
-      {guide?<div className={`guide-host${screen==='GAME'&&privateView?.game?.phase==='VOTING'?' has-ballot-notice'
+      {guide&&guide!=='role-reference'?<div className={`guide-host${screen==='GAME'&&privateView?.game?.phase==='VOTING'?' has-ballot-notice'
         :screen==='GAME'&&hasPrivateTownTask(privateView)?' has-private-action-notice':''}`}>
-        {guide==='role-reference'?<RoleReferenceLayer onClose={()=>closeGuide('dismiss')}/>
-          :<RoleSafeGuide mode={guide} role={privateView?.role} room={room} onClose={closeGuide}/>}
+        <RoleSafeGuide mode={guide} role={privateView?.role} room={room} onClose={closeGuide}/>
       </div>:null}
     </GuidePriorityBoundary>);
 
@@ -657,21 +650,14 @@ function RoomApp() {
   }
 
   async function exitRoom() {
-    if (!room) return;
+    if (!room||busy) return;
     setBusy(true); setError(undefined);
     try {
       await guard(leaveRoom(room.code));
-      clearSession();
-      window.history.replaceState({}, "", window.location.pathname);
-      setGuide(undefined);
-      setPrivateView(undefined);
-      setRoom(undefined);
-      setParticipantId(undefined);
-      setBackNotice(false);
-      setConnectionState("ONLINE");
-      setScreen("HOME");
+      handleRoomClosed();
     } catch (caught) { if(caught instanceof ApiError && caught.errorCode==="STALE_RESPONSE")return;
-      if (isNetworkFailure(caught)) setConnectionState("OFFLINE");
+      if(isRevokedSession(caught)){await handleSessionFailure(caught);return;}
+      await handleSessionFailure(caught);
       setError(caught instanceof Error ? caught.message : "无法退出房间");
     } finally { setBusy(false); }
   }

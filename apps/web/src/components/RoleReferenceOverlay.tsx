@@ -29,7 +29,6 @@ export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onCl
   const list=useRef<HTMLDivElement>(null),detailScroll=useRef<HTMLDivElement>(null);
   const entry=useRef<HTMLButtonElement|null>(null),savedFocus=useRef<HTMLElement|null>(null);
   const listPosition=useRef(0),returning=useRef(false);
-  const dialog=useRef<HTMLElement>(null);
   const active=useRef(false),previousSelection=useRef<string|undefined>(undefined);
   const visible=!suspended;
   useBackLayer(visible,onClose,true);
@@ -82,41 +81,14 @@ export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onCl
     setCategory(type);
   }
 
-  function onTab(event:KeyboardEvent){
-    if(event.key!=='Tab'||!active.current||document.activeElement?.closest('.room-sheet'))return;
-    const targets=[...dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled])')??[],
-      ...document.querySelectorAll<HTMLElement>('.nomination-notice button:not([disabled]),.private-action-notice button:not([disabled])')].filter(
-        target=>!target.closest('[hidden],[inert],[aria-hidden="true"]'));
-    const first=targets[0],last=targets.at(-1);
-    if(!first||!last)return;
-    const current=document.activeElement;
-    if(event.shiftKey&&(current===first||!targets.includes(current as HTMLElement))){
-      event.preventDefault();
-      last.focus();
-    }else if(!event.shiftKey&&(current===last||!targets.includes(current as HTMLElement))){
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
-  const tabHandler=useRef(onTab);tabHandler.current=onTab;
-  useLayoutEffect(()=>{
-    if(!visible)return;
-    const key=(event:KeyboardEvent)=>tabHandler.current(event);
-    window.addEventListener('keydown',key);
-    return()=>window.removeEventListener('keydown',key);
-  },[visible]);
-
   const portrait=selected?roleArt(selected.id):undefined;
   const mechanics=selected?rolePlayGuides[selected.id]?.mechanics:undefined;
-  return <div className={suspended?'guide-suspended':'guide-backdrop role-reference-backdrop'} hidden={suspended} inert={suspended}
-    aria-hidden={suspended||undefined}>
-    <section className="role-reference" ref={dialog} role="dialog" aria-labelledby={titleId}
+  return <section className="game-content game-content--reference role-reference"
+      hidden={suspended} inert={suspended} aria-labelledby={titleId}
       onFocusCapture={event=>{if(event.target instanceof HTMLElement)savedFocus.current=event.target;}}>
       <header className="role-reference__header">
         <h2 ref={title} id={titleId} tabIndex={-1}>角色表</h2>
         {selected?<FeedbackButton type="button" onClick={returnToList}>返回角色表</FeedbackButton>:null}
-        <FeedbackButton type="button" className="role-reference__close" aria-label="关闭角色表" onClick={onClose}>×</FeedbackButton>
       </header>
       <nav aria-label="角色分类" className="role-reference__jumps" hidden={!!selected}>
           {groups.map(({type,roles})=><FeedbackButton type="button" key={type} feedback="select"
@@ -152,6 +124,5 @@ export function RoleReferenceOverlay({suspended,onClose}:{suspended:boolean;onCl
           {mechanics?<><h4>规则细节</h4><p>{mechanics}</p></>:null}
         </div>
       </article>:null}
-    </section>
-  </div>;
+  </section>;
 }

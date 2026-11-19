@@ -1,4 +1,4 @@
-# 鸦钟夜话 · Ravens Night
+# 血染钟楼
 
 手机多人社交推理游戏。正式环境与发布事实见[统一部署记录](docs/unified-deployment.md)，开发进展见[阶段记录](docs/2026-09-27-redesign.md)。HTTP/WS协议7、房间快照5／6、当前公开演出时序4；新提名20＋8秒统一截止，旧在途票保留原逐席时钟。
 
@@ -17,19 +17,22 @@ pnpm build
 
 试卖模式在应用服务端设置 `ROOM_CREATE_PASSCODE`，并让 `ACCESS_PASSWORD` 为空。已登录 Fribench 的房主可直接建房。游客点「创建房间」时先验证开房口令，验证通过后才进入创建页，受邀朋友凭房间邀请码以游客身份加入。游客可在「我的钟楼」或大厅本人资料查看和复制曾输入并保存的口令，旧版浏览器资格可继续使用并重新验码补存。授权无业务到期和次数限制，浏览器凭据最长按 400 天保存并续存。换码后原有资格和房间仍可使用，已保存的旧码会明确标记。清除凭据、换浏览器或更换签名密钥后需要重新验码。
 
-创建默认 7 人，左右拖动人数滚轮切换 5–12 人，阵容四个数字可上下拖动。「恢复默认」复原当前人数模板，配置达标后才能开房。基础构成遵循相同的发牌校验，男爵仍会调整实际发牌。
+创建默认 7 人，左右拖动人数滚轮切换 5–12 人。阵容数字向下拖增加，向上拖减少。「恢复默认」复原当前人数模板，配置达标后才能开房。基础构成遵循相同的发牌校验，男爵仍会调整实际发牌。
 
-首页快速连点三次游戏标题可切换调试模式。在此模式创建的房间会补齐已准备的人机。大厅座位上方可直接进入「动画演示」和「音频试听」，点击本人头像可选角色或关闭房间退出调试。普通大厅没有预览入口。预览使用当次独立音量，常规游戏和投屏设置保存在各自设备。各页面由音符打开同一设置面板，局内可切换私密操作音效。
+首页快速连点三次「血染钟楼」可切换调试模式。在此模式创建的房间会补齐已准备的人机。大厅座位上方可直接进入「动画演示」和「音频试听」，点击本人头像可选角色或关闭房间退出调试。普通大厅没有预览入口。预览使用当次独立音量，常规游戏和投屏默认启用音乐与音效，并保留各设备保存的偏好。各页面由音符打开同一设置面板，局内可切换私密操作音效。
+
+房间菜单与首页「继续当前房间」上方都可打开离房确认。离开单人调试房会关闭该房，调试偏好仍可用于下一次创建。多人对局进行中可返回首页保留座位，结算或中止后可离开。
 
 ## 已保存的素材和编辑入口
 
-- 从游戏导航「城镇」右侧的「角色表」打开四类共 22 条公开能力速查。分类栏固定，详情先显示大图，再显示能力与规则。返回时保留原分类和滚动位置。[局内角色速查图标及原件](artifacts/role-icons-2026-11-18/README.md)
+- 在游戏底栏切换「城镇」「角色表」「记录」。角色表包含四类共 22 条公开能力速查，详情先显示大图，再显示能力与规则。详情返回保留原分类和滚动位置。点击自己的身份，可从立绘下方打开游玩建议。[局内角色速查图标及原件](artifacts/role-icons-2026-11-18/README.md)
+- 入夜灯光使用现有夜景的裁切，遮罩可用 `node scripts/build-night-lamps.mjs` 重建。
 
 - 开房机械边框、滚轮数字、钟楼室内背景和界面录音可从原件重建。[素材、来源及重建命令](artifacts/room-counter-2026-11-19/README.md)
 
 - [声音候选原件、说明与分析](artifacts/audio-candidates-2026-11-12/README.md)：55份完整编号文件，来源/许可与分析工具脚本均在目录中。移动试听副本位于`apps/web/public/audio-candidates/2026-11-12-v1/`；生成脚本`python scripts/build-audition-assets.py`，需FFmpeg/ffprobe。
 - [角色B版及选定稿](artifacts/character-production-b-2026-11-12/README.md)：投毒者、猩红女郎原件在approved；[间谍/处女修订原件](artifacts/character-production-b-revisions-2026-11-12/README.md)在originals。共用引用在`apps/web/src/role-art.ts`，旧A/B原图保留。
-- 送葬者与僧侣修订保存了新面容与完整道具。手册小图统一使用暗金内嵌圆拱。游玩中点击自己的身份打开单独设计的铜边角色卡。 [立绘原件](artifacts/character-production-b-faces-2026-11-13/README.md) · [圆拱框](apps/web/public/assets/ravens/role-type-frames-v5/arch.svg) · [历史圆拱框](artifacts/role-type-frames-v4-2026-11-13/README.md)
+- 送葬者与僧侣修订保存了新面容与完整道具。手册小图统一使用双线暗金内嵌圆拱。游玩中点击自己的身份打开单独设计的铜边角色卡。 [立绘原件](artifacts/character-production-b-faces-2026-11-13/README.md) · [圆拱框](apps/web/public/assets/ravens/role-type-frames-v4/arch.svg)
 - [演出动作及审查帧](artifacts/cinematic-motion-2026-11-12/README.md)：sources内已补存17张v4生成原图、Kenney原始CC0包与SHA索引，不依赖原电脑生成缓存。根图层裁切配置为sources/root-source-spec.json，可在仓库根运行`node scripts/prepare-motion-assets.mjs artifacts/cinematic-motion-2026-11-12/sources/root-source-spec.json`。v4声音可用`python scripts/build-cinematic-audio.py artifacts/cinematic-motion-2026-11-12/sources`重建（FFmpeg及NumPy）；管家蒙皮脚本另需Pillow、NumPy、OpenCV，参数见脚本说明。
 - `.tmp-ravens-art-20260807/`保留历史界面参考图；`.claude/launch.json`为项目启动配置。两者均随本轮交付保存，历史概念图不表示当前页面实现。
 

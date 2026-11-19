@@ -153,7 +153,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
   app.post<RoomRequest>('/api/rooms/:code/account/guest-preview',{schema:{body:bodySchema({})}},async(request,reply)=>{
     requireOrdinary(runtime.service.find(request.params.code));
     const account=accounts.get(request);if(!account)return reply.code(401).send({error:'请先登录账号'});
-    if(runtime.service.accountClaim(account.sub))throw Error('本账号在鸦钟夜话的游客认领机会已使用');
+    if(runtime.service.accountClaim(account.sub))throw Error('本账号在血染钟楼的游客认领机会已使用');
     if(runtime.service.accountRooms(account.sub).length)throw Error('账号已有房间，不能覆盖');
     const token=participantToken(request,undefined,'PLAYER'),room=runtime.service.find(request.params.code),participant=member(room,token,'PLAYER');
     if(participant.accountId)throw Error('此座位已经归属账号');
@@ -168,7 +168,7 @@ export function buildApp(options: { resolveAccount?:(header:string|undefined)=>P
     const preview=JSON.parse(Buffer.from(payload,'base64url').toString()) as {code:string;id:string;revision:number;expires:number};
     if(preview.code!==request.params.code.toUpperCase()||preview.expires<=now())throw Error('预览已过期，请重新预览');
     const result=await runtime.execute(rooms=>{
-      const old=rooms.accountClaim(account.sub);if(old){if(old.previewHash===hashOpaqueToken(raw))return{code:old.roomId,id:old.participantId};throw Error('本账号在鸦钟夜话的游客认领机会已使用');}
+      const old=rooms.accountClaim(account.sub);if(old){if(old.previewHash===hashOpaqueToken(raw))return{code:old.roomId,id:old.participantId};throw Error('本账号在血染钟楼的游客认领机会已使用');}
       const room=rooms.find(preview.code),token=participantToken(request,undefined,'PLAYER'),participant=member(room,token,'PLAYER');
       if(preview.revision!==room.revision||preview.id!==participant.id)throw Error('房间已变化，请重新预览');
       rooms.claimAccount(room.code,token,account.sub,hashOpaqueToken(raw),accountToken(account.sub,room.code,participant.id));return{code:room.code,id:participant.id};

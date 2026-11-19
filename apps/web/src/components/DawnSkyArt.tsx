@@ -10,12 +10,12 @@ export function DawnSkyArt({elapsedMs,durationMs,reduced=false}:{elapsedMs:numbe
   <defs><linearGradient id={`${id}-legibility`} x2="0" y2="1"><stop stopColor="#080908" stopOpacity={17/255}/><stop offset="1" stopColor="#080908" stopOpacity={136/255}/></linearGradient></defs>
   <svg width="100%" height="100%" viewBox="0 0 688 1024" preserveAspectRatio="xMidYMin slice" data-dawn-source="v5">
    <defs>
-    <linearGradient id={`${id}-warmth`} x2="0" y2="1"><stop stopColor="#efd8b9" stopOpacity={.03}/><stop offset=".27" stopColor="#ffd69b" stopOpacity={.1}/><stop offset=".52" stopColor="#f2ddba" stopOpacity={.03}/><stop offset="1" stopColor="#f2ddba" stopOpacity={0}/></linearGradient>
+    <radialGradient id={`${id}-warmth`} cx=".64" cy=".27" r=".50"><stop stopColor="#ffdbab" stopOpacity={.11}/><stop offset="1" stopColor="#efdabd" stopOpacity={0}/></radialGradient>
    </defs>
    <image href={dawnTownPlate.url} width={688} height={1024}/>
    {dawnWindowRegions.map((window,index)=><svg key={index} className="dawn-arrival__window" data-window={index} data-off={p.windowsOff[index]} opacity={p.windowsOff[index]} x={window.x} y={window.y} width={window.width} height={window.height} viewBox={`${index%5*32+1} ${Math.floor(index/5)*24+1} ${window.width} ${window.height}`} overflow="hidden"><image href={dawnLayerUrls.windows} width={160} height={72}/></svg>)}
-   <rect width={688} height={1024} fill="#081321" opacity={.46*(1-p.warm)}/><rect width={688} height={1024} fill={`url(#${id}-warmth)`} opacity={p.warm}/>
-   <image href={dawnLayerUrls.mist} x={-25} y={0} width={738} height={1024} opacity={p.fog*.42} data-dawn-mist="true" transform={`translate(${p.fogX} ${p.fogY})`}/>
+   <rect width={688} height={1024} fill="#081321" opacity={.34*(1-p.warm)}/><rect width={688} height={1024} fill={`url(#${id}-warmth)`} opacity={p.warm}/>
+   <image href={dawnLayerUrls.mist} x={-25} y={0} width={738} height={1024} opacity={p.fog*.30} data-dawn-mist="true" transform={`translate(${p.fogX} ${p.fogY})`}/>
   </svg>
   <rect width="100%" height="100%" fill={`url(#${id}-legibility)`}/>
  </svg>;

@@ -1,5 +1,12 @@
-.nomination-notice.nomination-notice--above-navigation{bottom:var(--nomination-navigation-bottom);max-height:var(--nomination-navigation-height);overflow-y:auto;overscroll-behavior:contain}
-.player-private .game-content--record{padding-bottom:var(--nomination-record-padding,0px);scroll-padding-bottom:var(--nomination-record-padding,0px)}
+.game-reading-notices{flex:none;order:4;min-width:0}
+.game-reading-notices:empty{display:none}
+.game-reading-notices>.nomination-notice,.game-reading-notices>.private-action-notice{
+  position:static;width:100%;max-width:none;margin:0;box-shadow:none;
+}
+@media(orientation:landscape) and (max-height:540px){
+  .game-page--town:has(>.game-reading-notices:not(:empty))>.game-content{grid-row:1/5}
+  .game-page--town>.game-reading-notices{grid-column:2;grid-row:5;align-self:end}
+}
 
 .nomination-notice--simultaneous .nomination-notice__summary{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:0;font-variant-numeric:tabular-nums}
 .nomination-notice--simultaneous .nomination-notice__summary>.ballot-countdown{grid-column:1/-1;font-size:14px;color:#ead09c}

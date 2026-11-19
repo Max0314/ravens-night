@@ -102,12 +102,22 @@ export function cancelEventAudio(id:string){epochs.set(id,(epochs.get(id)??0)+1)
 export function completeEventAudio(id:string){for(const [source,row]of sources)if(row.id===id&&!row.bell)stop(source,row);}
 export function silenceEffects(scope?:Scope){const ids=new Set<string>();for(const [source,row]of sources)if(!scope||row.scope===scope){ids.add(row.id);stop(source,row);}for(const id of epochs.keys())if(!scope||id.startsWith(scope+':'))ids.add(id);for(const id of ids)cancelEventAudio(id);}
 export function cancelSemantic(scope:'ui'|'book'){silenceEffects(scope);}
+let gestureCue=0;
+function playGestureCue(cue:SemanticCue,scope:'ui'|'private'){
+ if(!effectsAudioEnabled()||effectsAudioVolume()===0||document.hidden||scope==='private'&&!previewPrivateAllowed())return;
+ const current=++gestureCue;
+ if(ctx?.state==='running'){playSemantic(cue,{scope});return;}
+ const pressedAt=performance.now();
+ void unlockEffectsAudio().then(()=>{
+  if(current===gestureCue&&performance.now()-pressedAt<110)playSemantic(cue,{scope});
+ });
+}
 if(typeof window!=='undefined'){
  let previousEffects=audioPreferences().effects;
  window.addEventListener(audioPreferencesEvent,()=>{const next=audioPreferences().effects,changed=previousEffects.enabled!==next.enabled,volumeChanged=previousEffects.volume!==next.volume;previousEffects=next;if(previewAudio||!changed&&!volumeChanged)return;if(output)output.gain.value=next.volume;if(changed&&!next.enabled)silenceEffects();if(changed)window.dispatchEvent(new Event('ravens-effects-audio'));});
  window.addEventListener('ravens:participation-audio',()=>{if(!previewPrivateAllowed())silenceEffects('private');});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)silenceEffects();});
- window.addEventListener('ravens:ui-feedback',event=>{const detail=(event as CustomEvent<SemanticCue|{cue:SemanticCue;scope:'ui'|'private'}>).detail,cue=typeof detail==='string'?detail:detail.cue;if(['press','select','open','close','success','error'].includes(cue))playSemantic(cue,{scope:typeof detail==='string'?'ui':detail.scope});});
+ window.addEventListener('ravens:ui-feedback',event=>{const detail=(event as CustomEvent<SemanticCue|{cue:SemanticCue;scope:'ui'|'private'}>).detail,cue=typeof detail==='string'?detail:detail.cue;if(['press','select','open','close','error'].includes(cue))playGestureCue(cue,typeof detail==='string'?'ui':detail.scope);});
  // Raw buttons share the same short recording as FeedbackButton. Dedicated surfaces own their cues.
  document.addEventListener('click',event=>{
   if(!event.isTrusted||event.defaultPrevented)return;
@@ -116,7 +126,7 @@ if(typeof window!=='undefined'){
   if(!control||control.matches(':disabled,[aria-disabled="true"],[data-ui-feedback]'))return;
   if(path.some(item=>item.matches('[inert],.detent-wheel,.effects-lab__controls'))||
      control.matches('button')&&path.some(item=>item.matches('.guide-sheet')))return;
-  playSemantic(control.hasAttribute('aria-pressed')?'select':'press',{scope:path.some(item=>item.hasAttribute('data-private-feedback'))?'private':'ui'});
+  playGestureCue(control.hasAttribute('aria-pressed')?'select':'press',path.some(item=>item.hasAttribute('data-private-feedback'))?'private':'ui');
  });
 }
 function sampleAt(id:string,cue:string,sample:string,delay:number,scope:Scope,rate=1,volume=.6,offset=0,lateWindow=100,bell=false,onStarted?:(buffer:AudioBuffer,when:number,source:AudioBufferSourceNode)=>void){

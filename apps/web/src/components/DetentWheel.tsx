@@ -62,7 +62,7 @@ export function DetentWheel({ value, min, max, label, onChange, vertical = false
   function move(event: PointerEvent<HTMLDivElement>) {
     const current = drag.current;
     if (!current || current.id !== event.pointerId) return;
-    const dx = current.x - event.clientX, dy = current.y - event.clientY;
+    const dx = current.x - event.clientX, dy = event.clientY - current.y;
     const axis = vertical ? dy : dx, other = vertical ? dx : dy;
     if (!current.locked) {
       if (Math.abs(other) > 8 && Math.abs(other) >= Math.abs(axis)) { cancel.current(); return; }
